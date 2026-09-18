@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa de terapeutas Divine</title>
+<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js" integrity="sha384-Ukv1p/xTma6P4/2bY5KzWBw+ydSpXmhCMtyciIQVDJ1RmOxtCYNMF1uXT9T63H67" crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sea:#DDE6EC;--land:#F4EFE6;--land-line:#C9BBA6;
+    --pin:#1A1714;--pin-ink:#FBF9F6;--pin-off:#FFFFFF;--pin-off-line:#DCD3C4;--pin-hover:#A8502F;
+    --label:#5A5148;--label-off:#B5AB9E;
+    --chrome:#FBF9F6;--chrome-blur:rgba(251,249,246,.92);--chrome-line:rgba(26,23,20,.18);--chrome-ink:#1A1714;
+    --txt:#4E463D;--txt-2:#7A7168;--faint:#A39A8E;--acento:#A8502F;
+  }
+  html[data-tema="oscuro"]{
+    --sea:#141C22;--land:#272219;--land-line:#4A4235;
+    --pin:#F6F1E8;--pin-ink:#14120F;--pin-off:#1E1B17;--pin-off-line:#3A342C;--pin-hover:#E08A63;
+    --label:#B6ABA0;--label-off:#6E6558;
+    --chrome:#1B1815;--chrome-blur:rgba(27,24,21,.92);--chrome-line:rgba(246,241,232,.22);--chrome-ink:#F6F1E8;
+    --txt:#CDC3B5;--txt-2:#9E9488;--faint:#857C71;--acento:#E08A63;
+  }
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--sea);font-family:'Jost',system-ui,sans-serif;color:var(--chrome-ink)}
+  #wrap{position:absolute;inset:0}
+  svg{display:block;width:100%;height:100%;cursor:grab}
+  svg.drag{cursor:grabbing}
+  .land{fill:var(--land);stroke:var(--land-line);stroke-width:.8}
+  .pin circle{fill:var(--pin);stroke:var(--sea);stroke-width:2;cursor:pointer;transition:fill .2s}
+  .pin text{fill:var(--pin-ink);font-family:'Cormorant Garamond',serif;font-size:13px;text-anchor:middle;pointer-events:none}
+  .pin.off circle{fill:var(--pin-off);stroke:var(--pin-off-line)}
+  .pin.off text{fill:var(--faint)}
+  .pin:hover circle{fill:var(--pin-hover)}
+  .ciudad{font-size:11px;letter-spacing:.14em;text-transform:uppercase;fill:var(--label);pointer-events:none}
+  .ciudad.off{fill:var(--label-off)}
+  #zoom{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:6px}
+  #zoom button{width:32px;height:32px;background:var(--chrome);border:1px solid var(--chrome-line);border-radius:6px;
+    font-size:17px;line-height:1;color:var(--chrome-ink);cursor:pointer}
+  #zoom button:hover{border-color:var(--acento);color:var(--acento)}
+  #leyenda{position:absolute;left:12px;bottom:12px;padding:9px 14px;background:var(--chrome-blur);
+    border:1px solid var(--chrome-line);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--label)}
+  #fuente{position:absolute;right:10px;bottom:10px;font-size:10px;color:var(--txt-2)}
+  #pop{position:absolute;width:250px;background:var(--chrome);border:1px solid var(--chrome-line);
+    box-shadow:0 14px 40px rgba(26,23,20,.22);padding:18px 20px;display:none;transform:translate(-50%,-100%);pointer-events:auto}
+  #pop.on{display:block}
+  #pop h3{margin:0 0 6px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:21px;line-height:1.1}
+  #pop .c{margin:0 0 10px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--acento)}
+  #pop .d{margin:0 0 4px;font-size:13px;font-weight:300;line-height:1.5;color:var(--txt)}
+  #pop .t{margin:0 0 15px;font-size:12.5px;font-weight:300;line-height:1.5;color:var(--txt-2)}
+  #pop button.ver{padding:11px 20px;background:var(--pin);color:var(--pin-ink);border:none;border-radius:999px;
+    font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+  #pop button.ver:hover{background:var(--acento);color:#FFFFFF}
+  #pop .x{position:absolute;top:8px;right:10px;background:none;border:none;font-size:18px;line-height:1;color:var(--faint);cursor:pointer}
+  #carga{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--txt-2);background:var(--sea)}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <svg id="mapa"></svg>
+  <div id="zoom"><button id="mas" title="Acercar">+</button><button id="menos" title="Alejar">−</button></div>
+  <div id="leyenda">Consultas Divine certificadas</div>
+  <div id="fuente">Geometría: Natural Earth</div>
+  <div id="pop"></div>
+  <div id="carga">Cargando mapa…</div>
+</div>
+<script>
+const TERAPEUTAS = [
+  { id:'marta',    nombre:'Marta Ibáñez',      ini:'MI', ciudad:'Madrid',    lat:40.4404, lng:-3.7008, dx:0,  dy:-26, dir:'Calle de Ponzano, 42 · Chamberí',          trat:['Drenaje linfático','Postparto','Reductivo corporal'] },
+  { id:'nuria',    nombre:'Nuria Sanchís',     ini:'NS', ciudad:'Valencia',  lat:39.4626, lng:-0.3428, dx:34, dy:6,   dir:'Avenida del Puerto, 118 · Camins al Grau', trat:['Drenaje linfático','Postquirúrgico','Maderoterapia'] },
+  { id:'carla',    nombre:'Carla Redondo',     ini:'CR', ciudad:'Sevilla',   lat:37.3963, lng:-5.9944, dx:0,  dy:30,  dir:'Calle Feria, 27 · Casco Antiguo',          trat:['Reductivo corporal','Drenaje linfático','Valoración Divine'] },
+  { id:'ainhoa',   nombre:'Ainhoa Etxebarria', ini:'AE', ciudad:'Bilbao',    lat:43.2612, lng:-2.9430, dx:0,  dy:-26, dir:'Alameda de Urquijo, 60 · Indautxu',        trat:['Postparto','Drenaje linfático','Masaje profundo'] },
+  { id:'patricia', nombre:'Patricia Soler',    ini:'PS', ciudad:'Palma',     lat:39.5719, lng: 2.6503, dx:0,  dy:30,  dir:'Carrer de Sant Miquel, 15 · Centro',       trat:['Reductivo corporal','Maderoterapia','Valoración Divine'] },
+  { id:'lucia',    nombre:'Lucía Ferrer',      ini:'LF', ciudad:'Barcelona', lat:41.3925, lng: 2.1570, dx:32, dy:-14, dir:"Carrer d'Enric Granados, 88 · Eixample",   trat:['Drenaje linfático','Postparto','Masaje profundo'] }
+];
+const VISTA = { type:'MultiPoint', coordinates:[[-9.8,35.6],[4.7,35.6],[4.7,44.2],[-9.8,44.2]] };
+
+const svg = d3.select('#mapa');
+const pop = document.getElementById('pop');
+let W = 0, H = 0, tierra = null, proj = null, path = null, k = 1, tr = d3.zoomIdentity;
+let filtro = { ciudad:'Todas las ciudades', tratamiento:'Todos los tratamientos' };
+let gMapa, gTierra, gPins, zoom, activo = null;
+
+const visible = (t) =>
+  (filtro.ciudad === 'Todas las ciudades' || t.ciudad === filtro.ciudad) &&
+  (filtro.tratamiento === 'Todos los tratamientos' || t.trat.indexOf(filtro.tratamiento) >= 0);
+
+function medir() {
+  const r = document.getElementById('wrap').getBoundingClientRect();
+  W = Math.max(320, r.width); H = Math.max(240, r.height);
+}
+
+function dibujar() {
+  if (!tierra) return;
+  medir();
+  svg.attr('viewBox', '0 0 ' + W + ' ' + H);
+  proj = d3.geoMercator().fitExtent([[26, 22], [W - 26, H - 22]], VISTA);
+  path = d3.geoPath(proj);
+
+  svg.selectAll('*').remove();
+  gMapa = svg.append('g');
+  gTierra = gMapa.append('g');
+  gPins = gMapa.append('g');
+
+  gTierra.selectAll('path').data(tierra).enter().append('path').attr('class','land').attr('d', path);
+
+  const pins = gPins.selectAll('g.pinwrap').data(TERAPEUTAS).enter().append('g')
+    .attr('class','pinwrap')
+    .attr('transform', (d) => { const p = proj([d.lng, d.lat]); return 'translate(' + p[0] + ',' + p[1] + ')'; });
+
+  const esc = pins.append('g').attr('class','esc');
+
+  esc.append('text').attr('class','ciudad')
+    .attr('x', (d) => d.dx).attr('y', (d) => d.dy)
+    .attr('text-anchor', (d) => d.dx > 0 ? 'start' : 'middle')
+    .text((d) => d.ciudad);
+
+  const pin = esc.append('g').attr('class','pin').on('click', (ev, d) => { ev.stopPropagation(); abrirPop(d); });
+  pin.append('circle').attr('r', 17);
+  pin.append('text').attr('dy', 4.5).text((d) => d.ini);
+
+  zoom = d3.zoom().scaleExtent([1, 9]).translateExtent([[0, 0], [W, H]])
+    .on('start', () => svg.classed('drag', true))
+    .on('end', () => svg.classed('drag', false))
+    .on('zoom', (ev) => {
+      tr = ev.transform; k = tr.k;
+      gMapa.attr('transform', tr);
+      gPins.selectAll('g.esc').attr('transform', 'scale(' + (1 / k) + ')');
+      if (activo) colocarPop(activo);
+    });
+  svg.call(zoom).on('dblclick.zoom', null);
+  svg.on('click', cerrarPop);
+  gMapa.attr('transform', tr);
+  gPins.selectAll('g.esc').attr('transform', 'scale(' + (1 / k) + ')');
+  pintarFiltro();
+  if (activo) colocarPop(activo);
+}
+
+function pintarFiltro() {
+  if (!gPins) return;
+  gPins.selectAll('g.pinwrap').each(function (d) {
+    const on = visible(d);
+    d3.select(this).select('g.pin').classed('off', !on);
+    d3.select(this).select('text.ciudad').classed('off', !on);
+    d3.select(this).style('opacity', on ? 1 : .55);
+  });
+  const dentro = TERAPEUTAS.filter(visible).length;
+  document.getElementById('leyenda').textContent = dentro === TERAPEUTAS.length
+    ? 'Consultas Divine certificadas'
+    : (dentro === 0 ? 'Sin consultas con ese filtro' : dentro + (dentro === 1 ? ' consulta' : ' consultas') + ' con ese filtro');
+}
+
+function colocarPop(d) {
+  const p = proj([d.lng, d.lat]);
+  const x = tr.applyX(p[0]), y = tr.applyY(p[1]);
+  pop.style.left = Math.max(130, Math.min(W - 130, x)) + 'px';
+  pop.style.top = Math.max(150, y - 22) + 'px';
+}
+
+function abrirPop(d) {
+  activo = d;
+  pop.innerHTML =
+    '<button class="x" aria-label="Cerrar">×</button>' +
+    '<h3>' + d.nombre + '</h3>' +
+    '<p class="c">' + d.ciudad + ' · certificada por Sorela</p>' +
+    '<p class="d">' + d.dir + '</p>' +
+    '<p class="t">' + d.trat.join(' · ') + '</p>' +
+    '<button class="ver">Ver perfil y reservar</button>';
+  pop.classList.add('on');
+  colocarPop(d);
+  pop.querySelector('.x').onclick = (e) => { e.stopPropagation(); cerrarPop(); };
+  pop.querySelector('.ver').onclick = (e) => {
+    e.stopPropagation();
+    parent.postMessage({ tipo:'ver-terapeuta', id:d.id }, '*');
+  };
+}
+
+function cerrarPop() { activo = null; pop.classList.remove('on'); }
+
+function zoomA(f) {
+  const dentro = TERAPEUTAS.filter(visible);
+  if (!dentro.length || !proj) { svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity); return; }
+  if (dentro.length === 1) {
+    const p = proj([dentro[0].lng, dentro[0].lat]);
+    svg.transition().duration(600).call(zoom.transform,
+      d3.zoomIdentity.translate(W / 2, H / 2).scale(3.4).translate(-p[0], -p[1]));
+    return;
+  }
+  const xs = dentro.map((t) => proj([t.lng, t.lat])[0]);
+  const ys = dentro.map((t) => proj([t.lng, t.lat])[1]);
+  const x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+  const y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+  const kk = Math.max(1, Math.min(6, 0.8 / Math.max((x1 - x0) / W, (y1 - y0) / H)));
+  svg.transition().duration(600).call(zoom.transform,
+    d3.zoomIdentity.translate(W / 2, H / 2).scale(kk).translate(-(x0 + x1) / 2, -(y0 + y1) / 2));
+}
+
+document.getElementById('mas').onclick = () => svg.transition().duration(260).call(zoom.scaleBy, 1.6);
+document.getElementById('menos').onclick = () => svg.transition().duration(260).call(zoom.scaleBy, 1 / 1.6);
+
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.tema) document.documentElement.setAttribute('data-tema', d.tema);
+  if (d.tipo !== 'filtrar-mapa') return;
+  const cambio = d.ciudad !== filtro.ciudad || d.tratamiento !== filtro.tratamiento;
+  filtro = { ciudad: d.ciudad || 'Todas las ciudades', tratamiento: d.tratamiento || 'Todos los tratamientos' };
+  pintarFiltro();
+  if (cambio) { cerrarPop(); zoomA(); }
+});
+
+let rt;
+window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(dibujar, 160); });
+
+function pintarTopo(topo) {
+  const todos = topojson.feature(topo, topo.objects.countries).features;
+  const cerca = todos.filter((f) => ['Spain','Portugal','France','Andorra','Morocco','Algeria'].indexOf(f.properties.name) >= 0);
+  tierra = cerca.length ? cerca : todos;
+  const c = document.getElementById('carga');
+  if (c) c.remove();
+  dibujar();
+  parent.postMessage({ tipo:'mapa-listo' }, '*');
+}
+
+d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json')
+  .then(pintarTopo)
+  .catch(() => d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json')
+    .then(pintarTopo)
+    .catch(() => { document.getElementById('carga').textContent = 'No se ha podido cargar el mapa'; }));
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+.portada {
+  padding: clamp(70px, 10vw, 130px) 0 clamp(40px, 5vw, 60px);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line-1);
+}
+
+.listado {
+  padding: clamp(40px, 6vw, 80px) 0 clamp(60px, 9vw, 120px);
+}
+
+.curso {
+  border-top: 1px solid var(--line-3);
+  padding: clamp(28px, 4vw, 48px) 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(22px, 3vw, 48px);
+  align-items: start;
+}
+
+.cursoNombre {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(26px, 3.2vw, 40px);
+  line-height: 1.1;
+  text-wrap: pretty;
+}
+
+.cursoMeta {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--arcilla);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+}
+
+.plazas {
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--arcilla-ink);
+  background: var(--arcilla-tint);
+  border-radius: 999px;
+  padding: 9px 17px;
+}
+
+.avisame {
+  border-top: 1px solid var(--line-3);
+  padding: clamp(32px, 5vw, 56px) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(22px, 3vw, 48px);
+  align-items: start;
+}
+
+.avisameTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.15;
+  color: var(--muted);
+}

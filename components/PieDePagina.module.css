@@ -1,0 +1,71 @@
+.pie {
+  background: var(--inverse-bg);
+  color: var(--on-inverse-2);
+  padding: clamp(50px, 7vw, 90px) 0 clamp(28px, 3vw, 40px);
+}
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: clamp(28px, 4vw, 56px);
+  padding-bottom: clamp(36px, 5vw, 64px);
+}
+
+.marca,
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.marca {
+  gap: 14px;
+}
+
+.nombre {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.15;
+  color: var(--inverse-ink);
+}
+
+.firma {
+  font-size: 0.62em;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-family: var(--fuente-jost), sans-serif;
+  color: var(--accent-inverse);
+}
+
+.titulo {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--on-inverse-3);
+}
+
+.enlace {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--on-inverse-2);
+  transition: color 0.2s;
+}
+
+.enlace:hover {
+  color: var(--surface);
+}
+
+.marca .enlace {
+  font-size: 13px;
+}
+
+.copyright {
+  margin: 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--line-inverse);
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--on-inverse-3);
+}

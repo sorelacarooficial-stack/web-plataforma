@@ -1,0 +1,420 @@
+/* ==========================================================================
+   Hero
+   La foto de Sorela es 1385×3000. En escritorio se empuja a la derecha para
+   que su cara quede libre y el texto viva sobre el velo de la mitad izquierda.
+   ========================================================================== */
+.hero {
+  position: relative;
+  min-height: min(96vh, 900px);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  background: var(--photo-bg);
+}
+
+.heroFoto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 26%;
+  transform: scale(1.38) translateX(18%);
+  animation: divineHero 32s ease-in-out infinite alternate;
+}
+
+.heroVelo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    97deg,
+    var(--scrim-1) 0%,
+    var(--scrim-2) 32%,
+    var(--scrim-3) 54%,
+    var(--scrim-4) 76%,
+    transparent 100%
+  );
+}
+
+.heroMotas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.heroCaja {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(128px, 17vw, 200px) clamp(20px, 4vw, 40px) clamp(52px, 7vw, 88px);
+}
+
+.heroTexto {
+  max-width: min(520px, 52%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(16px, 2vw, 24px);
+}
+
+.sello {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--oro-line);
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.selloPunto {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--oro);
+  animation: divineRing 3s ease-out infinite;
+}
+
+.heroTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(36px, 5.1vw, 70px);
+  line-height: 1.03;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.heroLede {
+  margin: 0;
+  max-width: 520px;
+  font-weight: 300;
+  font-size: clamp(16px, 1.35vw, 19px);
+  line-height: 1.6;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.heroAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(16px, 2vw, 28px);
+  margin-top: 8px;
+}
+
+.heroFirma {
+  margin: 12px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.heroRaya {
+  width: 26px;
+  height: 1px;
+  background: var(--oro);
+}
+
+/* ==========================================================================
+   Bloques
+   ========================================================================== */
+.tituloBloque {
+  margin-bottom: clamp(36px, 5vw, 64px);
+}
+
+.tituloFaq {
+  margin: 0 0 clamp(28px, 4vw, 48px);
+  font-size: clamp(28px, 3.6vw, 44px);
+}
+
+.cita {
+  background: var(--salvia-tint);
+  border-top: 1px solid var(--salvia-line);
+  border-bottom: 1px solid var(--salvia-line);
+  padding: clamp(90px, 14vw, 190px) 0;
+  text-align: center;
+}
+
+.cita > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+}
+
+.citaTexto {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(28px, 4.6vw, 58px);
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.citaFirma {
+  font-size: 11.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--salvia-ink);
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 18px;
+  width: 100%;
+  max-width: 520px;
+  padding-top: 6px;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 22px;
+  margin-top: 8px;
+}
+
+/* ==========================================================================
+   Banda de formaciones (copy oscuro + foto entera, sin solaparse)
+   ========================================================================== */
+.banda {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
+  align-items: stretch;
+  background: var(--inverse-bg);
+}
+
+.bandaTexto {
+  display: flex;
+  align-items: center;
+  padding: clamp(48px, 7vw, 96px) clamp(22px, 4vw, 56px);
+  padding-left: max(
+    calc((100vw - 1240px) / 2 + clamp(20px, 4vw, 40px)),
+    clamp(22px, 4vw, 40px)
+  );
+}
+
+.bandaCaja {
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.bandaFoto {
+  position: relative;
+  min-height: min(58vh, 520px);
+  background: var(--photo-bg);
+  overflow: hidden;
+}
+
+.bandaFoto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   Comunidad, clientas y testimonios
+   ========================================================================== */
+.comunidad {
+  padding: clamp(66px, 9vw, 130px) 0;
+  background: var(--arcilla-tint);
+  border-bottom: 1px solid var(--arcilla-line);
+}
+
+.remate {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 2.4vw, 32px);
+  line-height: 1.2;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.btnAzul {
+  background: var(--azul);
+  color: var(--surface);
+}
+
+.btnAzul:hover {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.cifra {
+  padding: clamp(20px, 2.4vw, 28px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cifraNum {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(30px, 3.4vw, 42px);
+  line-height: 1;
+}
+
+.cifraPie {
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.testimonios {
+  padding: clamp(66px, 9vw, 130px) 0;
+  background: var(--azul-tint);
+  border-top: 1px solid var(--azul-line);
+}
+
+.testimonio {
+  margin: 0;
+  background: var(--surface);
+  padding: clamp(26px, 3vw, 38px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  justify-content: space-between;
+  transition:
+    transform 0.28s,
+    box-shadow 0.28s;
+}
+
+.testimonio:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(20, 18, 16, 0.07);
+}
+
+.testimonioFrase {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(19px, 2vw, 24px);
+  line-height: 1.38;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.testimonioPie {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.iniciales {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--arcilla-tint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--arcilla-ink);
+}
+
+.testimonioNombre {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.testimonioCiudad {
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--azul-ink);
+}
+
+/* ==========================================================================
+   Cierre
+   ========================================================================== */
+.cierre {
+  padding: clamp(80px, 12vw, 160px) 0;
+  background: var(--inverse-bg);
+  text-align: center;
+}
+
+.cierre > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+}
+
+.cierreTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(34px, 5.4vw, 70px);
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+  color: var(--inverse-ink);
+  text-wrap: pretty;
+}
+
+/* ==========================================================================
+   Móvil: la cara sube y el texto entra debajo a todo el ancho.
+   ========================================================================== */
+@media (max-width: 860px) {
+  .heroFoto {
+    object-position: 60% 10%;
+    transform: scale(1.12) translateX(0);
+    animation: none;
+  }
+
+  /* El velo de escritorio va de izquierda a derecha, que es como se reparte
+     ahí el hero. En vertical el texto cae debajo de la foto, así que el velo
+     tiene que bajar también: si no, la firma se lee a duras penas. */
+  .heroVelo {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      var(--scrim-4) 22%,
+      var(--scrim-3) 38%,
+      var(--scrim-2) 52%,
+      var(--scrim-1) 66%,
+      var(--scrim-1) 100%
+    );
+  }
+
+  .heroCaja {
+    padding-top: min(86vw, 360px);
+  }
+
+  .heroTexto {
+    max-width: 100%;
+  }
+
+  .bandaTexto {
+    padding-left: clamp(22px, 4vw, 40px);
+  }
+}

@@ -1,0 +1,73 @@
+.enLinea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  max-width: 460px;
+}
+
+.confirmacion {
+  margin: 0;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.62;
+  color: var(--ink-3);
+  animation: divineUp 0.35s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.deshacer {
+  padding: 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line-5);
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.deshacer:hover {
+  color: var(--ink);
+  border-color: var(--arcilla);
+}
+
+/* Confirmación grande, la de la lista de espera y el contacto. */
+.exito {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  animation: divineUp 0.35s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.exitoTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(24px, 2.8vw, 34px);
+  line-height: 1.1;
+}
+
+.exitoTexto {
+  margin: 0;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.62;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+/* Caja del formulario de contacto: filete dorado arriba. */
+.contactoCaja {
+  background: var(--surface);
+  border-top: 3px solid var(--arcilla);
+  padding: clamp(26px, 3.4vw, 40px);
+}
+
+.titulo {
+  margin: 0 0 4px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(23px, 2.6vw, 32px);
+  line-height: 1.12;
+}

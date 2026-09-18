@@ -1,0 +1,147 @@
+.portada {
+  padding: clamp(70px, 10vw, 140px) 0 clamp(50px, 7vw, 90px);
+  background: var(--arcilla-tint);
+  border-bottom: 1px solid var(--arcilla-line);
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(38px, 6vw, 76px);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  text-wrap: pretty;
+}
+
+.contador {
+  margin: 0;
+  font-weight: 300;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--arcilla-ink);
+}
+
+.caja {
+  background: var(--surface);
+  padding: clamp(26px, 3.4vw, 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------- Piezas ---------- */
+.piezasSeccion {
+  padding: 0 0 clamp(56px, 8vw, 110px);
+}
+
+.piezas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(16px, 2vw, 22px);
+}
+
+.pieza {
+  background: var(--surface);
+  padding: clamp(26px, 3vw, 38px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition:
+    transform 0.28s,
+    box-shadow 0.28s;
+}
+
+.pieza:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(20, 18, 16, 0.07);
+}
+
+.estado {
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.piezaTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: clamp(21px, 2.2vw, 28px);
+  line-height: 1.18;
+  text-wrap: pretty;
+}
+
+/* ---------- Precio ---------- */
+.precio {
+  padding: clamp(70px, 11vw, 150px) 0;
+  background: var(--inverse-bg);
+  color: var(--on-inverse-2);
+  text-align: center;
+}
+
+.precio > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+}
+
+.precioTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(32px, 5vw, 64px);
+  line-height: 1.04;
+  color: var(--inverse-ink);
+  text-wrap: pretty;
+}
+
+.precioTexto {
+  margin: 0;
+  max-width: 560px;
+  font-weight: 300;
+  font-size: clamp(16px, 1.25vw, 18.5px);
+  line-height: 1.64;
+  color: var(--on-inverse-2);
+  text-wrap: pretty;
+}
+
+/* ---------- Objeciones ---------- */
+.objecion {
+  border-top: 1px solid var(--line-3);
+  padding: clamp(20px, 2.4vw, 30px) 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(14px, 2vw, 36px);
+}
+
+.objecionP {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(19px, 2vw, 24px);
+  line-height: 1.25;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.objecionR {
+  margin: 0;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.64;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.pieLista {
+  margin: clamp(30px, 4vw, 48px) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  font-weight: 300;
+  font-size: 16px;
+  color: var(--ink-3);
+}

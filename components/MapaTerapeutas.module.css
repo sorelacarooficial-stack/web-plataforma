@@ -1,0 +1,212 @@
+.caja {
+  position: relative;
+  width: 100%;
+  height: clamp(320px, 52vh, 520px);
+  background: var(--mapa-sea);
+  border: 1px solid var(--line-3);
+  overflow: hidden;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.arrastrando {
+  cursor: grabbing;
+}
+
+.tierra {
+  fill: var(--mapa-land);
+  stroke: var(--mapa-land-line);
+  stroke-width: 0.8;
+}
+
+/* ---------- Puntos ---------- */
+.pin circle {
+  fill: var(--mapa-pin);
+  stroke: var(--mapa-sea);
+  stroke-width: 2;
+  cursor: pointer;
+  transition: fill 0.2s;
+}
+
+.pin text {
+  fill: var(--mapa-pin-ink);
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 13px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.pin:hover circle,
+.pin:focus-visible circle {
+  fill: var(--mapa-pin-hover);
+}
+
+.pinOff circle {
+  fill: var(--mapa-pin-off);
+  stroke: var(--mapa-pin-off-line);
+}
+
+.pinOff text {
+  fill: var(--mapa-faint);
+}
+
+.ciudad {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  fill: var(--mapa-label);
+  pointer-events: none;
+}
+
+.ciudadOff {
+  fill: var(--mapa-label-off);
+}
+
+/* ---------- Controles ---------- */
+.zoom {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.zoom button {
+  width: 32px;
+  height: 32px;
+  background: var(--mapa-chrome);
+  border: 1px solid var(--mapa-chrome-line);
+  border-radius: 6px;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--mapa-chrome-ink);
+  cursor: pointer;
+}
+
+.zoom button:hover {
+  border-color: var(--mapa-acento);
+  color: var(--mapa-acento);
+}
+
+.leyenda {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 9px 14px;
+  background: var(--mapa-chrome-blur);
+  border: 1px solid var(--mapa-chrome-line);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mapa-label);
+}
+
+.fuente {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  font-size: 10px;
+  color: var(--mapa-txt-2);
+}
+
+.cargando {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mapa-txt-2);
+  background: var(--mapa-sea);
+}
+
+/* ---------- Ficha emergente ---------- */
+.ficha {
+  position: absolute;
+  width: 250px;
+  background: var(--mapa-chrome);
+  border: 1px solid var(--mapa-chrome-line);
+  box-shadow: 0 14px 40px rgba(26, 23, 20, 0.22);
+  padding: 18px 20px;
+  transform: translate(-50%, -100%);
+  z-index: 3;
+}
+
+.ficha h3 {
+  margin: 0 0 6px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 21px;
+  line-height: 1.1;
+  color: var(--mapa-chrome-ink);
+}
+
+.fichaCiudad {
+  margin: 0 0 10px;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mapa-acento);
+}
+
+.fichaDir {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--mapa-txt);
+}
+
+.fichaTrat {
+  margin: 0 0 15px;
+  font-size: 12.5px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--mapa-txt-2);
+}
+
+.fichaVer {
+  padding: 11px 20px;
+  background: var(--mapa-pin);
+  color: var(--mapa-pin-ink);
+  border: none;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.fichaVer:hover {
+  background: var(--mapa-acento);
+  color: #ffffff;
+}
+
+.fichaCerrar {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--mapa-faint);
+  cursor: pointer;
+}
+
+.fichaCerrar:hover {
+  color: var(--mapa-chrome-ink);
+}
