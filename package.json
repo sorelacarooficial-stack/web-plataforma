@@ -14,7 +14,9 @@
     "capturas": "node pruebas/capturas.mjs",
     "pruebas": "node pruebas/interacciones.mjs",
     "pruebas:plataforma": "node pruebas/plataforma.mjs",
-    "pruebas:asistente": "node pruebas/asistente.mjs"
+    "pruebas:asistente": "node pruebas/asistente.mjs",
+    "pruebas:menu": "node pruebas/menu.mjs",
+    "pruebas:auditoria": "node pruebas/auditoria.mjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",

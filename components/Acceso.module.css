@@ -84,22 +84,13 @@
   border-color: var(--ink);
 }
 
-/* Distintivo neutro a propósito: el logotipo oficial de Google solo puede
-   usarse siguiendo sus normas de marca, y eso se monta con el SDK real. */
+/* El logotipo va sin fondo ni borde propios: Google no permite encerrarlo en
+   una pastilla de color ni recolorearlo. */
 .googleMarca {
   flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  background: var(--oro-tint);
-  border: 1px solid var(--oro-line);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 14px;
-  line-height: 1;
-  color: var(--oro);
 }
 
 /* ---------- Separador ---------- */

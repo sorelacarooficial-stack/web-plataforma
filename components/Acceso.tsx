@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import CambiarTema from './CambiarTema';
+import IconoGoogle from './IconoGoogle';
 import logo from '@/fotos/logo-sorela.png';
 import consulta from '@/fotos/acceso-consulta.webp';
 import css from './Acceso.module.css';
@@ -53,8 +54,8 @@ export default function Acceso() {
 
         <div className={css.caja}>
           <button type="button" onClick={entrar} className={css.google}>
-            <span className={css.googleMarca} aria-hidden="true">
-              G
+            <span className={css.googleMarca}>
+              <IconoGoogle size={18} />
             </span>
             <span>{esRegistro ? 'Registrarme con Google' : 'Continuar con Google'}</span>
           </button>
@@ -126,11 +127,6 @@ export default function Acceso() {
               </button>
             )}
           </form>
-
-          <p className={css.aviso}>
-            Maqueta para revisión: entra cualquier correo y contraseña, y verás la plataforma con
-            datos de ejemplo. Todavía no hay cuentas reales.
-          </p>
         </div>
 
         <p className={css.cambio}>

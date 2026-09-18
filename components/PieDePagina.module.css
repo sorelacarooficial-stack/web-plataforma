@@ -1,7 +1,9 @@
 .pie {
   background: var(--inverse-bg);
   color: var(--on-inverse-2);
-  padding: clamp(50px, 7vw, 90px) 0 clamp(28px, 3vw, 40px);
+  /* El extra de abajo reserva sitio al botón flotante del asistente, que si no
+     se posa encima de la línea de copyright y de los últimos enlaces. */
+  padding: clamp(50px, 7vw, 90px) 0 calc(clamp(28px, 3vw, 40px) + 72px);
 }
 
 .rejilla {
@@ -15,11 +17,11 @@
 .columna {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 2px;
 }
 
 .marca {
-  gap: 14px;
+  gap: 10px;
 }
 
 .nombre {
@@ -47,6 +49,10 @@
 }
 
 .enlace {
+  display: inline-flex;
+  align-items: center;
+  /* 44 px es el mínimo cómodo para el dedo; antes eran 19 px de alto. */
+  min-height: 44px;
   font-size: 14px;
   font-weight: 300;
   color: var(--on-inverse-2);

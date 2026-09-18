@@ -1,0 +1,118 @@
+/* El botón y el panel solo existen por debajo de 900 px; de ahí para arriba
+   la cabecera enseña la navegación completa. */
+.boton {
+  display: none;
+}
+
+.panel {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .boton {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 42px;
+    height: 42px;
+    background: transparent;
+    border: 1px solid var(--line-3);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.25s;
+  }
+
+  .boton:hover {
+    border-color: var(--arcilla-line);
+  }
+
+  .raya {
+    display: block;
+    width: 16px;
+    height: 1.5px;
+    background: var(--ink);
+    border-radius: 2px;
+    transition:
+      transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1),
+      opacity 0.2s;
+  }
+
+  .rayaArribaX {
+    transform: translateY(6.5px) rotate(45deg);
+  }
+
+  .rayaMediaX {
+    opacity: 0;
+  }
+
+  .rayaAbajoX {
+    transform: translateY(-6.5px) rotate(-45deg);
+  }
+
+  .panel {
+    position: fixed;
+    inset: var(--cabecera) 0 0 0;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-blur);
+    backdrop-filter: blur(20px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    animation: divineUp 0.28s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  .lista {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: clamp(24px, 7vw, 48px) clamp(20px, 6vw, 40px) clamp(40px, 12vw, 80px);
+  }
+
+  .enlace {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line-2);
+    font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 8vw, 38px);
+    line-height: 1.15;
+    color: var(--ink);
+    animation: divineUp 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+  }
+
+  .enlace:hover,
+  .enlaceActivo {
+    color: var(--arcilla);
+  }
+
+  .entrar {
+    margin-top: clamp(24px, 6vw, 40px);
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    padding: 17px 38px;
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 999px;
+    font-size: 12.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    animation: divineUp 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+    transition: background 0.25s;
+  }
+
+  .entrar:hover {
+    background: var(--arcilla);
+    color: var(--bg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enlace,
+  .entrar,
+  .panel {
+    animation: none;
+  }
+}

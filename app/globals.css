@@ -17,7 +17,7 @@
   --ink-3: #4f4840;
   --ink-4: #2a2620;
   --muted-2: #5e564c;
-  --muted: #837a6e;
+  --muted: #6c645a;
   --faint: #a79e92;
 
   --arcilla: #8a6a32;
@@ -627,12 +627,17 @@ img {
 }
 
 .enlace-fino {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   border-bottom: 1px solid var(--arcilla-line);
   padding-bottom: 2px;
 }
 
 .volver {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;

@@ -77,10 +77,14 @@ export default function MapaTerapeutas({
 
   const proyeccion = useMemo(() => {
     if (!w || !h) return null;
+    // El margen derecho es mayor que el izquierdo porque las etiquetas de
+    // Barcelona y Valencia se dibujan a la derecha de su punto y se salían
+    // del mapa (30-35 px fuera a 320-390 px de ancho).
+    const margen = Math.min(46, Math.max(26, w * 0.09));
     return geoMercator().fitExtent(
       [
-        [26, 22],
-        [w - 26, h - 22],
+        [26, 26],
+        [w - margen, h - 30],
       ],
       VISTA
     );
@@ -194,13 +198,20 @@ export default function MapaTerapeutas({
         : `${dentro} ${dentro === 1 ? 'consulta' : 'consultas'} con ese filtro`;
 
   /* ---------------- Posición de la ficha ---------------- */
+  // La ficha se ancla centrada sobre el punto y desplazada hacia arriba, así
+  // que hay que acotarla a la caja: si no, `overflow: hidden` le corta el lado
+  // derecho —con el botón × dentro— y la parte de arriba.
   const fichaPos = (() => {
     if (!activo) return null;
     const p = puntos.get(activo.slug);
     if (!p) return null;
+    const anchoFicha = Math.min(250, w - 24);
+    const medio = anchoFicha / 2;
+    const altoFicha = 210;
     return {
-      left: Math.max(130, Math.min(w - 130, tr.applyX(p[0]))),
-      top: Math.max(150, tr.applyY(p[1]) - 22),
+      ancho: anchoFicha,
+      left: Math.min(Math.max(medio + 12, tr.applyX(p[0])), w - medio - 12),
+      top: Math.min(Math.max(altoFicha + 12, tr.applyY(p[1]) - 22), h - 12),
     };
   })();
 
@@ -233,13 +244,19 @@ export default function MapaTerapeutas({
               const p = puntos.get(t.slug);
               if (!p) return null;
               const on = visibles.has(t.slug);
+              // Si el punto está pegado al borde derecho, la etiqueta se
+              // escribe hacia la izquierda: si no, "Barcelona" se sale del
+              // mapa entera en pantallas estrechas.
+              const alBorde = t.dx > 0 && p[0] > w * 0.68;
+              const etiquetaX = alBorde ? -t.dx : t.dx;
+              const anclaje = alBorde ? 'end' : t.dx > 0 ? 'start' : 'middle';
               return (
                 <g key={t.slug} transform={`translate(${p[0]},${p[1]})`} opacity={on ? 1 : 0.55}>
                   <g transform={`scale(${1 / tr.k})`}>
                     <text
-                      x={t.dx}
+                      x={etiquetaX}
                       y={t.dy}
-                      textAnchor={t.dx > 0 ? 'start' : 'middle'}
+                      textAnchor={anclaje}
                       className={`${css.ciudad} ${on ? '' : css.ciudadOff}`}
                     >
                       {t.ciudad}
@@ -296,7 +313,10 @@ export default function MapaTerapeutas({
       {!geo && <div className={css.cargando}>Cargando mapa…</div>}
 
       {activo && fichaPos && (
-        <div className={css.ficha} style={{ left: fichaPos.left, top: fichaPos.top }}>
+        <div
+          className={css.ficha}
+          style={{ left: fichaPos.left, top: fichaPos.top, width: fichaPos.ancho }}
+        >
           <button
             type="button"
             className={css.fichaCerrar}

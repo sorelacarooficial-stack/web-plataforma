@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CambiarTema from '@/components/CambiarTema';
 import Motas from '@/components/Motas';
 import logo from '@/fotos/logo-sorela.png';
@@ -47,6 +47,22 @@ export default function Plataforma() {
   const router = useRouter();
   const [rol, setRol] = useState<Rol>('miembro');
   const [vista, setVista] = useState<Vista>('inicio');
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
+  // Con el cajón abierto, la página de detrás no se desplaza.
+  useEffect(() => {
+    if (!menuAbierto) return;
+    const previo = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const alPulsar = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuAbierto(false);
+    };
+    window.addEventListener('keydown', alPulsar);
+    return () => {
+      document.body.style.overflow = previo;
+      window.removeEventListener('keydown', alPulsar);
+    };
+  }, [menuAbierto]);
 
   const menu = navDe(rol);
   // Si el rol cambia y la vista actual no existe en su menú, vuelve a Inicio.
@@ -59,6 +75,7 @@ export default function Plataforma() {
 
   function ir(v: Vista) {
     setVista(v);
+    setMenuAbierto(false);
     try {
       window.scrollTo(0, 0);
     } catch {
@@ -69,14 +86,49 @@ export default function Plataforma() {
   function cambiarRol(nuevo: Rol) {
     setRol(nuevo);
     setVista('inicio');
+    setMenuAbierto(false);
   }
 
   return (
     <div className={css.pantalla}>
       <Motas className={css.motas} />
 
+      {/* Solo en móvil: logo y hamburguesa. En escritorio manda la lateral. */}
+      <div className={css.barraMovil}>
+        <span className={css.logo}>
+          <Image src={logo} alt="Sorela Caro · Técnica Divine" sizes="160px" priority />
+        </span>
+        <button
+          type="button"
+          onClick={() => setMenuAbierto((a) => !a)}
+          aria-expanded={menuAbierto}
+          aria-controls="menu-plataforma"
+          aria-label={menuAbierto ? 'Cerrar el menú' : 'Abrir el menú'}
+          className={css.hamburguesa}
+        >
+          <span className={`${css.rayaMenu} ${menuAbierto ? css.rayaArribaX : ''}`} />
+          <span className={`${css.rayaMenu} ${menuAbierto ? css.rayaMediaX : ''}`} />
+          <span className={`${css.rayaMenu} ${menuAbierto ? css.rayaAbajoX : ''}`} />
+        </button>
+      </div>
+
       <div className={css.cuerpo}>
-        <aside className={css.lateral}>
+        {/* El velo va dentro de .cuerpo a propósito: .cuerpo crea contexto de
+            apilamiento (z-index 1), así que un velo hermano taparía también al
+            cajón por mucho z-index que este llevara. */}
+        {menuAbierto && (
+          <button
+            type="button"
+            className={css.velo}
+            aria-label="Cerrar el menú"
+            onClick={() => setMenuAbierto(false)}
+          />
+        )}
+
+        <aside
+          id="menu-plataforma"
+          className={`${css.lateral} ${menuAbierto ? css.lateralAbierta : ''}`}
+        >
           <span className={css.logo}>
             <Image src={logo} alt="Sorela Caro · Técnica Divine" sizes="200px" priority />
           </span>
@@ -98,7 +150,7 @@ export default function Plataforma() {
           </nav>
 
           <div className={css.pieLateral}>
-            <p className={css.pieTitulo}>Maqueta · ver como</p>
+            <p className={css.pieTitulo}>Ver como</p>
             <div className={css.roles}>
               {ROLES.map((r) => (
                 <button
