@@ -1178,61 +1178,127 @@
 }
 
 /* ==========================================================================
-   Responsive: la barra lateral pasa a fila horizontal arriba
+   Barra superior de móvil: logo + hamburguesa.
+   Solo existe por debajo de 880 px; encima manda la barra lateral.
+   ========================================================================== */
+.barraMovil {
+  display: none;
+}
+
+.hamburguesa {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 42px;
+  height: 42px;
+  background: transparent;
+  border: 1px solid var(--line-3);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+.hamburguesa:hover {
+  border-color: var(--oro-line);
+}
+
+.rayaMenu {
+  display: block;
+  width: 16px;
+  height: 1.5px;
+  background: var(--ink);
+  border-radius: 2px;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1),
+    opacity 0.2s;
+}
+
+.rayaArribaX {
+  transform: translateY(6.5px) rotate(45deg);
+}
+
+.rayaMediaX {
+  opacity: 0;
+}
+
+.rayaAbajoX {
+  transform: translateY(-6.5px) rotate(-45deg);
+}
+
+.velo {
+  display: none;
+}
+
+/* ==========================================================================
+   Responsive: la barra lateral se convierte en un cajón lateral
    ========================================================================== */
 @media (max-width: 880px) {
-  .lateral {
-    position: static;
-    max-height: none;
-    flex: 1 1 100%;
-    overflow: visible;
-    border-right: none;
-    border-bottom: 1px solid var(--line-2);
-    padding: 18px 16px;
-    gap: 16px;
-  }
-
-  .nav {
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 6px;
-    padding-bottom: 4px;
-    scrollbar-width: none;
-  }
-
-  .nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .navTitulo {
-    display: none;
-  }
-
-  .navBoton {
-    width: auto;
-    white-space: nowrap;
-  }
-
-  .pieLateral {
-    margin-top: 0;
-    flex-direction: row;
+  .barraMovil {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-blur);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line-2);
   }
 
-  .roles {
-    flex-direction: row;
-    flex-wrap: wrap;
+  .barraMovil .logo img {
+    height: 34px;
+    margin-left: 0;
   }
 
-  /* En columna ocupan todo el ancho; en fila tienen que encogerse al texto,
-     si no se apilan igual y empujan el contenido fuera de la primera pantalla. */
-  .rol {
-    width: auto;
+  .cuerpo {
+    display: block;
+    min-height: 0;
   }
 
-  .pieTitulo {
-    width: 100%;
+  /* Cajón: fuera de pantalla hasta que se abre. */
+  .lateral {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 60;
+    width: min(290px, 84vw);
+    max-height: none;
+    border-right: 1px solid var(--line-2);
+    padding: 22px 18px;
+    gap: 22px;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  .lateralAbierta {
+    transform: translateX(0);
+    box-shadow: 0 0 60px rgba(12, 10, 9, 0.28);
+  }
+
+  .velo {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(12, 10, 9, 0.42);
+    border: none;
+    animation: divineUp 0.25s ease;
+  }
+
+  .principal {
+    padding: clamp(20px, 5vw, 30px) clamp(16px, 5vw, 28px) clamp(50px, 12vw, 70px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lateral {
+    transition: none;
   }
 }

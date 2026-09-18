@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import logo from '@/fotos/logo-sorela.png';
 import CambiarTema from './CambiarTema';
+import MenuMovil from './MenuMovil';
 import { PLATAFORMA_URL } from '@/lib/enlaces';
 import css from './Cabecera.module.css';
 
@@ -21,6 +22,8 @@ export default function Cabecera() {
           <Image src={logo} alt="Sorela Caro · Técnica Divine" priority sizes="200px" />
         </Link>
 
+        {/* A partir de 900 px: navegación completa. Por debajo la sustituye
+            el menú hamburguesa, que se encarga de sus propios enlaces. */}
         <nav className={css.nav} aria-label="Principal">
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} className={css.enlace}>
@@ -29,11 +32,13 @@ export default function Cabecera() {
           ))}
         </nav>
 
-        <CambiarTema />
-
-        <Link href={PLATAFORMA_URL} className={css.entrar}>
-          Entrar
-        </Link>
+        <div className={css.acciones}>
+          <CambiarTema />
+          <Link href={PLATAFORMA_URL} className={css.entrar}>
+            Entrar
+          </Link>
+          <MenuMovil enlaces={NAV} plataformaUrl={PLATAFORMA_URL} />
+        </div>
       </div>
 
       {/* Barra de progreso de lectura; la mueve EfectosScroll. */}

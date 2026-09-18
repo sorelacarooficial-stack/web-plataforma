@@ -40,30 +40,22 @@
   display: flex;
   align-items: center;
   gap: clamp(13px, 2.1vw, 30px);
-  overflow-x: auto;
-  scrollbar-width: none;
   padding: 4px 0;
+}
+
+.acciones {
+  flex: 0 0 auto;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .nav::-webkit-scrollbar {
   display: none;
 }
 
-/* En estrecho el nav se desplaza en horizontal. Sin esto, el último enlace
-   queda cortado a media palabra justo contra el botón de tema y parece roto;
-   con el difuminado se lee como "hay más, desliza". */
-@media (max-width: 900px) {
-  .nav {
-    gap: 18px;
-    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%);
-    -webkit-mask-image: linear-gradient(
-      90deg,
-      #000 0,
-      #000 calc(100% - 28px),
-      transparent 100%
-    );
-  }
-}
+
 
 .enlace {
   flex: 0 0 auto;
@@ -105,8 +97,8 @@
 
 .tema {
   flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -134,4 +126,15 @@
   background: var(--oro);
   transform: scaleX(0);
   transform-origin: 0 50%;
+}
+
+/* ==========================================================================
+   Estrecho: la navegación y el botón Entrar se van al menú hamburguesa,
+   así que la cabecera queda en logo · tema · hamburguesa, sin apreturas.
+   ========================================================================== */
+@media (max-width: 900px) {
+  .nav,
+  .entrar {
+    display: none;
+  }
 }

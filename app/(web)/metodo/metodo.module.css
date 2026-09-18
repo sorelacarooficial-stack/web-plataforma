@@ -14,7 +14,10 @@
 
 .paso {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  /* min(100%, 280px): con minmax(280px,...) a secas la columna no podía bajar
+     de 280 px, y con 28 px de padding a cada lado el texto se salía de la
+     tarjeta y de la pantalla. Era el único scroll horizontal de toda la web. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: clamp(20px, 4vw, 64px);
   align-items: baseline;
   padding: clamp(28px, 4vw, 52px);
