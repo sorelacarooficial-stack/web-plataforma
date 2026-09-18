@@ -101,18 +101,22 @@ export default function Asistente() {
             )}
           </div>
 
-          <div className={css.chips}>
-            {SUGERENCIAS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => preguntar(s)}
-                className={css.chip}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+          {/* Solo mientras no haya conversación: una vez que se pregunta,
+              los chips estorban más de lo que ayudan y roban alto a los mensajes. */}
+          {chat.length === 1 && (
+            <div className={css.chips}>
+              {SUGERENCIAS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => preguntar(s)}
+                  className={css.chip}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
 
           <form
             className={css.entrada}

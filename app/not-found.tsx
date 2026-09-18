@@ -1,8 +1,13 @@
 import Link from 'next/link';
+import Cabecera from '@/components/Cabecera';
+import PieDePagina from '@/components/PieDePagina';
 
+// El 404 global vive fuera del grupo (web), así que se trae su cromo a mano.
 export default function NoEncontrada() {
   return (
-    <main className="pagina">
+    <>
+      <Cabecera />
+      <main className="pagina">
       <section style={{ padding: 'clamp(90px,14vw,190px) 0', textAlign: 'center' }}>
         <div
           className="wrap wrap-800"
@@ -22,7 +27,9 @@ export default function NoEncontrada() {
             </Link>
           </div>
         </div>
-      </section>
-    </main>
+        </section>
+      </main>
+      <PieDePagina />
+    </>
   );
 }

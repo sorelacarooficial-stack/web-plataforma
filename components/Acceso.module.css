@@ -1,0 +1,275 @@
+.pantalla {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.foto {
+  position: relative;
+  min-height: min(42vh, 360px);
+  background: var(--photo-bg);
+  overflow: hidden;
+}
+
+.foto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.panel {
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 26px;
+  padding: clamp(28px, 6vw, 90px) clamp(22px, 6vw, 90px);
+}
+
+.logo {
+  display: block;
+}
+
+.logo img {
+  height: clamp(44px, 5vw, 58px);
+  width: auto;
+  display: block;
+  filter: var(--logo-filter);
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(32px, 4.4vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -0.012em;
+  text-wrap: pretty;
+}
+
+.caja {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---------- Google ---------- */
+.google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 15px 24px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-5);
+  border-radius: 999px;
+  font-size: 14.5px;
+  font-weight: 400;
+  cursor: pointer;
+  transition:
+    border-color 0.25s,
+    background 0.25s;
+}
+
+.google:hover {
+  border-color: var(--ink);
+}
+
+/* Distintivo neutro a propósito: el logotipo oficial de Google solo puede
+   usarse siguiendo sus normas de marca, y eso se monta con el SDK real. */
+.googleMarca {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--oro-tint);
+  border: 1px solid var(--oro-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--oro);
+}
+
+/* ---------- Separador ---------- */
+.separador {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.raya {
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--line-3);
+}
+
+.separadorTexto {
+  flex: 0 0 auto;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* ---------- Formulario ---------- */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.campo {
+  padding: 15px 17px;
+  background: var(--surface);
+  border: 1px solid var(--line-4);
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--ink);
+}
+
+.campo::placeholder {
+  color: var(--faint);
+}
+
+.condiciones {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--muted-2);
+}
+
+.casilla {
+  margin-top: 3px;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  accent-color: var(--oro);
+}
+
+.enviar {
+  margin-top: 6px;
+  padding: 16px 28px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 999px;
+  font-size: 12.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+
+.enviar:hover {
+  background: var(--oro);
+}
+
+.olvido {
+  margin-top: 4px;
+  align-self: flex-start;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--oro);
+  cursor: pointer;
+}
+
+.olvido:hover {
+  color: var(--ink);
+}
+
+.aviso {
+  margin: 0;
+  padding: 14px 16px;
+  background: var(--oro-tint);
+  border-left: 3px solid var(--oro);
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--ink-3);
+  text-wrap: pretty;
+  animation: divineUp 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* ---------- Pie del panel ---------- */
+.cambio {
+  margin: 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--line-3);
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--muted-2);
+}
+
+.enlaceBoton {
+  padding: 0 0 2px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--oro-line);
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--oro);
+  cursor: pointer;
+}
+
+.enlaceBoton:hover {
+  color: var(--ink);
+}
+
+.enlaceFino {
+  border-bottom: 1px solid var(--oro-line);
+  padding-bottom: 1px;
+}
+
+.letraPequena {
+  margin: 0;
+  width: 100%;
+  max-width: 380px;
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--faint);
+  text-wrap: pretty;
+}
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+}
+
+.volver {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.volver:hover {
+  color: var(--ink);
+}

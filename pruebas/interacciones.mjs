@@ -3,7 +3,7 @@ import { mkdirSync } from 'node:fs';
 
 const OUT = '/tmp/claude-0/-home-claude-repo/6dc5003f-e043-5a97-b6a7-877642377e91/scratchpad/caps';
 mkdirSync(OUT, { recursive: true });
-const B = 'http://localhost:3000';
+const B = process.env.BASE || 'http://localhost:3000';
 const ok = [];
 const mal = [];
 const check = (n, c) => (c ? ok : mal).push(n);

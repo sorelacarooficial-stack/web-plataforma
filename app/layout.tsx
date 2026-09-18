@@ -1,9 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Jost } from 'next/font/google';
-import Cabecera from '@/components/Cabecera';
-import PieDePagina from '@/components/PieDePagina';
-import Asistente from '@/components/Asistente';
-import EfectosScroll from '@/components/EfectosScroll';
 import './globals.css';
 
 const cormorant = Cormorant_Garamond({
@@ -87,16 +83,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: TEMA_INICIAL }} />
       </head>
-      <body>
-        <a className="saltar" href="#contenido">
-          Saltar al contenido
-        </a>
-        <Cabecera />
-        <div id="contenido">{children}</div>
-        <PieDePagina />
-        <Asistente />
-        <EfectosScroll />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

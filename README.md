@@ -19,12 +19,13 @@ npm run dev          # http://localhost:3000
 | Comando | Qué hace |
 | --- | --- |
 | `npm run dev` | Servidor de desarrollo |
-| `npm run build` | Build de producción (25 rutas, todas estáticas) |
+| `npm run build` | Build de producción (26 rutas, todas estáticas) |
 | `npm start` | Sirve el build |
 | `npm run typecheck` | TypeScript sin emitir |
 | `npm run fotos` | Regenera `fotos/` desde los originales (ver más abajo) |
 | `npm run mapa` | Regenera la geometría del mapa |
-| `npm run pruebas` | 15 comprobaciones de interacción con Playwright (requiere `npm start` en otra terminal) |
+| `npm run pruebas` | 15 comprobaciones de la web pública con Playwright (requiere `npm start` en otra terminal) |
+| `npm run pruebas:plataforma` | 36 comprobaciones del login y de los tres roles de la plataforma |
 | `npm run capturas` | Capturas de todas las páginas en claro, oscuro y móvil |
 
 ---
@@ -34,8 +35,8 @@ npm run dev          # http://localhost:3000
 1. En Vercel, **Add New → Project → Import** el repositorio `sorelacarooficial-stack/web-plataforma`.
 2. Framework: **Next.js** (lo detecta solo). **Root Directory**: la raíz, no hay que tocarla.
 3. No hace falta ninguna variable de entorno para que funcione. La única opcional es
-   `NEXT_PUBLIC_PLATAFORMA_URL`, que apunta el botón "Entrar" a la plataforma privada
-   cuando exista; sin ella, lleva a `/entrar`.
+   `NEXT_PUBLIC_PLATAFORMA_URL`, por si algún día la plataforma se sirve desde otro sitio;
+   sin ella, el botón "Entrar" lleva a `/entrar`, que es donde está.
 4. **Deploy**. A partir de ahí, cada `git push` a `main` publica solo.
 
 ### Conectar el dominio
@@ -86,10 +87,29 @@ de horas).
 | `/sobre` | Historia de Sorela y cifras |
 | `/contacto` | Formulario |
 | `/legal/*` | Cuatro documentos legales, pendientes de redactar (ver abajo) |
-| `/entrar` | Marcador de la plataforma privada |
+| `/entrar` | Acceso: Google, correo y alternancia Entrar ⇄ Crear cuenta |
+| `/plataforma` | Plataforma privada completa, con los tres roles |
 
-Modo claro y oscuro con conmutador en la cabecera; la elección se guarda y se aplica
-**antes del primer pintado**, así que no hay parpadeo al recargar.
+### La plataforma privada
+
+`/entrar` lleva a `/plataforma`. **Es una maqueta para revisión**: entra cualquier correo y
+contraseña, y el botón de Google también. No hay cuentas, ni sesión, ni base de datos.
+
+La barra lateral tiene un selector **"ver como"** con los tres roles, para poder recorrer las
+tres plataformas sin tener tres cuentas:
+
+| Rol | Qué ve |
+| --- | --- |
+| **Alumna** | Inicio con su formación, aula del curso por fases, comunidad en solo lectura y sus pagos |
+| **Miembro certificada** | Su negocio entero: inicio con la clase en vivo, comunidad con nivel y ranking, aula tipo Skool con 4 cursos y 35 lecciones, CRM de clientas, agenda semanal, ficha pública editable, facturación y suscripción |
+| **Sorela (admin)** | Panel con KPIs y fichas por aprobar, leads con origen y estado, convocatorias con plazas e ingresos, subir contenido (arrastrar vídeo o PDF, publicar/despublicar lecciones, programar la clase del mes), ingresos y facturas, y comunidad con panel de moderación |
+
+El rol decide el menú y las vistas: Sorela no tiene cuota propia ni aula con barras de progreso,
+y la alumna no puede publicar en la comunidad. Cuando haya autenticación de verdad, el rol saldrá
+de la sesión y el selector desaparece.
+
+Modo claro y oscuro con conmutador en la cabecera y en la barra lateral de la plataforma; la
+elección se guarda y se aplica **antes del primer pintado**, así que no hay parpadeo al recargar.
 
 Capa de movimiento: revelado al hacer scroll con retardo escalonado, parallax en las fotos
 a sangre, motas doradas en el hero, marquesina infinita, barra de progreso de lectura y
@@ -101,27 +121,29 @@ contadores. Todo se apaga con `prefers-reduced-motion`.
 
 Está decidido así a propósito, no es un olvido:
 
-1. **Los formularios no envían nada.** Lista de espera, contacto, aviso de ciudad y reserva
+1. **No hay autenticación.** El login entra sin comprobar nada, a propósito: es una maqueta
+   para que Sorela recorra la plataforma. La pantalla ya tiene su forma definitiva (Google,
+   correo, registro con condiciones), así que al conectar un proveedor de identidad solo hay que
+   sustituir la función `entrar` de `components/Acceso.tsx` por la llamada real. Los datos de
+   `lib/plataforma.ts` son inventados: nombres, cifras, facturas y citas.
+
+2. **Los formularios no envían nada.** Lista de espera, contacto, aviso de ciudad y reserva
    de cita confirman en pantalla y ahí se queda. Para conectarlos: crear una route handler
    en `app/api/…` y sustituir el cuerpo del `onSubmit` de cada componente de
    `components/` (`ListaEspera`, `FormularioContacto`, `AvisarCiudad`, `Reserva`),
    dejando el estado de confirmación como está.
 
-2. **El asistente responde con reglas, no con un modelo.** El prototipo llamaba a
+3. **El asistente responde con reglas, no con un modelo.** El prototipo llamaba a
    `window.claude.complete`, que solo existe dentro de Claude Design. Ahora resuelve con
    las ocho respuestas escritas a mano de `lib/asistente.ts`, encaminadas por palabra clave.
    El prompt de sistema con la voz de Sorela sigue ahí (`PROMPT_SISTEMA`): para enchufar un
    modelo de verdad, crear `app/api/asistente/route.ts` contra la API de Anthropic y dejar
    `responder()` como respuesta de reserva si la llamada falla.
 
-3. **Los textos legales están sin redactar.** Las cuatro páginas explican qué tiene que
+4. **Los textos legales están sin redactar.** Las cuatro páginas explican qué tiene que
    recoger cada documento. No se ha puesto texto de relleno a propósito: un aviso legal
    aproximado da apariencia de cumplimiento sin cumplir, y en protección de datos eso tiene
    consecuencias. Lo redacta una asesoría y se sustituye `cuerpo` en `app/legal/[doc]/page.tsx`.
-
-4. **La plataforma privada no está implementada.** Existe como prototipo en
-   `diseno/Plataforma Divine.dc.html` (login con Google, panel de alumna, aula tipo Skool,
-   CRM, facturación, agenda, admin). `/entrar` es un marcador.
 
 5. **Falta la historia real de Sorela** en `/sobre`. Es el único hueco de copy: aparece
    marcado en monoespaciado sobre fondo dorado para que no se cuele en producción por

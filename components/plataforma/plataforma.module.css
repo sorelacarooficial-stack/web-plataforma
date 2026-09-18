@@ -1,0 +1,1238 @@
+/* ==========================================================================
+   Armazón
+   ========================================================================== */
+.pantalla {
+  min-height: 100vh;
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.motas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cuerpo {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+/* ---------- Barra lateral ---------- */
+.lateral {
+  flex: 0 1 236px;
+  min-width: 190px;
+  align-self: stretch;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+  background: var(--bg);
+  border-right: 1px solid var(--line-2);
+  padding: 26px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.logo img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  object-position: left center;
+  margin-left: 6px;
+  filter: var(--logo-filter);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navTitulo {
+  margin: 0 0 8px 10px;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.navBoton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.navBoton:hover {
+  background: var(--surface-2);
+}
+
+.navActivo {
+  background: var(--oro-tint);
+}
+
+.navActivo:hover {
+  background: var(--oro-tint);
+}
+
+.navPunto {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line-4);
+}
+
+.navActivo .navPunto {
+  background: var(--oro-claro);
+}
+
+.navTexto {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--muted-2);
+}
+
+.navActivo .navTexto {
+  color: var(--ink);
+}
+
+.pieLateral {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line-2);
+}
+
+.pieTitulo {
+  margin: 0 0 2px 2px;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.roles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rol {
+  width: 100%;
+  padding: 9px 12px;
+  background: transparent;
+  color: var(--muted-2);
+  border: 1px solid var(--line-3);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 300;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.rolActivo {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.salir {
+  padding: 8px 2px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.salir:hover {
+  color: var(--ink);
+}
+
+/* ---------- Zona principal ---------- */
+.principal {
+  flex: 1 1 520px;
+  min-width: 0;
+  padding: clamp(22px, 3vw, 40px) clamp(18px, 3vw, 44px) clamp(50px, 7vw, 80px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(22px, 3vw, 34px);
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.seccion {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(28px, 3.6vw, 46px);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+.usuario {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px 9px 9px;
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+}
+
+.usuarioNombre {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--ink-4);
+}
+
+/* ==========================================================================
+   Piezas reutilizadas
+   ========================================================================== */
+.tarjeta {
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  padding: clamp(20px, 2.4vw, 30px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tarjetaOro {
+  background: var(--oro-tint);
+  border: 1px solid var(--oro-line);
+  border-radius: 12px;
+  padding: clamp(20px, 2.4vw, 28px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tarjetaOscura {
+  background: var(--inverse-bg);
+  color: var(--on-inverse-2);
+  border-radius: 12px;
+  padding: clamp(22px, 2.8vw, 34px);
+}
+
+.rotulo {
+  margin: 0;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.rotuloSeccion {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.h2 {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.12;
+  text-wrap: pretty;
+}
+
+.h3 {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(20px, 2.1vw, 26px);
+  line-height: 1.14;
+  text-wrap: pretty;
+}
+
+.parrafo {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.apunte {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--faint);
+  text-wrap: pretty;
+}
+
+.intro {
+  margin: 0;
+  max-width: 640px;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--muted-2);
+  text-wrap: pretty;
+}
+
+/* Rejillas */
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(16px, 2vw, 24px);
+}
+
+.rejillaKpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: clamp(12px, 1.6vw, 18px);
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2vw, 24px);
+}
+
+/* Filas de lista con filete superior */
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line-2);
+}
+
+.filaNombre {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--ink-4);
+}
+
+.filaTipo {
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Botones */
+.btn {
+  padding: 13px 26px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 999px;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+
+.btn:hover {
+  background: var(--oro);
+}
+
+.btnSm {
+  padding: 10px 20px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.btnLinea {
+  padding: 12px 24px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line-5);
+  border-radius: 999px;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.btnLinea:hover {
+  border-color: var(--oro);
+}
+
+.btnClaro {
+  padding: 13px 26px;
+  background: var(--bg);
+  color: var(--ink);
+  border: none;
+  border-radius: 999px;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.25s,
+    color 0.25s;
+}
+
+.btnClaro:hover {
+  background: var(--oro);
+  color: var(--surface);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Chips de filtro */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip {
+  padding: 10px 18px;
+  background: var(--surface);
+  color: var(--muted-2);
+  border: 1px solid var(--line-3);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 300;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.chipActivo {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* Avatares */
+.avatar {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--oro-tint);
+  border: 1px solid var(--oro-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 15px;
+  color: var(--oro);
+}
+
+.avatarSm {
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+}
+
+.avatarLg {
+  width: 64px;
+  height: 64px;
+  font-size: 22px;
+}
+
+/* Etiquetas de estado */
+.estado {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.estadoOro {
+  background: var(--oro-tint);
+  color: var(--oro);
+}
+
+.estadoTinta {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.estadoNeutro {
+  background: var(--surface);
+  color: var(--muted-2);
+}
+
+.estadoApagado {
+  background: var(--oro-tint);
+  color: var(--muted);
+}
+
+/* Barras de progreso */
+.barra {
+  display: block;
+  height: 6px;
+  background: var(--line-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barraGruesa {
+  height: 8px;
+  background: var(--line-3);
+}
+
+.barraRelleno {
+  display: block;
+  height: 100%;
+  background: var(--oro-claro);
+}
+
+.barraRellenoOro {
+  background: var(--oro);
+}
+
+/* KPI */
+.kpi {
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  padding: clamp(18px, 2.2vw, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition:
+    transform 0.25s,
+    border-color 0.25s;
+}
+
+.kpi:hover {
+  transform: translateY(-3px);
+  border-color: var(--oro-line);
+}
+
+.kpiLabel {
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.kpiValor {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 1;
+  color: var(--ink);
+}
+
+.kpiNota {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+/* Campos */
+.campo {
+  padding: 13px 15px;
+  background: var(--surface);
+  border: 1px solid var(--line-4);
+  border-radius: 0;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--ink);
+  width: 100%;
+}
+
+.campoRedondo {
+  padding: 11px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line-3);
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--ink);
+  min-width: 0;
+}
+
+.campoCaja {
+  padding: 13px 15px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-3);
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--ink);
+  width: 100%;
+}
+
+.etiquetaCampo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.etiquetaCampo input,
+.etiquetaCampo textarea {
+  letter-spacing: 0;
+}
+
+/* ==========================================================================
+   Vistas concretas
+   ========================================================================== */
+
+/* Aula: tarjetas de curso */
+.cursos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(14px, 1.8vw, 20px);
+}
+
+.curso {
+  text-align: left;
+  padding: 0;
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s;
+}
+
+.curso:hover {
+  border-color: var(--oro-line);
+}
+
+.cursoSeleccionado {
+  border-color: var(--oro-line);
+}
+
+.cursoFoto {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: var(--photo-bg);
+  overflow: hidden;
+}
+
+.cursoFoto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 42%;
+}
+
+.cursoCuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 18px 20px;
+}
+
+.cursoEtiqueta {
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.cursoTitulo {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 21px;
+  line-height: 1.14;
+  color: var(--ink);
+}
+
+.cursoMeta {
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+.cursoProgreso {
+  font-size: 11.5px;
+  font-weight: 300;
+  color: var(--faint);
+}
+
+/* Lecciones */
+.leccion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 0;
+  border-top: 1px solid var(--line-2);
+}
+
+.leccionNum {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid var(--oro-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  background: var(--surface);
+  color: var(--faint);
+}
+
+.leccionVista {
+  background: var(--oro-tint);
+  color: var(--oro);
+}
+
+.leccionNombre {
+  flex: 1 1 220px;
+  min-width: 0;
+  font-size: 15.5px;
+  font-weight: 300;
+  color: var(--ink-4);
+}
+
+.leccionDuracion {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+.leccionEstado {
+  flex: 0 0 auto;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+/* Comunidad */
+.feed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(16px, 2vw, 24px);
+  align-items: flex-start;
+}
+
+.feedCentro {
+  flex: 1 1 440px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 1.8vw, 20px);
+}
+
+.feedLado {
+  flex: 0 1 296px;
+  min-width: 230px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 1.8vw, 20px);
+}
+
+.compositor {
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  padding: clamp(18px, 2.2vw, 24px);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.aviso {
+  background: var(--bg);
+  border: 1px dashed var(--oro-line);
+  border-radius: 12px;
+  padding: clamp(18px, 2.2vw, 24px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.post {
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  padding: clamp(20px, 2.4vw, 28px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.postDestacado {
+  border-color: var(--oro-line);
+}
+
+.postCabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.postAutor {
+  font-size: 14.5px;
+  color: var(--ink);
+}
+
+.postCuando {
+  font-size: 11.5px;
+  font-weight: 300;
+  color: var(--faint);
+}
+
+.postEtiqueta {
+  margin-left: auto;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.postTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(20px, 2.1vw, 27px);
+  line-height: 1.14;
+  text-wrap: pretty;
+}
+
+.postTexto {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.62;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.postPie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-2);
+}
+
+.postAccion {
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--muted-2);
+  cursor: pointer;
+}
+
+.postAccion:hover {
+  color: var(--oro);
+}
+
+.postActivo {
+  color: var(--oro);
+}
+
+.postUltima {
+  margin-left: auto;
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--faint);
+}
+
+.rankingFila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid var(--line-1);
+}
+
+.rankingPos {
+  flex: 0 0 auto;
+  width: 18px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 16px;
+  color: var(--oro-claro);
+}
+
+.rankingNombre {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ink-4);
+}
+
+.rankingPuntos {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+/* CRM */
+.clienta {
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  padding: clamp(20px, 2.3vw, 26px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: border-color 0.2s;
+}
+
+.clienta:hover {
+  border-color: var(--oro-line);
+}
+
+.clientaPie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-2);
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+/* Facturas */
+.factura {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 0;
+  border-top: 1px solid var(--line-2);
+}
+
+.facturaNum {
+  flex: 0 0 auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.facturaCliente {
+  flex: 1 1 180px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.facturaImporte {
+  flex: 0 0 auto;
+  min-width: 86px;
+  text-align: right;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.enlaceAccion {
+  flex: 0 0 auto;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--oro);
+  cursor: pointer;
+}
+
+.enlaceAccion:hover {
+  color: var(--ink);
+}
+
+/* Agenda */
+.semana {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+
+.dia {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.diaCabeza {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px 10px;
+  border-bottom: 1px solid var(--line-3);
+}
+
+.diaDow {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.diaNum {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.cita {
+  border-radius: 10px;
+  padding: 13px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-4);
+}
+
+.citaConf {
+  background: var(--oro-tint);
+  border-color: var(--oro-line);
+}
+
+.citaNueva {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+.citaHora {
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  opacity: 0.75;
+}
+
+.citaCliente {
+  font-size: 14.5px;
+  line-height: 1.25;
+}
+
+.citaMotivo {
+  font-size: 12.5px;
+  font-weight: 300;
+  line-height: 1.35;
+  opacity: 0.8;
+}
+
+.citaEstado {
+  margin-top: 2px;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.libre {
+  padding: 12px 4px;
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--faint);
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.leyendaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--muted-2);
+}
+
+.leyendaColor {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.semanaEtiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--ink-4);
+}
+
+/* Subir contenido */
+.soltar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 136px;
+  padding: 22px;
+  background: var(--surface-2);
+  border: 1px dashed var(--line-4);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.25s;
+}
+
+.soltar:hover {
+  border-color: var(--oro);
+}
+
+.soltarIcono {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--oro-tint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.punteada {
+  background: var(--bg);
+  border: 1px dashed var(--oro-line);
+  border-radius: 12px;
+  padding: clamp(22px, 2.8vw, 34px);
+}
+
+.tirador {
+  flex: 0 0 auto;
+  color: var(--faint);
+  cursor: grab;
+  font-size: 15px;
+  letter-spacing: 2px;
+}
+
+/* ==========================================================================
+   Responsive: la barra lateral pasa a fila horizontal arriba
+   ========================================================================== */
+@media (max-width: 880px) {
+  .lateral {
+    position: static;
+    max-height: none;
+    flex: 1 1 100%;
+    overflow: visible;
+    border-right: none;
+    border-bottom: 1px solid var(--line-2);
+    padding: 18px 16px;
+    gap: 16px;
+  }
+
+  .nav {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navTitulo {
+    display: none;
+  }
+
+  .navBoton {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .pieLateral {
+    margin-top: 0;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .roles {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  /* En columna ocupan todo el ancho; en fila tienen que encogerse al texto,
+     si no se apilan igual y empujan el contenido fuera de la primera pantalla. */
+  .rol {
+    width: auto;
+  }
+
+  .pieTitulo {
+    width: 100%;
+  }
+}
