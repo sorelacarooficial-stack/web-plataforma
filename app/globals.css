@@ -1,0 +1,788 @@
+/* ==========================================================================
+   Sistema de color — transcrito literalmente del prototipo de diseño.
+   En la pasada final la paleta se redujo a blanco cálido + tinta + oro:
+   --arcilla y --oro comparten hex, igual que --salvia y --azul. Se mantienen
+   los cuatro nombres porque sus tintes de fondo sí difieren y el markup los
+   usa para decidir qué banda lleva qué fondo.
+   ========================================================================== */
+:root {
+  --bg: #fbf9f6;
+  --bg-blur: rgba(251, 249, 246, 0.92);
+  --surface: #ffffff;
+  --surface-2: #f5f2ec;
+  --photo-bg: #ede8e0;
+
+  --ink: #141210;
+  --ink-2: #3e3831;
+  --ink-3: #4f4840;
+  --ink-4: #2a2620;
+  --muted-2: #5e564c;
+  --muted: #837a6e;
+  --faint: #a79e92;
+
+  --arcilla: #8a6a32;
+  --arcilla-ink: #6e5327;
+  --arcilla-tint: #f6f1e7;
+  --arcilla-line: rgba(138, 106, 50, 0.3);
+
+  --salvia: #5e564c;
+  --salvia-ink: #4f4840;
+  --salvia-tint: #f5f2ec;
+  --salvia-line: rgba(20, 18, 16, 0.14);
+
+  --azul: #5e564c;
+  --azul-ink: #4f4840;
+  --azul-tint: #f3f0ea;
+  --azul-line: rgba(20, 18, 16, 0.12);
+
+  --oro: #8a6a32;
+  --oro-claro: #a98551;
+  --oro-tint: #f5efe2;
+  --oro-line: rgba(138, 106, 50, 0.35);
+
+  --on-inverse-2: #dcd3c4;
+  --on-inverse-3: #8a7f71;
+  --accent-inverse: #d9b47c;
+  --inverse-bg: #17140f;
+  --inverse-ink: #ffffff;
+
+  --line-1: rgba(20, 18, 16, 0.07);
+  --line-2: rgba(20, 18, 16, 0.1);
+  --line-3: rgba(20, 18, 16, 0.13);
+  --line-4: rgba(20, 18, 16, 0.17);
+  --line-5: rgba(20, 18, 16, 0.26);
+  --line-inverse: rgba(255, 255, 255, 0.14);
+  --line-inverse-2: rgba(255, 255, 255, 0.3);
+
+  --scrim-1: rgba(251, 249, 246, 0.97);
+  --scrim-2: rgba(251, 249, 246, 0.9);
+  --scrim-3: rgba(251, 249, 246, 0.5);
+  --scrim-4: rgba(251, 249, 246, 0.04);
+
+  --foto-scrim-1: rgba(12, 10, 9, 0.78);
+  --foto-scrim-2: rgba(12, 10, 9, 0.3);
+  --foto-scrim-3: rgba(12, 10, 9, 0.04);
+
+  --logo-filter: brightness(0.42) saturate(1.35);
+
+  /* Mapa */
+  --mapa-sea: #dde6ec;
+  --mapa-land: #f4efe6;
+  --mapa-land-line: #c9bba6;
+  --mapa-pin: #1a1714;
+  --mapa-pin-ink: #fbf9f6;
+  --mapa-pin-off: #ffffff;
+  --mapa-pin-off-line: #dcd3c4;
+  --mapa-pin-hover: #a8502f;
+  --mapa-label: #5a5148;
+  --mapa-label-off: #b5ab9e;
+  --mapa-chrome: #fbf9f6;
+  --mapa-chrome-blur: rgba(251, 249, 246, 0.92);
+  --mapa-chrome-line: rgba(26, 23, 20, 0.18);
+  --mapa-chrome-ink: #1a1714;
+  --mapa-txt: #4e463d;
+  --mapa-txt-2: #7a7168;
+  --mapa-faint: #a39a8e;
+  --mapa-acento: #a8502f;
+
+  --cabecera: clamp(66px, 7vw, 86px);
+
+  color-scheme: light;
+}
+
+:root[data-tema='oscuro'] {
+  --bg: #121110;
+  --bg-blur: rgba(18, 17, 16, 0.92);
+  --surface: #1a1816;
+  --surface-2: #211e1b;
+  --photo-bg: #241f1a;
+
+  --ink: #f7f2ea;
+  --ink-2: #ded6c9;
+  --ink-3: #cfc6b8;
+  --ink-4: #ebe4d9;
+  --muted-2: #b3a99c;
+  --muted: #9a9084;
+  --faint: #80776c;
+
+  --arcilla: #cfa765;
+  --arcilla-ink: #e3c696;
+  --arcilla-tint: #262017;
+  --arcilla-line: rgba(207, 167, 101, 0.32);
+
+  --salvia: #b3a99c;
+  --salvia-ink: #c9c0b4;
+  --salvia-tint: #1e1b18;
+  --salvia-line: rgba(247, 242, 234, 0.14);
+
+  --azul: #b3a99c;
+  --azul-ink: #c9c0b4;
+  --azul-tint: #1c1a17;
+  --azul-line: rgba(247, 242, 234, 0.12);
+
+  --oro: #cfa765;
+  --oro-claro: #e0c28e;
+  --oro-tint: #2a2419;
+  --oro-line: rgba(207, 167, 101, 0.38);
+
+  --on-inverse-2: #dcd3c4;
+  --on-inverse-3: #9b9082;
+  --accent-inverse: #d9b47c;
+  --inverse-bg: #241f1a;
+  --inverse-ink: #f8f4ec;
+
+  --line-1: rgba(247, 242, 234, 0.08);
+  --line-2: rgba(247, 242, 234, 0.12);
+  --line-3: rgba(247, 242, 234, 0.16);
+  --line-4: rgba(247, 242, 234, 0.22);
+  --line-5: rgba(247, 242, 234, 0.3);
+  --line-inverse: rgba(18, 17, 16, 0.16);
+  --line-inverse-2: rgba(18, 17, 16, 0.32);
+
+  --scrim-1: rgba(18, 17, 16, 0.97);
+  --scrim-2: rgba(18, 17, 16, 0.9);
+  --scrim-3: rgba(18, 17, 16, 0.55);
+  --scrim-4: rgba(18, 17, 16, 0.08);
+
+  --foto-scrim-1: rgba(8, 7, 6, 0.82);
+  --foto-scrim-2: rgba(8, 7, 6, 0.4);
+  --foto-scrim-3: rgba(8, 7, 6, 0.06);
+
+  --logo-filter: none;
+
+  --mapa-sea: #141c22;
+  --mapa-land: #272219;
+  --mapa-land-line: #4a4235;
+  --mapa-pin: #f6f1e8;
+  --mapa-pin-ink: #14120f;
+  --mapa-pin-off: #1e1b17;
+  --mapa-pin-off-line: #3a342c;
+  --mapa-pin-hover: #e08a63;
+  --mapa-label: #b6aba0;
+  --mapa-label-off: #6e6558;
+  --mapa-chrome: #1b1815;
+  --mapa-chrome-blur: rgba(27, 24, 21, 0.92);
+  --mapa-chrome-line: rgba(246, 241, 232, 0.22);
+  --mapa-chrome-ink: #f6f1e8;
+  --mapa-txt: #cdc3b5;
+  --mapa-txt-2: #9e9488;
+  --mapa-faint: #857c71;
+  --mapa-acento: #e08a63;
+
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--arcilla);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--ink);
+}
+
+select,
+button,
+input,
+textarea {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+}
+
+img {
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--oro);
+  outline-offset: 3px;
+}
+
+.saltar {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 12px 20px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.saltar:focus {
+  left: 12px;
+  top: 12px;
+  color: var(--bg);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ==========================================================================
+   Animaciones
+   ========================================================================== */
+@keyframes divineHero {
+  0% {
+    transform: scale(1.38) translateX(18%);
+  }
+  100% {
+    transform: scale(1.5) translateX(15%);
+  }
+}
+
+@keyframes divineRing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(138, 106, 50, 0.34);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(138, 106, 50, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(138, 106, 50, 0);
+  }
+}
+
+@keyframes divineUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes divineMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes divineOrbit {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Revelado al hacer scroll: el estado inicial solo se aplica cuando el JS
+   ha marcado el documento, para que sin JS todo siga siendo visible. */
+[data-anima='pendiente'] {
+  opacity: 0;
+  transform: translateY(26px);
+}
+
+[data-anima='dentro'] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.7s cubic-bezier(0.2, 0.7, 0.3, 1),
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  [data-anima='pendiente'] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   Contenedores y secciones
+   ========================================================================== */
+.wrap {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 40px);
+}
+
+.wrap-1040 {
+  max-width: 1040px;
+}
+.wrap-1000 {
+  max-width: 1000px;
+}
+.wrap-900 {
+  max-width: 900px;
+}
+.wrap-820 {
+  max-width: 820px;
+}
+.wrap-800 {
+  max-width: 800px;
+}
+
+/* El borde izquierdo de las bandas partidas arranca en la misma línea
+   vertical que .wrap, no en un margen propio. */
+.sangrado-izq {
+  padding-left: max(
+    calc((100vw - 1240px) / 2 + clamp(20px, 4vw, 40px)),
+    clamp(22px, 4vw, 40px)
+  );
+}
+
+.seccion {
+  padding: clamp(66px, 9vw, 130px) 0;
+}
+
+.seccion-sm {
+  padding: clamp(56px, 8vw, 110px) 0;
+}
+
+.seccion-xs {
+  padding: clamp(50px, 7vw, 100px) 0;
+}
+
+.pagina {
+  padding-top: var(--cabecera);
+}
+
+.superficie {
+  background: var(--surface);
+}
+
+.borde-arriba {
+  border-top: 1px solid var(--line-1);
+}
+
+.borde-abajo {
+  border-bottom: 1px solid var(--line-1);
+}
+
+.inversa {
+  background: var(--inverse-bg);
+  color: var(--on-inverse-2);
+}
+
+/* ==========================================================================
+   Rejillas
+   ========================================================================== */
+.rejilla {
+  display: grid;
+  gap: clamp(32px, 5vw, 80px);
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  align-items: center;
+}
+
+.rejilla-290 {
+  display: grid;
+  gap: clamp(30px, 5vw, 72px);
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  align-items: center;
+}
+
+.rejilla-tarjetas {
+  display: grid;
+  gap: clamp(20px, 3vw, 32px);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-items: stretch;
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+}
+
+.columna-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  align-items: flex-start;
+}
+
+/* ==========================================================================
+   Tipografía
+   ========================================================================== */
+.serif {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+}
+
+.titulo-xl,
+.titulo-lg,
+.titulo-md,
+.titulo-sm,
+.titulo-xs {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+/* h1 de página interior */
+.titulo-xl {
+  font-size: clamp(40px, 6.6vw, 84px);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+}
+
+/* h2 de sección y cierres grandes */
+.titulo-lg {
+  font-size: clamp(30px, 4.4vw, 54px);
+  line-height: 1.07;
+  letter-spacing: -0.01em;
+}
+
+.titulo-md {
+  font-size: clamp(28px, 3.8vw, 46px);
+  line-height: 1.08;
+}
+
+.titulo-sm {
+  font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 1.1;
+}
+
+.titulo-xs {
+  font-size: clamp(24px, 2.8vw, 34px);
+  line-height: 1.12;
+}
+
+.antetitulo {
+  margin: 0;
+  font-size: 11.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--arcilla);
+}
+
+.lede {
+  margin: 0;
+  max-width: 620px;
+  font-weight: 300;
+  font-size: clamp(16px, 1.35vw, 19px);
+  line-height: 1.6;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.texto {
+  margin: 0;
+  font-weight: 300;
+  font-size: clamp(16px, 1.15vw, 18px);
+  line-height: 1.64;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.texto-fijo {
+  margin: 0;
+  font-weight: 300;
+  font-size: 16.5px;
+  line-height: 1.62;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.max-440 {
+  max-width: 440px;
+}
+.max-460 {
+  max-width: 460px;
+}
+.max-480 {
+  max-width: 480px;
+}
+.max-500 {
+  max-width: 500px;
+}
+.max-520 {
+  max-width: 520px;
+}
+.max-540 {
+  max-width: 540px;
+}
+.max-560 {
+  max-width: 560px;
+}
+.max-620 {
+  max-width: 620px;
+}
+.max-640 {
+  max-width: 640px;
+}
+
+/* ==========================================================================
+   Botones y enlaces de acción
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 17px 34px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 999px;
+  font-size: 12.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.25s,
+    color 0.25s,
+    transform 0.25s;
+}
+
+.btn:hover {
+  background: var(--arcilla);
+  color: var(--bg);
+}
+
+.btn-sm {
+  padding: 15px 30px;
+}
+
+.btn-md {
+  padding: 16px 32px;
+}
+
+/* Sobre bandas oscuras: fondo claro que vira a oro al pasar por encima. */
+.btn-claro {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.btn-claro:hover {
+  background: var(--arcilla);
+  color: var(--surface);
+}
+
+.btn-linea {
+  display: inline-flex;
+  align-items: center;
+  padding: 13px 26px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line-5);
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.25s,
+    color 0.25s;
+}
+
+.btn-linea:hover {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.enlace-subrayado {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--muted-2);
+  border-bottom: 1px solid var(--oro-line);
+  padding-bottom: 3px;
+}
+
+.enlace-subrayado:hover {
+  color: var(--ink);
+}
+
+.enlace-fino {
+  border-bottom: 1px solid var(--arcilla-line);
+  padding-bottom: 2px;
+}
+
+.volver {
+  display: inline-block;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.volver:hover {
+  color: var(--ink);
+}
+
+/* ==========================================================================
+   Distintivos, fotos y formularios
+   ========================================================================== */
+.distintivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--arcilla-ink);
+}
+
+.foto {
+  position: relative;
+  background: var(--photo-bg);
+  overflow: hidden;
+}
+
+.foto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.foto-45 {
+  aspect-ratio: 4 / 5;
+}
+
+.foto-11 {
+  aspect-ratio: 1 / 1;
+}
+
+.campo {
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--line-4);
+  border-radius: 0;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--ink);
+}
+
+.campo::placeholder {
+  color: var(--faint);
+}
+
+select.campo {
+  cursor: pointer;
+}
+
+textarea.campo {
+  resize: vertical;
+}
+
+.campo-pastilla {
+  padding: 15px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line-4);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--ink);
+  min-width: 0;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--surface);
+  padding: clamp(26px, 3.4vw, 40px);
+}
+
+.nota {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   Tarjetas
+   ========================================================================== */
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surface);
+  padding: clamp(26px, 3vw, 36px);
+  transition:
+    transform 0.28s,
+    box-shadow 0.28s;
+}
+
+.tarjeta:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(20, 18, 16, 0.07);
+}
+
+.tarjeta h3 {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: clamp(22px, 2.2vw, 29px);
+  line-height: 1.15;
+}
+
+.dato {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-top: 16px;
+}
+
+.dato-cifra {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(24px, 2.6vw, 32px);
+  line-height: 1;
+  color: var(--ink);
+}
+
+.dato-pie {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 860px) {
+  .sangrado-izq {
+    padding-left: clamp(22px, 4vw, 40px);
+  }
+}

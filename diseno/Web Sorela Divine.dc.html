@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sorela Caro · Técnica Divine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF9F6;--bg-blur:rgba(251,249,246,0.92);--surface:#FFFFFF;--surface-2:#F5F2EC;--photo-bg:#EDE8E0;
+    --ink:#141210;--ink-2:#3E3831;--ink-3:#4F4840;--ink-4:#2A2620;--muted-2:#5E564C;--muted:#837A6E;--faint:#A79E92;
+    --arcilla:#8A6A32;--arcilla-ink:#6E5327;--arcilla-tint:#F6F1E7;--arcilla-line:rgba(138,106,50,0.3);
+    --salvia:#5E564C;--salvia-ink:#4F4840;--salvia-tint:#F5F2EC;--salvia-line:rgba(20,18,16,0.14);
+    --azul:#5E564C;--azul-ink:#4F4840;--azul-tint:#F3F0EA;--azul-line:rgba(20,18,16,0.12);
+    --oro:#8A6A32;--oro-claro:#A98551;--oro-tint:#F5EFE2;--oro-line:rgba(138,106,50,0.35);
+    --on-inverse-2:#DCD3C4;--on-inverse-3:#8A7F71;--accent-inverse:#D9B47C;--inverse-bg:#17140F;--inverse-ink:#FFFFFF;
+    --line-1:rgba(20,18,16,0.07);--line-2:rgba(20,18,16,0.1);--line-3:rgba(20,18,16,0.13);--line-4:rgba(20,18,16,0.17);--line-5:rgba(20,18,16,0.26);
+    --line-inverse:rgba(255,255,255,0.14);--line-inverse-2:rgba(255,255,255,0.3);
+    --scrim-1:rgba(251,249,246,0.97);--scrim-2:rgba(251,249,246,0.9);--scrim-3:rgba(251,249,246,0.5);--scrim-4:rgba(251,249,246,0.04);
+    --foto-scrim-1:rgba(12,10,9,0.78);--foto-scrim-2:rgba(12,10,9,0.3);--foto-scrim-3:rgba(12,10,9,0.04);
+    --logo-filter:brightness(0.42) saturate(1.35);
+    color-scheme:light;
+  }
+  :root[data-tema="oscuro"]{
+    --bg:#121110;--bg-blur:rgba(18,17,16,0.92);--surface:#1A1816;--surface-2:#211E1B;--photo-bg:#241F1A;
+    --ink:#F7F2EA;--ink-2:#DED6C9;--ink-3:#CFC6B8;--ink-4:#EBE4D9;--muted-2:#B3A99C;--muted:#9A9084;--faint:#80776C;
+    --arcilla:#CFA765;--arcilla-ink:#E3C696;--arcilla-tint:#262017;--arcilla-line:rgba(207,167,101,0.32);
+    --salvia:#B3A99C;--salvia-ink:#C9C0B4;--salvia-tint:#1E1B18;--salvia-line:rgba(247,242,234,0.14);
+    --azul:#B3A99C;--azul-ink:#C9C0B4;--azul-tint:#1C1A17;--azul-line:rgba(247,242,234,0.12);
+    --oro:#CFA765;--oro-claro:#E0C28E;--oro-tint:#2A2419;--oro-line:rgba(207,167,101,0.38);
+    --on-inverse-2:#DCD3C4;--on-inverse-3:#9B9082;--accent-inverse:#D9B47C;--inverse-bg:#241F1A;--inverse-ink:#F8F4EC;
+    --line-1:rgba(247,242,234,0.08);--line-2:rgba(247,242,234,0.12);--line-3:rgba(247,242,234,0.16);--line-4:rgba(247,242,234,0.22);--line-5:rgba(247,242,234,0.3);
+    --line-inverse:rgba(18,17,16,0.16);--line-inverse-2:rgba(18,17,16,0.32);
+    --scrim-1:rgba(18,17,16,0.97);--scrim-2:rgba(18,17,16,0.9);--scrim-3:rgba(18,17,16,0.55);--scrim-4:rgba(18,17,16,0.08);
+    --foto-scrim-1:rgba(8,7,6,0.82);--foto-scrim-2:rgba(8,7,6,0.4);--foto-scrim-3:rgba(8,7,6,0.06);
+    --logo-filter:none;
+    color-scheme:dark;
+  }
+
+  @keyframes divineHero{0%{transform:scale(1.38) translateX(18%)}100%{transform:scale(1.5) translateX(15%)}}
+  @keyframes divineRing{0%{box-shadow:0 0 0 0 rgba(138,106,50,.34)}70%{box-shadow:0 0 0 14px rgba(138,106,50,0)}100%{box-shadow:0 0 0 0 rgba(138,106,50,0)}}
+  @keyframes divineUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes divineMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes divineOrbit{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  @media (max-width:860px){
+    [data-hero-img]{object-position:60% 10%!important;transform:scale(1.12) translateX(0)!important;animation:none!important}
+    [data-hero-pad]{padding-top:min(86vw,360px)!important}
+    [data-hero-txt]{max-width:100%!important}
+  }
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);-webkit-font-smoothing:antialiased;font-family:'Jost',system-ui,sans-serif}
+  a{color:var(--arcilla);text-decoration:none}
+  a:hover{color:var(--ink)}
+  select,button,input,textarea{font-family:'Jost',system-ui,sans-serif}
+</style>
+</helmet>
+
+<div style="background:var(--bg);color:var(--ink);overflow-x:hidden">
+
+  <header style="position:fixed;top:0;left:0;right:0;z-index:50;background:var(--bg-blur);backdrop-filter:blur(16px);border-bottom:1px solid var(--line-1)">
+    <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(18px,4vw,40px);display:flex;align-items:center;gap:clamp(14px,3vw,40px);height:clamp(66px,7vw,86px)">
+      <a href="#" onClick="{{ goHome }}" style="flex:0 0 auto;display:flex;align-items:center">
+        <img src="uploads/logo_files-1789631085515-p3md.png" alt="Sorela Caro · Técnica Divine" style="height:clamp(36px,4.4vw,52px);width:auto;display:block;filter:var(--logo-filter)">
+      </a>
+      <nav style="flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:clamp(13px,2.1vw,30px);overflow-x:auto;scrollbar-width:none;padding:4px 0">
+        <a href="#" onClick="{{ goMetodo }}" style="flex:0 0 auto;font-size:12.5px;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink);white-space:nowrap" style-hover="color:var(--arcilla)">Método</a>
+        <a href="#" onClick="{{ goFormaciones }}" style="flex:0 0 auto;font-size:12.5px;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink);white-space:nowrap" style-hover="color:var(--arcilla)">Formaciones</a>
+        <a href="#" onClick="{{ goMembresia }}" style="flex:0 0 auto;font-size:12.5px;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink);white-space:nowrap" style-hover="color:var(--arcilla)">Comunidad</a>
+        <a href="#" onClick="{{ goTerapeutas }}" style="flex:0 0 auto;font-size:12.5px;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink);white-space:nowrap" style-hover="color:var(--arcilla)">Terapeutas</a>
+        <a href="#" onClick="{{ goSobre }}" style="flex:0 0 auto;font-size:12.5px;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink);white-space:nowrap" style-hover="color:var(--arcilla)">Sobre</a>
+      </nav>
+      <button onClick="{{ cambiarTema }}" title="{{ temaLabel }}" aria-label="{{ temaLabel }}" style="flex:0 0 auto;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--line-3);border-radius:999px;color:var(--muted-2);cursor:pointer;transition:color .25s,border-color .25s" style-hover="color:var(--arcilla);border-color:var(--arcilla-line)">
+        <sc-if value="{{ temaClaro }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"></path></svg>
+        </sc-if>
+        <sc-if value="{{ temaOscuro }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"></path></svg>
+        </sc-if>
+      </button>
+      <a href="Plataforma Divine.dc.html" style="flex:0 0 auto;display:inline-flex;align-items:center;padding:11px 22px;border:1px solid var(--line-5);border-radius:999px;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink);transition:background .25s,color .25s,border-color .25s" style-hover="background:var(--ink);color:var(--bg);border-color:var(--ink)">Entrar</a>
+    </div>
+    <span ref="{{ progresoRef }}" aria-hidden="true" style="position:absolute;left:0;bottom:-1px;width:100%;height:2px;background:var(--oro);transform:scaleX(0);transform-origin:0 50%"></span>
+  </header>
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <main>
+    <section style="position:relative;min-height:min(96vh,900px);display:flex;align-items:flex-end;overflow:hidden;background:var(--photo-bg)">
+      <img src="uploads/Cuarta%20foto%20Sore.jpg.jpeg" alt="Sorela Caro trabajando sobre una clienta en su consulta" data-hero-img="1" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 26%;transform:scale(1.38) translateX(18%);animation:divineHero 32s ease-in-out infinite alternate">
+      <div style="position:absolute;inset:0;background:linear-gradient(97deg,var(--scrim-1) 0%,var(--scrim-2) 32%,var(--scrim-3) 54%,var(--scrim-4) 76%,transparent 100%)"></div>
+      <canvas ref="{{ motasRef }}" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+      <div data-hero-pad="1" style="position:relative;z-index:2;width:100%;max-width:1240px;margin:0 auto;padding:clamp(128px,17vw,200px) clamp(20px,4vw,40px) clamp(52px,7vw,88px)">
+        <div data-hero-txt="1" style="max-width:min(520px,52%);display:flex;flex-direction:column;align-items:flex-start;gap:clamp(16px,2vw,24px)">
+          <span style="display:inline-flex;align-items:center;gap:10px;padding:8px 16px 8px 12px;background:var(--surface);border:1px solid var(--oro-line);border-radius:999px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--oro)">
+            <span style="width:6px;height:6px;border-radius:999px;background:var(--oro);animation:divineRing 3s ease-out infinite"></span>Formación presencial en estética avanzada
+          </span>
+          <h1 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(36px,5.1vw,70px);line-height:1.03;letter-spacing:-0.015em;color:var(--ink);text-wrap:pretty">Antes de poner las manos, aprende a mirar.</h1>
+          <p style="margin:0;max-width:520px;font-weight:300;font-size:clamp(16px,1.35vw,19px);line-height:1.6;color:var(--ink-2);text-wrap:pretty">La Técnica Divine no te da otro protocolo. Te da el criterio para decidir qué necesita el cuerpo que hoy tienes en la camilla.</p>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:clamp(16px,2vw,28px);margin-top:8px">
+            <button onClick="{{ goFormaciones }}" style="display:inline-flex;align-items:center;padding:17px 34px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s,transform .25s" style-hover="background:var(--oro);transform:translateY(-2px)">Ver próximas fechas</button>
+            <a href="#" onClick="{{ goMetodo }}" style="font-size:13px;letter-spacing:0.06em;color:var(--muted-2);border-bottom:1px solid var(--oro-line);padding-bottom:3px" style-hover="color:var(--ink)">Cómo funciona el método</a>
+          </div>
+          <p style="margin:12px 0 0;display:flex;align-items:center;gap:11px;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">
+            <span style="width:26px;height:1px;background:var(--oro)"></span>Sorela Caro, creadora del método
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section style="border-bottom:1px solid var(--line-1);background:var(--surface);overflow:hidden">
+      <div style="position:relative;padding:clamp(16px,2.2vw,24px) 0;mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%)">
+        <div style="display:flex;width:max-content;gap:clamp(28px,4vw,64px);padding-left:max(calc((100vw - 1240px) / 2 + clamp(20px,4vw,40px)),clamp(22px,4vw,40px));animation:divineMarquee 38s linear infinite">
+            <span style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;font-size:11.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted-2)"><span style="width:6px;height:6px;border-radius:999px;background:var(--oro)"></span>Método propio de Sorela Caro</span>
+            <span style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;font-size:11.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted-2)"><span style="width:6px;height:6px;border-radius:999px;background:var(--oro)"></span>87 terapeutas certificadas en España</span>
+            <span style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;font-size:11.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted-2)"><span style="width:6px;height:6px;border-radius:999px;background:var(--oro)"></span>Grupos de ocho, cuerpo real desde la primera hora</span>
+            <span style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;font-size:11.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted-2)"><span style="width:6px;height:6px;border-radius:999px;background:var(--oro)"></span>Tres días presenciales, cero teoría de relleno</span>
+            <span style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;font-size:11.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted-2)"><span style="width:6px;height:6px;border-radius:999px;background:var(--oro)"></span>Certificado y sitio en el mapa público</span>
+            <span style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;font-size:11.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted-2)"><span style="width:6px;height:6px;border-radius:999px;background:var(--oro)"></span>Método propio de Sorela Caro</span>
+            <span style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;font-size:11.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted-2)"><span style="width:6px;height:6px;border-radius:999px;background:var(--oro)"></span>87 terapeutas certificadas en España</span>
+            <span style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;font-size:11.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted-2)"><span style="width:6px;height:6px;border-radius:999px;background:var(--oro)"></span>Grupos de ocho, cuerpo real desde la primera hora</span>
+            <span style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;font-size:11.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted-2)"><span style="width:6px;height:6px;border-radius:999px;background:var(--oro)"></span>Tres días presenciales, cero teoría de relleno</span>
+            <span style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;font-size:11.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted-2)"><span style="width:6px;height:6px;border-radius:999px;background:var(--oro)"></span>Certificado y sitio en el mapa público</span>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(66px,9vw,130px) 0">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(32px,5vw,80px);align-items:center">
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <p style="margin:0;font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--arcilla)">El problema</p>
+          <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,4.4vw,54px);line-height:1.07;letter-spacing:-0.01em;text-wrap:pretty">Te enseñaron una secuencia. No a leer un cuerpo.</h2>
+          <p style="margin:0;max-width:480px;font-weight:300;font-size:clamp(16px,1.15vw,18px);line-height:1.64;color:var(--ink-3);text-wrap:pretty">Estos movimientos, este orden, estos minutos. Funciona hasta que entra la clienta que no encaja en el guion: la operada hace tres semanas, la que retiene sin causa aparente, la que lleva seis meses sin resultados. Y entra cada semana.</p>
+        </div>
+        <div style="position:relative;aspect-ratio:4/5;background:var(--photo-bg);overflow:hidden">
+          <img src="uploads/_DSC6008.jpg" alt="Manos trabajando la zona lumbar" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%">
+        </div>
+      </div>
+    </section>
+
+    <section style="background:var(--salvia-tint);border-top:1px solid var(--salvia-line);border-bottom:1px solid var(--salvia-line);padding:clamp(90px,14vw,190px) 0">
+      <div style="width:100%;max-width:1040px;margin:0 auto;padding:0 clamp(20px,4vw,40px);text-align:center;display:flex;flex-direction:column;align-items:center;gap:26px">
+        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:300;font-style:italic;font-size:clamp(28px,4.6vw,58px);line-height:1.22;letter-spacing:-0.01em;color:var(--ink);text-wrap:pretty">No se trata simplemente de poner las manos. Se trata de saber qué observar, qué interpretar y cómo decidir antes de trabajar.</p>
+        <span style="font-size:11.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--salvia-ink)">Sorela Caro</span>
+      </div>
+    </section>
+
+    <section style="padding:clamp(66px,9vw,130px) 0">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <h2 style="margin:0 0 clamp(36px,5vw,64px);max-width:640px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,4.4vw,54px);line-height:1.07;letter-spacing:-0.01em;text-wrap:pretty">Se acaba el «vamos a ver cómo responde».</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:clamp(20px,3vw,32px)">
+          <div style="display:flex;flex-direction:column;gap:14px;background:var(--surface);border-top:3px solid var(--arcilla);padding:clamp(26px,3vw,36px)">
+            <h3 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(22px,2.2vw,29px);line-height:1.15">Criterio</h3>
+            <p style="margin:0;font-weight:300;font-size:16.5px;line-height:1.62;color:var(--ink-3);text-wrap:pretty">En los dos primeros minutos ya sabes qué mirar y qué te está diciendo lo que ves.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;background:var(--surface);border-top:3px solid var(--salvia);padding:clamp(26px,3vw,36px)">
+            <h3 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(22px,2.2vw,29px);line-height:1.15">Decisión</h3>
+            <p style="margin:0;font-weight:300;font-size:16.5px;line-height:1.62;color:var(--ink-3);text-wrap:pretty">Eliges el trabajo para ese cuerpo y ese día. También sabes qué no tocar todavía.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;background:var(--surface);border-top:3px solid var(--azul);padding:clamp(26px,3vw,36px)">
+            <h3 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(22px,2.2vw,29px);line-height:1.15">Palabras</h3>
+            <p style="margin:0;font-weight:300;font-size:16.5px;line-height:1.62;color:var(--ink-3);text-wrap:pretty">Le cuentas a tu clienta qué has visto y por qué trabajas así. Por eso vuelve, y por eso paga lo que cuesta.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(66px,9vw,130px) 0;background:var(--surface);border-top:1px solid var(--line-1)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:clamp(30px,5vw,72px);align-items:center">
+        <div style="position:relative;aspect-ratio:4/5;background:var(--photo-bg);overflow:hidden">
+          <img src="uploads/22.JPG.jpeg" alt="Sorela Caro repasando casos con una alumna" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:56% 34%">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:22px;align-items:flex-start">
+          <p style="margin:0;font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--oro)">Quién está detrás</p>
+          <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,4.4vw,54px);line-height:1.06;letter-spacing:-0.01em;text-wrap:pretty">Sorela Caro, creadora de la Técnica Divine.</h2>
+          <p style="margin:0;max-width:500px;font-weight:300;font-size:clamp(16px,1.2vw,18.5px);line-height:1.64;color:var(--ink-3);text-wrap:pretty">Empecé como todas: aplicando el protocolo que me habían enseñado. Ordené en un método lo que hasta entonces llamaba intuición, y ese método es lo que enseño. Doy yo las formaciones, corrijo yo en la camilla y respondo yo los correos.</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:18px;width:100%;max-width:520px;padding-top:6px">
+            <div style="display:flex;flex-direction:column;gap:7px;padding-top:16px;border-top:2px solid var(--arcilla)">
+              <span style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,2.6vw,32px);line-height:1;color:var(--ink)">87</span>
+              <span style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">terapeutas formadas por ella</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;padding-top:16px;border-top:2px solid var(--salvia)">
+              <span style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,2.6vw,32px);line-height:1;color:var(--ink)">8</span>
+              <span style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">alumnas por grupo, nunca más</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;padding-top:16px;border-top:2px solid var(--azul)">
+              <span style="font-family:'Cormorant Garamond',serif;font-size:clamp(24px,2.6vw,32px);line-height:1;color:var(--ink)">0</span>
+              <span style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">clases delegadas a terceros</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:22px;margin-top:8px">
+            <button onClick="{{ goSobre }}" style="display:inline-flex;align-items:center;padding:16px 32px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--arcilla)">Conocer a Sorela</button>
+            <a href="https://instagram.com/sorelacaro_" style="font-size:13px;letter-spacing:0.06em;border-bottom:1px solid var(--arcilla-line);padding-bottom:3px">@sorelacaro_</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));align-items:stretch;background:var(--inverse-bg)">
+      <div style="position:relative;min-height:min(58vh,520px);order:2;background:var(--photo-bg);overflow:hidden">
+        <img src="uploads/26.JPG.jpeg" alt="Sorela Caro corrigiendo a dos alumnas junto a la camilla" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:46% 30%">
+      </div>
+      <div style="order:1;display:flex;align-items:center;padding:clamp(48px,7vw,96px) clamp(22px,4vw,56px) clamp(48px,7vw,96px) max(calc((100vw - 1240px) / 2 + clamp(20px,4vw,40px)),clamp(22px,4vw,40px))">
+        <div style="max-width:560px;display:flex;flex-direction:column;align-items:flex-start;gap:20px">
+          <p style="margin:0;font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent-inverse)">Formaciones presenciales</p>
+          <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,4.4vw,54px);line-height:1.07;color:var(--inverse-ink);text-wrap:pretty">A la cuarta sesión te pregunta por qué no ve nada. Y no sabes qué decirle.</h2>
+          <p style="margin:0;font-weight:300;font-size:clamp(16px,1.15vw,18px);line-height:1.6;color:var(--on-inverse-2);text-wrap:pretty">Ahí se pierde la clienta, se regala la sesión y se baja el precio. Tres días conmigo al lado de la camilla y esa conversación cambia de bando: le explicas qué estás viendo, qué toca ahora y por qué.</p>
+          <button onClick="{{ goFormaciones }}" style="margin-top:8px;display:inline-flex;align-items:center;padding:17px 34px;background:var(--bg);color:var(--ink);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s,color .25s" style-hover="background:var(--arcilla);color:var(--surface)">Madrid, Valencia y Sevilla</button>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(66px,9vw,130px) 0;background:var(--arcilla-tint);border-bottom:1px solid var(--arcilla-line)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(32px,5vw,80px);align-items:center">
+        <div style="position:relative;aspect-ratio:4/5;background:var(--photo-bg);overflow:hidden;order:2">
+          <img src="uploads/_DSC6231.jpg" alt="Sesión de trabajo corporal en consulta" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:22px;align-items:flex-start;order:1">
+          <span style="display:inline-flex;align-items:center;gap:10px;padding:8px 16px;background:var(--surface);border-radius:999px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--arcilla-ink)">En construcción</span>
+          <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,4.4vw,54px);line-height:1.07;letter-spacing:-0.01em;text-wrap:pretty">Lo que viene después del curso lo estamos construyendo.</h2>
+          <p style="margin:0;max-width:480px;font-weight:300;font-size:clamp(16px,1.15vw,18px);line-height:1.64;color:var(--ink-3);text-wrap:pretty">La Comunidad de Terapeutas Divine será el sitio donde seguir aprendiendo cada mes, preguntarme lo que no encaja y aparecer en el mapa donde las clientas buscan. Todavía no está abierta.</p>
+          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(22px,2.4vw,32px);line-height:1.2;color:var(--ink);text-wrap:pretty">Quien esté en la lista entra primero <span style="color:var(--arcilla)">y ayuda a decidir qué lleva dentro.</span></p>
+          <button onClick="{{ goMembresia }}" style="margin-top:6px;display:inline-flex;align-items:center;padding:17px 34px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--arcilla)">Entrar en la lista de espera</button>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(66px,9vw,120px) 0">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:clamp(28px,4vw,60px);align-items:center">
+        <div style="display:flex;flex-direction:column;gap:22px;align-items:flex-start">
+          <p style="margin:0;font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--azul)">Para clientas</p>
+          <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,4.4vw,54px);line-height:1.07;letter-spacing:-0.01em;text-wrap:pretty">Si está en el mapa, se formó conmigo.</h2>
+          <p style="margin:0;max-width:460px;font-weight:300;font-size:clamp(16px,1.15vw,18px);line-height:1.64;color:var(--ink-3);text-wrap:pretty">Ninguna terapeuta aparece ahí por pagar. Aparece porque hizo la formación, se certificó y trabaja con el método. Abre el mapa, mira quién tienes cerca y reserva con ella.</p>
+          <button onClick="{{ goTerapeutas }}" style="margin-top:4px;display:inline-flex;align-items:center;padding:17px 34px;background:var(--azul);color:var(--surface);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--ink)">Abrir el mapa</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px">
+          <div style="background:var(--azul-tint);padding:clamp(20px,2.4vw,28px);display:flex;flex-direction:column;gap:8px">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:clamp(30px,3.4vw,42px);line-height:1;color:var(--azul)">6</span>
+            <span style="font-size:11.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--azul-ink)">ciudades con consulta abierta</span>
+          </div>
+          <div style="background:var(--salvia-tint);padding:clamp(20px,2.4vw,28px);display:flex;flex-direction:column;gap:8px">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:clamp(30px,3.4vw,42px);line-height:1;color:var(--salvia)">87</span>
+            <span style="font-size:11.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--salvia-ink)">terapeutas certificadas</span>
+          </div>
+          <div style="background:var(--arcilla-tint);padding:clamp(20px,2.4vw,28px);display:flex;flex-direction:column;gap:8px">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:clamp(30px,3.4vw,42px);line-height:1;color:var(--arcilla)">10 min</span>
+            <span style="font-size:11.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--arcilla-ink)">de valoración antes de tocarte</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(66px,9vw,130px) 0;background:var(--azul-tint);border-top:1px solid var(--azul-line)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <h2 style="margin:0 0 clamp(36px,5vw,60px);max-width:620px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,4.4vw,54px);line-height:1.07;letter-spacing:-0.01em;text-wrap:pretty">Lo que cambió en su cabina.</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:clamp(20px,3vw,32px)">
+          <sc-for list="{{ testimonios }}" as="t" hint-placeholder-count="3">
+            <figure style="margin:0;background:var(--surface);padding:clamp(26px,3vw,38px);display:flex;flex-direction:column;gap:24px;justify-content:space-between">
+              <blockquote style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(19px,2vw,24px);line-height:1.38;color:var(--ink);text-wrap:pretty">{{ t.frase }}</blockquote>
+              <figcaption style="display:flex;align-items:center;gap:14px">
+                <span style="flex:0 0 auto;width:42px;height:42px;border-radius:999px;background:var(--arcilla-tint);display:flex;align-items:center;justify-content:center;font-size:12px;letter-spacing:0.08em;color:var(--arcilla-ink)">{{ t.iniciales }}</span>
+                <span style="display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:14px;color:var(--ink)">{{ t.nombre }}</span>
+                  <span style="font-size:11.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--azul-ink)">{{ t.ciudad }}</span>
+                </span>
+              </figcaption>
+            </figure>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <sc-if value="{{ faqEnHome }}" hint-placeholder-val="{{ true }}">
+      <section style="padding:clamp(66px,9vw,130px) 0;background:var(--surface)">
+        <div style="width:100%;max-width:1000px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+          <h2 style="margin:0 0 clamp(28px,4vw,48px);font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(28px,3.6vw,44px);line-height:1.1">Lo que me preguntáis siempre</h2>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="6">
+              <div style="border-top:1px solid var(--line-3)">
+                <button onClick="{{ f.toggle }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:clamp(20px,2.4vw,28px) 0;background:none;border:none;cursor:pointer;text-align:left">
+                  <span style="font-family:'Cormorant Garamond',serif;font-size:clamp(19px,2vw,25px);line-height:1.25;color:var(--ink)">{{ f.q }}</span>
+                  <span style="flex:0 0 auto;font-size:20px;color:var(--arcilla);line-height:1">{{ f.signo }}</span>
+                </button>
+                <sc-if value="{{ f.abierta }}">
+                  <p style="margin:0;padding:0 0 clamp(22px,2.6vw,30px);max-width:720px;font-weight:300;font-size:16.5px;line-height:1.66;color:var(--ink-3);text-wrap:pretty">{{ f.a }}</p>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+    <section style="padding:clamp(80px,12vw,160px) 0;background:var(--inverse-bg);text-align:center">
+      <div style="width:100%;max-width:820px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:flex;flex-direction:column;align-items:center;gap:26px">
+        <p style="margin:0;font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent-inverse)">Próxima convocatoria</p>
+        <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(34px,5.4vw,70px);line-height:1.04;letter-spacing:-0.015em;color:var(--inverse-ink);text-wrap:pretty">Madrid, del 14 al 16 de noviembre. Quedan tres plazas.</h2>
+        <button onClick="{{ goFormaciones }}" style="margin-top:6px;display:inline-flex;align-items:center;padding:17px 34px;background:var(--bg);color:var(--ink);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s,color .25s" style-hover="background:var(--arcilla);color:var(--surface)">Reservar mi plaza</button>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isMetodo }}">
+  <main style="padding-top:clamp(66px,7vw,86px)">
+    <section style="padding:clamp(70px,10vw,140px) 0 clamp(50px,6vw,80px);background:var(--surface);border-bottom:1px solid var(--line-1)">
+      <div style="width:100%;max-width:900px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <p style="margin:0 0 20px;font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--arcilla)">El método</p>
+        <h1 style="margin:0 0 26px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(40px,6.6vw,84px);line-height:1.02;letter-spacing:-0.015em">La Técnica Divine</h1>
+        <p style="margin:0;max-width:620px;font-weight:300;font-size:clamp(16px,1.35vw,19px);line-height:1.6;color:var(--ink-2);text-wrap:pretty">Empieza donde terminan los protocolos: en la lectura del cuerpo que tienes delante.</p>
+      </div>
+    </section>
+
+    <section style="padding:clamp(60px,8vw,120px) 0">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(30px,5vw,72px);align-items:start">
+        <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,4.4vw,54px);line-height:1.07;letter-spacing:-0.01em;text-wrap:pretty">Es un criterio, no una secuencia.</h2>
+        <p style="margin:0;max-width:520px;font-weight:300;font-size:clamp(16px,1.15vw,18px);line-height:1.66;color:var(--ink-3);text-wrap:pretty">Divine no te da una lista de movimientos que repetir. Te enseña a observar, interpretar y decidir. El trabajo manual viene después, y es distinto en cada cuerpo porque cada cuerpo lo es.</p>
+      </div>
+    </section>
+
+    <section style="padding:0 0 clamp(60px,8vw,120px)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:flex;flex-direction:column;gap:clamp(20px,2.6vw,28px)">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(20px,4vw,64px);align-items:baseline;background:var(--arcilla-tint);padding:clamp(28px,4vw,52px)">
+          <div style="display:flex;align-items:baseline;gap:20px">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:clamp(20px,2vw,26px);color:var(--arcilla)">01</span>
+            <h3 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(28px,3.6vw,46px);line-height:1.08">Observar</h3>
+          </div>
+          <p style="margin:0;max-width:520px;font-weight:300;font-size:clamp(16px,1.15vw,18px);line-height:1.66;color:var(--ink-3);text-wrap:pretty">Postura, tejido, retención, temperatura, cómo se sube a la camilla. Aprendes a mirar con criterio, no con intuición.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(20px,4vw,64px);align-items:baseline;background:var(--salvia-tint);padding:clamp(28px,4vw,52px)">
+          <div style="display:flex;align-items:baseline;gap:20px">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:clamp(20px,2vw,26px);color:var(--salvia)">02</span>
+            <h3 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(28px,3.6vw,46px);line-height:1.08">Interpretar</h3>
+          </div>
+          <p style="margin:0;max-width:520px;font-weight:300;font-size:clamp(16px,1.15vw,18px);line-height:1.66;color:var(--ink-3);text-wrap:pretty">Qué significa lo que ves. Qué está pidiendo ese cuerpo, qué puede esperar y qué no conviene tocar hoy.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(20px,4vw,64px);align-items:baseline;background:var(--azul-tint);padding:clamp(28px,4vw,52px)">
+          <div style="display:flex;align-items:baseline;gap:20px">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:clamp(20px,2vw,26px);color:var(--azul)">03</span>
+            <h3 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(28px,3.6vw,46px);line-height:1.08">Decidir</h3>
+          </div>
+          <p style="margin:0;max-width:520px;font-weight:300;font-size:clamp(16px,1.15vw,18px);line-height:1.66;color:var(--ink-3);text-wrap:pretty">Qué haces, en qué orden y hasta dónde. Con una razón que puedes decir en voz alta delante de tu clienta.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="position:relative;min-height:min(70vh,640px);display:flex;align-items:flex-end;overflow:hidden;background:var(--photo-bg)">
+      <img src="uploads/_DSC6349.jpg" alt="Valoración manual del abdomen" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%">
+      <div style="position:absolute;inset:0;background:linear-gradient(97deg,rgba(10,9,8,0.9) 0%,rgba(10,9,8,0.74) 36%,rgba(10,9,8,0.3) 66%,rgba(10,9,8,0.06) 100%)"></div>
+      <div style="position:relative;z-index:2;width:100%;max-width:1240px;margin:0 auto;padding:clamp(50px,7vw,90px) clamp(20px,4vw,40px)">
+        <h2 style="margin:0;max-width:620px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,4.4vw,54px);line-height:1.07;color:var(--inverse-ink);text-wrap:pretty">La diferencia se nota en la camilla, no en el diploma.</h2>
+      </div>
+    </section>
+
+    <section style="padding:clamp(60px,8vw,120px) 0;background:var(--surface)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:clamp(28px,4vw,56px)">
+        <div style="display:flex;flex-direction:column;gap:14px;padding-top:24px;border-top:2px solid var(--arcilla)">
+          <h3 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(21px,2.1vw,27px)">Tu clienta lo nota</h3>
+          <p style="margin:0;font-weight:300;font-size:16.5px;line-height:1.62;color:var(--ink-3);text-wrap:pretty">Porque por fin alguien le explica qué le pasa y qué vais a hacer con eso.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;padding-top:24px;border-top:2px solid var(--salvia)">
+          <h3 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(21px,2.1vw,27px)">Tú lo notas</h3>
+          <p style="margin:0;font-weight:300;font-size:16.5px;line-height:1.62;color:var(--ink-3);text-wrap:pretty">Porque dejas de improvisar el día que el caso se sale del guion.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;padding-top:24px;border-top:2px solid var(--azul)">
+          <h3 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(21px,2.1vw,27px)">Tu negocio lo nota</h3>
+          <p style="margin:0;font-weight:300;font-size:16.5px;line-height:1.62;color:var(--ink-3);text-wrap:pretty">Porque vendes planes en lugar de sesiones sueltas, y no discutes el precio.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(60px,8vw,120px) 0">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:clamp(24px,3vw,40px)">
+        <div style="background:var(--surface);border:1px solid var(--salvia-line);padding:clamp(30px,4vw,48px);display:flex;flex-direction:column;gap:16px">
+          <p style="margin:0;font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--salvia)">Ven si</p>
+          <p style="margin:0;font-weight:300;font-size:clamp(17px,1.4vw,20px);line-height:1.55;color:var(--ink);text-wrap:pretty">Ya tienes clientas en camilla y te incomoda repetir el mismo protocolo con cuerpos que no se parecen en nada.</p>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--line-2);padding:clamp(30px,4vw,48px);display:flex;flex-direction:column;gap:16px">
+          <p style="margin:0;font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--muted)">No vengas si</p>
+          <p style="margin:0;font-weight:300;font-size:clamp(17px,1.4vw,20px);line-height:1.55;color:var(--ink-3);text-wrap:pretty">Es tu primer contacto con la estética. Divine parte de que ya sabes trabajar con las manos; si no, vas a perder el dinero.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(70px,10vw,140px) 0;text-align:center;background:var(--surface);border-top:1px solid var(--line-1)">
+      <div style="width:100%;max-width:800px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:flex;flex-direction:column;align-items:center;gap:30px">
+        <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(32px,5vw,62px);line-height:1.04;letter-spacing:-0.012em;text-wrap:pretty">El método se aprende haciéndolo.</h2>
+        <button onClick="{{ goFormaciones }}" style="display:inline-flex;align-items:center;padding:17px 34px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--arcilla)">Ver formaciones y fechas</button>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isFormaciones }}">
+  <main style="padding-top:clamp(66px,7vw,86px)">
+    <section style="padding:clamp(70px,10vw,130px) 0 clamp(40px,5vw,60px);background:var(--surface);border-bottom:1px solid var(--line-1)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <h1 style="margin:0 0 24px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(40px,6.6vw,84px);line-height:1.02;letter-spacing:-0.015em">Formaciones</h1>
+        <p style="margin:0;max-width:620px;font-weight:300;font-size:clamp(16px,1.35vw,19px);line-height:1.6;color:var(--ink-2);text-wrap:pretty">Tres al año, ocho alumnas por grupo y cuerpo real desde la primera hora. Cuando se llenan, se llenan.</p>
+      </div>
+    </section>
+
+    <section style="padding:clamp(40px,6vw,80px) 0 clamp(60px,9vw,120px)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:flex;flex-direction:column">
+        <sc-for list="{{ cursos }}" as="c" hint-placeholder-count="3">
+          <article style="border-top:1px solid var(--line-3);padding:clamp(28px,4vw,48px) 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(22px,3vw,48px);align-items:start">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(26px,3.2vw,40px);line-height:1.1;text-wrap:pretty">{{ c.nombre }}</h2>
+              <p style="margin:0;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:var(--arcilla)">{{ c.meta }}</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:22px;align-items:flex-start">
+              <p style="margin:0;max-width:440px;font-weight:300;font-size:clamp(16px,1.15vw,18px);line-height:1.62;color:var(--ink-3);text-wrap:pretty">{{ c.frase }}</p>
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:20px">
+                <sc-if value="{{ c.mostrarPlazas }}">
+                  <span style="font-size:12.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--arcilla-ink);background:var(--arcilla-tint);border-radius:999px;padding:9px 17px">{{ c.plazasTexto }}</span>
+                </sc-if>
+                <button onClick="{{ c.abrir }}" style="display:inline-flex;align-items:center;padding:15px 30px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--arcilla)">Ver detalle</button>
+              </div>
+            </div>
+          </article>
+        </sc-for>
+        <div style="border-top:1px solid var(--line-3);padding:clamp(32px,5vw,56px) 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(22px,3vw,48px);align-items:start">
+          <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(22px,2.4vw,30px);line-height:1.15;color:var(--muted)">¿Tu ciudad no está?</h2>
+          <div style="display:flex;flex-direction:column;gap:20px;align-items:flex-start">
+            <p style="margin:0;max-width:440px;font-weight:300;font-size:16.5px;line-height:1.62;color:var(--ink-3);text-wrap:pretty">Dime dónde estás y te aviso en cuanto abra convocatoria cerca. Si se juntan seis en una misma zona, la abro yo.</p>
+            <form onSubmit="{{ noSubmit }}" style="display:flex;flex-wrap:wrap;gap:12px;width:100%;max-width:460px">
+              <input type="email" placeholder="tu@correo.com" style="flex:1 1 180px;min-width:0;padding:15px 18px;background:var(--surface);border:1px solid var(--line-4);border-radius:999px;font-size:15px;font-weight:300;color:var(--ink)">
+              <input placeholder="Tu ciudad" style="flex:1 1 120px;min-width:0;padding:15px 18px;background:var(--surface);border:1px solid var(--line-4);border-radius:999px;font-size:15px;font-weight:300;color:var(--ink)">
+              <button type="submit" style="flex:0 0 auto;padding:15px 28px;background:transparent;color:var(--ink);border:1px solid var(--line-5);border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s,color .25s" style-hover="background:var(--ink);color:var(--bg)">Avísame</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isCurso }}">
+  <main style="padding-top:clamp(66px,7vw,86px)">
+    <section style="padding:clamp(50px,7vw,90px) 0 clamp(40px,5vw,70px);background:var(--surface);border-bottom:1px solid var(--line-1)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <a href="#" onClick="{{ goFormaciones }}" style="display:inline-block;margin-bottom:clamp(26px,3vw,40px);font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">← Todas las formaciones</a>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:clamp(28px,4vw,64px);align-items:end">
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <h1 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(34px,5vw,64px);line-height:1.04;letter-spacing:-0.012em;text-wrap:pretty">{{ curso.nombre }}</h1>
+            <p style="margin:0;max-width:520px;font-weight:300;font-size:clamp(16px,1.35vw,19px);line-height:1.6;color:var(--ink-2);text-wrap:pretty">{{ curso.promesa }}</p>
+            <p style="margin:0;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:var(--arcilla)">{{ curso.metaLarga }}</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start">
+            <button onClick="{{ noop }}" style="display:inline-flex;align-items:center;padding:17px 34px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--arcilla)">Reservar plaza</button>
+            <sc-if value="{{ curso.mostrarPlazas }}">
+              <span style="font-size:13px;font-weight:300;color:var(--arcilla-ink)">{{ curso.plazasTexto }}</span>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(56px,8vw,110px) 0">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:clamp(30px,5vw,72px);align-items:start">
+        <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(28px,3.8vw,46px);line-height:1.08;text-wrap:pretty">El domingo sales sabiendo:</h2>
+        <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column">
+          <sc-for list="{{ curso.capacidades }}" as="cap" hint-placeholder-count="4">
+            <li style="padding:20px 0;border-bottom:1px solid var(--line-3);display:flex;gap:16px;align-items:baseline">
+              <span style="flex:0 0 auto;width:6px;height:6px;border-radius:999px;background:var(--arcilla);transform:translateY(-4px)"></span>
+              <span style="font-weight:300;font-size:clamp(16px,1.2vw,18.5px);line-height:1.55;color:var(--ink-4);text-wrap:pretty">{{ cap }}</span>
+            </li>
+          </sc-for>
+        </ul>
+      </div>
+    </section>
+
+    <section style="padding:clamp(56px,8vw,110px) 0;background:var(--salvia-tint)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(32px,5vw,72px);align-items:center">
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <p style="margin:0;font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--salvia-ink)">Cómo son los tres días</p>
+          <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(28px,3.8vw,46px);line-height:1.08;text-wrap:pretty">Ocho alumnas. Cuerpo real desde la primera hora.</h2>
+          <p style="margin:0;max-width:480px;font-weight:300;font-size:clamp(16px,1.15vw,18px);line-height:1.64;color:var(--salvia-ink);text-wrap:pretty">{{ curso.comoEs }}</p>
+        </div>
+        <div style="position:relative;aspect-ratio:1/1;background:var(--photo-bg);overflow:hidden">
+          <img src="uploads/_DSC6175.jpg" alt="Trabajo manual sobre pierna durante la formación" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%">
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(56px,8vw,110px) 0">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(30px,4vw,60px);align-items:start">
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(24px,2.8vw,34px);line-height:1.12">Qué incluye</h2>
+          <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ curso.incluye }}" as="inc" hint-placeholder-count="5">
+              <li style="display:flex;gap:14px;align-items:baseline;font-weight:300;font-size:16.5px;line-height:1.55;color:var(--ink-3)">
+                <span style="flex:0 0 auto;color:var(--arcilla)">—</span>
+                <span style="text-wrap:pretty">{{ inc }}</span>
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(24px,2.8vw,34px);line-height:1.12">Qué traes tú</h2>
+          <p style="margin:0;font-weight:300;font-size:16.5px;line-height:1.62;color:var(--ink-3);text-wrap:pretty">Manos con kilómetros y clientas de verdad. No pido titulación concreta: pido que sepas lo que es una cabina a las siete de la tarde.</p>
+        </div>
+        <div style="background:var(--inverse-bg);color:var(--on-inverse-2);padding:clamp(28px,3.4vw,42px);display:flex;flex-direction:column;gap:18px;align-items:flex-start">
+          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(34px,4.4vw,52px);line-height:1;color:var(--inverse-ink)">{{ curso.precio }} €</p>
+          <p style="margin:0;font-weight:300;font-size:15.5px;line-height:1.6;color:var(--on-inverse-2);text-wrap:pretty">{{ curso.reservaTexto }}</p>
+          <p style="margin:0;font-weight:300;font-size:14px;line-height:1.6;color:var(--on-inverse-3);text-wrap:pretty">{{ curso.cancelacion }}</p>
+          <button onClick="{{ noop }}" style="margin-top:6px;display:inline-flex;align-items:center;padding:16px 32px;background:var(--bg);color:var(--ink);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s,color .25s" style-hover="background:var(--arcilla);color:var(--surface)">Reservar plaza</button>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(56px,8vw,110px) 0;background:var(--surface);border-top:1px solid var(--line-1)">
+      <div style="width:100%;max-width:1000px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <h2 style="margin:0 0 clamp(26px,3vw,40px);font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(26px,3.4vw,40px);line-height:1.1">Antes de reservar</h2>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ faqsCurso }}" as="f" hint-placeholder-count="3">
+            <div style="border-top:1px solid var(--line-3);padding:clamp(20px,2.4vw,28px) 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(14px,2vw,36px)">
+              <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(19px,2vw,24px);line-height:1.25;color:var(--ink);text-wrap:pretty">{{ f.q }}</p>
+              <p style="margin:0;font-weight:300;font-size:16px;line-height:1.64;color:var(--ink-3);text-wrap:pretty">{{ f.a }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isMembresia }}">
+  <main style="padding-top:clamp(66px,7vw,86px)">
+    <section style="padding:clamp(70px,10vw,140px) 0 clamp(50px,7vw,90px);background:var(--arcilla-tint);border-bottom:1px solid var(--arcilla-line)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(30px,5vw,72px);align-items:start">
+        <div style="display:flex;flex-direction:column;gap:24px;align-items:flex-start">
+          <span style="display:inline-flex;align-items:center;gap:10px;padding:8px 16px;background:var(--surface);border-radius:999px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--arcilla-ink)">Lista de espera abierta</span>
+          <h1 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(38px,6vw,76px);line-height:1.02;letter-spacing:-0.015em;text-wrap:pretty">La Comunidad Divine todavía no existe.</h1>
+          <p style="margin:0;max-width:540px;font-weight:300;font-size:clamp(16px,1.35vw,19px);line-height:1.62;color:var(--ink-2);text-wrap:pretty">Prefiero decírtelo así: la estoy montando. No quiero abrir una comunidad a medias para cobrarte desde el primer mes. Cuando esté, entrarán primero las que estén en esta lista.</p>
+          <p style="margin:0;font-weight:300;font-size:15px;line-height:1.6;color:var(--arcilla-ink)">{{ contadorTexto }}</p>
+        </div>
+        <div style="background:var(--surface);padding:clamp(26px,3.4vw,40px);display:flex;flex-direction:column;gap:14px">
+          <sc-if value="{{ listaEnviada }}">
+            <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start">
+              <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(24px,2.8vw,34px);line-height:1.1">Estás dentro.</h2>
+              <p style="margin:0;font-weight:300;font-size:16px;line-height:1.62;color:var(--ink-3);text-wrap:pretty">Te escribiré yo cuando tenga fecha, y antes te preguntaré qué necesitas que tenga. Nada de correos cada semana.</p>
+              <button onClick="{{ resetLista }}" style="margin-top:4px;padding:0;background:none;border:none;border-bottom:1px solid var(--line-5);font-size:13.5px;font-weight:300;color:var(--muted);cursor:pointer">Apuntar otro correo</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ listaAbierta }}">
+            <form onSubmit="{{ enviarLista }}" style="display:flex;flex-direction:column;gap:12px">
+              <h2 style="margin:0 0 4px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(23px,2.6vw,32px);line-height:1.12">Apúntate a la lista</h2>
+              <input placeholder="Nombre" style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink)">
+              <input type="email" placeholder="Correo" style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink)">
+              <input placeholder="Ciudad donde trabajas" style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink)">
+              <select style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink);cursor:pointer">
+                <option>Ya me formé con Sorela</option>
+                <option>Tengo plaza en una formación</option>
+                <option>Todavía no me he formado</option>
+              </select>
+              <textarea rows="3" placeholder="¿Qué necesitarías tener ahí dentro?" style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink);resize:vertical"></textarea>
+              <button type="submit" style="margin-top:6px;padding:16px 28px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--arcilla)">Apuntarme a la lista</button>
+              <p style="margin:0;font-size:12.5px;font-weight:300;line-height:1.55;color:var(--muted)">Apuntarte no te compromete a nada y no te cobra nada.</p>
+            </form>
+          </sc-if>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(56px,8vw,110px) 0">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(30px,5vw,72px);align-items:start">
+        <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,4.2vw,52px);line-height:1.06;letter-spacing:-0.01em;text-wrap:pretty">Terminar la formación no es llegar.</h2>
+        <p style="margin:0;max-width:520px;font-weight:300;font-size:clamp(16px,1.15vw,18px);line-height:1.66;color:var(--ink-3);text-wrap:pretty">Sales del curso con criterio nuevo y muchas ganas. A las tres semanas aparece el primer caso raro, no tienes a quién preguntar y vuelves a lo de siempre. Llevo tiempo viendo ese patrón: la comunidad existe para cortarlo.</p>
+      </div>
+    </section>
+
+    <section style="padding:0 0 clamp(56px,8vw,110px)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <p style="margin:0 0 clamp(30px,4vw,52px);font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--arcilla)">Lo que quiero que tenga</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(16px,2vw,22px)">
+          <sc-for list="{{ incluyeMembresia }}" as="m" hint-placeholder-count="5">
+            <div style="background:var(--surface);border-top:3px solid {{ m.color }};padding:clamp(26px,3vw,38px);display:flex;flex-direction:column;gap:12px">
+              <span style="font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted)">{{ m.estado }}</span>
+              <h3 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(21px,2.2vw,28px);line-height:1.18;text-wrap:pretty">{{ m.titulo }}</h3>
+              <p style="margin:0;font-weight:300;font-size:16px;line-height:1.62;color:var(--ink-3);text-wrap:pretty">{{ m.texto }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(70px,11vw,150px) 0;background:var(--inverse-bg);color:var(--on-inverse-2);text-align:center">
+      <div style="width:100%;max-width:900px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:flex;flex-direction:column;align-items:center;gap:26px">
+        <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(32px,5vw,64px);line-height:1.04;color:var(--inverse-ink);text-wrap:pretty">Todavía no hay precio. Cuando lo haya, lo sabrás tú antes que nadie.</h2>
+        <p style="margin:0;max-width:560px;font-weight:300;font-size:clamp(16px,1.25vw,18.5px);line-height:1.64;color:var(--on-inverse-2);text-wrap:pretty">Las primeras de la lista entran con condición de fundadora y la mantienen mientras sigan dentro. Eso sí te lo puedo prometer.</p>
+      </div>
+    </section>
+
+    <section style="padding:clamp(56px,8vw,110px) 0;background:var(--surface)">
+      <div style="width:100%;max-width:1000px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <h2 style="margin:0 0 clamp(26px,3vw,44px);font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(26px,3.4vw,42px);line-height:1.1">Preguntas de la lista</h2>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ objeciones }}" as="o" hint-placeholder-count="4">
+            <div style="border-top:1px solid var(--line-3);padding:clamp(20px,2.4vw,30px) 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(14px,2vw,36px)">
+              <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(19px,2vw,24px);line-height:1.25;color:var(--ink);text-wrap:pretty">{{ o.q }}</p>
+              <p style="margin:0;font-weight:300;font-size:16px;line-height:1.64;color:var(--ink-3);text-wrap:pretty">{{ o.a }}</p>
+            </div>
+          </sc-for>
+        </div>
+        <p style="margin:clamp(30px,4vw,48px) 0 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;font-weight:300;font-size:16px;color:var(--ink-3)">¿Aún no te has formado? <a href="#" onClick="{{ goFormaciones }}" style="border-bottom:1px solid var(--arcilla-line);padding-bottom:2px">Empieza por la formación</a></p>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isTerapeutas }}">
+  <main style="padding-top:clamp(66px,7vw,86px)">
+    <section style="padding:clamp(60px,9vw,110px) 0 clamp(32px,4vw,48px);background:var(--surface)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <h1 style="margin:0 0 22px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(38px,6vw,76px);line-height:1.02;letter-spacing:-0.015em">Localiza tu terapeuta</h1>
+        <p style="margin:0;max-width:620px;font-weight:300;font-size:clamp(16px,1.35vw,19px);line-height:1.6;color:var(--ink-2);text-wrap:pretty">Todas se formaron y certificaron conmigo, y todas empiezan valorándote antes de tocarte. Mira quién tienes cerca.</p>
+      </div>
+    </section>
+
+    <section style="position:sticky;top:clamp(66px,7vw,86px);z-index:20;background:var(--bg-blur);backdrop-filter:blur(10px);border-top:1px solid var(--line-1);border-bottom:1px solid var(--line-1)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:16px clamp(20px,4vw,40px);display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <select onChange="{{ setCiudad }}" style="flex:0 1 240px;padding:13px 16px;background:var(--surface);border:1px solid var(--line-4);border-radius:999px;font-size:14px;font-weight:300;color:var(--ink);cursor:pointer">
+          <sc-for list="{{ ciudades }}" as="c" hint-placeholder-count="5">
+            <option value="{{ c }}">{{ c }}</option>
+          </sc-for>
+        </select>
+        <select onChange="{{ setTratamiento }}" style="flex:0 1 260px;padding:13px 16px;background:var(--surface);border:1px solid var(--line-4);border-radius:999px;font-size:14px;font-weight:300;color:var(--ink);cursor:pointer">
+          <sc-for list="{{ tratamientos }}" as="t" hint-placeholder-count="4">
+            <option value="{{ t }}">{{ t }}</option>
+          </sc-for>
+        </select>
+        <span style="margin-left:auto;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">{{ resultadoTexto }}</span>
+      </div>
+    </section>
+
+    <section style="padding:clamp(20px,3vw,32px) 0 0">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <div style="position:relative;width:100%;height:clamp(320px,52vh,520px);background:var(--photo-bg);border:1px solid var(--line-3);overflow:hidden">
+          <iframe src="mapa-terapeutas.html" title="Mapa de terapeutas Divine certificadas" ref="{{ mapaRef }}" style="position:absolute;inset:0;width:100%;height:100%;border:none;display:block"></iframe>
+        </div>
+        <p style="margin:12px 0 0;font-size:12.5px;font-weight:300;color:var(--muted)">Pincha un punto del mapa para ver la ficha y reservar. Los filtros de arriba también mueven el mapa.</p>
+      </div>
+    </section>
+
+    <section style="padding:clamp(36px,5vw,64px) 0 clamp(60px,9vw,120px)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <sc-if value="{{ sinResultados }}">
+          <div style="background:var(--arcilla-tint);padding:clamp(30px,4vw,52px);margin-bottom:clamp(30px,4vw,48px);display:flex;flex-direction:column;gap:12px">
+            <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(22px,2.6vw,32px);line-height:1.15;text-wrap:pretty">{{ textoSinResultados }}</h2>
+            <p style="margin:0;font-weight:300;font-size:16px;color:var(--ink-3)">Estas trabajan más cerca de ti:</p>
+          </div>
+        </sc-if>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(18px,2.4vw,30px)">
+          <sc-for list="{{ terapeutasVisibles }}" as="t" hint-placeholder-count="6">
+            <article style="background:var(--surface);border:1px solid var(--line-2);padding:clamp(24px,2.8vw,34px);display:flex;flex-direction:column;gap:20px;justify-content:space-between;transition:border-color .25s" style-hover="border-color:var(--arcilla)">
+              <div style="display:flex;flex-direction:column;gap:16px">
+                <div style="display:flex;align-items:center;gap:14px">
+                  <span style="flex:0 0 auto;width:52px;height:52px;border-radius:999px;background:var(--arcilla-tint);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--arcilla-ink)">{{ t.iniciales }}</span>
+                  <span style="display:flex;flex-direction:column;gap:4px">
+                    <span style="font-family:'Cormorant Garamond',serif;font-size:clamp(20px,2vw,25px);line-height:1.1;color:var(--ink)">{{ t.nombre }}</span>
+                    <span style="font-size:11.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--arcilla)">{{ t.ciudad }} · certificada</span>
+                  </span>
+                </div>
+                <p style="margin:0;font-weight:300;font-size:16px;line-height:1.6;color:var(--ink-3);text-wrap:pretty">{{ t.frase }}</p>
+              </div>
+              <button onClick="{{ t.abrir }}" style="align-self:flex-start;display:inline-flex;align-items:center;padding:13px 26px;background:transparent;color:var(--ink);border:1px solid var(--line-5);border-radius:999px;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;transition:background .25s,color .25s" style-hover="background:var(--ink);color:var(--bg)">Ver perfil</button>
+            </article>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isTerapeuta }}">
+  <main style="padding-top:clamp(66px,7vw,86px)">
+    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));background:var(--surface);border-bottom:1px solid var(--line-1)">
+      <div style="position:relative;min-height:min(60vh,520px);background:var(--photo-bg);overflow:hidden">
+        <img src="uploads/_DSC6357.jpg" alt="Sesión de la terapeuta" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%">
+      </div>
+      <div style="padding:clamp(36px,5vw,80px) clamp(24px,4vw,56px) clamp(36px,5vw,80px) max(calc((100vw - 1240px) / 2 + clamp(20px,4vw,40px)),clamp(22px,4vw,40px));display:flex;flex-direction:column;justify-content:center;gap:22px;align-items:flex-start">
+        <a href="#" onClick="{{ goTerapeutas }}" style="font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">← Volver al mapa</a>
+        <h1 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(34px,4.6vw,58px);line-height:1.04;letter-spacing:-0.012em">{{ terapeuta.nombre }}</h1>
+        <p style="margin:0;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:var(--arcilla)">Terapeuta Divine certificada · {{ terapeuta.ciudad }}</p>
+        <p style="margin:0;max-width:440px;font-weight:300;font-size:clamp(16px,1.2vw,18px);line-height:1.62;color:var(--ink-3);text-wrap:pretty">{{ terapeuta.sobre }}</p>
+        <button onClick="{{ irAReserva }}" style="margin-top:6px;display:inline-flex;align-items:center;padding:16px 32px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--arcilla)">Reservar cita</button>
+      </div>
+    </section>
+
+    <section style="padding:clamp(50px,7vw,100px) 0">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:clamp(28px,4vw,56px)">
+        <div style="display:flex;flex-direction:column;gap:14px;padding-top:22px;border-top:2px solid var(--arcilla)">
+          <h2 style="margin:0;font-size:11.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--arcilla)">Qué trabajo</h2>
+          <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ terapeuta.tratamientos }}" as="tr" hint-placeholder-count="3">
+              <li style="font-weight:300;font-size:16.5px;line-height:1.5;color:var(--ink-4)">{{ tr }}</li>
+            </sc-for>
+          </ul>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;padding-top:22px;border-top:2px solid var(--salvia)">
+          <h2 style="margin:0;font-size:11.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--salvia)">Dónde estoy</h2>
+          <p style="margin:0;font-weight:300;font-size:16.5px;line-height:1.55;color:var(--ink-4);text-wrap:pretty">{{ terapeuta.direccion }}</p>
+          <a href="#" onClick="{{ goTerapeutas }}" style="font-size:13px;font-weight:300;border-bottom:1px solid var(--arcilla-line);padding-bottom:2px;align-self:flex-start">Verlo en el mapa</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;padding-top:22px;border-top:2px solid var(--azul)">
+          <h2 style="margin:0;font-size:11.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--azul)">Certificación</h2>
+          <p style="margin:0;font-weight:300;font-size:16.5px;line-height:1.55;color:var(--ink-4);text-wrap:pretty">Formada en la Técnica Divine con Sorela Caro en {{ terapeuta.anio }}.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(50px,7vw,100px) 0;background:var(--salvia-tint)">
+      <div style="width:100%;max-width:1000px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <h2 style="margin:0 0 10px;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(28px,3.6vw,44px);line-height:1.08">Reservar con {{ terapeuta.nombreCorto }}</h2>
+        <p style="margin:0 0 clamp(28px,3.4vw,44px);font-weight:300;font-size:16.5px;line-height:1.6;color:var(--salvia-ink)">Elige día y hora. Te lo confirma ella por correo, no un robot.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:clamp(22px,3vw,40px);align-items:start">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <p style="margin:0;font-size:11.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--salvia-ink)">Marzo 2027</p>
+            <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+              <sc-for list="{{ dias }}" as="d" hint-placeholder-count="8">
+                <button onClick="{{ d.elegir }}" style="padding:14px 6px;background:{{ d.bg }};color:{{ d.fg }};border:1px solid var(--line-3);border-radius:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+                  <span style="font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;opacity:.7">{{ d.dow }}</span>
+                  <span style="font-family:'Cormorant Garamond',serif;font-size:21px;line-height:1">{{ d.num }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <p style="margin:0;font-size:11.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--salvia-ink)">Horas libres</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ horas }}" as="h" hint-placeholder-count="5">
+                <button onClick="{{ h.elegir }}" style="padding:11px 18px;background:{{ h.bg }};color:{{ h.fg }};border:1px solid var(--line-3);border-radius:999px;font-size:13.5px;cursor:pointer">{{ h.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <form onSubmit="{{ noSubmit }}" style="display:flex;flex-direction:column;gap:12px;background:var(--surface);padding:clamp(24px,3vw,34px)">
+            <p style="margin:0 0 6px;font-size:13px;font-weight:300;color:var(--muted-2)">{{ reservaResumen }}</p>
+            <input placeholder="Nombre y apellidos" style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink)">
+            <input placeholder="Teléfono" style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink)">
+            <input placeholder="Correo" style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink)">
+            <textarea rows="3" placeholder="Cuéntale en dos líneas qué te trae" style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink);resize:vertical"></textarea>
+            <button type="submit" style="margin-top:6px;padding:16px 28px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--arcilla)">Confirmar reserva</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isSobre }}">
+  <main style="padding-top:clamp(66px,7vw,86px)">
+    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));background:var(--surface);border-bottom:1px solid var(--line-1)">
+      <div style="padding:clamp(50px,8vw,120px) clamp(24px,4vw,56px) clamp(50px,8vw,120px) max(calc((100vw - 1240px) / 2 + clamp(20px,4vw,40px)),clamp(22px,4vw,40px));display:flex;flex-direction:column;justify-content:center;gap:20px">
+        <p style="margin:0;font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--arcilla)">Sobre</p>
+        <h1 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(42px,6.4vw,84px);line-height:1;letter-spacing:-0.015em">Sorela Caro</h1>
+        <p style="margin:0;font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;font-size:clamp(20px,2.2vw,28px);line-height:1.3;color:var(--ink-3)">Creadora de la Técnica Divine.</p>
+      </div>
+      <div style="position:relative;min-height:min(62vh,560px);background:var(--photo-bg);overflow:hidden">
+        <img src="uploads/Cuarta%20foto%20Sore.jpg.jpeg" alt="Sorela Caro, creadora de la Técnica Divine" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%">
+      </div>
+    </section>
+
+    <section style="padding:clamp(56px,8vw,110px) 0">
+      <div style="width:100%;max-width:820px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:flex;flex-direction:column;gap:clamp(40px,6vw,80px)">
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(28px,3.8vw,48px);line-height:1.08;text-wrap:pretty">Empecé haciendo lo mismo que todas.</h2>
+          <p style="margin:0;font-weight:300;font-size:clamp(16px,1.25vw,18.5px);line-height:1.68;color:var(--ink-3);text-wrap:pretty">Aplicaba el protocolo que me habían enseñado. Funcionaba casi siempre. El problema era el «casi»: las clientas que no encajaban en el guion y para las que nadie me había dado herramientas.</p>
+          <p style="margin:0;padding:18px 22px;background:var(--arcilla-tint);border-left:3px solid var(--arcilla);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.6;color:var(--arcilla-ink)">Sorela: aquí va tu historia real. Lo de arriba es la estructura. Necesito de ti qué te hizo dejar de seguir protocolos y cuándo. Cuanto más concreto, mejor.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(28px,3.8vw,48px);line-height:1.08;text-wrap:pretty">Divine nació de ahí.</h2>
+          <p style="margin:0;font-weight:300;font-size:clamp(16px,1.25vw,18.5px);line-height:1.68;color:var(--ink-3);text-wrap:pretty">De entender que el trabajo importante pasa antes de tocar. De ordenar en un método lo que hasta entonces llamaba intuición.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:clamp(16px,2vw,22px)">
+          <div style="position:relative;aspect-ratio:1/1;background:var(--photo-bg);overflow:hidden">
+            <img src="uploads/26.JPG.jpeg" alt="Sorela Caro guiando las manos de una alumna" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 36%">
+          </div>
+          <div style="position:relative;aspect-ratio:1/1;background:var(--photo-bg);overflow:hidden">
+            <img src="uploads/22.JPG.jpeg" alt="Sorela Caro revisando casos con una alumna" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:58% 36%">
+          </div>
+          <div style="position:relative;aspect-ratio:1/1;background:var(--photo-bg);overflow:hidden">
+            <img src="uploads/_DSC6349.jpg" alt="Valoración manual del abdomen" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(56px,8vw,110px) 0;background:var(--azul-tint)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+        <h2 style="margin:0 0 clamp(32px,4vw,56px);font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(28px,3.8vw,48px);line-height:1.08">Hoy formo a terapeutas.</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:clamp(16px,2vw,24px)">
+          <div style="background:var(--surface);padding:clamp(24px,3vw,34px);display:flex;flex-direction:column;gap:10px">
+            <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(38px,4.4vw,56px);line-height:1;color:var(--ink)">87</p>
+            <p style="margin:0;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:var(--azul-ink)">Profesionales certificadas</p>
+          </div>
+          <div style="background:var(--surface);padding:clamp(24px,3vw,34px);display:flex;flex-direction:column;gap:10px">
+            <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(26px,2.8vw,34px);line-height:1.15;color:var(--ink)">Madrid · Valencia<br>Sevilla · Bilbao</p>
+            <p style="margin:0;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:var(--azul-ink)">Donde he formado</p>
+          </div>
+          <div style="background:var(--surface);padding:clamp(24px,3vw,34px);display:flex;flex-direction:column;gap:10px">
+            <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(26px,2.8vw,34px);line-height:1.15;color:var(--ink)">Ocho alumnas por grupo, nunca más</p>
+            <p style="margin:0;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:var(--azul-ink)">Cómo enseño</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:clamp(70px,10vw,140px) 0;text-align:center">
+      <div style="width:100%;max-width:800px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:flex;flex-direction:column;align-items:center;gap:28px">
+        <h2 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(32px,5vw,62px);line-height:1.04;letter-spacing:-0.012em">Si quieres formarte conmigo:</h2>
+        <button onClick="{{ goFormaciones }}" style="display:inline-flex;align-items:center;padding:17px 34px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--arcilla)">Ver formaciones</button>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isContacto }}">
+  <main style="padding-top:clamp(66px,7vw,86px)">
+    <section style="padding:clamp(70px,10vw,140px) 0 clamp(60px,9vw,120px)">
+      <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(32px,5vw,72px);align-items:start">
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <h1 style="margin:0;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(40px,6vw,76px);line-height:1.02;letter-spacing:-0.015em">Escríbeme.</h1>
+          <p style="margin:0;max-width:440px;font-weight:300;font-size:clamp(16px,1.3vw,19px);line-height:1.62;color:var(--ink-2);text-wrap:pretty">Dudas de una formación, de la lista de espera o algo que quieras proponerme. Contesto yo, y tardo menos de 48 horas.</p>
+          <p style="margin:0;font-size:14px;font-weight:300;color:var(--muted-2)">En Instagram voy más rápido: <a href="https://instagram.com/sorelacaro_" style="border-bottom:1px solid var(--arcilla-line);padding-bottom:2px">@sorelacaro_</a></p>
+        </div>
+        <form onSubmit="{{ noSubmit }}" style="display:flex;flex-direction:column;gap:12px;background:var(--surface);border-top:3px solid var(--arcilla);padding:clamp(26px,3.4vw,40px)">
+          <input placeholder="Nombre" style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink)">
+          <input placeholder="Correo" style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink)">
+          <select style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink);cursor:pointer">
+            <option>Quiero formarme</option>
+            <option>Lista de espera de la comunidad</option>
+            <option>Soy clienta y busco terapeuta</option>
+            <option>Colaboración</option>
+          </select>
+          <textarea rows="5" placeholder="Cuéntame" style="padding:14px 16px;background:var(--bg);border:1px solid var(--line-4);font-size:15px;font-weight:300;color:var(--ink);resize:vertical"></textarea>
+          <button type="submit" style="margin-top:6px;padding:16px 28px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:12.5px;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--arcilla)">Enviar</button>
+        </form>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <footer style="background:var(--inverse-bg);color:var(--on-inverse-2);padding:clamp(50px,7vw,90px) 0 clamp(28px,3vw,40px)">
+    <div style="width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,4vw,40px)">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:clamp(28px,4vw,56px);padding-bottom:clamp(36px,5vw,64px)">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <p style="margin:0;font-family:'Cormorant Garamond',serif;font-size:clamp(22px,2.4vw,30px);line-height:1.15;color:var(--inverse-ink)">Técnica Divine<br><span style="font-size:0.62em;letter-spacing:0.2em;text-transform:uppercase;font-family:'Jost',sans-serif;color:var(--accent-inverse)">Sorela Caro</span></p>
+          <a href="https://instagram.com/sorelacaro_" style="font-size:13px;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Instagram @sorelacaro_</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--on-inverse-3)">Formación</p>
+          <a href="#" onClick="{{ goMetodo }}" style="font-size:14px;font-weight:300;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Método</a>
+          <a href="#" onClick="{{ goFormaciones }}" style="font-size:14px;font-weight:300;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Formaciones</a>
+          <a href="#" onClick="{{ goMembresia }}" style="font-size:14px;font-weight:300;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Lista de espera</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--on-inverse-3)">Clientas</p>
+          <a href="#" onClick="{{ goTerapeutas }}" style="font-size:14px;font-weight:300;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Localiza tu terapeuta</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--on-inverse-3)">Divine</p>
+          <a href="#" onClick="{{ goSobre }}" style="font-size:14px;font-weight:300;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Sobre Sorela</a>
+          <a href="#" onClick="{{ goContacto }}" style="font-size:14px;font-weight:300;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Contacto</a>
+          <a href="Plataforma Divine.dc.html" style="font-size:14px;font-weight:300;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Entrar en la plataforma</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--on-inverse-3)">Legal</p>
+          <a href="#" onClick="{{ noop }}" style="font-size:14px;font-weight:300;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Aviso legal</a>
+          <a href="#" onClick="{{ noop }}" style="font-size:14px;font-weight:300;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Privacidad</a>
+          <a href="#" onClick="{{ noop }}" style="font-size:14px;font-weight:300;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Cookies</a>
+          <a href="#" onClick="{{ noop }}" style="font-size:14px;font-weight:300;color:var(--on-inverse-2)" style-hover="color:var(--surface)">Condiciones de contratación</a>
+        </div>
+      </div>
+      <p style="margin:0;padding-top:24px;border-top:1px solid var(--line-inverse);font-size:12px;font-weight:300;color:var(--on-inverse-3)">© 2026 Sorela Caro. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <div style="position:fixed;right:clamp(14px,2.4vw,28px);bottom:clamp(14px,2.4vw,28px);z-index:80;display:flex;flex-direction:column;align-items:flex-end;gap:12px;max-width:calc(100vw - 28px)">
+    <sc-if value="{{ chatAbierto }}">
+      <section style="width:min(376px,calc(100vw - 28px));max-height:min(620px,calc(100vh - 120px));background:var(--bg);border:1px solid var(--line-3);box-shadow:0 24px 60px rgba(26,23,20,0.24);display:flex;flex-direction:column;overflow:hidden">
+        <header style="flex:0 0 auto;background:var(--inverse-bg);padding:16px 18px;display:flex;align-items:center;gap:12px">
+          <span style="flex:0 0 auto;width:34px;height:34px;border-radius:999px;background:var(--arcilla-tint);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--arcilla-ink)">D</span>
+          <span style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:14.5px;color:var(--inverse-ink)">Asistente Divine</span>
+            <span style="font-size:11px;font-weight:300;color:var(--on-inverse-3)">Fechas, plazas, precios y reservas</span>
+          </span>
+          <button onClick="{{ cerrarChat }}" style="flex:0 0 auto;width:28px;height:28px;background:none;border:none;color:var(--on-inverse-2);font-size:20px;line-height:1;cursor:pointer">×</button>
+        </header>
+        <div ref="{{ chatRef }}" style="flex:1 1 auto;min-height:0;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ mensajes }}" as="m" hint-placeholder-count="2">
+            <div style="display:flex;justify-content:{{ m.align }}">
+              <p style="margin:0;max-width:86%;padding:13px 15px;background:{{ m.bg }};color:{{ m.fg }};border:1px solid {{ m.borde }};border-radius:12px;font-size:14.5px;font-weight:300;line-height:1.55;white-space:pre-line;text-wrap:pretty">{{ m.texto }}</p>
+            </div>
+          </sc-for>
+          <sc-if value="{{ escribiendo }}">
+            <div style="display:flex;justify-content:flex-start">
+              <p style="margin:0;padding:13px 15px;background:var(--surface);border:1px solid var(--line-3);border-radius:12px;font-size:14px;font-weight:300;color:var(--faint)">Mirando la agenda…</p>
+            </div>
+          </sc-if>
+        </div>
+        <div style="flex:0 0 auto;padding:0 18px 12px;display:flex;flex-wrap:wrap;gap:7px">
+          <sc-for list="{{ sugerencias }}" as="s" hint-placeholder-count="4">
+            <button onClick="{{ s.enviar }}" style="padding:9px 14px;background:var(--surface);color:var(--ink-3);border:1px solid var(--line-4);border-radius:999px;font-size:12.5px;font-weight:300;cursor:pointer;transition:border-color .2s,color .2s" style-hover="border-color:var(--arcilla);color:var(--ink)">{{ s.label }}</button>
+          </sc-for>
+        </div>
+        <form onSubmit="{{ enviarChat }}" style="flex:0 0 auto;padding:12px 14px;border-top:1px solid var(--line-3);background:var(--surface);display:flex;gap:9px;align-items:center">
+          <input value="{{ borrador }}" onChange="{{ setBorrador }}" placeholder="Pregunta lo que necesites" style="flex:1 1 auto;min-width:0;padding:12px 14px;background:var(--bg);border:1px solid var(--line-4);border-radius:999px;font-size:14.5px;font-weight:300;color:var(--ink)">
+          <button type="submit" style="flex:0 0 auto;padding:12px 20px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;font-size:11.5px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;transition:background .25s" style-hover="background:var(--arcilla)">Enviar</button>
+        </form>
+      </section>
+    </sc-if>
+    <sc-if value="{{ chatCerrado }}">
+      <button onClick="{{ abrirChat }}" aria-label="Abrir el asistente Divine" style="display:inline-flex;align-items:center;gap:13px;padding:12px 24px 12px 13px;background:var(--ink);color:var(--bg);border:none;border-radius:999px;box-shadow:0 18px 40px rgba(12,10,9,.28);cursor:pointer;transition:background .3s,transform .3s,box-shadow .3s" style-hover="background:var(--oro);transform:translateY(-3px);box-shadow:0 24px 52px rgba(12,10,9,.34)">
+        <span style="position:relative;flex:0 0 auto;width:34px;height:34px;display:flex;align-items:center;justify-content:center">
+          <svg width="34" height="34" viewBox="0 0 40 40" fill="none" aria-hidden="true" style="animation:divineOrbit 16s linear infinite">
+            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-opacity=".28" stroke-width="1"></circle>
+            <circle cx="20" cy="2" r="2.6" fill="var(--oro-claro)"></circle>
+            <circle cx="20" cy="38" r="1.5" fill="currentColor" fill-opacity=".45"></circle>
+          </svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position:absolute;inset:8px">
+            <path d="M12 3.4c2.2 2.6 3.3 5.4 3.3 8.6S14.2 18.6 12 21.2c-2.2-2.6-3.3-5.4-3.3-9.2S9.8 6 12 3.4Z"></path>
+            <path d="M3.6 12h16.8"></path>
+          </svg>
+        </span>
+        <span style="display:flex;flex-direction:column;gap:3px;text-align:left;white-space:nowrap">
+          <span style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;line-height:1.1">Te ayudo a decidir</span>
+          <span style="font-size:10.5px;font-weight:300;letter-spacing:0.04em;opacity:.7;line-height:1.1">Fechas, plazas y precios</span>
+        </span>
+      </button>
+    </sc-if>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;mostrarPlazas&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Contenido&quot;},&quot;faqEnHome&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Contenido&quot;},&quot;contadorLista&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:128,&quot;min&quot;:0,&quot;max&quot;:2000,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Lista de espera&quot;},&quot;asistenteAutoAbre&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Asistente&quot;}}">
+class Component extends DCLogic {
+  state = {
+    route: 'home', cursoId: 'base', terapeutaId: 'marta',
+    ciudad: 'Todas las ciudades', tratamiento: 'Todos los tratamientos',
+    faq: 0, dia: 3, hora: '11:30', listaEnviada: false, tema: 'claro',
+    chatAbierto: false, borrador: '', escribiendo: false,
+    chat: [{ rol: 'asistente', texto: 'Soy el asistente de Sorela. Te digo fechas, plazas, precios y requisitos de las formaciones, y te ayudo a reservar con una terapeuta certificada.\n¿Qué necesitas saber?' }]
+  };
+
+  componentDidMount() {
+    this.mapaRef = this.mapaRef || React.createRef();
+    this.chatRef = this.chatRef || React.createRef();
+    let guardado = null;
+    try { guardado = window.localStorage.getItem('divine-tema'); } catch (e) {}
+    this.ponerTema(guardado === 'oscuro' ? 'oscuro' : 'claro', false);
+    this.reducido = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.scrollHandler = () => this.onScroll();
+    window.addEventListener('scroll', this.scrollHandler, { passive: true });
+    this.animar(true);
+    this.motas();
+    this.onMsg = (e) => {
+      const d = e.data || {};
+      if (d.tipo === 'ver-terapeuta' && d.id) this.go('terapeuta', { terapeutaId: d.id });
+      if (d.tipo === 'mapa-listo') this.enviarFiltroMapa();
+    };
+    window.addEventListener('message', this.onMsg);
+    if (this.props.asistenteAutoAbre === true) {
+      this.timer = setTimeout(() => this.setState({ chatAbierto: true }), 9000);
+    }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('message', this.onMsg);
+    if (this.scrollHandler) window.removeEventListener('scroll', this.scrollHandler);
+    if (this.raf) cancelAnimationFrame(this.raf);
+    if (this.timer) clearTimeout(this.timer);
+  }
+
+  componentDidUpdate() {
+    this.enviarFiltroMapa();
+    this.bajarChat();
+    this.animar(this.state.route !== this.rutaPrev);
+    this.rutaPrev = this.state.route;
+    this.motas();
+  }
+
+  animar(forzar) {
+    if (this.reducido) return;
+    let i = 0;
+    document.querySelectorAll('main section > div > *, main section article, main section figure').forEach((el) => {
+      if (el.getAttribute('data-vista') === '1' && !forzar) return;
+      el.setAttribute('data-vista', '1');
+      const r = el.getBoundingClientRect();
+      const dentro = r.top < (window.innerHeight || 800) - 60 && r.bottom > 0;
+      el.style.transition = 'opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1)';
+      if (dentro) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(14px)';
+        const d = Math.min(i * 70, 420); i += 1;
+        setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'none'; }, 40 + d);
+      } else {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(26px)';
+        if (!this.io) {
+          this.io = new IntersectionObserver((ents) => {
+            ents.forEach((en) => {
+              if (!en.isIntersecting) return;
+              en.target.style.opacity = '1';
+              en.target.style.transform = 'none';
+              this.io.unobserve(en.target);
+            });
+          }, { rootMargin: '0px 0px -10% 0px' });
+        }
+        this.io.observe(el);
+      }
+    });
+    this.contadores();
+  }
+
+  contadores() {
+    if (this.reducido) return;
+    document.querySelectorAll('main [data-count]').forEach((el) => {
+      const bruto = el.getAttribute('data-count') || '';
+      if (el.getAttribute('data-hecho') === bruto) return;
+      const r = el.getBoundingClientRect();
+      if (r.top > (window.innerHeight || 800) || r.bottom < 0) return;
+      el.setAttribute('data-hecho', bruto);
+      const m = bruto.match(/[\d.]+/);
+      if (!m) return;
+      const crudo = m[0];
+      const destino = parseFloat(crudo.replace(/\./g, ''));
+      if (!isFinite(destino)) return;
+      const t0 = performance.now();
+      const paso = (t) => {
+        const p = Math.min(1, (t - t0) / 1000);
+        const val = Math.round(destino * (1 - Math.pow(1 - p, 3)));
+        el.textContent = bruto.replace(crudo, crudo.indexOf('.') >= 0 ? val.toLocaleString('es-ES') : String(val));
+        if (p < 1) requestAnimationFrame(paso);
+      };
+      requestAnimationFrame(paso);
+    });
+  }
+
+  onScroll() {
+    const y = window.scrollY || 0;
+    const barra = this.progresoRef && this.progresoRef.current;
+    if (barra) {
+      const alto = Math.max(1, document.body.scrollHeight - window.innerHeight);
+      barra.style.transform = 'scaleX(' + Math.min(1, y / alto) + ')';
+    }
+    if (this.reducido) return;
+    document.querySelectorAll('main section > img').forEach((img) => {
+      const r = img.parentNode.getBoundingClientRect();
+      if (r.bottom < -200 || r.top > (window.innerHeight || 800) + 200) return;
+      if (img.getAttribute('data-hero') === '1') return;
+      const rel = (r.top + r.height / 2 - (window.innerHeight || 800) / 2) / (window.innerHeight || 800);
+      img.style.transform = 'scale(1.1) translate3d(0,' + (rel * -26).toFixed(1) + 'px,0)';
+    });
+    this.contadores();
+  }
+
+  motas() {
+    const c = this.motasRef && this.motasRef.current;
+    if (!c || this.reducido || this.raf) return;
+    const ctx = c.getContext('2d');
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = 0, h = 0;
+    const medir = () => {
+      w = c.clientWidth; h = c.clientHeight;
+      c.width = Math.max(1, w * dpr); c.height = Math.max(1, h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    medir();
+    window.addEventListener('resize', medir);
+    const p = [];
+    for (let i = 0; i < 30; i++) p.push({ x: Math.random(), y: Math.random(), r: 0.8 + Math.random() * 2, v: 0.014 + Math.random() * 0.032, a: 0.18 + Math.random() * 0.3, f: Math.random() * 6.28 });
+    const dibujar = (t) => {
+      ctx.clearRect(0, 0, w, h);
+      const oscuro = document.documentElement.getAttribute('data-tema') === 'oscuro';
+      const col = oscuro ? '224,194,142' : '138,106,50';
+      p.forEach((m) => {
+        m.y -= m.v / 100;
+        if (m.y < -0.05) { m.y = 1.05; m.x = Math.random(); }
+        const x = (m.x + Math.sin(t / 5600 + m.f) * 0.014) * w;
+        ctx.beginPath();
+        ctx.arc(x, m.y * h, m.r, 0, 6.2832);
+        ctx.fillStyle = 'rgba(' + col + ',' + (oscuro ? m.a : m.a * 0.6) + ')';
+        ctx.fill();
+      });
+      this.raf = requestAnimationFrame(dibujar);
+    };
+    this.raf = requestAnimationFrame(dibujar);
+  }
+
+  bajarChat() {
+    const el = this.chatRef && this.chatRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }
+
+  limpiar(t) {
+    return String(t)
+      .replace(/```+/g, '')
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/[*`_#>]/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  enviarFiltroMapa() {
+    const f = this.mapaRef && this.mapaRef.current;
+    if (!f || !f.contentWindow) return;
+    f.contentWindow.postMessage({ tipo: 'filtrar-mapa', ciudad: this.state.ciudad, tratamiento: this.state.tratamiento, tema: this.state.tema }, '*');
+  }
+
+  ponerTema(tema, guardar) {
+    try { document.documentElement.setAttribute('data-tema', tema); } catch (e) {}
+    if (guardar) { try { window.localStorage.setItem('divine-tema', tema); } catch (e) {} }
+    this.setState({ tema: tema }, () => this.enviarFiltroMapa());
+  }
+
+  go(route, extra) {
+    this.setState(Object.assign({ route: route }, extra || {}), () => {
+      try { window.scrollTo(0, 0); } catch (e) {}
+    });
+  }
+
+  cursosData() {
+    return [
+      { id: 'base', nombre: 'Técnica Divine · Formación Base', ciudad: 'Madrid', fechas: '14–16 de noviembre de 2026', duracion: '24 h en 3 días', horario: '10:00 – 19:00', plazas: 3, total: 8, precio: '1.450', reserva: '350', dias_cancel: 15,
+        frase: 'La puerta de entrada al método: sales valorando un cuerpo y decidiendo la primera sesión.',
+        promesa: 'Al salir valoras un cuerpo en los primeros minutos y decides el trabajo de la sesión con una razón que puedes explicar.',
+        capacidades: ['Valorar postura, tejido y retención antes de tocar, con una ficha ordenada.', 'Interpretar lo que ves y decidir qué no conviene trabajar ese día.', 'Construir la sesión completa para ese cuerpo, en orden y con intensidad justificada.', 'Contarle a tu clienta qué has visto y por qué trabajas así.'],
+        incluye: ['24 horas presenciales en grupo de ocho', 'Material de trabajo y fichas de valoración', 'Certificado de terapeuta Divine', 'Acceso al aula online con los apoyos del curso', 'Sitio reservado en la lista de la comunidad'] },
+      { id: 'avanzado', nombre: 'Técnica Divine · Nivel Avanzado', ciudad: 'Valencia', fechas: '30 de enero – 1 de febrero de 2027', duracion: '24 h en 3 días', horario: '10:00 – 19:00', plazas: 7, total: 8, precio: '1.650', reserva: '400', dias_cancel: 15,
+        frase: 'Para las que ya trabajan con el método y se topan con los casos que no encajan en nada.',
+        promesa: 'Al salir trabajas casos complejos —postquirúrgico, retención severa, tejido reactivo— sin salirte de criterio.',
+        capacidades: ['Adaptar el trabajo a tejido reactivo y a postoperatorios recientes.', 'Encadenar sesiones en un plan de varias semanas y ajustarlo con datos.', 'Detectar cuándo derivar y a quién.', 'Documentar la evolución para sostener el precio de tu servicio.'],
+        incluye: ['24 horas presenciales en grupo de ocho', 'Material de trabajo y fichas de seguimiento', 'Certificado de nivel avanzado', 'Acceso al aula online con los apoyos del curso', 'Sitio reservado en la lista de la comunidad'] },
+      { id: 'lectura', nombre: 'Lectura corporal · Intensivo', ciudad: 'Sevilla', fechas: '7–8 de marzo de 2027', duracion: '16 h en 2 días', horario: '10:00 – 19:00', plazas: 10, total: 12, precio: '890', reserva: '250', dias_cancel: 10,
+        frase: 'Dos días para cambiar solo una cosa: tu primera visita. Se aplica el lunes siguiente.',
+        promesa: 'Al salir tienes una primera visita entera: qué miras, qué preguntas, qué anotas y qué propones.',
+        capacidades: ['Dirigir una primera visita de diez minutos que ordena todo el tratamiento.', 'Rellenar una ficha de valoración que después te sirve para decidir.', 'Traducir lo que observas a un plan que la clienta entiende.', 'Cerrar la visita con una propuesta concreta, sin improvisar el precio.'],
+        incluye: ['16 horas presenciales', 'Fichas de valoración impresas', 'Certificado de asistencia', 'Acceso al aula online con los apoyos del curso', 'Sitio reservado en la lista de la comunidad'] }
+    ];
+  }
+
+  terapeutasData() {
+    return [
+      { id: 'marta', nombre: 'Marta Ibáñez', ciudad: 'Madrid', anio: '2024', iniciales: 'MI', tratamientos: ['Drenaje linfático', 'Postparto', 'Reductivo corporal'], direccion: 'Calle de Ponzano, 42 · Chamberí', frase: 'Trabajo sobre todo postparto: primero valoro, después decido.', sobre: 'Llevo nueve años en cabina y desde que me formé con Sorela mi primera visita cambió por completo. Trabajo postparto, drenaje y reductivo, siempre con una valoración previa.' },
+      { id: 'nuria', nombre: 'Nuria Sanchís', ciudad: 'Valencia', anio: '2024', iniciales: 'NS', tratamientos: ['Drenaje linfático', 'Postquirúrgico', 'Maderoterapia'], direccion: 'Avenida del Puerto, 118 · Camins al Grau', frase: 'Postquirúrgico con criterio: sé qué tocar y qué esperar.', sobre: 'Especializada en acompañamiento postquirúrgico. Trabajo con cirujanos de la ciudad y documento cada sesión para que se vea la evolución.' },
+      { id: 'carla', nombre: 'Carla Redondo', ciudad: 'Sevilla', anio: '2025', iniciales: 'CR', tratamientos: ['Reductivo corporal', 'Drenaje linfático', 'Valoración Divine'], direccion: 'Calle Feria, 27 · Casco Antiguo', frase: 'Dejé de vender sesiones sueltas y empecé a proponer planes.', sobre: 'Mi consulta es pequeña y trabajo con pocas clientas a la vez. Cada tratamiento arranca con una valoración completa.' },
+      { id: 'ainhoa', nombre: 'Ainhoa Etxebarria', ciudad: 'Bilbao', anio: '2025', iniciales: 'AE', tratamientos: ['Postparto', 'Drenaje linfático', 'Masaje profundo'], direccion: 'Alameda de Urquijo, 60 · Indautxu', frase: 'Cada cuerpo pide una cosa distinta el mismo día de la semana.', sobre: 'Vengo de la fisioterapia y la Técnica Divine me dio la parte estética con el mismo rigor con el que trabajaba antes.' },
+      { id: 'patricia', nombre: 'Patricia Soler', ciudad: 'Palma', anio: '2026', iniciales: 'PS', tratamientos: ['Reductivo corporal', 'Maderoterapia', 'Valoración Divine'], direccion: 'Carrer de Sant Miquel, 15 · Centro', frase: 'La clienta entiende el plan y por eso vuelve.', sobre: 'Trabajo sola en cabina propia. Lo que más ha cambiado es que ahora explico en voz alta lo que hago y por qué.' },
+      { id: 'lucia', nombre: 'Lucía Ferrer', ciudad: 'Barcelona', anio: '2026', iniciales: 'LF', tratamientos: ['Drenaje linfático', 'Postparto', 'Masaje profundo'], direccion: "Carrer d'Enric Granados, 88 · Eixample", frase: 'Valoro diez minutos y la sesión se decide sola.', sobre: 'Doce años de cabina y muchas formaciones cerradas a la espalda. Divine fue la primera que me enseñó a decidir en lugar de repetir.' }
+    ];
+  }
+
+  sistema() {
+    return [
+      'Eres el asistente de la web de Sorela Caro, creadora de la Técnica Divine: formación presencial en estética avanzada para esteticistas, masajistas y terapeutas corporales que ya trabajan con clientas.',
+      'TONO: hablas como Sorela. Español de España, tuteo, directo y cálido, frases cortas, cero jerga de marketing, cero emojis, nunca "¡Hola! Estoy aquí para ayudarte". Máximo 80 palabras. Si algo no lo sabes, lo dices y ofreces el contacto.',
+      'FORMATO: responde en texto plano, sin Markdown. Nada de asteriscos, almohadillas, guiones de lista ni negritas: solo frases y saltos de línea.',
+      'FORMACIONES (precio total; se reserva plaza y el resto se paga el primer día):',
+      '- Formación Base. Madrid, 14–16 nov 2026. 24 h en 3 días, 10:00–19:00. 1.450 €, reserva 350 €. 8 plazas, quedan 3. Cancelando con 15 días se devuelve la reserva.',
+      '- Nivel Avanzado. Valencia, 30 ene–1 feb 2027. 24 h en 3 días. 1.650 €, reserva 400 €. 8 plazas, quedan 7. Requiere haber hecho la Base. Cancelación 15 días.',
+      '- Lectura corporal (intensivo). Sevilla, 7–8 mar 2027. 16 h en 2 días. 890 €, reserva 250 €. 12 plazas, quedan 10. Cancelación 10 días.',
+      'REQUISITOS: experiencia real trabajando con las manos y con clientas. No se pide titulación concreta. No vale como primer contacto con la estética.',
+      'INCLUYE: horas presenciales en grupo de ocho (doce en Sevilla), material y fichas, certificado, aula online con los apoyos del curso.',
+      'PAGO: reserva + resto el primer día. Se puede fraccionar en tres meses avisando antes de reservar.',
+      'COMUNIDAD DE TERAPEUTAS: todavía NO está abierta y no tiene precio. Solo hay lista de espera, gratis y sin compromiso; las primeras entran con condición de fundadora. Es solo para certificadas por Sorela. Nunca inventes precio ni fecha de apertura.',
+      'CLIENTAS (no profesionales): en Localiza tu terapeuta hay un mapa con las terapeutas certificadas de Madrid, Barcelona, Valencia, Sevilla, Bilbao y Palma; se reserva directamente con cada una y ella confirma por correo. Toda sesión empieza con unos diez minutos de valoración.',
+      'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
+      'Termina siempre orientando al siguiente paso concreto (reservar plaza, abrir el mapa, apuntarse a la lista, escribir).'
+    ].join('\n');
+  }
+
+  respuestaLocal(q) {
+    const t = (q || '').toLowerCase();
+    if (/precio|cuesta|cuánto|cuanto|pag|fraccion|financ/.test(t)) return 'Base (Madrid, 14–16 nov): 1.450 €, reservas con 350 €. Avanzado (Valencia, 30 ene–1 feb): 1.650 €, reserva 400 €. Lectura corporal (Sevilla, 7–8 mar): 890 €, reserva 250 €.\nEl resto se paga el primer día. Si necesitas fraccionarlo en tres meses, dímelo antes de reservar.';
+    if (/fecha|cuándo|cuando|próxim|proxim|plaza|queda|ciudad|madrid|valencia|sevilla/.test(t)) return 'Lo más cercano es la Formación Base en Madrid, del 14 al 16 de noviembre: quedan 3 plazas de 8.\nDespués, Nivel Avanzado en Valencia (30 ene–1 feb) y Lectura corporal en Sevilla (7–8 de marzo).';
+    if (/requisit|titul|puedo|empez|principi|nivel|experiencia/.test(t)) return 'Necesitas experiencia real trabajando con las manos y con clientas. No pido una titulación concreta.\nSi es tu primer contacto con la estética, esta formación no te va a servir todavía.';
+    if (/reserv|cita|cliente|clienta|terapeuta|cerca|mapa/.test(t)) return 'Si buscas sesión como clienta, abre Localiza tu terapeuta: en el mapa ves quién tiene consulta cerca de ti y reservas con ella; te confirma ella por correo.\nSi quieres reservar plaza en una formación, dime en cuál y te digo cómo va el pago.';
+    if (/comunidad|membres|suscrip|lista/.test(t)) return 'La comunidad todavía no está abierta y aún no tiene precio. Solo hay lista de espera: gratis, sin compromiso y con condición de fundadora para las primeras.\nEs solo para terapeutas certificadas conmigo.';
+    if (/certific|diploma|título|titulo/.test(t)) return 'Al completar la formación recibes el certificado de terapeuta Divine y entras en el mapa público de terapeutas certificadas.';
+    if (/cancel|devolu|aplaz/.test(t)) return 'Si no puedes venir, avisando con 15 días te devuelvo la reserva (10 días en el intensivo de Sevilla).';
+    if (/incluye|material|aula|horario|hora/.test(t)) return 'Incluye las horas presenciales en grupo de ocho, material y fichas de valoración, certificado y acceso al aula online con los apoyos del curso. El horario es de 10:00 a 19:00.';
+    return 'Puedo ayudarte con fechas, plazas, precios y requisitos de las formaciones, o con encontrar terapeuta cerca de ti.\nSi es algo más concreto, escríbeme por el formulario o por Instagram: @sorelacaro_.';
+  }
+
+  async preguntar(texto) {
+    const limpio = (texto || '').trim();
+    if (!limpio || this.state.escribiendo) return;
+    const historial = this.state.chat.concat([{ rol: 'yo', texto: limpio }]);
+    this.setState({ chat: historial, borrador: '', escribiendo: true }, () => this.bajarChat());
+    let respuesta = null;
+    try {
+      if (window.claude && window.claude.complete) {
+        respuesta = await window.claude.complete({
+          system: this.sistema(),
+          max_tokens: 400,
+          messages: historial.slice(-8).map((m) => ({ role: m.rol === 'yo' ? 'user' : 'assistant', content: m.texto }))
+        });
+      }
+    } catch (e) { respuesta = null; }
+    const bruto = respuesta && String(respuesta).trim();
+    const texto2 = (bruto && this.limpiar(bruto)) || this.respuestaLocal(limpio);
+    this.setState({ chat: this.state.chat.concat([{ rol: 'asistente', texto: texto2 }]), escribiendo: false }, () => this.bajarChat());
+  }
+
+  renderVals() {
+    const st = this.state;
+    const mostrarPlazas = this.props.mostrarPlazas !== false;
+    const r = st.route;
+    this.mapaRef = this.mapaRef || React.createRef();
+    this.chatRef = this.chatRef || React.createRef();
+    this.motasRef = this.motasRef || React.createRef();
+    this.progresoRef = this.progresoRef || React.createRef();
+
+    const cursos = this.cursosData().map((c) => Object.assign({}, c, {
+      meta: c.ciudad + ' · ' + c.fechas + ' · ' + c.duracion,
+      metaLarga: c.ciudad + ' · ' + c.fechas + ' · ' + c.horario + ' · grupo de ' + c.total,
+      mostrarPlazas: mostrarPlazas && c.plazas <= 4,
+      plazasTexto: 'Quedan ' + c.plazas + ' de ' + c.total + ' plazas',
+      comoEs: 'Sois ' + c.total + ' como máximo. Trabajas sobre cuerpo real con Sorela corrigiendo al lado de la camilla, no mirando un vídeo para replicarlo en casa.',
+      reservaTexto: 'Reservas tu plaza con ' + c.reserva + ' € y pagas el resto el primer día.',
+      cancelacion: 'Si no puedes venir, avisando con ' + c.dias_cancel + ' días te devolvemos la reserva.',
+      abrir: () => this.go('curso', { cursoId: c.id })
+    }));
+    const curso = cursos.filter((c) => c.id === st.cursoId)[0] || cursos[0];
+
+    const todas = this.terapeutasData().map((t) => Object.assign({}, t, {
+      nombreCorto: t.nombre.split(' ')[0],
+      abrir: () => this.go('terapeuta', { terapeutaId: t.id })
+    }));
+    const ciudadSel = st.ciudad;
+    const tratSel = st.tratamiento;
+    const filtradas = todas.filter((t) => (ciudadSel === 'Todas las ciudades' || t.ciudad === ciudadSel) && (tratSel === 'Todos los tratamientos' || t.tratamientos.indexOf(tratSel) >= 0));
+    const sinResultados = filtradas.length === 0;
+    const visibles = sinResultados ? todas.slice(0, 3) : filtradas;
+    const terapeuta = todas.filter((t) => t.id === st.terapeutaId)[0] || todas[0];
+
+    const faqsRaw = [
+      { q: '¿Qué es exactamente la Técnica Divine?', a: 'Un método de estética avanzada que enseña a observar, interpretar y decidir antes de trabajar manualmente. No es una secuencia cerrada: es el criterio para elegir qué hacer con cada cuerpo.' },
+      { q: '¿Necesito formación previa?', a: 'Necesitas experiencia real con clientas. Titulación concreta no pido; manos con kilómetros, sí.' },
+      { q: '¿Se puede hacer online?', a: 'No. El trabajo manual no se corrige por videollamada. El aula online es el apoyo de antes y de después, nunca el curso.' },
+      { q: '¿Qué diferencia hay entre la formación y la comunidad?', a: 'La formación es el curso presencial donde te certificas. La comunidad es lo que viene después, y todavía la estoy montando: por ahora solo hay lista de espera.' },
+      { q: '¿Puedo entrar en la comunidad sin haberme formado?', a: 'No. Será solo para terapeutas certificadas conmigo. Es lo que hace que el mapa signifique algo para las clientas.' },
+      { q: 'Soy clienta, no profesional. ¿Puedo reservar una sesión?', a: 'Sí. En Localiza tu terapeuta tienes el mapa con las certificadas; reservas directamente con la que te encaje y ella te confirma.' }
+    ];
+    const faqs = faqsRaw.map((f, i) => Object.assign({}, f, {
+      abierta: st.faq === i,
+      signo: st.faq === i ? '–' : '+',
+      toggle: () => this.setState({ faq: st.faq === i ? null : i })
+    }));
+
+    const dias = [
+      { dow: 'Lun', num: 1 }, { dow: 'Mar', num: 2 }, { dow: 'Mié', num: 3 }, { dow: 'Jue', num: 4 },
+      { dow: 'Vie', num: 5 }, { dow: 'Lun', num: 8 }, { dow: 'Mar', num: 9 }, { dow: 'Mié', num: 10 }
+    ].map((d) => ({
+      dow: d.dow, num: d.num,
+      bg: st.dia === d.num ? 'var(--ink)' : 'var(--surface)',
+      fg: st.dia === d.num ? 'var(--bg)' : 'var(--ink)',
+      elegir: () => this.setState({ dia: d.num })
+    }));
+
+    const horas = ['09:30', '11:30', '13:00', '16:00', '17:30'].map((h) => ({
+      label: h,
+      bg: st.hora === h ? 'var(--ink)' : 'var(--surface)',
+      fg: st.hora === h ? 'var(--bg)' : 'var(--ink)',
+      elegir: () => this.setState({ hora: h })
+    }));
+
+    const mensajes = st.chat.map((m) => ({
+      texto: m.texto,
+      align: m.rol === 'yo' ? 'flex-end' : 'flex-start',
+      bg: m.rol === 'yo' ? 'var(--ink)' : 'var(--surface)',
+      fg: m.rol === 'yo' ? 'var(--bg)' : 'var(--ink-4)',
+      borde: m.rol === 'yo' ? 'var(--ink)' : 'var(--line-3)'
+    }));
+
+    const chips = ['Próximas fechas y plazas', 'Precio y forma de pago', '¿Puedo entrar con mi nivel?', 'Busco terapeuta cerca', 'Lista de la comunidad'];
+
+    const enLista = this.props.contadorLista != null ? this.props.contadorLista : 128;
+
+    return {
+      isHome: r === 'home', isMetodo: r === 'metodo', isFormaciones: r === 'formaciones', isCurso: r === 'curso',
+      isMembresia: r === 'membresia', isTerapeutas: r === 'terapeutas', isTerapeuta: r === 'terapeuta',
+      isSobre: r === 'sobre', isContacto: r === 'contacto',
+
+      goHome: (e) => { if (e) e.preventDefault(); this.go('home'); },
+      goMetodo: (e) => { if (e) e.preventDefault(); this.go('metodo'); },
+      goFormaciones: (e) => { if (e) e.preventDefault(); this.go('formaciones'); },
+      goMembresia: (e) => { if (e) e.preventDefault(); this.go('membresia'); },
+      goTerapeutas: (e) => { if (e) e.preventDefault(); this.go('terapeutas'); },
+      goSobre: (e) => { if (e) e.preventDefault(); this.go('sobre'); },
+      goContacto: (e) => { if (e) e.preventDefault(); this.go('contacto'); },
+      noop: (e) => { if (e) e.preventDefault(); },
+      noSubmit: (e) => { if (e) e.preventDefault(); },
+      irAReserva: (e) => { if (e) e.preventDefault(); try { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); } catch (err) {} },
+
+      faqEnHome: this.props.faqEnHome !== false,
+      mapaRef: this.mapaRef, chatRef: this.chatRef, motasRef: this.motasRef, progresoRef: this.progresoRef,
+      temaLabel: st.tema === 'oscuro' ? 'Ver en claro' : 'Ver en oscuro',
+      temaClaro: st.tema !== 'oscuro', temaOscuro: st.tema === 'oscuro',
+      cambiarTema: () => this.ponerTema(st.tema === 'oscuro' ? 'claro' : 'oscuro', true),
+
+      cursos: cursos, curso: curso,
+      terapeutasVisibles: visibles, terapeuta: terapeuta,
+      sinResultados: sinResultados,
+      textoSinResultados: 'Todavía no hay terapeuta Divine en ' + (ciudadSel === 'Todas las ciudades' ? 'esa combinación' : ciudadSel) + '.',
+      resultadoTexto: sinResultados ? 'Sin resultados' : filtradas.length + (filtradas.length === 1 ? ' terapeuta' : ' terapeutas'),
+      ciudades: ['Todas las ciudades', 'Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao', 'Palma', 'Zaragoza'],
+      tratamientos: ['Todos los tratamientos', 'Drenaje linfático', 'Postparto', 'Postquirúrgico', 'Reductivo corporal', 'Maderoterapia', 'Masaje profundo', 'Valoración Divine'],
+      setCiudad: (e) => this.setState({ ciudad: e.target.value }),
+      setTratamiento: (e) => this.setState({ tratamiento: e.target.value }),
+
+      dias: dias, horas: horas,
+      reservaResumen: 'Día ' + st.dia + ' de marzo · ' + st.hora + ' · consulta de ' + terapeuta.ciudad,
+
+      listaEnviada: st.listaEnviada, listaAbierta: !st.listaEnviada,
+      enviarLista: (e) => { if (e) e.preventDefault(); this.setState({ listaEnviada: true }); },
+      resetLista: () => this.setState({ listaEnviada: false }),
+      contadorTexto: enLista + ' terapeutas están ya en la lista.',
+
+      chatAbierto: st.chatAbierto, chatCerrado: !st.chatAbierto,
+      abrirChat: () => this.setState({ chatAbierto: true }),
+      cerrarChat: () => this.setState({ chatAbierto: false }),
+      mensajes: mensajes, escribiendo: st.escribiendo, borrador: st.borrador,
+      setBorrador: (e) => this.setState({ borrador: e.target.value }),
+      enviarChat: (e) => { if (e) e.preventDefault(); this.preguntar(st.borrador); },
+      sugerencias: chips.map((c) => ({ label: c, enviar: () => this.preguntar(c) })),
+
+      testimonios: [
+        { frase: '«Dejé de improvisar cuando la clienta no encajaba en el guion. Ahora sé qué mirar y por qué.»', nombre: 'Marta Ibáñez', ciudad: 'Madrid', iniciales: 'MI' },
+        { frase: '«Subí el precio de la sesión un 30 % porque por fin puedo explicar lo que estoy haciendo.»', nombre: 'Nuria Sanchís', ciudad: 'Valencia', iniciales: 'NS' },
+        { frase: '«La primera visita cambió entera: valoro diez minutos y la clienta entiende el plan completo.»', nombre: 'Carla Redondo', ciudad: 'Sevilla', iniciales: 'CR' }
+      ],
+
+      incluyeMembresia: [
+        { titulo: 'Una clase en vivo al mes', texto: 'Un caso real resuelto delante de ti, con preguntas al final. Grabada, para cuando cierres la cabina.', estado: 'Ya decidido', color: 'var(--arcilla)' },
+        { titulo: 'Canal privado para preguntar', texto: 'El caso raro del martes, resuelto el martes. Ni el mes que viene ni en un foro abierto.', estado: 'Ya decidido', color: 'var(--salvia)' },
+        { titulo: 'Fichas y protocolos descargables', texto: 'Para usar en consulta, no para archivar: valoración, primera visita, progresiones por zona.', estado: 'Ya decidido', color: 'var(--azul)' },
+        { titulo: 'Tu ficha en el mapa público', texto: 'Apareces donde las clientas buscan, con tu ciudad y tu botón de reserva.', estado: 'Ya decidido', color: 'var(--oro)' },
+        { titulo: 'Negocio y clientas', texto: 'Cómo se consigue clienta, cómo se cuenta lo que haces y cómo usar la IA para no vivir pegada al móvil.', estado: 'Lo estoy escribiendo', color: 'var(--faint)' }
+      ],
+
+      objeciones: [
+        { q: '¿Cuándo abre?', a: 'No pongo fecha que no pueda cumplir. Cuando la primera tanda de contenido esté lista, escribo a la lista antes de anunciarlo en ningún sitio.' },
+        { q: '¿Me compromete a algo apuntarme?', a: 'A nada. No pido tarjeta, no hay reserva que pagar y puedes salirte con un correo.' },
+        { q: '¿Tengo que estar certificada ya?', a: 'Para entrar el día que abra, sí. Para estar en la lista, no: si tienes plaza en una formación, apúntate igual.' },
+        { q: '¿Qué precio tendrá?', a: 'Aún no está cerrado. Lo que sí está decidido es que quien entre desde la lista mantiene condición de fundadora mientras siga dentro.' }
+      ],
+
+      faqs: faqs,
+      faqsCurso: [
+        { q: '¿Y si nunca he trabajado estética avanzada?', a: 'Puedes venir si ya trabajas con las manos y tienes clientas. Si es tu primer contacto con la estética, espera: esta formación parte de que ya sabes trabajar.' },
+        { q: '¿Dan certificado?', a: 'Sí. Al completar la formación recibes el certificado de terapeuta Divine y tu sitio en el mapa público.' },
+        { q: '¿Hay facilidades de pago?', a: 'Reservas con el primer pago y abonas el resto el primer día. Si necesitas fraccionarlo en tres meses, escríbeme antes de reservar y lo vemos.' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

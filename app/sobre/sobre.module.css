@@ -1,0 +1,149 @@
+.cabecera {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  background: var(--surface);
+  border-bottom: 1px solid var(--line-1);
+}
+
+.intro {
+  padding: clamp(50px, 8vw, 120px) clamp(24px, 4vw, 56px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+
+.nombre {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(42px, 6.4vw, 84px);
+  line-height: 1;
+  letter-spacing: -0.015em;
+}
+
+.subtitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(20px, 2.2vw, 28px);
+  line-height: 1.3;
+  color: var(--ink-3);
+}
+
+.foto {
+  position: relative;
+  min-height: min(62vh, 560px);
+  background: var(--photo-bg);
+  overflow: hidden;
+}
+
+.foto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------- Relato ---------- */
+.relato {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(40px, 6vw, 80px);
+}
+
+.parrafo {
+  margin: 0;
+  font-weight: 300;
+  font-size: clamp(16px, 1.25vw, 18.5px);
+  line-height: 1.68;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+/* Hueco de copy pendiente. Marcado en monoespaciado a propósito: se ve que
+   no es texto definitivo y no se cuela en producción por descuido. */
+.pendiente {
+  margin: 0;
+  padding: 18px 22px;
+  background: var(--arcilla-tint);
+  border-left: 3px solid var(--arcilla);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--arcilla-ink);
+}
+
+.tira {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: clamp(16px, 2vw, 22px);
+}
+
+/* ---------- Hoy ---------- */
+.hoy {
+  padding: clamp(56px, 8vw, 110px) 0;
+  background: var(--azul-tint);
+}
+
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(16px, 2vw, 24px);
+}
+
+.cifra {
+  background: var(--surface);
+  padding: clamp(24px, 3vw, 34px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cifraGrande {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(38px, 4.4vw, 56px);
+  line-height: 1;
+  color: var(--ink);
+}
+
+.cifraMedia {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(26px, 2.8vw, 34px);
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.cifraPie {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--azul-ink);
+}
+
+/* ---------- Cierre ---------- */
+.cierre {
+  padding: clamp(70px, 10vw, 140px) 0;
+  text-align: center;
+}
+
+.cierre > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.cierreTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(32px, 5vw, 62px);
+  line-height: 1.04;
+  letter-spacing: -0.012em;
+}

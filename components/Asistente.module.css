@@ -1,0 +1,285 @@
+.zona {
+  position: fixed;
+  right: clamp(14px, 2.4vw, 28px);
+  bottom: clamp(14px, 2.4vw, 28px);
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  max-width: calc(100vw - 28px);
+}
+
+/* ---------- Panel ---------- */
+.panel {
+  width: min(376px, calc(100vw - 28px));
+  max-height: min(620px, calc(100vh - 120px));
+  background: var(--bg);
+  border: 1px solid var(--line-3);
+  box-shadow: 0 24px 60px rgba(26, 23, 20, 0.24);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: divineUp 0.32s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.cabecera {
+  flex: 0 0 auto;
+  background: var(--inverse-bg);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--arcilla-tint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 16px;
+  color: var(--arcilla-ink);
+}
+
+.identidad {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nombre {
+  font-size: 14.5px;
+  color: var(--inverse-ink);
+}
+
+.subtitulo {
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--on-inverse-3);
+}
+
+.cerrar {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  color: var(--on-inverse-2);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cerrar:hover {
+  color: var(--inverse-ink);
+}
+
+/* ---------- Mensajes ---------- */
+.mensajes {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filaYo {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filaEl {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.burbujaYo,
+.burbujaEl,
+.escribiendo {
+  margin: 0;
+  max-width: 86%;
+  padding: 13px 15px;
+  border-radius: 12px;
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.55;
+  white-space: pre-line;
+  text-wrap: pretty;
+}
+
+.burbujaYo {
+  background: var(--ink);
+  color: var(--bg);
+  border: 1px solid var(--ink);
+}
+
+.burbujaEl {
+  background: var(--surface);
+  color: var(--ink-4);
+  border: 1px solid var(--line-3);
+}
+
+.escribiendo {
+  background: var(--surface);
+  border: 1px solid var(--line-3);
+  font-size: 14px;
+  color: var(--faint);
+}
+
+/* ---------- Sugerencias ---------- */
+.chips {
+  flex: 0 0 auto;
+  padding: 0 18px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.chip {
+  padding: 9px 14px;
+  background: var(--surface);
+  color: var(--ink-3);
+  border: 1px solid var(--line-4);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 300;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
+}
+
+.chip:hover {
+  border-color: var(--arcilla);
+  color: var(--ink);
+}
+
+/* ---------- Entrada ---------- */
+.entrada {
+  flex: 0 0 auto;
+  padding: 12px 14px;
+  border-top: 1px solid var(--line-3);
+  background: var(--surface);
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+
+.campo {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--line-4);
+  border-radius: 999px;
+  font-size: 14.5px;
+  font-weight: 300;
+  color: var(--ink);
+}
+
+.campo::placeholder {
+  color: var(--faint);
+}
+
+.enviar {
+  flex: 0 0 auto;
+  padding: 12px 20px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 999px;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+
+.enviar:hover {
+  background: var(--arcilla);
+}
+
+/* ---------- Lanzador ---------- */
+.lanzador {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 24px 12px 13px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 18px 40px rgba(12, 10, 9, 0.28);
+  cursor: pointer;
+  transition:
+    background 0.3s,
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+
+.lanzador:hover {
+  background: var(--oro);
+  transform: translateY(-3px);
+  box-shadow: 0 24px 52px rgba(12, 10, 9, 0.34);
+}
+
+.marca {
+  position: relative;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orbita {
+  animation: divineOrbit 16s linear infinite;
+}
+
+.hoja {
+  position: absolute;
+  inset: 8px;
+}
+
+.reclamo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.reclamoFuerte {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.reclamoFino {
+  font-size: 10.5px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+  line-height: 1.1;
+}
+
+/* En pantallas estrechas el lanzador se reduce a la marca, para no tapar la web. */
+@media (max-width: 520px) {
+  .reclamo {
+    display: none;
+  }
+  .lanzador {
+    padding: 13px;
+  }
+}

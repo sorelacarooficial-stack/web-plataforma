@@ -1,0 +1,57 @@
+.barra {
+  border-bottom: 1px solid var(--line-1);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.ventana {
+  position: relative;
+  padding: clamp(16px, 2.2vw, 24px) 0;
+  mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+}
+
+.tira {
+  display: flex;
+  width: max-content;
+  gap: clamp(28px, 4vw, 64px);
+  /* Arranca en la misma línea vertical que el resto de la página. */
+  padding-left: max(
+    calc((100vw - 1240px) / 2 + clamp(20px, 4vw, 40px)),
+    clamp(22px, 4vw, 40px)
+  );
+  animation: divineMarquee 38s linear infinite;
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--oro);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ventana {
+    overflow-x: auto;
+  }
+  .tira {
+    animation: none;
+  }
+}

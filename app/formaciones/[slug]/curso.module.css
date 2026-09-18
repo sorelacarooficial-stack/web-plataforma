@@ -1,0 +1,173 @@
+.portada {
+  padding: clamp(50px, 7vw, 90px) 0 clamp(40px, 5vw, 70px);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line-1);
+}
+
+.volver {
+  margin-bottom: clamp(26px, 3vw, 40px);
+}
+
+.cabeza {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: clamp(28px, 4vw, 64px);
+  align-items: end;
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(34px, 5vw, 64px);
+  line-height: 1.04;
+  letter-spacing: -0.012em;
+  text-wrap: pretty;
+}
+
+.meta {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--arcilla);
+}
+
+.plazas {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--arcilla-ink);
+}
+
+/* ---------- Capacidades ---------- */
+.capacidades {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.capacidad {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line-3);
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  font-weight: 300;
+  font-size: clamp(16px, 1.2vw, 18.5px);
+  line-height: 1.55;
+  color: var(--ink-4);
+  text-wrap: pretty;
+}
+
+.bolita {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--arcilla);
+  transform: translateY(-4px);
+}
+
+/* ---------- Cómo son los días ---------- */
+.comoSon {
+  padding: clamp(56px, 8vw, 110px) 0;
+  background: var(--salvia-tint);
+}
+
+/* ---------- Detalles y precio ---------- */
+.detalles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(30px, 4vw, 60px);
+  align-items: start;
+}
+
+.incluye {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.incluyeItem {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  font-weight: 300;
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.guion {
+  flex: 0 0 auto;
+  color: var(--arcilla);
+}
+
+.precio {
+  background: var(--inverse-bg);
+  color: var(--on-inverse-2);
+  padding: clamp(28px, 3.4vw, 42px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.precioCifra {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(34px, 4.4vw, 52px);
+  line-height: 1;
+  color: var(--inverse-ink);
+}
+
+.precioTexto {
+  margin: 0;
+  font-weight: 300;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--on-inverse-2);
+  text-wrap: pretty;
+}
+
+.precioNota {
+  margin: 0;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--on-inverse-3);
+  text-wrap: pretty;
+}
+
+/* ---------- FAQ del curso ---------- */
+.faq {
+  border-top: 1px solid var(--line-3);
+  padding: clamp(20px, 2.4vw, 28px) 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(14px, 2vw, 36px);
+}
+
+.faqP {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(19px, 2vw, 24px);
+  line-height: 1.25;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.faqR {
+  margin: 0;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.64;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
