@@ -55,7 +55,7 @@ export function navDe(rol: Rol): { id: Vista; label: string }[] {
     { id: 'agenda', label: 'Mi agenda' },
     { id: 'perfil', label: 'Mi ficha pública' },
     { id: 'facturacion', label: 'Facturación' },
-    { id: 'suscripcion', label: 'Mi suscripción' },
+    { id: 'suscripcion', label: 'Mi acceso' },
   ];
 }
 
@@ -75,11 +75,7 @@ export function tituloDe(vista: Vista, rol: Rol) {
     facturacion: admin ? 'Ingresos y facturas' : 'Facturación',
     perfil: 'Tu ficha en el buscador',
     agenda: admin ? 'Reservas' : 'Tu agenda',
-    suscripcion: admin
-      ? 'Cobros'
-      : alumna
-        ? 'Comunidad de Terapeutas Divine'
-        : 'Tu suscripción',
+    suscripcion: admin ? 'Cobros' : 'Comunidad de Terapeutas Divine',
   };
   return titulos[vista];
 }
@@ -99,7 +95,7 @@ export function seccionDe(vista: Vista, rol: Rol) {
     pagos: 'Tu formación',
     contenido: 'Aula · autoría',
     agenda: 'Reservas recibidas',
-    suscripcion: 'Tu cuota',
+    suscripcion: 'Comunidad en beta',
   };
   return secciones[vista];
 }
@@ -609,11 +605,15 @@ export const TRATAMIENTOS_PERFIL = [
 
 export const TRATAMIENTOS_ACTIVOS = ['Drenaje linfático', 'Postparto', 'Reductivo corporal'];
 
-export const RECIBOS = [
-  'Septiembre 2026',
-  'Agosto 2026',
-  'Julio 2026',
-  'Junio 2026',
+/** La membresía está en beta: no hay cuota, no hay recibos. Esto es lo que
+ *  falta para poder abrirla al público y ponerle precio. */
+export const PENDIENTE_BETA = [
+  { que: 'Clase en vivo al mes, con grabación', listo: true },
+  { que: 'Canal privado de casos', listo: true },
+  { que: 'Fichas y protocolos descargables', listo: true },
+  { que: 'Ficha pública en el mapa de terapeutas', listo: true },
+  { que: 'Formación de negocio y clientas', listo: false },
+  { que: 'Precio y condiciones de alta', listo: false },
 ];
 
 /* ==========================================================================
