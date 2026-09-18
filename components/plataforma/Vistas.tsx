@@ -32,8 +32,8 @@ import {
   POR_CONFIRMAR,
   POSTS,
   PREPARACION,
+  PENDIENTE_BETA,
   RANKING,
-  RECIBOS,
   RESERVAS_AGREGADAS,
   SEMANA,
   TRATAMIENTOS_ACTIVOS,
@@ -166,10 +166,10 @@ export function InicioAlumna({ ir }: Props) {
 
         <section className={css.tarjetaOro}>
           <p className={css.rotulo}>Incluido</p>
-          <h2 className={css.h3}>Tu primer mes de comunidad</h2>
+          <h2 className={css.h3}>Tu entrada a la comunidad</h2>
           <p className={css.parrafo}>
-            Cuando termines la formación se activa tu acceso a la comunidad de terapeutas. El primer
-            mes va incluido.
+            Cuando termines la formación entras en la comunidad de terapeutas, que ahora mismo está
+            en beta. Mientras dure no se cobra nada.
           </p>
         </section>
       </div>
@@ -415,8 +415,8 @@ export function Comunidad({ rol, ir }: Props) {
               Estás de visita
             </p>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 300, lineHeight: 1.55, color: 'var(--ink-3)' }}>
-              Puedes leer la comunidad. Podrás publicar y tener nivel cuando termines la formación:
-              el primer mes va incluido.
+              Puedes leer la comunidad. Podrás publicar y tener nivel cuando termines la
+              formación. Ahora está en beta, así que no hay cuota que pagar.
             </p>
           </section>
         )}
@@ -866,70 +866,54 @@ export function Perfil() {
 }
 
 /* ==========================================================================
-   Mi suscripción
+   Mi acceso a la comunidad
+
+   La membresía está en fase beta de lanzamiento: todavía no tiene precio
+   público ni se cobra nada, así que esta vista no habla de cuota, ni de
+   próximo cobro, ni de recibos. Cuando se abra y se fije precio, aquí vuelven
+   el método de pago, el histórico y la baja.
    ========================================================================== */
 export function Suscripcion() {
-  const [baja, setBaja] = useState(false);
-
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 'clamp(16px,2vw,24px)', alignItems: 'start' }}>
       <section className={css.tarjeta} style={{ alignItems: 'flex-start', gap: 16 }}>
-        <p className={css.rotulo}>Tu suscripción</p>
+        <p className={css.rotulo}>Tu acceso</p>
         <h2 className={css.h2}>Comunidad de Terapeutas Divine</h2>
-        <p style={{ margin: 0, fontSize: 15, fontWeight: 300, color: 'var(--muted-2)' }}>
-          49 € al mes · Próximo cobro: 2 de octubre de 2026
+        <span className={`${css.estado} ${css.estadoOro}`}>En beta</span>
+        <p style={{ margin: 0, fontSize: 15, fontWeight: 300, lineHeight: 1.6, color: 'var(--muted-2)', textWrap: 'pretty' }}>
+          Estás dentro de la beta como certificada. Mientras dure no se cobra nada: la
+          comunidad se está construyendo con las que estáis aquí desde el principio.
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 18, marginTop: 6 }}>
-          <button type="button" className={css.btn}>
-            Cambiar método de pago
-          </button>
-          <button
-            type="button"
-            onClick={() => setBaja(true)}
-            style={{ padding: 0, background: 'none', border: 'none', borderBottom: '1px solid var(--line-5)', fontSize: 13.5, fontWeight: 300, color: 'var(--muted)', cursor: 'pointer' }}
-          >
-            Darme de baja
-          </button>
-        </div>
+        <p className={css.apunte}>
+          Cuando se abra al público te escribiré yo antes de que haya ningún cargo. Nada se
+          activa solo.
+        </p>
       </section>
 
-      {baja && (
-        <section className={css.tarjetaOscura} style={{ display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'flex-start' }}>
-          <h2 className={css.h2} style={{ color: 'var(--inverse-ink)' }}>
-            ¿Seguro?
-          </h2>
-          <p style={{ margin: 0, fontSize: 14.5, fontWeight: 300, lineHeight: 1.6, color: 'var(--on-inverse-2)', textWrap: 'pretty' }}>
-            Mantienes el acceso hasta el 2 de octubre y tu ficha dejará de aparecer en el buscador
-            ese día. Puedes volver cuando quieras.
-          </p>
-          <div className={css.acciones} style={{ marginTop: 6 }}>
-            <button type="button" className={css.btnClaro} onClick={() => setBaja(false)}>
-              Sigo dentro
-            </button>
-            <button
-              type="button"
-              className={css.btnLinea}
-              style={{ color: 'var(--on-inverse-2)', borderColor: 'var(--line-inverse-2)' }}
-            >
-              Darme de baja
-            </button>
-          </div>
-        </section>
-      )}
+      <section className={css.tarjetaOro}>
+        <p className={css.rotulo}>Condición de fundadora</p>
+        <p className={css.h3} style={{ fontSize: 'clamp(22px,2.3vw,28px)' }}>
+          La mantienes mientras sigas dentro
+        </p>
+        <p style={{ margin: 0, fontSize: 14, fontWeight: 300, lineHeight: 1.6, color: 'var(--ink-3)', textWrap: 'pretty' }}>
+          Entraste en la beta, así que conservas las condiciones de fundadora el día que la
+          comunidad abra y tenga precio.
+        </p>
+      </section>
 
       <section className={css.tarjeta}>
-        <h2 className={css.rotuloSeccion}>Recibos</h2>
-        {RECIBOS.map((m) => (
-          <div key={m} className={css.fila} style={{ padding: '13px 0' }}>
-            <span style={{ fontSize: 14.5, fontWeight: 300, color: 'var(--ink-4)' }}>{m}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <span style={{ fontSize: 14, fontWeight: 300, color: 'var(--muted-2)' }}>49,00 €</span>
-              <button type="button" className={css.enlaceAccion}>
-                PDF
-              </button>
+        <h2 className={css.rotuloSeccion}>Qué falta para abrir</h2>
+        {PENDIENTE_BETA.map((p) => (
+          <div key={p.que} className={css.fila}>
+            <span className={css.filaNombre}>{p.que}</span>
+            <span className={`${css.estado} ${p.listo ? css.estadoOro : css.estadoNeutro}`}>
+              {p.listo ? 'Listo' : 'En marcha'}
             </span>
           </div>
         ))}
+        <p className={css.apunte} style={{ marginTop: 6 }}>
+          Si echas algo en falta, dímelo por el canal: la beta está para eso.
+        </p>
       </section>
     </div>
   );

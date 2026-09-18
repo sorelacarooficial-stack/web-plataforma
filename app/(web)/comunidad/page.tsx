@@ -34,19 +34,6 @@ export default function Comunidad() {
         </div>
       </section>
 
-      <section className="seccion-sm">
-        <div className="wrap rejilla-290" style={{ alignItems: 'start' }}>
-          <h2 className="titulo-lg" style={{ fontSize: 'clamp(30px,4.2vw,52px)', lineHeight: 1.06 }}>
-            Terminar la formación no es llegar.
-          </h2>
-          <p className="texto max-520" style={{ lineHeight: 1.66 }}>
-            Sales del curso con criterio nuevo y muchas ganas. A las tres semanas aparece el
-            primer caso raro, no tienes a quién preguntar y vuelves a lo de siempre. Llevo tiempo
-            viendo ese patrón: la comunidad existe para cortarlo.
-          </p>
-        </div>
-      </section>
-
       <section className={css.piezasSeccion}>
         <div className="wrap">
           <p className="antetitulo" style={{ marginBottom: 'clamp(30px,4vw,52px)' }}>

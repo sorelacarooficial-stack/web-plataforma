@@ -16,7 +16,8 @@
     "pruebas:plataforma": "node pruebas/plataforma.mjs",
     "pruebas:asistente": "node pruebas/asistente.mjs",
     "pruebas:menu": "node pruebas/menu.mjs",
-    "pruebas:auditoria": "node pruebas/auditoria.mjs"
+    "pruebas:auditoria": "node pruebas/auditoria.mjs",
+    "pruebas:home": "node pruebas/home.mjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",

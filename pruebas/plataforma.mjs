@@ -38,7 +38,7 @@ await p.waitForURL('**/plataforma', { timeout: 6000 }).catch(() => {});
 check('login: el formulario entra en la plataforma', p.url().endsWith('/plataforma'));
 
 /* ---------- Rol miembro: recorrer todo el menú ---------- */
-const MIEMBRO = ['Inicio', 'Comunidad', 'Clases y material', 'Mis clientas', 'Mi agenda', 'Mi ficha pública', 'Facturación', 'Mi suscripción'];
+const MIEMBRO = ['Inicio', 'Comunidad', 'Clases y material', 'Mis clientas', 'Mi agenda', 'Mi ficha pública', 'Facturación', 'Mi acceso'];
 for (const s of MIEMBRO) {
   await p.getByRole('button', { name: s, exact: true }).click();
   await p.waitForTimeout(450);
@@ -71,11 +71,10 @@ await p.getByRole('button', { name: 'Sin volver', exact: true }).click();
 await p.waitForTimeout(350);
 check('crm: el filtro deja una clienta', (await p.locator('article').count()) === 1);
 
-await p.getByRole('button', { name: 'Mi suscripción', exact: true }).click();
+await p.getByRole('button', { name: 'Mi acceso', exact: true }).click();
 await p.waitForTimeout(400);
-await p.getByRole('button', { name: 'Darme de baja' }).first().click();
-await p.waitForTimeout(350);
-check('suscripción: pide confirmación de baja', await p.getByText('¿Seguro?').isVisible());
+check('acceso: la comunidad se presenta en beta', await p.getByText('En beta').first().isVisible());
+check('acceso: sin precio ni cuota', !/49|cuota|Próximo cobro/i.test(await p.locator('main').innerText()));
 
 /* ---------- Rol alumna ---------- */
 await p.getByRole('button', { name: 'Alumna', exact: true }).click();
@@ -103,7 +102,7 @@ for (const s of ['Leads', 'Formaciones', 'Subir contenido', 'Facturación', 'Com
   await p.screenshot({ path: `${OUT}/plat-sorela-${s.replace(/[^a-z]/gi, '').toLowerCase()}.png`, fullPage: true });
 }
 check('sorela: no tiene aula con progreso', (await p.getByRole('button', { name: 'Clases y material', exact: true }).count()) === 0);
-check('sorela: no tiene suscripción propia', (await p.getByRole('button', { name: 'Mi suscripción', exact: true }).count()) === 0);
+check('sorela: no tiene acceso de miembro', (await p.getByRole('button', { name: 'Mi acceso', exact: true }).count()) === 0);
 
 await p.getByRole('button', { name: 'Subir contenido', exact: true }).click();
 await p.waitForTimeout(450);

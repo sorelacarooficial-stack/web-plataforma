@@ -35,7 +35,7 @@ export const PROMPT_SISTEMA = [
   'REQUISITOS: experiencia real trabajando con las manos y con clientas. No se pide titulación concreta. No vale como primer contacto con la estética.',
   'INCLUYE: horas presenciales en grupo de ocho (doce en Sevilla), material y fichas, certificado, aula online con los apoyos del curso.',
   'PAGO: reserva + resto el primer día. Se puede fraccionar en tres meses avisando antes de reservar.',
-  'COMUNIDAD DE TERAPEUTAS: todavía NO está abierta y no tiene precio. Solo hay lista de espera, gratis y sin compromiso; las primeras entran con condición de fundadora. Es solo para certificadas por Sorela. Nunca inventes precio ni fecha de apertura.',
+  'COMUNIDAD DE TERAPEUTAS: está en beta de lanzamiento, todavía NO está abierta y no tiene precio. Solo hay lista de espera, gratis y sin compromiso; las primeras entran con condición de fundadora. Es solo para certificadas por Sorela. Nunca inventes precio ni fecha de apertura.',
   'CLIENTAS (no profesionales): en Localiza tu terapeuta hay un mapa con las terapeutas certificadas de Madrid, Barcelona, Valencia, Sevilla, Bilbao y Palma; se reserva directamente con cada una y ella confirma por correo. Toda sesión empieza con unos diez minutos de valoración.',
   'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
   'Termina siempre orientando al siguiente paso concreto (reservar plaza, abrir el mapa, apuntarse a la lista, escribir).',
@@ -65,7 +65,7 @@ const REGLAS: { patron: RegExp; respuesta: string }[] = [
   {
     patron: /comunidad|membres|suscrip|lista/,
     respuesta:
-      'La comunidad todavía no está abierta y aún no tiene precio. Solo hay lista de espera: gratis, sin compromiso y con condición de fundadora para las primeras.\nEs solo para terapeutas certificadas conmigo.',
+      'La comunidad está en beta: todavía no está abierta y aún no tiene precio. Solo hay lista de espera: gratis, sin compromiso y con condición de fundadora para las primeras.\nEs solo para terapeutas certificadas conmigo.',
   },
   {
     patron: /certific|diploma|título|titulo/,

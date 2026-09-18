@@ -3,7 +3,15 @@ import Link from 'next/link';
 import Motas from '@/components/Motas';
 import Marquesina from '@/components/Marquesina';
 import Acordeon from '@/components/Acordeon';
-import { FAQS, INSTAGRAM, INSTAGRAM_USUARIO, TESTIMONIOS } from '@/lib/contenido';
+import ListaEspera from '@/components/ListaEspera';
+import {
+  EN_LISTA,
+  FAQS,
+  INSTAGRAM,
+  INSTAGRAM_USUARIO,
+  PIEZAS_COMUNIDAD,
+  TESTIMONIOS,
+} from '@/lib/contenido';
 import retrato from '@/fotos/sorela-retrato.webp';
 import lumbar from '@/fotos/trabajo-lumbar.webp';
 import alumna from '@/fotos/sorela-alumna.webp';
@@ -61,6 +69,54 @@ export default function Home() {
       </section>
 
       <Marquesina />
+
+      {/* ---------- Las dos puertas: qué existe hoy y qué está en beta ----------
+           Contesta en el primer scroll qué es esto, qué funciona ya y qué viene.
+           La jerarquía de color dice sola cuál es la que tiene fechas abiertas:
+           filete de arcilla en la formación, neutro en la comunidad. */}
+      <section id="estado" className={`seccion ${css.estado}`}>
+        <div className="wrap">
+          <div className={css.estadoIntro}>
+            <p className="antetitulo">Dos cosas distintas</p>
+            <h2 className="titulo-lg max-640">Aquí dentro hay dos cosas. Te digo cuál es cuál.</h2>
+            <p className="texto max-520">
+              La formación presencial existe, tiene fechas abiertas y es lo único que puedes hacer
+              conmigo ahora mismo. Si hoy quieres algo mío, es esto.
+            </p>
+            <p className="texto max-520">
+              La Comunidad Divine es lo que viene después del curso, y está en beta: todavía no
+              abre. Lo que sí está abierto es la lista, y las que están dentro son las que deciden
+              qué lleva.
+            </p>
+          </div>
+
+          <div className={css.puertas}>
+            <article className={`${css.puerta} ${css.puertaAbierta}`}>
+              <span className={css.puertaSello}>Con fechas abiertas</span>
+              <h3 className={css.puertaTitulo}>Formación presencial</h3>
+              <p className="texto-fijo">
+                Madrid, Valencia y Sevilla. Tres días, ocho alumnas, certificado y tu sitio en el
+                mapa público.
+              </p>
+              <Link href="/formaciones" className="btn btn-md">
+                Ver próximas fechas
+              </Link>
+            </article>
+
+            <article className={css.puerta}>
+              <span className={`${css.puertaSello} ${css.puertaSelloNeutro}`}>En beta</span>
+              <h3 className={css.puertaTitulo}>Comunidad Divine</h3>
+              <p className="texto-fijo">
+                Todavía no abre. Quien está en la lista entra primero y ayuda a decidir qué lleva
+                dentro.
+              </p>
+              <a href="#lista" className="enlace-subrayado">
+                Entrar en la lista de espera
+              </a>
+            </article>
+          </div>
+        </div>
+      </section>
 
       {/* ---------- El problema ---------- */}
       <section className="seccion">
@@ -148,7 +204,8 @@ export default function Home() {
             <p className="texto max-500">
               Empecé como todas: aplicando el protocolo que me habían enseñado. Ordené en un método
               lo que hasta entonces llamaba intuición, y ese método es lo que enseño. Doy yo las
-              formaciones, corrijo yo en la camilla y respondo yo los correos.
+              formaciones, corrijo yo en la camilla y respondo yo los correos. La comunidad la voy
+              a llevar igual.
             </p>
 
             <div className={css.datos}>
@@ -211,26 +268,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Comunidad ---------- */}
+      {/* ---------- La comunidad: por qué existe y en qué punto está ---------- */}
       <section className={css.comunidad}>
         <div className="wrap rejilla">
           <div className="columna-texto" style={{ order: 1 }}>
-            <span className="distintivo">En construcción</span>
-            <h2 className="titulo-lg">Lo que viene después del curso lo estamos construyendo.</h2>
+            <p className="antetitulo">La comunidad</p>
+            <h2 className="titulo-lg">Terminar la formación no es llegar.</h2>
             <p className="texto max-480">
-              La Comunidad de Terapeutas Divine será el sitio donde seguir aprendiendo cada mes,
-              preguntarme lo que no encaja y aparecer en el mapa donde las clientas buscan. Todavía
-              no está abierta.
+              Sales del curso con criterio nuevo y muchas ganas. A las tres semanas aparece el
+              primer caso raro, no tienes a quién preguntar y vuelves a lo de siempre. Llevo tiempo
+              viendo ese patrón: la Comunidad Divine existe para cortarlo.
             </p>
-            <p className={css.remate}>
-              Quien esté en la lista entra primero{' '}
-              <span style={{ color: 'var(--arcilla)' }}>
-                y ayuda a decidir qué lleva dentro.
-              </span>
+            <p className="texto max-480">
+              Está en beta. Significa que ya sé qué va dentro y todavía no está grabado: cuatro
+              piezas están decididas y la quinta la estoy escribiendo. La estoy montando con las que
+              ya están en la lista. Primero les pregunto qué necesitan tener dentro, luego lo
+              escribo.
             </p>
-            <Link href="/comunidad" className="btn" style={{ marginTop: 6 }}>
-              Entrar en la lista de espera
-            </Link>
+            <p className="texto max-480">
+              El precio y la fecha de apertura, todavía no lo sé. No pongo fecha que no pueda
+              cumplir y no te voy a dar un precio que luego cambie. Cuando los tenga, lo sabe la
+              lista antes que nadie.
+            </p>
           </div>
 
           <div className="foto foto-45" style={{ order: 2 }}>
@@ -240,6 +299,63 @@ export default function Home() {
               sizes="(max-width: 860px) 100vw, 45vw"
               placeholder="blur"
             />
+          </div>
+        </div>
+
+        <div className="wrap" style={{ marginTop: 'clamp(40px,6vw,72px)' }}>
+          <p className="antetitulo" style={{ marginBottom: 'clamp(24px,3vw,36px)' }}>
+            Lo que quiero que tenga
+          </p>
+          <div className={css.piezas}>
+            {PIEZAS_COMUNIDAD.map((p) => (
+              <article key={p.titulo} className={css.pieza}>
+                <span className={css.piezaEstado}>{p.estado}</span>
+                <h3 className={css.piezaTitulo}>{p.titulo}</h3>
+                <p className="texto-fijo" style={{ fontSize: 16 }}>
+                  {p.texto}
+                </p>
+              </article>
+            ))}
+          </div>
+          <p className={css.remate} style={{ marginTop: 'clamp(30px,4vw,48px)' }}>
+            No te lo enseño como si estuviera terminado, porque no lo está.{' '}
+            <span style={{ color: 'var(--arcilla)' }}>Te lo enseño para que me digas qué falta.</span>
+          </p>
+          <Link href="/comunidad" className="enlace-fino" style={{ marginTop: 10 }}>
+            Las preguntas de la lista
+          </Link>
+        </div>
+      </section>
+
+      {/* ---------- La lista de espera, con el formulario en la propia home ---------- */}
+      <section id="lista" className={`seccion ${css.lista}`}>
+        <div className="wrap rejilla-290" style={{ alignItems: 'start' }}>
+          <div className="columna-texto">
+            <p className="antetitulo">La lista</p>
+            <h2 className="titulo-lg">Las primeras de la lista entran con condición de fundadora.</h2>
+            <p className="texto max-480">
+              Y la mantienen mientras sigan dentro. Eso sí te lo puedo prometer.
+            </p>
+            <p className="texto max-480">
+              No pido tarjeta, no hay reserva que pagar y puedes salirte con un correo. Nada de
+              correos cada semana.
+            </p>
+            <p className="texto max-480">
+              Para entrar el día que abra hay que estar certificada conmigo. Para estar en la lista,
+              no: si tienes plaza en una formación, apúntate igual. Y si reservas plaza en una de
+              las tres, tu sitio en la lista ya va incluido. Si todavía no te has formado, el orden
+              es ese. Primero los tres días.
+            </p>
+            <p className={css.contador}>
+              <span data-count={String(EN_LISTA)}>{EN_LISTA}</span> terapeutas están ya en la lista.
+            </p>
+          </div>
+
+          <div className={css.cajaLista}>
+            <ListaEspera />
+            <Link href="/formaciones" className="enlace-fino" style={{ marginTop: 6 }}>
+              Ver próximas fechas
+            </Link>
           </div>
         </div>
       </section>
