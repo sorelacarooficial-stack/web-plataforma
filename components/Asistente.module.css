@@ -13,7 +13,9 @@
 /* ---------- Panel ---------- */
 .panel {
   width: min(376px, calc(100vw - 28px));
-  max-height: min(620px, calc(100vh - 120px));
+  /* dvh y no vh: en móvil, vh mide la ventana SIN la barra del navegador, así
+     que el panel se metía por debajo de ella y el formulario quedaba tapado. */
+  max-height: min(620px, calc(100dvh - 120px));
   background: var(--bg);
   border: 1px solid var(--line-3);
   box-shadow: 0 24px 60px rgba(26, 23, 20, 0.24);
@@ -114,6 +116,10 @@
   line-height: 1.55;
   white-space: pre-line;
   text-wrap: pretty;
+  /* Sin esto, una URL o una palabra larga sin espacios estira la burbuja
+     muy por encima del ancho del panel y rompe la conversación entera. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .burbujaYo {
@@ -135,13 +141,42 @@
   color: var(--faint);
 }
 
-/* ---------- Sugerencias ---------- */
+/* ---------- Sugerencias ----------
+   Son un punto de arranque, no un menú permanente: en cuanto hay conversación
+   desaparecen (lo decide el componente). Aun así, cinco chips envueltos en
+   varias filas se comían medio panel en pantallas estrechas —a 320 px, 230 px
+   de los 448 disponibles, dejando la conversación en 73 px—, así que por
+   debajo de 420 px van en una sola fila que se desplaza en horizontal. */
 .chips {
   flex: 0 0 auto;
   padding: 0 18px 12px;
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
+}
+
+@media (max-width: 420px), (max-height: 680px) {
+  .chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 24px), transparent 100%);
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      #000 0,
+      #000 calc(100% - 24px),
+      transparent 100%
+    );
+  }
+
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chip {
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
 }
 
 .chip {

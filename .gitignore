@@ -9,3 +9,12 @@ build/
 next-env.d.ts
 .DS_Store
 npm-debug.log*
+
+# Ficheros de trabajo de la auditoría visual
+/auditoria-caps/
+/auditoria*.mjs
+/detalle*.mjs
+/asistente*.mjs
+/asistente-informe.txt
+/auditoria-matriz.json
+/capturas.mjs

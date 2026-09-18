@@ -12,7 +12,9 @@
     "fotos": "node scripts/optimizar-imagenes.mjs",
     "mapa": "node scripts/preparar-mapa.mjs",
     "capturas": "node pruebas/capturas.mjs",
-    "pruebas": "node pruebas/interacciones.mjs"
+    "pruebas": "node pruebas/interacciones.mjs",
+    "pruebas:plataforma": "node pruebas/plataforma.mjs",
+    "pruebas:asistente": "node pruebas/asistente.mjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",

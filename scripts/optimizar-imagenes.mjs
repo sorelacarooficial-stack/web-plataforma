@@ -30,6 +30,10 @@ const FOTOS = [
   { de: '_DSC6231.jpg', a: 'sesion-consulta.webp', ancho: 1400 },
   { de: '_DSC6349.jpg', a: 'valoracion-abdomen.webp', ancho: 1800 },
   { de: '_DSC6357.jpg', a: 'sesion-terapeuta.webp', ancho: 1400 },
+  // Columna izquierda de la pantalla de acceso a la plataforma.
+  { de: '_DSC6223.jpg', a: 'acceso-consulta.webp', ancho: 1400 },
+  // Portadas de los cursos del aula de la plataforma (16:10).
+  { de: '_DSC6143.jpg', a: 'aula-negocio.webp', ancho: 900 },
 ];
 
 const LOGO = { de: 'logo_files-1789631085515-p3md.png', a: 'logo-sorela.png', alto: 160 };
