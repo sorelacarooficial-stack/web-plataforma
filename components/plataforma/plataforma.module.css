@@ -1302,3 +1302,24 @@
     transition: none;
   }
 }
+
+/* Quién ha entrado. Va en el pie de la barra lateral, encima de «Salir»:
+   saber con qué cuenta estás dentro evita el clásico «¿por qué no veo lo de
+   admin?» cuando se ha entrado con el correo equivocado. */
+.quienEres {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0 0 4px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--inverse-ink, var(--ink));
+  overflow-wrap: anywhere;
+}
+
+.quienEres span {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--oro);
+}

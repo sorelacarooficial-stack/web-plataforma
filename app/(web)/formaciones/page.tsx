@@ -1,14 +1,59 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import AvisarCiudad from '@/components/AvisarCiudad';
-import { CURSOS, meta, mostrarPlazas, plazasTexto } from '@/lib/cursos';
+import BotonAsistente from '@/components/BotonAsistente';
+import BotonCaptacion from '@/components/BotonCaptacion';
 import css from './formaciones.module.css';
 
 export const metadata: Metadata = {
   title: 'Formaciones',
   description:
-    'Tres formaciones al año, ocho alumnas por grupo y cuerpo real desde la primera hora. Madrid, Valencia y Sevilla.',
+    'Dos etapas y un orden: primero la formación online, después la presencial con Sorela. Próximas convocatorias en Sudamérica.',
 };
+
+/**
+ * Formaciones.
+ *
+ * Esta página enseñaba tres convocatorias con ciudad, fecha, precio y plazas
+ * («Madrid, 14-16 de noviembre, 1.450 €, quedan 3 de 8»). Ninguno de esos
+ * datos era real: venían del prototipo de diseño. Sorela ha confirmado que
+ * hoy no hay ninguna fecha cerrada.
+ *
+ * Así que la página ya no lista convocatorias: explica el recorrido, que sí
+ * es cierto y sí es lo que diferencia a la formación, y ofrece guardar sitio
+ * para la primera fecha que se cierre. Cuando haya convocatorias de verdad,
+ * el listado vuelve con ellas.
+ */
+
+const ETAPAS = [
+  {
+    orden: 'Primera etapa',
+    titulo: 'Formación online',
+    texto:
+      'Aquí empieza todo. Trabajas la anatomía linfática, la lógica del método y el protocolo por fases antes de ponerte a tocar. Desde tu país y a tu ritmo.',
+    puntos: [
+      'Anatomía del sistema linfático y de las estaciones ganglionares',
+      'La lógica del método: qué se mira y en qué orden se trabaja',
+      'Dossier precurso con el protocolo por fases',
+      'Acceso flexible, sin horarios',
+      'Requisito previo para entrar en la presencial',
+    ],
+    destacada: false,
+  },
+  {
+    orden: 'Segunda etapa',
+    titulo: 'Formación presencial',
+    texto:
+      'Dos jornadas con Sorela al lado de la camilla. Es donde el método deja de ser teoría y pasa a tus manos, que es el único sitio donde sirve.',
+    puntos: [
+      'Día 1 · Lipodrenaje: protocolo completo y aplicación',
+      'Día 2 · Moldeo y tonificación de silueta',
+      'Práctica sobre modelos reales, no solo demostración',
+      'Corrección de Sorela sobre tus manos',
+      'Grupos reducidos',
+    ],
+    destacada: true,
+  },
+];
 
 export default function Formaciones() {
   return (
@@ -19,43 +64,71 @@ export default function Formaciones() {
             Formaciones
           </h1>
           <p className="lede">
-            Tres al año, ocho alumnas por grupo y cuerpo real desde la primera hora. Cuando se
-            llenan, se llenan.
+            Para ser terapeuta Divine hay un orden: primero la formación online y después la
+            presencial. Así los días con Sorela se dedican enteros a tus manos.
           </p>
         </div>
       </section>
 
-      <section className={css.listado}>
-        <div className="wrap columna">
-          {CURSOS.map((c) => (
-            <article key={c.slug} className={css.curso}>
-              <div className="columna" style={{ gap: 14 }}>
-                <h2 className={css.cursoNombre}>{c.nombre}</h2>
-                <p className={css.cursoMeta}>{meta(c)}</p>
-              </div>
+      <section className="seccion">
+        <div className="wrap">
+          <div className={css.etapas}>
+            {ETAPAS.map((e) => (
+              <article
+                key={e.titulo}
+                className={`${css.etapa} ${e.destacada ? css.etapaDestacada : ''}`}
+              >
+                <span className={css.etapaOrden}>{e.orden}</span>
+                <h2 className={css.etapaTitulo}>{e.titulo}</h2>
+                <p className="texto-fijo">{e.texto}</p>
+                <ul className={css.etapaLista}>
+                  {e.puntos.map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
 
-              <div className="columna" style={{ gap: 22, alignItems: 'flex-start' }}>
-                <p className="texto max-440" style={{ lineHeight: 1.62 }}>
-                  {c.frase}
-                </p>
-                <div className={css.acciones}>
-                  {mostrarPlazas(c) && (
-                    <span className={css.plazas}>{plazasTexto(c)}</span>
-                  )}
-                  <Link href={`/formaciones/${c.slug}`} className="btn btn-sm">
-                    Ver detalle
-                  </Link>
-                </div>
-              </div>
-            </article>
-          ))}
+          {/* Las fechas: la respuesta honesta hoy es que no hay ninguna cerrada,
+              y se dice así. Una fecha que luego se mueve cuesta más que no
+              darla, sobre todo cuando alguien ya ha comprado un vuelo. */}
+          <div className={css.fechas}>
+            <div>
+              <p className="antetitulo" style={{ color: 'var(--oro)' }}>
+                Próximas convocatorias
+              </p>
+              <h2 className={css.fechasTitulo}>Sudamérica, próximamente.</h2>
+              <p className="texto max-520">
+                Las ciudades y las fechas están a punto de confirmarse. Todavía no te voy a dar
+                una fecha que pueda moverse. Lo que sí puedo es guardarte el sitio y avisarte
+                antes que a nadie en cuanto se cierre.
+              </p>
+            </div>
+            <div className={css.fechasAcciones}>
+              <BotonCaptacion
+                className="btn btn-md"
+                titulo="Te guardo el sitio"
+                entradilla="Déjame dónde escribirte y te aviso en cuanto se cierre la primera convocatoria, con la ciudad, las fechas y el precio."
+                etiquetaVentana="Guardar sitio en la próxima formación"
+              >
+                Guardar mi sitio
+              </BotonCaptacion>
+              <BotonAsistente
+                pregunta="Quiero consultar las próximas fechas en Sudamérica y que me guardes sitio."
+                className="enlace-subrayado"
+              >
+                Preguntar por el asistente
+              </BotonAsistente>
+            </div>
+          </div>
 
           <div className={css.avisame}>
             <h2 className={css.avisameTitulo}>¿Tu ciudad no está?</h2>
             <div className="columna" style={{ gap: 20, alignItems: 'flex-start' }}>
               <p className="texto-fijo max-440">
-                Dime dónde estás y te aviso en cuanto abra convocatoria cerca. Si se juntan seis
-                en una misma zona, la abro yo.
+                Dime dónde estás y lo tengo en cuenta al montar las próximas convocatorias. Si se
+                juntan varias en una misma zona, la abro ahí.
               </p>
               <AvisarCiudad />
             </div>
