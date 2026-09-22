@@ -39,23 +39,43 @@ export const PROMPT_SISTEMA = [
   'PROHIBIDO PROMETER EFECTOS DE SALUD. Esto es estética, no sanidad. Nunca hables de toxinas, litros de líquido, defensas, inmunidad, hormonas, metabolismo, tránsito intestinal, sueño, ansiedad, dolor, linfedema, postoperatorio, diástasis, cicatrices, estrías, acné, pérdida de peso ni reducción de grasa o celulitis. Nunca digas "la única", "la número uno" ni cifras de casos de éxito. Si te preguntan por resultados: cambios perceptibles, sensación de ligereza y contorno más definido, y siempre que la respuesta varía según cada persona.',
   'FORMACIÓN, EN DOS ETAPAS Y EN ESTE ORDEN: (1) Online, obligatoria y previa: anatomía linfática, lógica del método y protocolo por fases, a su ritmo y desde su país. (2) Presencial, dos jornadas con Sorela: día 1 lipodrenaje, día 2 moldeo y tonificación, con práctica sobre modelos reales. No se puede empezar por la presencial.',
   'FECHAS: las próximas convocatorias son en Sudamérica y están a punto de confirmarse. NO inventes ciudades, fechas ni precios. Lo que ofreces es guardar el sitio: pides nombre, correo y teléfono y dices que Sorela avisa en cuanto se cierre la fecha.',
-  'AGENDAR CITA: NO pidas los datos dentro del chat. El chat no tiene casilla de consentimiento ni enlace a la política de privacidad, y lo que se escriba aquí no se guarda en ninguna parte. Manda siempre al formulario («Quiero la información»). Tampoco des horas concretas: no tienes acceso al calendario.',
+  'AGENDAR CITA: no recojas los datos escritos en el chat, porque no se guardan en ninguna parte. Ofrece abrir el formulario, sin explicar por qué ni hablar de consentimientos: eso es asunto de la web, no de la conversación. Tampoco des horas concretas: no tienes acceso al calendario.',
   'COMUNIDAD DIVINE: abre el sábado 17 de octubre a las 16:00, hora de España. Cuesta 47 € al mes y quien entra ahora conserva ese precio fundador mientras siga dentro. Incluye una clase en vivo al mes de actualizaciones, acompañamiento personalizado, canal privado en Telegram, la agenda inteligente con IA y ficha en el mapa de terapeutas. Es para certificadas por Sorela; en la lista de espera puede entrar cualquiera.',
   'CLIENTAS (no profesionales): el mapa de terapeutas certificadas todavía está vacío, porque las primeras aún se están formando. No mandes a nadie a reservar con una terapeuta: recoge el contacto por el formulario y di que Sorela avisa cuando haya alguna cerca.',
   'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
   'Termina siempre orientando al siguiente paso concreto.',
 ].join('\n');
 
-const REGLAS: { patron: RegExp; respuesta: string }[] = [
+/**
+ * Qué puede ofrecer el asistente además de contestar. Cuando una respuesta
+ * lleva acción, debajo aparece un botón que la hace: abrir el formulario, ir a
+ * las formaciones. Antes se decía «pulsa el botón de arriba», que es mandar a
+ * buscar a quien ya te estaba hablando.
+ */
+export type Accion = { tipo: 'captar'; titulo: string; entradilla: string; etiqueta: string };
+
+const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
   {
     patron: /agend|cita|resérv|reserv|hueco|disponib|calendario|hora/,
     respuesta:
-      'Te guardo el sitio. Para eso necesito tus datos en el formulario, no aquí en el chat: ahí es donde puedes aceptar cómo se tratan.\nPulsa «Quiero la información» arriba, déjame nombre, correo y teléfono, y te escribo yo con las opciones de agenda.',
+      'Te guardo el sitio. Dime cómo te escribo y te paso las horas que tengo libres.',
+    accion: {
+      tipo: 'captar',
+      titulo: 'Te guardo el sitio',
+      entradilla: 'Déjame nombre, correo y teléfono y te escribo con las opciones de agenda.',
+      etiqueta: 'Dejar mi contacto',
+    },
   },
   {
     patron: /fecha|cuándo|cuando|próxim|proxim|plaza|queda|ciudad|sudamérica|sudamerica|suramérica|suramerica/,
     respuesta:
-      'Las próximas convocatorias son en Sudamérica y están a punto de confirmarse, así que todavía no te puedo dar una fecha cerrada. Lo que sí puedo es guardarte el espacio.\nDéjame nombre, correo y teléfono y te aviso yo en cuanto se cierre.',
+      'Las próximas son en Sudamérica y están a punto de confirmarse, así que todavía no te doy una fecha que pueda moverse.\nLo que sí puedo es guardarte el espacio y avisarte antes que a nadie.',
+    accion: {
+      tipo: 'captar',
+      titulo: 'Te aviso el primero',
+      entradilla: 'En cuanto se cierre la ciudad y la fecha, te escribo yo con todo: precio, plazas y cómo reservar.',
+      etiqueta: 'Guardarme el sitio',
+    },
   },
   {
     patron: /online|distancia|a distancia|virtual|desde casa|orden|requisit|empez|antes/,
@@ -70,12 +90,24 @@ const REGLAS: { patron: RegExp; respuesta: string }[] = [
   {
     patron: /comunidad|membres|suscrip|lista|47|telegram|fundador/,
     respuesta:
-      'La Comunidad Divine abre el sábado 17 de octubre a las 16:00, hora de España. Son 47 € al mes y quien entra ahora conserva ese precio fundador mientras siga dentro.\nDentro hay una clase en vivo al mes, acompañamiento personalizado, canal privado en Telegram, la agenda inteligente con IA y tu ficha en el mapa.',
+      'La membresía abre el sábado 17 de octubre a las 16:00, hora de España. Son 47 € al mes, y quien entra en el lanzamiento conserva ese precio.\nDentro: una clase en vivo al mes, tus casos mirados uno a uno, canal privado en Telegram, la agenda con inteligencia artificial y tu ficha en el mapa.',
+    accion: {
+      tipo: 'captar',
+      titulo: 'Entra en la lista',
+      entradilla: 'Te aviso antes de que abra el 17 de octubre, y entras con el precio de lanzamiento. No pido tarjeta.',
+      etiqueta: 'Apuntarme a la lista',
+    },
   },
   {
     patron: /precio|cuesta|cuánto|cuanto|pag|fraccion|financ/,
     respuesta:
-      'La Comunidad Divine son 47 € al mes, con precio fundador para las primeras.\nEl precio de las formaciones va con la convocatoria, y las próximas todavía se están cerrando. Déjame tu contacto y te lo mando con la fecha en cuanto esté.',
+      'La membresía son 47 € al mes, con precio de lanzamiento para quien entre ahora.\nEl precio de las formaciones va con cada convocatoria, y las próximas todavía se están cerrando.',
+    accion: {
+      tipo: 'captar',
+      titulo: 'Te mando los precios',
+      entradilla: 'En cuanto se cierre la próxima convocatoria te escribo con el precio, las fechas y cómo reservar.',
+      etiqueta: 'Que me avises',
+    },
   },
   {
     patron: /qué es|que es|técnica|tecnica|método|metodo|drenaje|linf/,
@@ -85,7 +117,13 @@ const REGLAS: { patron: RegExp; respuesta: string }[] = [
   {
     patron: /clienta|cliente|terapeuta|cerca|mapa|sesión|sesion/,
     respuesta:
-      'Todavía no hay terapeutas certificadas en el mapa: las primeras entrarán en cuanto terminen su formación.\nSi buscas sesión, déjame tu contacto en el formulario y te aviso yo en cuanto haya una cerca de ti.',
+      'Todavía no hay terapeutas en el mapa: las primeras entrarán en cuanto terminen su formación.\nDime dónde estás y te aviso en cuanto haya una cerca de ti.',
+    accion: {
+      tipo: 'captar',
+      titulo: 'Te aviso cuando haya una cerca',
+      entradilla: 'Déjame tu contacto y te escribo en cuanto se certifique una terapeuta en tu zona.',
+      etiqueta: 'Dejar mi contacto',
+    },
   },
   {
     patron: /certific|diploma|título|titulo/,
@@ -103,15 +141,18 @@ const POR_DEFECTO =
   'Puedo ayudarte con la formación, con la agenda o con la Comunidad Divine.\nSi es algo más concreto, déjame tu contacto en el formulario y te contesto yo, o escríbeme por Instagram: @sorelacaro_.';
 
 /*
- * Nota para quien conecte un modelo aquí: las respuestas de arriba mandan al
- * formulario en vez de recoger el dato en la conversación. No es pereza. El
- * chat no tiene casilla de consentimiento ni enlace a la política de
- * privacidad, y responder() se ejecuta en el navegador: lo que alguien escriba
- * aquí no llega a ninguna parte. Recoger un correo así sería a la vez ilegal e
- * inútil.
+ * Nota para quien conecte un modelo aquí: las respuestas abren el formulario
+ * en vez de recoger el dato escrito en la conversación. Dos motivos: lo que se
+ * teclea en el chat no llega a ninguna parte, porque responder() corre en el
+ * navegador; y el formulario es donde está la casilla de consentimiento.
+ *
+ * Lo que NO hay que hacer es contarle eso a quien pregunta. Una respuesta que
+ * explica por qué no puede guardarte el correo es una respuesta que habla de
+ * sí misma en vez de resolver. Se le abre el formulario y ya está.
  */
 
-export function responder(pregunta: string): string {
+export function responder(pregunta: string): { texto: string; accion?: Accion } {
   const t = (pregunta || '').toLowerCase();
-  return REGLAS.find((r) => r.patron.test(t))?.respuesta ?? POR_DEFECTO;
+  const regla = REGLAS.find((r) => r.patron.test(t));
+  return regla ? { texto: regla.respuesta, accion: regla.accion } : { texto: POR_DEFECTO };
 }

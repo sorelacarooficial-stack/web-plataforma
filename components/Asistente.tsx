@@ -6,15 +6,19 @@ import {
   SALUDO,
   SUGERENCIAS,
   responder,
+  type Accion,
 } from '@/lib/asistente';
 import { EVENTO_ASISTENTE, type PeticionAsistente } from '@/lib/abrir-asistente';
+import { abrirCaptacion } from '@/lib/abrir-captacion';
 import css from './Asistente.module.css';
 
 export default function Asistente() {
   const [abierto, setAbierto] = useState(false);
   const [borrador, setBorrador] = useState('');
   const [escribiendo, setEscribiendo] = useState(false);
-  const [chat, setChat] = useState<Mensaje[]>([
+  // Cada mensaje puede traer una acción: un botón que hace lo que acaba de
+  // ofrecer, en vez de pedirle a la persona que vaya a buscarlo.
+  const [chat, setChat] = useState<(Mensaje & { accion?: Accion })[]>([
     { rol: 'asistente', texto: SALUDO },
   ]);
 
@@ -75,7 +79,8 @@ export default function Asistente() {
     // Una pausa corta: sin ella la respuesta aparece antes que la pregunta
     // y se pierde la sensación de que alguien está mirando la agenda.
     temporizador.current = window.setTimeout(() => {
-      setChat((c) => [...c, { rol: 'asistente', texto: responder(limpio) }]);
+      const { texto, accion } = responder(limpio);
+      setChat((c) => [...c, { rol: 'asistente', texto, accion }]);
       setEscribiendo(false);
     }, 420);
   }
@@ -106,13 +111,23 @@ export default function Asistente() {
 
           <div ref={panelRef} className={css.mensajes} aria-live="polite">
             {chat.map((m, i) => (
-              <div
-                key={i}
-                className={m.rol === 'yo' ? css.filaYo : css.filaEl}
-              >
-                <p className={m.rol === 'yo' ? css.burbujaYo : css.burbujaEl}>
-                  {m.texto}
-                </p>
+              <div key={i} className={m.rol === 'yo' ? css.filaYo : css.filaEl}>
+                <p className={m.rol === 'yo' ? css.burbujaYo : css.burbujaEl}>{m.texto}</p>
+                {m.accion && (
+                  <button
+                    type="button"
+                    className={css.accion}
+                    onClick={() =>
+                      abrirCaptacion({
+                        titulo: m.accion!.titulo,
+                        entradilla: m.accion!.entradilla,
+                        origen: 'asistente',
+                      })
+                    }
+                  >
+                    {m.accion.etiqueta}
+                  </button>
+                )}
               </div>
             ))}
             {escribiendo && (

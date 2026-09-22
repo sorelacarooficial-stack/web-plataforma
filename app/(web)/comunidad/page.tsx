@@ -8,7 +8,7 @@ import css from './comunidad.module.css';
 export const metadata: Metadata = {
   title: 'Comunidad de Terapeutas Divine',
   description:
-    'La Comunidad Divine abre el 17 de octubre a las 16:00. Clase mensual, acompañamiento, canal privado y agenda inteligente por 47 € al mes, con precio fundador para las primeras.',
+    'La membresía de Sorela Caro abre el 17 de octubre a las 16:00. Clase mensual, acompañamiento, canal privado y agenda inteligente por 47 € al mes, precio de lanzamiento.',
 };
 
 export default function Comunidad() {
@@ -20,11 +20,15 @@ export default function Comunidad() {
             <span className="distintivo">Abre el {COMUNIDAD.apertura}</span>
             {/* Titular distinto del que lleva el inicio a propósito: si las dos
                 páginas encabezan con la misma frase, la segunda parece un error. */}
-            <h1 className={css.titulo}>Lo que viene después de certificarte.</h1>
+            <h1 className={css.titulo}>La membresía de Sorela.</h1>
             <p className="lede max-540" style={{ lineHeight: 1.62 }}>
-              Una clase en vivo al mes, tus casos mirados uno a uno, un canal privado donde
-              preguntar y la agenda inteligente para no vivir pegada al móvil. Y tu ficha en el
-              mapa, donde las clientas buscan.
+              Donde sigue enseñando después del curso. Una clase en vivo al mes con lo nuevo del
+              método, tus casos mirados uno a uno, un canal privado donde preguntar, la agenda con
+              inteligencia artificial y tu ficha en el mapa.
+            </p>
+            <p className="texto max-540">
+              Abre una sola vez, y quien entre en el lanzamiento se queda con el precio de
+              fundadora.
             </p>
             <Contador />
           </div>
@@ -38,7 +42,7 @@ export default function Comunidad() {
       <section className={css.piezasSeccion}>
         <div className="wrap">
           <p className="antetitulo" style={{ marginBottom: 'clamp(30px,4vw,52px)' }}>
-            Lo que hay dentro
+            Qué incluye cada mes
           </p>
           <div className={css.piezas}>
             {PIEZAS_COMUNIDAD.map((m) => (
@@ -61,10 +65,10 @@ export default function Comunidad() {
       <section className={css.precio}>
         <div className="wrap wrap-900">
           <h2 className={css.precioTitulo}>
-            {COMUNIDAD.precio} € {COMUNIDAD.periodo}, con precio fundador para las primeras.
+            {COMUNIDAD.precio} € {COMUNIDAD.periodo}, precio de lanzamiento.
           </h2>
           <p className={css.precioTexto}>
-            Quien entra ahora conserva ese precio mientras siga dentro, aunque más adelante suba.
+            Quien entra el 17 de octubre lo conserva mientras siga dentro, aunque después suba.
             Eso sí te lo puedo prometer.
           </p>
         </div>

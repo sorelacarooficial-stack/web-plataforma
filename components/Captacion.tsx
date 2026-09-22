@@ -24,10 +24,13 @@ export default function Captacion({
   compacto = false,
   titulo,
   entradilla,
+  origenForzado,
 }: {
   compacto?: boolean;
   titulo?: string;
   entradilla?: string;
+  /** Gana al parámetro de la dirección: lo usa quien abre la ventana desde el asistente. */
+  origenForzado?: string;
 }) {
   const id = useId();
   const [v, setV] = useState(VACIO);
@@ -43,9 +46,13 @@ export default function Captacion({
   // window y no con useSearchParams para no obligar a toda la página a
   // renderizarse en cliente por un parámetro opcional.
   useEffect(() => {
+    if (origenForzado) {
+      setOrigen(origenForzado);
+      return;
+    }
     const e = new URLSearchParams(window.location.search).get('e');
     if (e) setOrigen(e.replace(/[^\w-]/g, '').slice(0, 40) || 'web');
-  }, []);
+  }, [origenForzado]);
 
   const campo = (k: keyof typeof VACIO) => ({
     id: `${id}-${k}`,

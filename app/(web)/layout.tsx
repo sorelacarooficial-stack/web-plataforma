@@ -1,6 +1,7 @@
 import Cabecera from '@/components/Cabecera';
 import PieDePagina from '@/components/PieDePagina';
 import Asistente from '@/components/Asistente';
+import CaptacionGlobal from '@/components/CaptacionGlobal';
 import EfectosScroll from '@/components/EfectosScroll';
 
 /**
@@ -20,6 +21,9 @@ export default function LayoutWeb({
       <div id="contenido">{children}</div>
       <PieDePagina />
       <Asistente />
+      {/* Una sola ventana de contacto para toda la web: el asistente y
+          cualquier sección pueden abrirla sin montar la suya. */}
+      <CaptacionGlobal />
       <EfectosScroll />
     </>
   );
