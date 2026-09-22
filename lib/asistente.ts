@@ -2,90 +2,105 @@
  * Asistente Divine — versión sin modelo.
  *
  * El prototipo llamaba a `window.claude.complete`, que solo existe dentro de
- * Claude Design. Aquí el asistente resuelve con las respuestas escritas a mano
- * que el prototipo ya usaba como plan B, encaminadas por palabra clave.
+ * Claude Design. Aquí el asistente resuelve con respuestas escritas a mano,
+ * encaminadas por palabra clave.
+ *
+ * IMPORTANTE sobre las fechas: el prototipo traía convocatorias inventadas en
+ * Madrid, Valencia y Sevilla con precios concretos. Se han quitado. Las
+ * próximas fechas son en Sudamérica y todavía no están confirmadas, así que el
+ * asistente NO da ninguna fecha ni ningún precio de formación: ofrece guardar
+ * el sitio. Una fecha que luego se mueve cuesta más que no darla.
  *
  * Para enchufarle un modelo de verdad más adelante: crear una route handler en
- * `app/api/asistente/route.ts` que llame a la API de Anthropic con PROMPT_SISTEMA
- * como system prompt, y dejar `responder()` como respuesta de reserva si falla.
+ * `app/api/asistente/route.ts` que llame a la API de Anthropic con
+ * PROMPT_SISTEMA como system prompt, y dejar `responder()` como respuesta de
+ * reserva si falla.
  */
 
 export type Mensaje = { rol: 'yo' | 'asistente'; texto: string };
 
 export const SALUDO =
-  'Soy el asistente de Sorela. Te digo fechas, plazas, precios y requisitos de las formaciones, y te ayudo a reservar con una terapeuta certificada.\n¿Qué necesitas saber?';
+  'Soy el asistente de Sorela. Te ayudo con las formaciones, con la agenda y con la Comunidad Divine.\n¿Qué necesitas?';
 
 export const SUGERENCIAS = [
-  'Próximas fechas y plazas',
-  'Precio y forma de pago',
-  '¿Puedo entrar con mi nivel?',
+  'Quiero agendar una cita',
+  'Próximas fechas',
+  'Cómo es la formación',
+  'La Comunidad Divine',
   'Busco terapeuta cerca',
-  'Lista de la comunidad',
 ];
 
 /** Se conserva para cuando se conecte un modelo: es la voz de Sorela ya afinada. */
 export const PROMPT_SISTEMA = [
-  'Eres el asistente de la web de Sorela Caro, creadora de la Técnica Divine: formación presencial en estética avanzada para esteticistas, masajistas y terapeutas corporales que ya trabajan con clientas.',
+  'Eres el asistente de la web de Sorela Caro, creadora de la Técnica Divine: drenaje linfático manual avanzado. La formación va dirigida a esteticistas, masajistas y terapeutas corporales que ya trabajan con clientas.',
   'TONO: hablas como Sorela. Español de España, tuteo, directo y cálido, frases cortas, cero jerga de marketing, cero emojis, nunca "¡Hola! Estoy aquí para ayudarte". Máximo 80 palabras. Si algo no lo sabes, lo dices y ofreces el contacto.',
-  'FORMATO: responde en texto plano, sin Markdown. Nada de asteriscos, almohadillas, guiones de lista ni negritas: solo frases y saltos de línea.',
-  'FORMACIONES (precio total; se reserva plaza y el resto se paga el primer día):',
-  '- Formación Base. Madrid, 14–16 nov 2026. 24 h en 3 días, 10:00–19:00. 1.450 €, reserva 350 €. 8 plazas, quedan 3. Cancelando con 15 días se devuelve la reserva.',
-  '- Nivel Avanzado. Valencia, 30 ene–1 feb 2027. 24 h en 3 días. 1.650 €, reserva 400 €. 8 plazas, quedan 7. Requiere haber hecho la Base. Cancelación 15 días.',
-  '- Lectura corporal (intensivo). Sevilla, 7–8 mar 2027. 16 h en 2 días. 890 €, reserva 250 €. 12 plazas, quedan 10. Cancelación 10 días.',
-  'REQUISITOS: experiencia real trabajando con las manos y con clientas. No se pide titulación concreta. No vale como primer contacto con la estética.',
-  'INCLUYE: horas presenciales en grupo de ocho (doce en Sevilla), material y fichas, certificado, aula online con los apoyos del curso.',
-  'PAGO: reserva + resto el primer día. Se puede fraccionar en tres meses avisando antes de reservar.',
-  'COMUNIDAD DE TERAPEUTAS: está en beta de lanzamiento, todavía NO está abierta y no tiene precio. Solo hay lista de espera, gratis y sin compromiso; las primeras entran con condición de fundadora. Es solo para certificadas por Sorela. Nunca inventes precio ni fecha de apertura.',
-  'CLIENTAS (no profesionales): en Localiza tu terapeuta hay un mapa con las terapeutas certificadas de Madrid, Barcelona, Valencia, Sevilla, Bilbao y Palma; se reserva directamente con cada una y ella confirma por correo. Toda sesión empieza con unos diez minutos de valoración.',
+  'FORMATO: texto plano, sin Markdown. Nada de asteriscos, almohadillas, guiones de lista ni negritas: solo frases y saltos de línea.',
+  'QUÉ ES: método manual creado por Sorela sobre la base del drenaje linfático clásico. Se trabaja con las manos y aceite, por zonas, y tiene versión facial. El orden manda: primero se abren ganglios y estaciones linfáticas, después se arrastra, después se moldea.',
+  'PROHIBIDO PROMETER EFECTOS DE SALUD. Esto es estética, no sanidad. Nunca hables de toxinas, litros de líquido, defensas, inmunidad, hormonas, metabolismo, tránsito intestinal, sueño, ansiedad, dolor, linfedema, postoperatorio, diástasis, cicatrices, estrías, acné, pérdida de peso ni reducción de grasa o celulitis. Nunca digas "la única", "la número uno" ni cifras de casos de éxito. Si te preguntan por resultados: cambios perceptibles, sensación de ligereza y contorno más definido, y siempre que la respuesta varía según cada persona.',
+  'FORMACIÓN, EN DOS ETAPAS Y EN ESTE ORDEN: (1) Online, obligatoria y previa: anatomía linfática, lógica del método y protocolo por fases, a su ritmo y desde su país. (2) Presencial, dos jornadas con Sorela: día 1 lipodrenaje, día 2 moldeo y tonificación, con práctica sobre modelos reales. No se puede empezar por la presencial.',
+  'FECHAS: las próximas convocatorias son en Sudamérica y están a punto de confirmarse. NO inventes ciudades, fechas ni precios. Lo que ofreces es guardar el sitio: pides nombre, correo y teléfono y dices que Sorela avisa en cuanto se cierre la fecha.',
+  'AGENDAR CITA: pides nombre, correo y teléfono, y dices que se confirma por correo con las opciones de agenda. No des horas concretas: no tienes acceso al calendario.',
+  'COMUNIDAD DIVINE: abre el sábado 17 de octubre a las 16:00, hora de España. Cuesta 47 € al mes y quien entra ahora conserva ese precio fundador mientras siga dentro. Incluye una clase en vivo al mes de actualizaciones, acompañamiento personalizado, canal privado en Telegram, la agenda inteligente con IA y ficha en el mapa de terapeutas. Es para certificadas por Sorela; en la lista de espera puede entrar cualquiera.',
+  'CLIENTAS (no profesionales): en Localiza tu terapeuta hay un mapa con las terapeutas certificadas; se reserva con cada una. Toda sesión empieza con unos minutos de valoración.',
   'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
-  'Termina siempre orientando al siguiente paso concreto (reservar plaza, abrir el mapa, apuntarse a la lista, escribir).',
+  'Termina siempre orientando al siguiente paso concreto.',
 ].join('\n');
 
 const REGLAS: { patron: RegExp; respuesta: string }[] = [
   {
+    patron: /agend|cita|resérv|reserv|hueco|disponib|calendario|hora/,
+    respuesta:
+      'Te guardo el sitio. Déjame nombre, correo y teléfono por aquí o en el formulario de arriba, y te confirmo por correo las opciones de agenda.\nSi es una sesión como clienta, dime también tu ciudad y te digo qué terapeuta tienes cerca.',
+  },
+  {
+    patron: /fecha|cuándo|cuando|próxim|proxim|plaza|queda|ciudad|sudamérica|sudamerica|suramérica|suramerica/,
+    respuesta:
+      'Las próximas convocatorias son en Sudamérica y están a punto de confirmarse, así que todavía no te puedo dar una fecha cerrada. Lo que sí puedo es guardarte el espacio.\nDéjame nombre, correo y teléfono y te aviso yo en cuanto se cierre.',
+  },
+  {
+    patron: /online|distancia|a distancia|virtual|desde casa|orden|requisit|empez|antes/,
+    respuesta:
+      'El orden no cambia: primero la formación online y después la presencial.\nEn la online trabajas la anatomía linfática, la lógica del método y el protocolo por fases. Así los dos días con Sorela se dedican enteros a tus manos, que es para lo que sirven.',
+  },
+  {
+    patron: /presencial|dos días|dos dias|práctica|practica|modelo/,
+    respuesta:
+      'La presencial son dos jornadas con Sorela. El primer día, lipodrenaje: protocolo completo y aplicación. El segundo, moldeo y tonificación.\nSe practica sobre modelos reales y ella corrige sobre tus manos. Para entrar hace falta tener hecha la formación online.',
+  },
+  {
+    patron: /comunidad|membres|suscrip|lista|47|telegram|fundador/,
+    respuesta:
+      'La Comunidad Divine abre el sábado 17 de octubre a las 16:00, hora de España. Son 47 € al mes y quien entra ahora conserva ese precio fundador mientras siga dentro.\nDentro hay una clase en vivo al mes, acompañamiento personalizado, canal privado en Telegram, la agenda inteligente con IA y tu ficha en el mapa.',
+  },
+  {
     patron: /precio|cuesta|cuánto|cuanto|pag|fraccion|financ/,
     respuesta:
-      'Base (Madrid, 14–16 nov): 1.450 €, reservas con 350 €. Avanzado (Valencia, 30 ene–1 feb): 1.650 €, reserva 400 €. Lectura corporal (Sevilla, 7–8 mar): 890 €, reserva 250 €.\nEl resto se paga el primer día. Si necesitas fraccionarlo en tres meses, dímelo antes de reservar.',
+      'La Comunidad Divine son 47 € al mes, con precio fundador para las primeras.\nEl precio de las formaciones va con la convocatoria, y las próximas todavía se están cerrando. Déjame tu contacto y te lo mando con la fecha en cuanto esté.',
   },
   {
-    patron: /fecha|cuándo|cuando|próxim|proxim|plaza|queda|ciudad|madrid|valencia|sevilla/,
+    patron: /qué es|que es|técnica|tecnica|método|metodo|drenaje|linf/,
     respuesta:
-      'Lo más cercano es la Formación Base en Madrid, del 14 al 16 de noviembre: quedan 3 plazas de 8.\nDespués, Nivel Avanzado en Valencia (30 ene–1 feb) y Lectura corporal en Sevilla (7–8 de marzo).',
+      'Es drenaje linfático manual llevado más lejos. Se trabaja con las manos y aceite, por zonas, y tiene su versión facial.\nEl orden manda: primero se abren los ganglios y las estaciones linfáticas, después se arrastra siguiendo el recorrido natural, y solo al final se moldea.',
   },
   {
-    patron: /requisit|titul|puedo|empez|principi|nivel|experiencia/,
+    patron: /clienta|cliente|terapeuta|cerca|mapa|sesión|sesion/,
     respuesta:
-      'Necesitas experiencia real trabajando con las manos y con clientas. No pido una titulación concreta.\nSi es tu primer contacto con la estética, esta formación no te va a servir todavía.',
-  },
-  {
-    patron: /reserv|cita|cliente|clienta|terapeuta|cerca|mapa/,
-    respuesta:
-      'Si buscas sesión como clienta, abre Localiza tu terapeuta: en el mapa ves quién tiene consulta cerca de ti y reservas con ella; te confirma ella por correo.\nSi quieres reservar plaza en una formación, dime en cuál y te digo cómo va el pago.',
-  },
-  {
-    patron: /comunidad|membres|suscrip|lista/,
-    respuesta:
-      'La comunidad está en beta: todavía no está abierta y aún no tiene precio. Solo hay lista de espera: gratis, sin compromiso y con condición de fundadora para las primeras.\nEs solo para terapeutas certificadas conmigo.',
+      'Si buscas sesión como clienta, abre Localiza tu terapeuta: en el mapa ves quién tiene consulta cerca de ti y reservas con ella.\nToda sesión empieza con unos minutos de valoración. No se trabaja sobre un cuerpo sin haberlo mirado antes.',
   },
   {
     patron: /certific|diploma|título|titulo/,
     respuesta:
-      'Al completar la formación recibes el certificado de terapeuta Divine y entras en el mapa público de terapeutas certificadas.',
+      'Al completar las dos etapas recibes el certificado de terapeuta Divine y entras en el mapa público de terapeutas certificadas.',
   },
   {
-    patron: /cancel|devolu|aplaz/,
+    patron: /resultado|funciona|nota|sesion|ver/,
     respuesta:
-      'Si no puedes venir, avisando con 15 días te devuelvo la reserva (10 días en el intensivo de Sevilla).',
-  },
-  {
-    patron: /incluye|material|aula|horario|hora/,
-    respuesta:
-      'Incluye las horas presenciales en grupo de ocho, material y fichas de valoración, certificado y acceso al aula online con los apoyos del curso. El horario es de 10:00 a 19:00.',
+      'Lo habitual es terminar la sesión con sensación de ligereza y un contorno más definido. La respuesta varía según cada persona y cada momento: no te voy a prometer un número.\nSi quieres verlo por ti misma, lo mejor es una sesión con una terapeuta certificada.',
   },
 ];
 
 const POR_DEFECTO =
-  'Puedo ayudarte con fechas, plazas, precios y requisitos de las formaciones, o con encontrar terapeuta cerca de ti.\nSi es algo más concreto, escríbeme por el formulario o por Instagram: @sorelacaro_.';
+  'Puedo ayudarte con la formación, con la agenda o con la Comunidad Divine.\nSi es algo más concreto, déjame tu contacto en el formulario y te contesto yo, o escríbeme por Instagram: @sorelacaro_.';
 
 export function responder(pregunta: string): string {
   const t = (pregunta || '').toLowerCase();

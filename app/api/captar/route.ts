@@ -1,39 +1,34 @@
 import { NextResponse } from 'next/server';
+import { FieldValue } from 'firebase-admin/firestore';
 import { revisar, type Contacto, type Fallo } from '@/lib/captacion';
+import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
+import { enviar, hayCorreo } from '@/lib/correo';
+import { correoAviso, correoBienvenida } from '@/lib/plantillas-correo';
 
 /**
- * Recibe el formulario de captación y se lo pasa al Apps Script de Google,
- * que es quien escribe la fila en la hoja y manda los correos.
+ * Recibe el formulario de captación, guarda el contacto en Firestore y manda
+ * los dos correos.
  *
- * Por qué pasa por aquí y el formulario no llama a Google directamente:
+ * El orden importa y es deliberado: PRIMERO se guarda, DESPUÉS se envía. Si el
+ * correo falla, el contacto ya está a salvo y la persona ve que ha ido bien,
+ * porque para ella ha ido bien: Sorela tiene su dato y puede escribirle. Al
+ * revés —enviar primero y guardar después— un fallo al guardar dejaría a una
+ * persona con un correo de bienvenida a la que nadie va a volver a escribir.
  *
- *  1. La dirección del Apps Script quedaría a la vista en el navegador. Con
- *     ella cualquiera puede meter filas en la hoja de Sorela desde su casa.
- *  2. Aquí se valida y se corta el abuso antes de gastar cuota de Google, que
- *     es limitada y se agota para todo el día.
- *  3. Un navegador no puede llamar a script.google.com sin pelearse con CORS.
- *     Servidor contra servidor no existe ese problema.
- *
- * Las dos variables de entorno se ponen en Vercel → Settings → Environment
- * Variables. Si falta alguna, la ruta lo dice con 503 y el formulario enseña
- * la salida por WhatsApp: preferimos que la persona nos escriba ella a
- * decirle «gracias» y perder el contacto.
+ * Si lo que falla es Firestore, entonces sí se contesta con error, y el
+ * formulario enseña la salida por WhatsApp. Un contacto perdido no se
+ * recupera.
  */
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const DESTINO = process.env.APPS_SCRIPT_URL;
-const SECRETO = process.env.APPS_SCRIPT_SECRETO;
-
-/** Google puede tardar en despertar el script. Más de 10 s ya es un abandono. */
 const ESPERA_MAX = 10_000;
 
 /**
  * Freno por IP. Vive en memoria, así que en Vercel cada instancia lleva su
- * propia cuenta y el límite real es más flojo que el de aquí. No pasa nada:
- * esto no es seguridad, es evitar que un script tonto llene la hoja. El
- * secreto compartido es lo que de verdad protege el Apps Script.
+ * propia cuenta y el límite real es más flojo que el de aquí. No es una medida
+ * de seguridad: es evitar que un script tonto llene la base de datos.
  */
 const HUELLAS = new Map<string, number[]>();
 const VENTANA = 60_000;
@@ -45,7 +40,6 @@ function vaDemasiadoRapido(ip: string): boolean {
   previas.push(ahora);
   HUELLAS.set(ip, previas);
 
-  // Barrido perezoso: sin esto el Map crece sin fin en una instancia longeva.
   if (HUELLAS.size > 500) {
     for (const [clave, marcas] of HUELLAS) {
       if (marcas.every((t) => ahora - t >= VENTANA)) HUELLAS.delete(clave);
@@ -57,6 +51,28 @@ function vaDemasiadoRapido(ip: string): boolean {
 const falla = (motivo: Fallo, estado: number, extra: object = {}) =>
   NextResponse.json({ ok: false, motivo, ...extra }, { status: estado });
 
+/** Plan B mientras Firebase no esté configurado: el Apps Script de Google. */
+async function guardarEnAppsScript(datos: Contacto & { origen: string }) {
+  const destino = process.env.APPS_SCRIPT_URL;
+  const secreto = process.env.APPS_SCRIPT_SECRETO;
+  if (!destino || !secreto) return false;
+
+  const r = await fetch(destino, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ ...datos, secreto }),
+    signal: AbortSignal.timeout(ESPERA_MAX),
+  });
+  const texto = await r.text();
+  try {
+    return Boolean(JSON.parse(texto).ok);
+  } catch {
+    console.error('[captar] El Apps Script no devolvió JSON:', texto.slice(0, 300));
+    return false;
+  }
+}
+
 export async function POST(peticion: Request) {
   let cuerpo: Partial<Contacto>;
   try {
@@ -65,13 +81,14 @@ export async function POST(peticion: Request) {
     return falla('datos', 400, { errores: {} });
   }
 
-  // Señuelo: es un campo escondido que una persona no ve ni puede rellenar.
-  // Si viene con algo es un robot. Se le contesta que todo ha ido bien para
-  // que no pruebe otra cosa, y no se guarda nada.
+  // Señuelo: campo escondido que una persona no ve ni puede rellenar. Si trae
+  // algo es un robot. Se le contesta que todo ha ido bien para que no pruebe
+  // otra cosa, y no se guarda nada.
   if (cuerpo.empresa) return NextResponse.json({ ok: true });
 
   const revision = revisar(cuerpo);
   if (!revision.ok) return falla('datos', 400, { errores: revision.errores });
+  const datos = revision.datos;
 
   const ip =
     peticion.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
@@ -79,48 +96,76 @@ export async function POST(peticion: Request) {
     'desconocida';
   if (vaDemasiadoRapido(ip)) return falla('ritmo', 429);
 
-  if (!DESTINO || !SECRETO) {
-    console.error('[captar] Falta APPS_SCRIPT_URL o APPS_SCRIPT_SECRETO en el entorno.');
-    return falla('sin-destino', 503);
-  }
+  /* ---------- 1. Guardar. Sin esto, no hay «gracias». ---------- */
+  let guardado = false;
 
-  const corte = AbortSignal.timeout(ESPERA_MAX);
-  try {
-    const respuesta = await fetch(DESTINO, {
-      method: 'POST',
-      // Apps Script responde con una redirección 302 a googleusercontent.com
-      // y hay que seguirla para leer el resultado de verdad.
-      redirect: 'follow',
-      // text/plain a propósito: con application/json el navegador pediría
-      // permiso previo y Apps Script no sabe contestarlo. Desde el servidor da
-      // igual, pero así el mismo script vale si alguna vez se llama de otra
-      // forma. Google entrega el cuerpo entero en e.postData.contents igual.
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ ...revision.datos, secreto: SECRETO }),
-      signal: corte,
-    });
-
-    const texto = await respuesta.text();
-    let resultado: { ok?: boolean; motivo?: string } = {};
+  if (hayFirebase()) {
     try {
-      resultado = JSON.parse(texto);
-    } catch {
-      // Apps Script devuelve una página HTML de error cuando el despliegue no
-      // es público o la autorización ha caducado. Es el fallo más habitual al
-      // montarlo, así que se deja escrito en el registro tal cual viene.
-      console.error('[captar] El Apps Script no ha devuelto JSON:', texto.slice(0, 300));
-      return falla('destino', 502);
-    }
+      // El identificador del documento es el propio correo: si la misma
+      // persona vuelve a rellenar el formulario —cosa habitual cuando alguien
+      // escanea un QR dos veces—, se actualiza su ficha en vez de crear un
+      // duplicado que luego hay que limpiar a mano.
+      const id = datos.correo.replace(/\//g, '_');
+      const ref = baseDeDatos().collection(COLECCIONES.contactos).doc(id);
+      const previo = await ref.get();
 
-    if (!respuesta.ok || !resultado.ok) {
-      console.error('[captar] El Apps Script ha rechazado el envío:', resultado.motivo ?? texto);
-      return falla('destino', 502);
+      await ref.set(
+        {
+          ...datos,
+          // La hora la pone el servidor de Google, no el navegador de quien
+          // rellena: los relojes de los móviles vienen torcidos.
+          actualizado: FieldValue.serverTimestamp(),
+          ...(previo.exists ? {} : { creado: FieldValue.serverTimestamp() }),
+          veces: FieldValue.increment(1),
+        },
+        { merge: true }
+      );
+      guardado = true;
+    } catch (e) {
+      console.error('[captar] Firestore ha fallado:', e);
     }
-
-    return NextResponse.json({ ok: true });
-  } catch (e) {
-    const porTiempo = e instanceof Error && e.name === 'TimeoutError';
-    console.error(`[captar] ${porTiempo ? 'Google ha tardado demasiado' : 'Fallo al llamar'}:`, e);
-    return falla('destino', 502);
   }
+
+  if (!guardado) {
+    try {
+      guardado = await guardarEnAppsScript(datos);
+      if (guardado) console.warn('[captar] Guardado en Apps Script: Firebase no estaba disponible.');
+    } catch (e) {
+      console.error('[captar] El plan B de Apps Script también ha fallado:', e);
+    }
+  }
+
+  if (!guardado) {
+    console.error('[captar] No hay dónde guardar. Revisa las variables de Firebase en Vercel.');
+    return falla(hayFirebase() ? 'destino' : 'sin-destino', hayFirebase() ? 502 : 503);
+  }
+
+  /* ---------- 2. Avisar. Si falla, el contacto ya está a salvo. ---------- */
+  let correoEnviado = false;
+
+  if (hayCorreo()) {
+    const bienvenida = correoBienvenida(datos);
+    const aviso = correoAviso(datos);
+    const paraSorela = process.env.CORREO_AVISOS || process.env.CORREO_DE;
+
+    const resultados = await Promise.allSettled([
+      enviar({ para: datos.correo, ...bienvenida }),
+      paraSorela
+        ? enviar({ para: paraSorela, ...aviso, responderA: datos.correo })
+        : Promise.resolve(),
+    ]);
+
+    correoEnviado = resultados[0].status === 'fulfilled';
+    resultados.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        console.error(`[captar] No salió el correo ${i === 0 ? 'de bienvenida' : 'de aviso'}:`, r.reason);
+      }
+    });
+  } else {
+    console.warn('[captar] Contacto guardado pero sin correo: faltan las variables SMTP.');
+  }
+
+  // correoEnviado viaja al navegador para que el mensaje de confirmación no
+  // prometa un correo que no ha salido.
+  return NextResponse.json({ ok: true, correoEnviado });
 }

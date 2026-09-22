@@ -12,7 +12,8 @@ export type Contacto = {
   nombre: string;
   correo: string;
   whatsapp: string;
-  perfil: string;
+  /** Opcional: solo lo pregunta el formulario largo, no la ventana emergente. */
+  perfil?: string;
   consentimiento: boolean;
   origen?: string;
   /** Señuelo antirrobots: si viene con algo, no lo ha rellenado una persona. */
@@ -56,7 +57,7 @@ export function normalizarTelefono(valor: string): string | null {
 const recortar = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
 
 export type Revision =
-  | { ok: true; datos: Required<Omit<Contacto, 'empresa'>> }
+  | { ok: true; datos: Omit<Contacto, 'empresa'> & { origen: string } }
   | { ok: false; errores: Partial<Record<keyof Contacto, string>> };
 
 export function revisar(entrada: Partial<Contacto>): Revision {
@@ -80,9 +81,13 @@ export function revisar(entrada: Partial<Contacto>): Revision {
       nombre,
       correo,
       whatsapp: whatsapp!,
-      // Si llega un perfil que no está en la lista, se guarda como «Otra cosa»
-      // en vez de rechazarlo: el dato de contacto vale más que la etiqueta.
-      perfil: (PERFILES as readonly string[]).includes(perfil) ? perfil : 'Otra cosa',
+      // El perfil no se exige: la ventana emergente solo pide tres campos,
+      // porque cada campo de más cuesta contactos. Si llega uno que no está en
+      // la lista se guarda como «Otra cosa» en vez de rechazar el envío: el
+      // dato de contacto vale mucho más que la etiqueta.
+      ...(perfil
+        ? { perfil: (PERFILES as readonly string[]).includes(perfil) ? perfil : 'Otra cosa' }
+        : {}),
       consentimiento: true,
       origen: recortar(entrada.origen, 40) || 'web',
     },

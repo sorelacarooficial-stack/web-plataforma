@@ -7,6 +7,7 @@ import {
   SUGERENCIAS,
   responder,
 } from '@/lib/asistente';
+import { EVENTO_ASISTENTE, type PeticionAsistente } from '@/lib/abrir-asistente';
 import css from './Asistente.module.css';
 
 export default function Asistente() {
@@ -47,6 +48,22 @@ export default function Asistente() {
     []
   );
 
+  // Otros puntos de la web («Agendar cita», «Consultar fechas») abren el
+  // asistente con la pregunta ya escrita. El oyente se registra una sola vez,
+  // así que llama a preguntar() a través de una referencia que se refresca en
+  // cada pintado: si lo llamara directamente, se quedaría atrapado con el
+  // estado del primer pintado y creería para siempre que no está escribiendo.
+  const preguntarRef = useRef<(t: string) => void>(() => {});
+  useEffect(() => {
+    const abrirDesdeFuera = (e: Event) => {
+      const pregunta = (e as CustomEvent<PeticionAsistente>).detail?.pregunta;
+      setAbierto(true);
+      if (pregunta) window.setTimeout(() => preguntarRef.current(pregunta), 260);
+    };
+    window.addEventListener(EVENTO_ASISTENTE, abrirDesdeFuera);
+    return () => window.removeEventListener(EVENTO_ASISTENTE, abrirDesdeFuera);
+  }, []);
+
   function preguntar(texto: string) {
     const limpio = texto.trim();
     if (!limpio || escribiendo) return;
@@ -62,6 +79,10 @@ export default function Asistente() {
       setEscribiendo(false);
     }, 420);
   }
+
+  // Se refresca en cada pintado para que el oyente de arriba llame siempre a
+  // la versión con el estado de ahora.
+  preguntarRef.current = preguntar;
 
   return (
     <div className={css.zona}>

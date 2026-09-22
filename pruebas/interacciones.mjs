@@ -59,13 +59,15 @@ await p.screenshot({ path: `${OUT}/int-reserva.png` });
 await p.goto(B + '/', { waitUntil: 'networkidle' });
 await p.getByRole('button', { name: 'Abrir el asistente Divine' }).click();
 await p.waitForTimeout(400);
-await p.getByRole('button', { name: 'Precio y forma de pago' }).click();
+await p.getByRole('button', { name: 'Quiero agendar una cita' }).click();
 await p.waitForTimeout(900);
-check('asistente: responde precios', await p.getByText(/1\.450 €, reservas con 350 €/).isVisible());
+check('asistente: ofrece guardar el sitio', await p.getByText(/Te guardo el sitio/).isVisible());
 await p.locator('input[aria-label="Escribe tu pregunta"]').fill('quiero entrar en la comunidad');
 await p.getByRole('button', { name: 'Enviar', exact: true }).click();
 await p.waitForTimeout(900);
-check('asistente: responde comunidad', await p.getByText(/todavía no está abierta/).isVisible());
+// La comunidad ya tiene precio y fecha: el asistente no puede seguir diciendo
+// que no está abierta ni que no tiene precio.
+check('asistente: responde comunidad con precio y fecha', await p.getByText(/47 € al mes/).isVisible());
 await p.screenshot({ path: `${OUT}/int-asistente.png` });
 await p.getByRole('button', { name: 'Cerrar el asistente' }).click();
 

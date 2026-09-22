@@ -2,40 +2,45 @@
 
 import { useEffect, useId, useState } from 'react';
 import Link from 'next/link';
-import { PERFILES, revisar, type Contacto } from '@/lib/captacion';
+import { revisar, type Contacto } from '@/lib/captacion';
 import { INSTAGRAM, INSTAGRAM_USUARIO, WHATSAPP_SORELA } from '@/lib/contenido';
 import css from './Captacion.module.css';
 
 type Estado = 'quieto' | 'enviando' | 'hecho' | 'sinSitio';
 type Errores = Partial<Record<keyof Contacto, string>>;
 
-const VACIO = { nombre: '', correo: '', whatsapp: '', perfil: PERFILES[0] };
+const VACIO = { nombre: '', correo: '', whatsapp: '' };
 
 /**
- * Formulario de captación. Es el único sitio de la web donde hoy entra un dato
- * de verdad, así que está hecho pensando en el peor escenario: una persona de
- * pie en una exposición, con prisa, con una mano y con mala cobertura.
+ * Formulario de captación. Es la única puerta por la que hoy entra un dato de
+ * verdad en el negocio, y está hecho pensando en el peor escenario: alguien de
+ * pie, con prisa, con una mano y con mala cobertura.
  *
- * De ahí tres decisiones que no son las habituales:
- *
- *  · Cuatro campos y ni uno más. Cada campo extra cuesta contactos.
- *  · Si el servidor falla, NO se dice «gracias». Se enseña la salida por
- *    WhatsApp con el mensaje ya escrito, para que el contacto llegue igual.
- *  · El teclado del móvil se abre en el modo correcto en cada campo. Escribir
- *    un correo con el teclado de texto en vertical es motivo de abandono.
+ * Tres campos y ni uno más. Cada campo que se añade cuesta contactos, y el
+ * nombre, el correo y el teléfono son los tres que permiten continuar la
+ * conversación. Lo demás se pregunta luego, hablando.
  */
-export default function Captacion({ compacto = false }: { compacto?: boolean }) {
+export default function Captacion({
+  compacto = false,
+  titulo,
+  entradilla,
+}: {
+  compacto?: boolean;
+  titulo?: string;
+  entradilla?: string;
+}) {
   const id = useId();
   const [v, setV] = useState(VACIO);
   const [acepta, setAcepta] = useState(false);
   const [senuelo, setSenuelo] = useState('');
   const [errores, setErrores] = useState<Errores>({});
   const [estado, setEstado] = useState<Estado>('quieto');
+  const [conCorreo, setConCorreo] = useState(true);
   const [origen, setOrigen] = useState('web');
 
-  // De dónde viene la visita. El QR de la exposición lleva ?e=expo, y así la
-  // hoja distingue quién entró por el código y quién por Instagram. Se lee de
-  // window y no con useSearchParams para no obligar a toda la home a
+  // De dónde viene la visita. Un QR puede llevar ?e=expo, y así en Firestore
+  // se distingue quién entró por el código y quién por Instagram. Se lee de
+  // window y no con useSearchParams para no obligar a toda la página a
   // renderizarse en cliente por un parámetro opcional.
   useEffect(() => {
     const e = new URLSearchParams(window.location.search).get('e');
@@ -45,7 +50,7 @@ export default function Captacion({ compacto = false }: { compacto?: boolean }) 
   const campo = (k: keyof typeof VACIO) => ({
     id: `${id}-${k}`,
     value: v[k],
-    onChange: (ev: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    onChange: (ev: React.ChangeEvent<HTMLInputElement>) => {
       setV((s) => ({ ...s, [k]: ev.target.value }));
       // El error se borra al tocar el campo, no al reenviar: corregir y seguir
       // viendo el aviso en rojo hace pensar que no se ha arreglado.
@@ -78,6 +83,10 @@ export default function Captacion({ compacto = false }: { compacto?: boolean }) 
       });
       const cuerpo = await r.json().catch(() => ({ ok: false }));
       if (cuerpo.ok) {
+        // El servidor dice si el correo salió de verdad. Sin esto, la pantalla
+        // prometería un correo que quizá no ha llegado a enviarse, y esa
+        // promesa incumplida se paga con una persona esperando.
+        setConCorreo(cuerpo.correoEnviado !== false);
         setEstado('hecho');
         return;
       }
@@ -88,7 +97,7 @@ export default function Captacion({ compacto = false }: { compacto?: boolean }) 
       }
       setEstado('sinSitio');
     } catch {
-      // Sin cobertura en el recinto. Mismo desenlace: salida por WhatsApp.
+      // Sin cobertura. Mismo desenlace: salida por WhatsApp.
       setEstado('sinSitio');
     }
   }
@@ -96,14 +105,22 @@ export default function Captacion({ compacto = false }: { compacto?: boolean }) 
   if (estado === 'hecho') {
     return (
       <div className={css.exito} role="status">
-        <h2 className={css.exitoTitulo}>Ya lo tengo, {v.nombre.trim().split(' ')[0]}.</h2>
+        <h2 className={css.exitoTitulo}>Ya estás dentro, {v.nombre.trim().split(' ')[0]}.</h2>
         <p className={css.exitoTexto}>
-          Te acabo de mandar un correo con la información de la Técnica Divine y las próximas
-          fechas. Si no lo ves en un par de minutos, mira en spam: a veces se esconde ahí la
-          primera vez.
+          {conCorreo ? (
+            <>
+              Te acabo de mandar un correo con la información de la Técnica Divine. Si no lo ves en
+              un par de minutos, mira en spam: a veces se esconde ahí la primera vez.
+            </>
+          ) : (
+            <>
+              Tengo tu contacto. Te escribo yo con la información de la Técnica Divine en cuanto
+              pueda, no hace falta que hagas nada más.
+            </>
+          )}
         </p>
         <Link href="/formaciones" className="btn btn-md">
-          Ver las fechas ahora
+          Ver las formaciones
         </Link>
       </div>
     );
@@ -145,6 +162,9 @@ export default function Captacion({ compacto = false }: { compacto?: boolean }) 
 
   return (
     <form className={`${css.forma} ${compacto ? css.compacta : ''}`} onSubmit={enviar} noValidate>
+      {titulo && <h2 className={css.titulo}>{titulo}</h2>}
+      {entradilla && <p className={css.entradilla}>{entradilla}</p>}
+
       <div className={css.campos}>
         <div className={css.grupo}>
           <label className={css.etiqueta} htmlFor={`${id}-nombre`}>
@@ -188,14 +208,14 @@ export default function Captacion({ compacto = false }: { compacto?: boolean }) 
 
         <div className={css.grupo}>
           <label className={css.etiqueta} htmlFor={`${id}-whatsapp`}>
-            WhatsApp
+            Teléfono
           </label>
           <input
             {...campo('whatsapp')}
             type="tel"
             inputMode="tel"
             autoComplete="tel"
-            enterKeyHint="next"
+            enterKeyHint="send"
             placeholder="600 00 00 00"
           />
           {errores.whatsapp && (
@@ -203,17 +223,6 @@ export default function Captacion({ compacto = false }: { compacto?: boolean }) 
               {errores.whatsapp}
             </p>
           )}
-        </div>
-
-        <div className={css.grupo}>
-          <label className={css.etiqueta} htmlFor={`${id}-perfil`}>
-            ¿A qué te dedicas?
-          </label>
-          <select {...campo('perfil')}>
-            {PERFILES.map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
         </div>
       </div>
 

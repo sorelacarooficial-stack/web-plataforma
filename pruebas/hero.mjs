@@ -45,9 +45,9 @@ for (const [w, h, movil] of [
     const sec = document.querySelector('main > section');
     const h1 = document.querySelector('h1');
     const lede = h1.nextElementSibling;
-    // Desde que el hero capta, su acción es el botón del formulario.
+    // Desde que el hero capta, su acción es el botón que abre la ventana.
     const btn = [...sec.querySelectorAll('button')].find((b) =>
-      /Enviarme la información/.test(b.textContent || '')
+      /Quiero la información/.test(b.textContent || '')
     );
     const firma = sec.querySelector('p:last-of-type');
     const caja = h1.parentElement;
@@ -68,8 +68,8 @@ for (const [w, h, movil] of [
   });
 
   const et = `${w}px`;
-  check(`${et} · el titular es el nuevo`, /mire entera/.test(m.textoH1), m.textoH1);
-  check(`${et} · el hero pide el contacto`, /Enviarme la información/.test(m.textoBtn), m.textoBtn);
+  check(`${et} · el titular es el nuevo`, /Juventud linf[áa]tica y ganglionar/.test(m.textoH1), m.textoH1);
+  check(`${et} · el hero pide el contacto`, /Quiero la información/.test(m.textoBtn), m.textoBtn);
   check(`${et} · sin scroll horizontal`, !m.desborda);
   check(
     `${et} · la firma cabe dentro del hero`,

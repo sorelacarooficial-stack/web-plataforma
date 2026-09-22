@@ -1,0 +1,74 @@
+/* Las dos llamadas del inicio. La jerarquía la marca la forma, no el tamaño:
+   una es una pastilla sólida con movimiento, la otra un texto con un punto
+   dorado que late. */
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(14px, 2vw, 26px);
+}
+
+.centro {
+  justify-content: center;
+}
+
+.cita {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  /* 44 px de alto aunque el texto mida menos: es un objetivo táctil. */
+  min-height: 44px;
+  padding: 0 2px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line-5);
+  font-size: 13px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition:
+    color 0.22s,
+    border-color 0.22s;
+}
+
+.cita:hover {
+  color: var(--ink);
+  border-color: var(--arcilla);
+}
+
+.cita:focus-visible {
+  outline: 2px solid var(--arcilla);
+  outline-offset: 4px;
+}
+
+/* El punto que late dice «hay alguien al otro lado» sin escribirlo. Es el
+   mismo recurso del sello del hero, reutilizado a propósito: repetir un gesto
+   lo convierte en lenguaje de la marca; inventar uno nuevo lo convierte en
+   ruido. */
+.citaPunto {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--arcilla);
+  animation: divineRing 3s ease-out infinite;
+}
+
+@media (max-width: 480px) {
+  .acciones {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .acciones :global(.btn) {
+    justify-content: center;
+    width: 100%;
+    min-height: 54px;
+  }
+
+  .cita {
+    justify-content: center;
+  }
+}

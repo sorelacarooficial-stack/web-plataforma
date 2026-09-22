@@ -1,0 +1,31 @@
+rules_version = '2';
+
+/**
+ * Reglas de seguridad de Firestore.
+ *
+ * Están cerradas del todo a propósito, y eso NO rompe la web: los contactos
+ * los escribe el servidor de la web con el SDK de administración, que se salta
+ * estas reglas por definición. Las reglas solo gobiernan lo que llega desde un
+ * navegador.
+ *
+ * Es decir: nadie puede leer ni escribir esta base de datos desde fuera. Ni
+ * listar los contactos, ni añadir filas falsas, ni borrar nada. Sorela sí los
+ * ve, desde la consola de Firebase, que tampoco pasa por aquí.
+ *
+ * CÓMO SE APLICAN (hay que hacerlo, no basta con que el archivo exista):
+ *   console.firebase.google.com → proyecto Sorela → Firestore → pestaña
+ *   «Reglas» → se pega este contenido → Publicar.
+ *
+ * Firestore avisa con un banner de que la base de datos está en modo de
+ * prueba y que en unos días dejará de funcionar. Publicando esto, ese aviso
+ * desaparece y la base queda cerrada de verdad.
+ */
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Todo cerrado desde el navegador. Sin excepciones.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

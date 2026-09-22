@@ -461,10 +461,25 @@
    (en /comunidad llevan sus cuatro colores; aquí van neutras porque el
    acento de este bloque ya es el arcilla del fondo).
    ========================================================================== */
+/* Son cinco piezas. Con auto-fit salían cuatro arriba y una suelta debajo, y
+   ese hueco a la derecha se lee como un error de maquetación. Tres columnas
+   dan 3+2, que es lo más equilibrado que admite un número impar. */
 .piezas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: clamp(14px, 2vw, 20px);
+}
+
+@media (max-width: 1080px) {
+  .piezas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .piezas {
+    grid-template-columns: 1fr;
+  }
 }
 
 .pieza {
@@ -623,5 +638,257 @@
 
   .bandaTexto {
     padding-left: clamp(22px, 4vw, 40px);
+  }
+}
+
+/* ==========================================================================
+   Qué es la Técnica Divine
+   ========================================================================== */
+.metodo {
+  position: relative;
+}
+
+/* Los tres pilares van numerados y en fila porque son un orden, no una lista
+   de ventajas: el número dice que el segundo no funciona sin el primero. */
+.pilares {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(18px, 2.4vw, 32px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: pilar;
+}
+
+.pilar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(22px, 2.6vw, 30px) 0 0;
+  border-top: 1px solid var(--line-4);
+}
+
+.pilarNumero {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(30px, 3.4vw, 42px);
+  line-height: 1;
+  color: var(--arcilla);
+  font-variant-numeric: tabular-nums;
+}
+
+.pilarTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(20px, 2.1vw, 26px);
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+/* ==========================================================================
+   Formaciones: las dos etapas
+   ========================================================================== */
+.formacionIntro {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: clamp(32px, 4.5vw, 60px);
+}
+
+/* Dos columnas y no tres: son dos etapas de un camino, y una rejilla de tres
+   sugeriría que se puede elegir. */
+.etapas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(18px, 2.4vw, 30px);
+  align-items: start;
+}
+
+.etapa {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: clamp(24px, 3vw, 36px);
+  background: var(--bg);
+  border: 1px solid var(--line-4);
+  border-top: 3px solid var(--line-5);
+}
+
+/* La presencial se marca en oro: es la que tiene fechas y la que cuesta
+   dinero. La online es el paso previo, no el destino. */
+.etapaDestacada {
+  border-top-color: var(--arcilla);
+}
+
+.etapaOrden {
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.etapaDestacada .etapaOrden {
+  color: var(--arcilla);
+}
+
+.etapaTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(23px, 2.5vw, 31px);
+  line-height: 1.12;
+  color: var(--ink);
+}
+
+.etapaLista {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.etapaLista li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.etapaLista li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--arcilla);
+}
+
+/* Las fechas: banda aparte, porque hoy la respuesta honesta es «todavía no
+   hay», y eso merece su propio sitio en vez de esconderse en una lista. */
+.fechas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(20px, 3vw, 40px);
+  margin-top: clamp(30px, 4vw, 52px);
+  padding: clamp(26px, 3.2vw, 40px);
+  background: var(--surface);
+  border-left: 3px solid var(--oro);
+}
+
+.fechasTitulo {
+  margin: 6px 0 10px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(24px, 2.8vw, 34px);
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+/* ==========================================================================
+   Comunidad Divine
+   ========================================================================== */
+.comunidadCabeza {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: clamp(28px, 4vw, 64px);
+  align-items: start;
+  margin-bottom: clamp(36px, 5vw, 66px);
+}
+
+.comunidadTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.precio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.precioCifra {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(46px, 6vw, 72px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.precioPeriodo {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--ink-3);
+}
+
+/* La condición de fundadora va pegada al precio y no en una nota al pie: es
+   lo que hace que el número signifique algo hoy y no dentro de tres meses. */
+.precioSello {
+  padding: 7px 14px;
+  background: var(--oro-suave, var(--surface));
+  border: 1px solid var(--oro-line);
+  border-radius: 999px;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.apertura {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(24px, 3vw, 34px);
+  background: var(--surface);
+  border-top: 3px solid var(--arcilla);
+}
+
+.aperturaAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   Móvil de las secciones nuevas
+   ========================================================================== */
+@media (max-width: 860px) {
+  .pilares,
+  .etapas,
+  .comunidadCabeza {
+    grid-template-columns: 1fr;
+  }
+
+  .fechas {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .comunidadCabeza {
+    gap: clamp(26px, 5vw, 40px);
+  }
+}
+
+@media (max-width: 480px) {
+  .fechas :global(.btn) {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .aperturaAcciones {
+    gap: 14px;
   }
 }

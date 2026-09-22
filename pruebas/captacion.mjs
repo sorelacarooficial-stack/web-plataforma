@@ -104,6 +104,7 @@ if (!arrancado) {
 
 const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 
+/** Abre la ventana emergente del inicio y rellena sus tres campos. */
 async function rellenar(p, datos = {}) {
   const d = {
     nombre: 'Ana Ruiz',
@@ -111,9 +112,14 @@ async function rellenar(p, datos = {}) {
     whatsapp: '600 11 22 33',
     ...datos,
   };
-  await p.getByPlaceholder('Tu nombre').first().fill(d.nombre);
-  await p.getByPlaceholder('tucorreo@ejemplo.com').first().fill(d.correo);
-  await p.getByPlaceholder('600 00 00 00').first().fill(d.whatsapp);
+  if ((await p.locator('dialog[open]').count()) === 0) {
+    await p.getByRole('button', { name: 'Quiero la información' }).first().click();
+    await p.waitForTimeout(450);
+  }
+  const d1 = p.locator('dialog[open]');
+  await d1.getByPlaceholder('Tu nombre').fill(d.nombre);
+  await d1.getByPlaceholder('tucorreo@ejemplo.com').fill(d.correo);
+  await d1.getByPlaceholder('600 00 00 00').fill(d.whatsapp);
   return d;
 }
 
@@ -135,66 +141,78 @@ for (const [w, h, nombre] of [
   await p.goto(B + '/?e=expo', { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
 
+  // Lo que tiene que verse sin hacer scroll ya no es un formulario entero,
+  // sino el botón que lo abre. El formulario se mide después, dentro de la
+  // ventana, donde el alto de la página ya no lo condiciona.
   const m = await p.evaluate(() => {
     const b = [...document.querySelectorAll('button')].find((x) =>
-      /Enviarme la información/.test(x.textContent || '')
+      /Quiero la información/.test(x.textContent || '')
     );
-    // Solo el formulario del hero, y solo los campos de escribir: la casilla
-    // de consentimiento se toca por su etiqueta entera, no por el cuadradito,
-    // y los formularios de más abajo se miden en su propia prueba.
-    const forma = b.closest('form');
-    const campos = [
-      ...forma.querySelectorAll('input:not([type="checkbox"]):not([tabindex="-1"]), select'),
-    ];
-    const casilla = forma.querySelector('input[type="checkbox"]');
     const h1 = document.querySelector('h1');
     const cab = document.querySelector('header');
     return {
       botonAbajo: b ? b.getBoundingClientRect().bottom : null,
+      botonAlto: b ? b.getBoundingClientRect().height : 0,
       tituloArriba: h1.getBoundingClientRect().top,
       cabeceraAbajo: cab.getBoundingClientRect().bottom,
       alto: window.innerHeight,
-      minimoCampo: Math.min(...campos.map((c) => c.getBoundingClientRect().height)),
-      tipoLetra: campos.map((c) => parseFloat(getComputedStyle(c).fontSize)),
-      // La etiqueta envuelve a la casilla, así que lo que se toca es ella.
-      altoCasilla: casilla.closest('label').getBoundingClientRect().height,
       desborda: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
     };
   });
 
-  // El navegador de un móvil de verdad se come la parte de abajo con su barra
-  // de direcciones, y ahí Playwright miente: informa de la pantalla entera.
-  // Safari en iPhone se queda unos setenta píxeles, así que el listón se pone
-  // en el 88 % del alto y no en el 100 %.
   const utilConBarra = m.alto * 0.88;
   check(
-    `${nombre} ${w}×${h} · el botón de enviar se ve sin scroll, con la barra del navegador puesta`,
+    `${nombre} ${w}×${h} · el botón principal se ve sin scroll, con la barra del navegador puesta`,
     m.botonAbajo !== null && m.botonAbajo <= utilConBarra,
     `botón ${Math.round(m.botonAbajo)} / útil ${Math.round(utilConBarra)} de ${m.alto}`
   );
-  // La cabecera es fija y flota sobre el hero: si el titular arranca por
-  // debajo de ella, se le come la primera línea.
+  check(
+    `${nombre} ${w}×${h} · el botón principal se puede tocar con el dedo`,
+    m.botonAlto >= 44,
+    `${Math.round(m.botonAlto)}px`
+  );
   check(
     `${nombre} ${w}×${h} · la cabecera no tapa el titular`,
     m.tituloArriba >= m.cabeceraAbajo - 1,
     `titular en ${Math.round(m.tituloArriba)}, cabecera acaba en ${Math.round(m.cabeceraAbajo)}`
   );
+  check(`${nombre} ${w}×${h} · sin scroll horizontal`, !m.desborda);
+
+  // Y ahora, dentro de la ventana: campos tocables y sin zoom de Safari.
+  await p.getByRole('button', { name: 'Quiero la información' }).first().click();
+  await p.waitForTimeout(450);
+  const dentro = await p.evaluate(() => {
+    const d = document.querySelector('dialog[open]');
+    const campos = [...d.querySelectorAll('input:not([type="checkbox"]):not([tabindex="-1"])')];
+    const casilla = d.querySelector('input[type="checkbox"]');
+    const env = [...d.querySelectorAll('button')].find((b) =>
+      /Enviarme la información/.test(b.textContent || '')
+    );
+    return {
+      minimoCampo: Math.min(...campos.map((c) => c.getBoundingClientRect().height)),
+      tipoLetra: campos.map((c) => parseFloat(getComputedStyle(c).fontSize)),
+      altoCasilla: casilla.closest('label').getBoundingClientRect().height,
+      envioVisible: env ? env.getBoundingClientRect().bottom <= window.innerHeight : false,
+      cuantos: campos.length,
+    };
+  });
+  check(`${nombre} ${w}×${h} · la ventana pide tres campos`, dentro.cuantos === 3, String(dentro.cuantos));
   check(
     `${nombre} ${w}×${h} · los campos se pueden tocar con el dedo`,
-    m.minimoCampo >= 44,
-    `${Math.round(m.minimoCampo)}px`
+    dentro.minimoCampo >= 44,
+    `${Math.round(dentro.minimoCampo)}px`
   );
   check(
     `${nombre} ${w}×${h} · Safari no hará zoom al tocar un campo`,
-    m.tipoLetra.every((t) => t >= 16),
-    m.tipoLetra.join('/')
+    dentro.tipoLetra.every((t) => t >= 16),
+    dentro.tipoLetra.join('/')
   );
   check(
     `${nombre} ${w}×${h} · la casilla se puede marcar con el dedo`,
-    m.altoCasilla >= 40,
-    `${Math.round(m.altoCasilla)}px de etiqueta`
+    dentro.altoCasilla >= 40,
+    `${Math.round(dentro.altoCasilla)}px de etiqueta`
   );
-  check(`${nombre} ${w}×${h} · sin scroll horizontal`, !m.desborda);
+  check(`${nombre} ${w}×${h} · el botón de enviar entra en la ventana`, dentro.envioVisible);
 
   await p.screenshot({ path: `${OUT}/movil-${w}x${h}.png` });
   await ctx.close();
@@ -213,18 +231,18 @@ for (const [w, h, nombre] of [
   await p.goto(B + '/?e=expo', { waitUntil: 'networkidle' });
   await rellenar(p);
 
-  await p.getByRole('button', { name: 'Enviarme la información' }).click();
+  await p.locator('dialog[open]').getByRole('button', { name: 'Enviarme la información' }).click();
   await p.waitForTimeout(400);
   check(
     'sin aceptar el consentimiento · no se envía y lo avisa',
     (await p.getByText('Necesito que lo aceptes').count()) > 0 && recibido.length === 0
   );
 
-  await p.getByRole('checkbox').check();
-  await p.getByRole('button', { name: 'Enviarme la información' }).click();
+  await p.locator('dialog[open]').getByRole('checkbox').check();
+  await p.locator('dialog[open]').getByRole('button', { name: 'Enviarme la información' }).click();
   await p.waitForTimeout(1200);
 
-  check('envío correcto · confirma en pantalla', (await p.getByText('Ya lo tengo, Ana').count()) > 0);
+  check('envío correcto · confirma en pantalla', (await p.getByText('Ya estás dentro, Ana').count()) > 0);
   check('envío correcto · ha llegado un contacto al script', recibido.length === 1);
 
   const d = recibido[0] || {};
@@ -234,6 +252,7 @@ for (const [w, h, nombre] of [
   check('llega marcado de dónde viene (el QR)', d.origen === 'expo', d.origen);
   check('llega el consentimiento', d.consentimiento === true);
   check('NO llega el campo señuelo', !('empresa' in d), JSON.stringify(Object.keys(d)));
+  check('no se pide perfil: solo los tres campos', !('perfil' in d), JSON.stringify(Object.keys(d)));
 
   await p.screenshot({ path: `${OUT}/exito.png` });
   await ctx.close();
@@ -252,11 +271,11 @@ for (const [w, h, nombre] of [
   const p = await ctx.newPage();
   await p.goto(B + '/', { waitUntil: 'networkidle' });
   await rellenar(p, { nombre: 'Marta Gil', correo: 'marta@ejemplo.com' });
-  await p.getByRole('checkbox').check();
-  await p.getByRole('button', { name: 'Enviarme la información' }).click();
+  await p.locator('dialog[open]').getByRole('checkbox').check();
+  await p.locator('dialog[open]').getByRole('button', { name: 'Enviarme la información' }).click();
   await p.waitForTimeout(1500);
 
-  check('si Google falla · NO se dice que ha ido bien', (await p.getByText('Ya lo tengo').count()) === 0);
+  check('si Google falla · NO se dice que ha ido bien', (await p.getByText('Ya estás dentro').count()) === 0);
   check('si Google falla · se avisa a la persona', (await p.getByText('No he podido guardarlo').count()) > 0);
   check(
     'si Google falla · se ofrece una salida para no perder el contacto',
@@ -280,7 +299,6 @@ for (const [w, h, nombre] of [
     nombre: 'Ana Ruiz',
     correo: 'ana@ejemplo.com',
     whatsapp: '600111222',
-    perfil: 'Esteticista con cabina propia',
     consentimiento: true,
   };
 
@@ -305,7 +323,9 @@ for (const [w, h, nombre] of [
   const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, locale: 'es-ES' });
   const p = await ctx.newPage();
   await p.goto(B + '/', { waitUntil: 'networkidle' });
-  for (const n of ['Nombre', 'Correo', 'WhatsApp']) {
+  await p.getByRole('button', { name: 'Quiero la información' }).first().click();
+  await p.waitForTimeout(450);
+  for (const n of ['Nombre', 'Correo', 'Teléfono']) {
     check(`el campo ${n} tiene nombre accesible`, (await p.getByLabel(n, { exact: true }).count()) > 0);
   }
   const teclados = await p.evaluate(() => ({

@@ -1,4 +1,11 @@
-/** La home reorganizada: las dos puertas, la comunidad en beta y la lista. */
+/**
+ * La home como canal de captación: el método explicado, las dos etapas de
+ * formación, la comunidad con precio y fecha, y la lista.
+ *
+ * Lo que antes comprobaba este archivo —«las dos puertas», la comunidad en
+ * beta y sin precio— ya no existe: la comunidad abre el 17 de octubre y cuesta
+ * 47 €. Las comprobaciones del inicio nuevo viven en pruebas/inicio-nuevo.mjs.
+ */
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 const OUT='/tmp/claude-0/-home-claude-repo/6dc5003f-e043-5a97-b6a7-877642377e91/scratchpad/caps';
@@ -17,16 +24,13 @@ await p.waitForTimeout(900);
 
 const txt=await p.locator('main').innerText();
 
-check('las dos puertas están en la home', /Aquí dentro hay dos cosas/.test(txt));
-check('dice que la formación es lo único disponible hoy', /Si hoy quieres algo mío, es esto/.test(txt));
-check('la comunidad se presenta en beta', /está en beta/i.test(txt));
+check('explica qué es la Técnica Divine', /primero abrir, despu[ée]s drenar/i.test(txt));
 // innerText aplica text-transform: los rótulos llegan en mayúsculas, así que se compara sin distinguir caja.
-check('explica el estado de las cinco piezas', /Lo estoy escribiendo/i.test(txt) && /Ya decidido/i.test(txt));
-check('promete condición de fundadora', /condición de fundadora/i.test(txt));
-check('la reserva de plaza incluye sitio en la lista', /tu sitio en la lista ya va incluido/.test(txt));
-check('no aparece ningún precio de la comunidad', !/49\s*€/.test(txt));
-check('dice que no sabe la fecha de apertura', /fecha de apertura, todav[ií]a no lo s[eé]/i.test(txt));
-check('no promete una fecha concreta de apertura', !/(abre|abrir[áa]|apertura)\s*(el|en|:)?\s*\d{1,2}\s*de\s*(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)/i.test(txt));
+check('están las cinco piezas de la comunidad', /agenda inteligente/i.test(txt) && /telegram/i.test(txt));
+check('promete condición de fundadora', /fundador/i.test(txt));
+check('la comunidad tiene precio', /47\s*€/.test(txt));
+check('ya no aparece el precio antiguo', !/49\s*€/.test(txt));
+check('anuncia la fecha de apertura', /17 de octubre/i.test(txt));
 
 // El formulario de lista de espera vive en la propia home
 check('el formulario de la lista está en la home', await p.locator('input[aria-label="Ciudad donde trabajas"]').isVisible());
@@ -48,11 +52,11 @@ check('el ancla #lista no queda tapada por la cabecera', anclaOk);
 const hero = p.locator('main section').first();
 check(
   'el hero pide el contacto',
-  await hero.getByRole('button', { name: 'Enviarme la información' }).isVisible()
+  await hero.getByRole('button', { name: 'Quiero la información' }).isVisible()
 );
 check(
-  'el hero deja salida hacia las fechas para quien no quiera dar el dato',
-  await hero.getByRole('link', { name: /fechas abiertas/i }).isVisible()
+  'el hero ofrece agendar sin dejar el dato todavía',
+  await hero.getByRole('button', { name: 'Agendar una cita' }).isVisible()
 );
 
 // Apuntarse funciona desde la home

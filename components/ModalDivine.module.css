@@ -1,0 +1,108 @@
+/* Ventana emergente. El <dialog> nativo trae estilos de navegador que hay que
+   desmontar antes de construir encima: borde, fondo, relleno y un ancho
+   máximo que no es el nuestro. */
+
+.dialogo {
+  width: min(520px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  margin: auto;
+  border: none;
+  background: transparent;
+  overflow: visible;
+}
+
+.dialogo::backdrop {
+  background: color-mix(in srgb, var(--ink) 58%, transparent);
+  /* El desenfoque separa la ventana del fondo sin oscurecerlo del todo, que
+     en una web con fotografía importa: la foto se sigue intuyendo. */
+  backdrop-filter: blur(6px) saturate(115%);
+  animation: modalVelo 0.25s ease-out;
+}
+
+.ancho {
+  width: min(760px, calc(100vw - 32px));
+}
+
+.caja {
+  position: relative;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: clamp(26px, 4vw, 40px);
+  background: var(--bg);
+  border-top: 3px solid var(--arcilla);
+  box-shadow: 0 30px 80px -20px color-mix(in srgb, var(--ink) 40%, transparent);
+  animation: modalEntra 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+  /* El rebote del desplazamiento no debe contagiarse a la página de detrás. */
+  overscroll-behavior: contain;
+}
+
+.cerrar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.cerrar:hover {
+  color: var(--ink);
+}
+
+.cerrar:focus-visible {
+  outline: 2px solid var(--arcilla);
+  outline-offset: -4px;
+}
+
+@keyframes modalEntra {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes modalVelo {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Quien ha pedido menos movimiento en su sistema no quiere que una ventana le
+   salte encima. */
+@media (prefers-reduced-motion: reduce) {
+  .caja,
+  .dialogo::backdrop {
+    animation: none;
+  }
+}
+
+/* En móvil la ventana se pega abajo y ocupa el ancho: es donde llega el
+   pulgar, y así no queda flotando en medio con márgenes desperdiciados. */
+@media (max-width: 560px) {
+  .dialogo {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 92dvh;
+    margin: auto auto 0;
+  }
+
+  .caja {
+    max-height: 92dvh;
+    padding: 26px 20px 28px;
+  }
+}

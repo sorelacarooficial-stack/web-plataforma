@@ -581,6 +581,84 @@ img {
   padding: 16px 32px;
 }
 
+/* ---------------------------------------------------------------------------
+   Botón principal de la página de inicio.
+
+   Es el único elemento de toda la web con movimiento propio, y por eso puede
+   permitírselo: si se moviera más de una cosa, dejaría de destacar ninguna.
+   Lleva dos recursos, los dos lentos a propósito —el brillo tarda cuatro
+   segundos y medio en cruzar— porque un parpadeo rápido no dice «premium»,
+   dice «anuncio».
+
+   El halo late por fuera con box-shadow y no con un elemento aparte, así que
+   no ocupa sitio ni desplaza nada de alrededor al crecer.
+   --------------------------------------------------------------------------- */
+.btn-latido {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  animation: divineHalo 3.4s ease-out infinite;
+}
+
+/* El brillo que cruza. Va en un pseudoelemento por encima del fondo pero por
+   debajo del texto, de ahí el z-index negativo contra el contexto de apilado
+   que crea isolation. */
+.btn-latido::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(214, 183, 122, 0.42) 50%,
+    transparent 62%
+  );
+  transform: translateX(-100%);
+  animation: divineBrillo 4.5s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+.btn-latido:hover {
+  transform: translateY(-1px);
+}
+
+/* Al pasar el ratón el movimiento se para: quien ya ha llegado al botón no
+   necesita que se le siga llamando, y un brillo bajo el cursor molesta. */
+.btn-latido:hover,
+.btn-latido:focus-visible {
+  animation-play-state: paused;
+}
+
+.btn-latido:hover::after,
+.btn-latido:focus-visible::after {
+  animation-play-state: paused;
+  opacity: 0;
+}
+
+@keyframes divineHalo {
+  0% {
+    box-shadow: 0 0 0 0 rgba(138, 106, 50, 0.38);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(138, 106, 50, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(138, 106, 50, 0);
+  }
+}
+
+@keyframes divineBrillo {
+  0% {
+    transform: translateX(-100%);
+  }
+  /* El brillo cruza en el primer 40 % del ciclo y el resto es pausa: sin esa
+     pausa sería una marquesina, no un destello. */
+  40%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* Sobre bandas oscuras: fondo claro que vira a oro al pasar por encima. */
 .btn-claro {
   background: var(--bg);
