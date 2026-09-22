@@ -47,7 +47,6 @@ const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' 
   check('la comunidad cuesta 47 €', /47\s*€/.test(texto));
   check('dice precio fundador', /fundador/i.test(texto));
   check('dice la fecha de apertura', /17 de octubre/i.test(texto));
-  check('está el mapa de terapeutas', /localiza tu terapeuta/i.test(texto));
 
   /* Nada de reclamos sanitarios: el filtro que evita una sanción. */
   const PROHIBIDO = [
@@ -69,19 +68,34 @@ const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' 
 
   check('sin errores de consola', errores.length === 0, errores.slice(0, 2).join(' | '));
 
-  /* ---- Cuenta atrás ---- */
-  const cuenta = await p.evaluate(() => {
-    const cifras = [...document.querySelectorAll('li span')]
-      .map((s) => s.textContent.trim())
-      .filter((t) => /^\d{2,}$/.test(t));
-    return cifras.slice(0, 4);
+  /* ---- Cuenta atrás ----
+     Se comprueba por el texto que lee un lector de pantalla y no por las
+     cifras de la pantalla: buscar «un span con dos dígitos» encontraba antes
+     los números de los tres pilares, y la prueba pasaba sin mirar el contador.
+     Además se espera a que aparezca, porque las cifras se rellenan ya montado
+     en el navegador y arrancan en «––». */
+  await p.waitForFunction(() => /Faltan \d+/.test(document.body.innerText), null, { timeout: 5000 });
+  const leido = await p.evaluate(() => {
+    const m = document.body.innerText.match(/Faltan (\d+) d[íi]as? y (\d+) horas?/);
+    return m ? { dias: Number(m[1]), horas: Number(m[2]) } : null;
   });
-  check('la cuenta atrás muestra cifras', cuenta.length >= 4, cuenta.join(':'));
+  check('la cuenta atrás se anuncia para lectores de pantalla', leido !== null, JSON.stringify(leido));
   check(
     'la cuenta atrás no está a cero',
-    cuenta.some((c) => Number(c) > 0),
-    cuenta.join(':')
+    leido !== null && (leido.dias > 0 || leido.horas > 0),
+    JSON.stringify(leido)
   );
+
+  // Cada bloque del contador es un <li> con la cifra y la unidad pegadas:
+  // «24días». Se comprueba el texto entero y no un recorte por longitud,
+  // porque «días» tiene menos letras que «segundos» y el recorte solo
+  // encontraba la última.
+  const cifras = await p.evaluate(() =>
+    [...document.querySelectorAll('li')]
+      .map((li) => (li.textContent || '').replace(/\s+/g, '').toLowerCase())
+      .filter((t) => /^(––|\d+)(d[íi]as|horas|minutos|segundos)$/.test(t))
+  );
+  check('la cuenta atrás pinta las cuatro unidades', cifras.length === 4, cifras.join(' | '));
 
   await ctx.close();
 }

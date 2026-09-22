@@ -1,6 +1,6 @@
 /**
  * La home como canal de captación: el método explicado, las dos etapas de
- * formación, la comunidad con precio y fecha, y la lista.
+ * formación y la comunidad con precio y fecha.
  *
  * Lo que antes comprobaba este archivo —«las dos puertas», la comunidad en
  * beta y sin precio— ya no existe: la comunidad abre el 17 de octubre y cuesta
@@ -32,20 +32,11 @@ check('la comunidad tiene precio', /47\s*€/.test(txt));
 check('ya no aparece el precio antiguo', !/49\s*€/.test(txt));
 check('anuncia la fecha de apertura', /17 de octubre/i.test(txt));
 
-// El formulario de lista de espera vive en la propia home
-check('el formulario de la lista está en la home', await p.locator('input[aria-label="Ciudad donde trabajas"]').isVisible());
-
-// El ancla de la tarjeta 2 lleva al bloque de la lista, no a los campos
-await p.locator('a[href="#lista"]').click();
-await p.waitForTimeout(1200);
-const anclaOk = await p.evaluate(() => {
-  const s = document.querySelector('#lista');
-  if (!s) return false;
-  const r = s.getBoundingClientRect();
-  const cab = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cabecera')) || 66;
-  return r.top >= -2 && r.top < cab + 40;   // el titular no queda bajo la cabecera fija
-});
-check('el ancla #lista no queda tapada por la cabecera', anclaOk);
+// El bloque de la lista ya no está en el inicio: la lista se entra por la
+// misma ventana emergente que todo lo demás, desde el botón de la comunidad.
+// El formulario largo con ciudad sigue vivo, pero en /comunidad.
+check('el inicio ya no lleva el formulario largo dentro', (await p.locator('input[aria-label="Ciudad donde trabajas"]').count()) === 0);
+check('ya no hay anclas rotas a #lista', (await p.locator('a[href="#lista"]').count()) === 0);
 
 // El hero capta: su acción principal es el formulario, no un enlace. Desde
 // que la web recibe tráfico de un QR, quien llega decide en esa pantalla.
@@ -59,14 +50,19 @@ check(
   await hero.getByRole('button', { name: 'Agendar una cita' }).isVisible()
 );
 
-// Apuntarse funciona desde la home
-await p.locator('input[aria-label="Nombre"]').fill('Marta');
-await p.locator('input[aria-label="Correo"]').fill('marta@ejemplo.com');
-await p.locator('input[aria-label="Ciudad donde trabajas"]').fill('Gijón');
-await p.getByRole('button',{name:'Apuntarme a la lista'}).click();
-await p.waitForTimeout(500);
-check('se puede apuntar sin salir de la home', await p.getByText('Estás dentro.').isVisible());
+// Entrar en la lista abre la misma ventana que el resto del inicio.
+await p.getByRole('button', { name: 'Entrar en la lista' }).click();
+await p.waitForTimeout(600);
+const ventana = p.locator('dialog[open]');
+check('«Entrar en la lista» abre la ventana', await ventana.isVisible());
+check('la ventana habla de la lista', /Entra en la lista/i.test(await ventana.innerText()));
+check(
+  'y lleva la casilla de consentimiento sin premarcar',
+  (await ventana.getByRole('checkbox').isVisible()) && !(await ventana.getByRole('checkbox').isChecked())
+);
 await p.screenshot({path:`${OUT}/home-lista.png`});
+await p.keyboard.press('Escape');
+await p.waitForTimeout(300);
 
 // /comunidad ya no duplica el bloque
 await p.goto(B+'/comunidad',{waitUntil:'networkidle'});
