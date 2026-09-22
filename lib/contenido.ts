@@ -149,7 +149,7 @@ export type PiezaComunidad = {
 export const COMUNIDAD = {
   precio: 47,
   periodo: 'al mes',
-  condicion: 'Precio fundador para las primeras',
+  condicion: 'Precio de lanzamiento',
   /** 17 de octubre de 2026, 16:00 en España. Ver components/Contador.tsx. */
   apertura: 'sábado 17 de octubre, 16:00 (hora de España)',
 } as const;

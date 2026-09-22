@@ -279,12 +279,21 @@ export default function Home() {
         <div className="wrap">
           <div className={css.comunidadCabeza}>
             <div className={css.comunidadTexto}>
-              <p className="antetitulo">Comunidad Divine</p>
-              <h2 className="titulo-lg max-560">Terminar la formación no es llegar.</h2>
+              <p className="antetitulo">Lanzamiento · Comunidad Divine</p>
+              {/* Es su membresía y se está lanzando: eso es lo primero que hay
+                  que decir. Antes el titular hablaba de lo que le pasa a una
+                  alumna semanas después del curso, que es un argumento de
+                  venta, no una presentación. */}
+              <h2 className="titulo-lg max-560">
+                Sorela abre su membresía. Y abre una sola vez.
+              </h2>
               <p className="texto max-520">
-                Sales del curso con criterio nuevo y muchas ganas. A las tres semanas aparece el
-                primer caso raro, no tienes a quién preguntar y vuelves a lo de siempre. La
-                Comunidad Divine existe para cortar ese patrón.
+                Es el sitio donde sigue enseñando después del curso: una clase en vivo al mes con
+                lo nuevo del método, tus casos mirados uno a uno y un canal privado donde
+                preguntar. Más la agenda con inteligencia artificial y tu ficha en el mapa.
+              </p>
+              <p className="texto max-520">
+                Quien entra en el lanzamiento se queda con el precio de fundadora. Después subirá.
               </p>
 
               <div className={css.precio}>

@@ -103,9 +103,12 @@
   justify-content: flex-end;
 }
 
+/* En columna para que el botón de acción caiga debajo de la burbuja y no a su
+   lado, que es donde acabaría con la fila en horizontal. */
 .filaEl {
   display: flex;
-  justify-content: flex-start;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .burbujaYo,
@@ -334,4 +337,32 @@
   .lanzador {
     padding: 13px;
   }
+}
+
+/* El botón que acompaña a una respuesta. Va pegado debajo de la burbuja y con
+   su misma alineación: se lee como parte de lo que acaba de decir, no como un
+   control suelto de la interfaz. */
+.accion {
+  align-self: flex-start;
+  margin-top: 8px;
+  padding: 11px 20px;
+  min-height: 44px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 999px;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.22s;
+}
+
+.accion:hover {
+  background: var(--arcilla);
+}
+
+.accion:focus-visible {
+  outline: 2px solid var(--arcilla);
+  outline-offset: 2px;
 }
