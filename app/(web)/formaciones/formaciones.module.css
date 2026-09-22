@@ -68,3 +68,130 @@
   line-height: 1.15;
   color: var(--muted);
 }
+
+/* ==========================================================================
+   Las dos etapas del recorrido
+   Sustituyen al listado de convocatorias, que enseñaba fechas y precios que
+   no eran reales.
+   ========================================================================== */
+.etapas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(18px, 2.4vw, 30px);
+  align-items: start;
+}
+
+.etapa {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: clamp(24px, 3vw, 38px);
+  background: var(--surface);
+  border: 1px solid var(--line-4);
+  border-top: 3px solid var(--line-5);
+}
+
+/* La presencial en oro: es la que tiene fechas y la que cuesta dinero. La
+   online es el paso previo, no el destino. */
+.etapaDestacada {
+  border-top-color: var(--arcilla);
+}
+
+.etapaOrden {
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.etapaDestacada .etapaOrden {
+  color: var(--arcilla);
+}
+
+.etapaTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(24px, 2.6vw, 33px);
+  line-height: 1.12;
+  color: var(--ink);
+}
+
+.etapaLista {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.etapaLista li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.etapaLista li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--arcilla);
+}
+
+.fechas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(20px, 3vw, 40px);
+  margin-top: clamp(32px, 4.5vw, 60px);
+  padding: clamp(26px, 3.4vw, 42px);
+  background: var(--bg);
+  border-left: 3px solid var(--oro);
+}
+
+.fechasTitulo {
+  margin: 6px 0 10px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(25px, 3vw, 36px);
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.fechasAcciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+@media (max-width: 860px) {
+  .etapas {
+    grid-template-columns: 1fr;
+  }
+
+  .fechas {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .fechasAcciones {
+    width: 100%;
+  }
+
+  .fechasAcciones :global(.btn) {
+    justify-content: center;
+    width: 100%;
+  }
+}

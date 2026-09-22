@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import CambiarTema from '@/components/CambiarTema';
 import Motas from '@/components/Motas';
 import logo from '@/fotos/logo-sorela.png';
+import type { Sesion } from '@/lib/sesion-servidor';
+import { ETIQUETA_ROL } from '@/lib/roles';
 import {
   ROLES,
   navDe,
@@ -35,17 +37,26 @@ import {
 import css from './plataforma.module.css';
 
 /**
- * Plataforma privada, en modo maqueta.
+ * Plataforma privada.
  *
- * El selector "ver como" de la barra lateral cambia entre alumna, miembro
- * certificada y Sorela: cada rol tiene su propio menú y sus propias vistas.
- * Está a la vista a propósito, para que Sorela pueda recorrer las tres sin
- * tener tres cuentas. Cuando haya autenticación de verdad, el rol saldrá de
- * la sesión y este selector desaparece.
+ * El rol llega ya resuelto desde el servidor, sacado de la cookie de sesión:
+ * aquí no se decide nada sobre permisos, solo se pinta lo que toca. Si alguien
+ * manipulase este estado desde el navegador vería otro menú, pero los datos
+ * los sirve el servidor, que vuelve a mirar el rol de la cookie.
+ *
+ * El selector «ver como» solo lo ve Sorela, y es para que pueda recorrer las
+ * tres vistas sin necesidad de tener tres cuentas.
+ *
+ * Las vistas siguen enseñando datos de maqueta: clientas, facturas y cursos
+ * inventados. Lo que ya es real es quién entra y con qué rol.
  */
-export default function Plataforma() {
+export default function Plataforma({ sesion }: { sesion: Sesion }) {
   const router = useRouter();
-  const [rol, setRol] = useState<Rol>('miembro');
+  // Dos cosas distintas que conviene no confundir: `puedeVerComo` es el rol
+  // REAL de quien ha entrado, y decide permisos; `esAdmin`, más abajo, es el
+  // rol que se está MIRANDO, y solo decide qué se pinta.
+  const puedeVerComo = sesion.rol === 'sorela';
+  const [rol, setRol] = useState<Rol>(sesion.rol);
   const [vista, setVista] = useState<Vista>('inicio');
   const [menuAbierto, setMenuAbierto] = useState(false);
 
@@ -70,8 +81,17 @@ export default function Plataforma() {
 
   const esAdmin = rol === 'sorela';
   const esAlumna = rol === 'alumna';
-  const usuario = esAdmin ? 'Sorela Caro' : 'Marta Ibáñez';
-  const iniciales = esAdmin ? 'SC' : 'MI';
+  // El nombre sale de la cuenta con la que se ha entrado, no de la maqueta.
+  // Si alguien entró con Google sin nombre configurado, se usa la parte del
+  // correo anterior a la arroba antes que dejarlo en blanco.
+  const usuario = sesion.nombre || sesion.correo?.split('@')[0] || 'Tu espacio';
+  const iniciales =
+    usuario
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((p) => p[0] || '')
+      .join('')
+      .toUpperCase() || 'D';
 
   function ir(v: Vista) {
     setVista(v);
@@ -83,7 +103,26 @@ export default function Plataforma() {
     }
   }
 
+  const [saliendo, setSaliendo] = useState(false);
+
+  async function salir() {
+    setSaliendo(true);
+    try {
+      await fetch('/api/sesion', { method: 'DELETE' });
+    } catch {
+      // Sin red no se puede borrar la cookie del servidor, pero se sale
+      // igualmente: es peor quedarse atrapada dentro.
+    }
+    // refresh() además de push(): sin él, Next puede servir la plataforma
+    // desde su caché de cliente y parecería que la sesión sigue abierta.
+    router.push('/');
+    router.refresh();
+  }
+
   function cambiarRol(nuevo: Rol) {
+    // Solo Sorela puede mirar la plataforma con otros ojos. Para el resto, el
+    // selector ni siquiera se pinta; esta comprobación es el segundo cierre.
+    if (!puedeVerComo) return;
     setRol(nuevo);
     setVista('inicio');
     setMenuAbierto(false);
@@ -150,23 +189,31 @@ export default function Plataforma() {
           </nav>
 
           <div className={css.pieLateral}>
-            <p className={css.pieTitulo}>Ver como</p>
-            <div className={css.roles}>
-              {ROLES.map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  onClick={() => cambiarRol(r.id)}
-                  aria-pressed={rol === r.id}
-                  className={`${css.rol} ${rol === r.id ? css.rolActivo : ''}`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
+            {puedeVerComo && (
+              <>
+                <p className={css.pieTitulo}>Ver como</p>
+                <div className={css.roles}>
+                  {ROLES.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => cambiarRol(r.id)}
+                      aria-pressed={rol === r.id}
+                      className={`${css.rol} ${rol === r.id ? css.rolActivo : ''}`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+            <p className={css.quienEres}>
+              {sesion.nombre || sesion.correo}
+              <span>{ETIQUETA_ROL[sesion.rol]}</span>
+            </p>
             <CambiarTema />
-            <button type="button" className={css.salir} onClick={() => router.push('/')}>
-              Salir
+            <button type="button" className={css.salir} onClick={salir} disabled={saliendo}>
+              {saliendo ? 'Saliendo…' : 'Salir'}
             </button>
           </div>
         </aside>

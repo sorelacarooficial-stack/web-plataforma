@@ -6,18 +6,26 @@ import { enviar, hayCorreo } from '@/lib/correo';
 import { correoAviso, correoBienvenida } from '@/lib/plantillas-correo';
 
 /**
- * Recibe el formulario de captación, guarda el contacto en Firestore y manda
- * los dos correos.
+ * Recibe el formulario de captación, guarda el contacto y manda los correos.
  *
- * El orden importa y es deliberado: PRIMERO se guarda, DESPUÉS se envía. Si el
- * correo falla, el contacto ya está a salvo y la persona ve que ha ido bien,
- * porque para ella ha ido bien: Sorela tiene su dato y puede escribirle. Al
- * revés —enviar primero y guardar después— un fallo al guardar dejaría a una
- * persona con un correo de bienvenida a la que nadie va a volver a escribir.
+ * REPARTO DE PAPELES, que no es caprichoso:
  *
- * Si lo que falla es Firestore, entonces sí se contesta con error, y el
- * formulario enseña la salida por WhatsApp. Un contacto perdido no se
- * recupera.
+ *   Firestore  →  guarda. Es la fuente de verdad.
+ *   Apps Script → manda los dos correos (y de paso deja su fila en la hoja
+ *                 de Google, que sirve de copia de seguridad legible).
+ *
+ * Firebase manda el correo solo en plan de pago: en el plan gratuito (Spark)
+ * no hay Cloud Functions ni extensión de correo. Por eso el envío sale del
+ * Apps Script, que usa la cuenta de Gmail de Sorela y no cuesta nada.
+ *
+ * El orden importa: PRIMERO se guarda, DESPUÉS se envía. Si el correo falla,
+ * el contacto ya está a salvo y para la persona la cosa ha ido bien, porque
+ * Sorela tiene su dato y puede escribirle. Al revés —enviar primero, guardar
+ * después— un fallo al guardar dejaría a alguien con un correo de bienvenida
+ * al que nadie va a volver a escribir.
+ *
+ * Si no hay dónde guardar, sí se contesta con error y el formulario enseña la
+ * salida por WhatsApp. Un contacto perdido no se recupera.
  */
 
 export const runtime = 'nodejs';
@@ -27,8 +35,8 @@ const ESPERA_MAX = 10_000;
 
 /**
  * Freno por IP. Vive en memoria, así que en Vercel cada instancia lleva su
- * propia cuenta y el límite real es más flojo que el de aquí. No es una medida
- * de seguridad: es evitar que un script tonto llene la base de datos.
+ * propia cuenta y el límite real es más flojo que el de aquí. No es seguridad:
+ * es evitar que un script tonto llene la base de datos.
  */
 const HUELLAS = new Map<string, number[]>();
 const VENTANA = 60_000;
@@ -51,26 +59,71 @@ function vaDemasiadoRapido(ip: string): boolean {
 const falla = (motivo: Fallo, estado: number, extra: object = {}) =>
   NextResponse.json({ ok: false, motivo, ...extra }, { status: estado });
 
-/** Plan B mientras Firebase no esté configurado: el Apps Script de Google. */
-async function guardarEnAppsScript(datos: Contacto & { origen: string }) {
-  const destino = process.env.APPS_SCRIPT_URL;
-  const secreto = process.env.APPS_SCRIPT_SECRETO;
-  if (!destino || !secreto) return false;
+const hayAppsScript = () =>
+  Boolean(process.env.APPS_SCRIPT_URL && process.env.APPS_SCRIPT_SECRETO);
 
-  const r = await fetch(destino, {
-    method: 'POST',
-    redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ ...datos, secreto }),
-    signal: AbortSignal.timeout(ESPERA_MAX),
-  });
-  const texto = await r.text();
+/**
+ * Llama al Apps Script, que guarda su fila y manda los dos correos: el de
+ * bienvenida con la información de la técnica y el aviso a Sorela.
+ */
+async function llamarAppsScript(datos: Contacto & { origen: string }): Promise<boolean> {
+  if (!hayAppsScript()) return false;
+
   try {
-    return Boolean(JSON.parse(texto).ok);
-  } catch {
-    console.error('[captar] El Apps Script no devolvió JSON:', texto.slice(0, 300));
+    const r = await fetch(process.env.APPS_SCRIPT_URL as string, {
+      method: 'POST',
+      // Apps Script responde con una redirección a googleusercontent.com y hay
+      // que seguirla para leer el resultado de verdad.
+      redirect: 'follow',
+      // text/plain a propósito: con application/json el navegador pediría
+      // permiso previo y Apps Script no sabe contestarlo. Desde el servidor da
+      // igual, pero así el mismo script vale si alguna vez se llama de otra
+      // forma. Google entrega el cuerpo entero en e.postData.contents igual.
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ ...datos, secreto: process.env.APPS_SCRIPT_SECRETO }),
+      signal: AbortSignal.timeout(ESPERA_MAX),
+    });
+
+    const texto = await r.text();
+    try {
+      return Boolean(JSON.parse(texto).ok);
+    } catch {
+      // Apps Script devuelve una página HTML de error cuando el despliegue no
+      // es público o la autorización ha caducado. Es el fallo más habitual al
+      // montarlo, así que se deja en el registro tal cual viene.
+      console.error('[captar] El Apps Script no devolvió JSON:', texto.slice(0, 300));
+      return false;
+    }
+  } catch (e) {
+    const porTiempo = e instanceof Error && e.name === 'TimeoutError';
+    console.error(`[captar] ${porTiempo ? 'Google tardó demasiado' : 'Fallo al llamar a Google'}:`, e);
     return false;
   }
+}
+
+/**
+ * Salida de emergencia para el correo: solo se usa si NO hay Apps Script
+ * configurado y sí hay SMTP. Sirve para el día que las 100 diarias de Gmail se
+ * queden cortas y se contrate un servicio de envíos de verdad.
+ */
+async function correoPorSmtp(datos: Contacto & { origen: string }): Promise<boolean> {
+  if (!hayCorreo()) return false;
+
+  const paraSorela = process.env.CORREO_AVISOS || process.env.CORREO_DE;
+  const resultados = await Promise.allSettled([
+    enviar({ para: datos.correo, ...correoBienvenida(datos) }),
+    paraSorela
+      ? enviar({ para: paraSorela, ...correoAviso(datos), responderA: datos.correo })
+      : Promise.resolve(),
+  ]);
+
+  resultados.forEach((r, i) => {
+    if (r.status === 'rejected') {
+      console.error(`[captar] No salió el correo ${i === 0 ? 'de bienvenida' : 'de aviso'}:`, r.reason);
+    }
+  });
+
+  return resultados[0].status === 'fulfilled';
 }
 
 export async function POST(peticion: Request) {
@@ -96,8 +149,8 @@ export async function POST(peticion: Request) {
     'desconocida';
   if (vaDemasiadoRapido(ip)) return falla('ritmo', 429);
 
-  /* ---------- 1. Guardar. Sin esto, no hay «gracias». ---------- */
-  let guardado = false;
+  /* ---------- 1. Guardar en Firestore ---------- */
+  let enFirestore = false;
 
   if (hayFirebase()) {
     try {
@@ -120,49 +173,29 @@ export async function POST(peticion: Request) {
         },
         { merge: true }
       );
-      guardado = true;
+      enFirestore = true;
     } catch (e) {
       console.error('[captar] Firestore ha fallado:', e);
     }
   }
 
-  if (!guardado) {
-    try {
-      guardado = await guardarEnAppsScript(datos);
-      if (guardado) console.warn('[captar] Guardado en Apps Script: Firebase no estaba disponible.');
-    } catch (e) {
-      console.error('[captar] El plan B de Apps Script también ha fallado:', e);
-    }
-  }
+  /* ---------- 2. Correos por Apps Script ---------- */
+  // Se llama aunque Firestore haya fallado: además de mandar los correos deja
+  // su fila en la hoja, así que sirve de red de seguridad para el dato.
+  const porAppsScript = await llamarAppsScript(datos);
+
+  const correoEnviado = porAppsScript || (!hayAppsScript() && (await correoPorSmtp(datos)));
+  const guardado = enFirestore || porAppsScript;
 
   if (!guardado) {
-    console.error('[captar] No hay dónde guardar. Revisa las variables de Firebase en Vercel.');
-    return falla(hayFirebase() ? 'destino' : 'sin-destino', hayFirebase() ? 502 : 503);
+    console.error(
+      '[captar] No hay dónde guardar. Revisa las variables de Firebase y del Apps Script en Vercel.'
+    );
+    return falla(hayFirebase() || hayAppsScript() ? 'destino' : 'sin-destino', hayFirebase() || hayAppsScript() ? 502 : 503);
   }
 
-  /* ---------- 2. Avisar. Si falla, el contacto ya está a salvo. ---------- */
-  let correoEnviado = false;
-
-  if (hayCorreo()) {
-    const bienvenida = correoBienvenida(datos);
-    const aviso = correoAviso(datos);
-    const paraSorela = process.env.CORREO_AVISOS || process.env.CORREO_DE;
-
-    const resultados = await Promise.allSettled([
-      enviar({ para: datos.correo, ...bienvenida }),
-      paraSorela
-        ? enviar({ para: paraSorela, ...aviso, responderA: datos.correo })
-        : Promise.resolve(),
-    ]);
-
-    correoEnviado = resultados[0].status === 'fulfilled';
-    resultados.forEach((r, i) => {
-      if (r.status === 'rejected') {
-        console.error(`[captar] No salió el correo ${i === 0 ? 'de bienvenida' : 'de aviso'}:`, r.reason);
-      }
-    });
-  } else {
-    console.warn('[captar] Contacto guardado pero sin correo: faltan las variables SMTP.');
+  if (!correoEnviado) {
+    console.warn('[captar] Contacto guardado pero sin correo de bienvenida.');
   }
 
   // correoEnviado viaja al navegador para que el mensaje de confirmación no

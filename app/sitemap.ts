@@ -1,5 +1,4 @@
 import type { MetadataRoute } from 'next';
-import { CURSOS } from '@/lib/cursos';
 import { TERAPEUTAS } from '@/lib/terapeutas';
 
 const SITIO = 'https://sorelacarodivine.com';
@@ -17,11 +16,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITIO}/contacto`, changeFrequency: 'yearly', priority: 0.6 },
   ];
 
-  const cursos: MetadataRoute.Sitemap = CURSOS.map((c) => ({
-    url: `${SITIO}/formaciones/${c.slug}`,
-    changeFrequency: 'monthly',
-    priority: 0.8,
-  }));
+  // Las fichas de curso ya no existen: sus fechas y precios eran inventados y
+  // se han retirado. Volverán al mapa del sitio cuando haya convocatorias de
+  // verdad. Dejarlas aquí haría que Google reclamase páginas que dan 404.
 
   const terapeutas: MetadataRoute.Sitemap = TERAPEUTAS.map((t) => ({
     url: `${SITIO}/terapeutas/${t.slug}`,
@@ -29,5 +26,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...fijas, ...cursos, ...terapeutas].map((e) => ({ ...e, lastModified: ahora }));
+  return [...fijas, ...terapeutas].map((e) => ({ ...e, lastModified: ahora }));
 }

@@ -17,6 +17,11 @@ import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 
 let cacheApp: App | null = null;
 
+/** La aplicación de administración, para quien necesite Auth y no Firestore. */
+export function aplicacion(): App {
+  return app();
+}
+
 export function hayFirebase(): boolean {
   return Boolean(
     process.env.FIREBASE_PROYECTO_ID &&
@@ -64,4 +69,10 @@ export const COLECCIONES = {
   contactos: 'contactos',
   /** Lista de espera de la Comunidad Divine. */
   comunidad: 'lista_comunidad',
+  /**
+   * Una ficha por persona con cuenta, con su rol. Es una COPIA para que Sorela
+   * pueda ver y cambiar roles desde una lista: los permisos se deciden siempre
+   * con la claim del token, no con esto.
+   */
+  usuarios: 'usuarios',
 } as const;
