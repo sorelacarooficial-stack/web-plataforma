@@ -11,9 +11,14 @@
 export type Contacto = {
   nombre: string;
   correo: string;
-  whatsapp: string;
+  /** Opcional: lo pide la ventana del inicio, no la lista de la comunidad. */
+  whatsapp?: string;
   /** Opcional: solo lo pregunta el formulario largo, no la ventana emergente. */
   perfil?: string;
+  /** Opcional: dónde trabaja. Lo pide la lista de la comunidad. */
+  ciudad?: string;
+  /** Opcional: texto libre. Lo que quiere encontrar dentro de la comunidad. */
+  nota?: string;
   consentimiento: boolean;
   origen?: string;
   /** Señuelo antirrobots: si viene con algo, no lo ha rellenado una persona. */
@@ -65,12 +70,21 @@ export function revisar(entrada: Partial<Contacto>): Revision {
 
   const nombre = recortar(entrada.nombre, 80);
   const correo = recortar(entrada.correo, 160).toLowerCase();
-  const whatsapp = normalizarTelefono(recortar(entrada.whatsapp, 32));
+  const crudoTelefono = recortar(entrada.whatsapp, 32);
+  const whatsapp = normalizarTelefono(crudoTelefono);
   const perfil = recortar(entrada.perfil, 60);
+  const ciudad = recortar(entrada.ciudad, 80);
+  const nota = recortar(entrada.nota, 500);
 
   if (nombre.length < 2) errores.nombre = 'Escribe tu nombre.';
   if (!CORREO.test(correo)) errores.correo = 'Ese correo no parece correcto.';
-  if (!whatsapp) errores.whatsapp = 'Escribe tu móvil, con prefijo si es de fuera de España.';
+  // El teléfono es opcional: la ventana del inicio lo pide y la lista de la
+  // comunidad no. Si se escribe, tiene que ser válido; si se deja en blanco,
+  // se guarda el contacto igual. Rechazar a alguien por no dar el móvil
+  // cuando el formulario ni se lo ha pedido sería absurdo.
+  if (crudoTelefono && !whatsapp) {
+    errores.whatsapp = 'Escribe tu móvil, con prefijo si es de fuera de España.';
+  }
   if (!entrada.consentimiento) errores.consentimiento = 'Necesito que lo aceptes para guardarlo.';
 
   if (Object.keys(errores).length) return { ok: false, errores };
@@ -80,7 +94,7 @@ export function revisar(entrada: Partial<Contacto>): Revision {
     datos: {
       nombre,
       correo,
-      whatsapp: whatsapp!,
+      ...(whatsapp ? { whatsapp } : {}),
       // El perfil no se exige: la ventana emergente solo pide tres campos,
       // porque cada campo de más cuesta contactos. Si llega uno que no está en
       // la lista se guarda como «Otra cosa» en vez de rechazar el envío: el
@@ -88,6 +102,8 @@ export function revisar(entrada: Partial<Contacto>): Revision {
       ...(perfil
         ? { perfil: (PERFILES as readonly string[]).includes(perfil) ? perfil : 'Otra cosa' }
         : {}),
+      ...(ciudad ? { ciudad } : {}),
+      ...(nota ? { nota } : {}),
       consentimiento: true,
       origen: recortar(entrada.origen, 40) || 'web',
     },

@@ -71,3 +71,54 @@
   font-size: clamp(23px, 2.6vw, 32px);
   line-height: 1.12;
 }
+
+/* ==========================================================================
+   Consentimiento, errores y señuelo
+   Compartidos por los formularios largos (lista de espera, contacto, aviso de
+   ciudad, reserva). Los mismos estilos que la ventana emergente del inicio,
+   para que las dos puertas se parezcan.
+   ========================================================================== */
+.consentimiento {
+  display: flex;
+  align-items: flex-start;
+  /* Lo que se toca es la etiqueta entera, no el cuadradito de 20 px. */
+  min-height: 44px;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.consentimiento input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  accent-color: var(--arcilla);
+}
+
+.consentimiento a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.error {
+  margin: -4px 0 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--arcilla);
+}
+
+/* No puede llevar display:none: algunos robots lo detectan y se lo saltan.
+   Se saca de la pantalla, que sí se lo tragan. */
+.senuelo {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

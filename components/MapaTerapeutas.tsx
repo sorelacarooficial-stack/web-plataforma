@@ -190,12 +190,17 @@ export default function MapaTerapeutas({
 
   /* ---------------- Leyenda ---------------- */
   const dentro = visibles.size;
+  // El caso de lista vacía va primero: si no, `dentro === terapeutas.length`
+  // se cumple con 0 === 0 y un mapa sin un solo punto se rotularía «consultas
+  // Divine certificadas».
   const leyenda =
-    dentro === terapeutas.length
-      ? 'Consultas Divine certificadas'
-      : dentro === 0
-        ? 'Sin consultas con ese filtro'
-        : `${dentro} ${dentro === 1 ? 'consulta' : 'consultas'} con ese filtro`;
+    terapeutas.length === 0
+      ? 'Todavía sin consultas en el mapa'
+      : dentro === terapeutas.length
+        ? 'Consultas Divine certificadas'
+        : dentro === 0
+          ? 'Sin consultas con ese filtro'
+          : `${dentro} ${dentro === 1 ? 'consulta' : 'consultas'} con ese filtro`;
 
   /* ---------------- Posición de la ficha ---------------- */
   // La ficha se ancla centrada sobre el punto y desplazada hacia arriba, así
@@ -230,7 +235,11 @@ export default function MapaTerapeutas({
         viewBox={`0 0 ${w} ${h}`}
         className={`${css.svg} ${arrastrando ? css.arrastrando : ''}`}
         role="img"
-        aria-label="Mapa de España con las consultas de las terapeutas Divine certificadas"
+        aria-label={
+          terapeutas.length === 0
+            ? 'Mapa de España, todavía sin consultas'
+            : 'Mapa de España con las consultas de las terapeutas Divine certificadas'
+        }
       >
         <g transform={tr.toString()}>
           <g>

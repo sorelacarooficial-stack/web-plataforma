@@ -28,8 +28,13 @@ export default function ExploradorTerapeutas() {
   const filtradas = useMemo(() => filtrar(ciudad, tratamiento), [ciudad, tratamiento]);
   const sinResultados = filtradas.length === 0;
 
-  // Sin resultados se enseñan tres cualesquiera, para no dejar la página vacía.
-  const visibles = sinResultados ? TERAPEUTAS.slice(0, 3) : filtradas;
+  // Antes, al no haber resultados, se enseñaban tres terapeutas cualesquiera
+  // «para no dejar la página vacía». Eso presentaba como cercanas a tres
+  // personas que estaban en la otra punta del país. Si no hay resultados, no se
+  // enseña ninguna: se explica.
+  const visibles = filtradas;
+  /** No hay ni una terapeuta dada de alta todavía, en ninguna ciudad. */
+  const mapaVacio = TERAPEUTAS.length === 0;
   const enMapa = useMemo(() => new Set(filtradas.map((t) => t.slug)), [filtradas]);
 
   const resultado = sinResultados
@@ -81,10 +86,12 @@ export default function ExploradorTerapeutas() {
             visibles={enMapa}
             onVerPerfil={(slug) => router.push(`/terapeutas/${slug}`)}
           />
-          <p className={css.pieMapa}>
-            Pincha un punto del mapa para ver la ficha y reservar. Los filtros de arriba también
-            mueven el mapa.
-          </p>
+          {!mapaVacio && (
+            <p className={css.pieMapa}>
+              Pincha un punto del mapa para ver la ficha y reservar. Los filtros de arriba también
+              mueven el mapa.
+            </p>
+          )}
         </div>
       </section>
 
@@ -93,11 +100,16 @@ export default function ExploradorTerapeutas() {
           {sinResultados && (
             <div className={css.vacio}>
               <h2 className={css.vacioTitulo}>
-                Todavía no hay terapeuta Divine en{' '}
-                {ciudad === TODAS_CIUDADES ? 'esa combinación' : ciudad}.
+                {mapaVacio
+                  ? 'Todavía no hay terapeutas en el mapa.'
+                  : `Todavía no hay terapeuta Divine en ${
+                      ciudad === TODAS_CIUDADES ? 'esa combinación' : ciudad
+                    }.`}
               </h2>
               <p className="texto-fijo" style={{ fontSize: 16 }}>
-                Estas trabajan más cerca de ti:
+                {mapaVacio
+                  ? 'Las primeras certificadas entrarán aquí en cuanto terminen su formación. Déjame tu contacto y te aviso cuando haya alguna cerca de ti.'
+                  : 'Déjame tu contacto y te aviso en cuanto haya una cerca de ti.'}
               </p>
             </div>
           )}

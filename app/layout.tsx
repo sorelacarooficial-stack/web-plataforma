@@ -1,20 +1,42 @@
 import type { Metadata, Viewport } from 'next';
-import { Cormorant_Garamond, Jost } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
-  style: ['normal', 'italic'],
+/**
+ * Las fuentes viven en el repositorio (app/fuentes) y no se descargan de
+ * Google al compilar.
+ *
+ * Por qué: con next/font/google, cada compilación va a buscar los archivos a
+ * fonts.gstatic.com. Si ese día Google no responde —o la red por la que sale
+ * el servidor de compilación no llega—, la compilación entera falla por una
+ * tipografía. Aquí ya pasó. Teniéndolas dentro, el resultado es idéntico
+ * (next/font también las sirve desde el propio dominio) y la compilación deja
+ * de depender de nadie.
+ *
+ * Son las variables, así que un solo archivo cubre de 300 a 600: pesan 101 KB
+ * los tres juntos, menos que los siete estáticos que hacían falta antes. Solo
+ * el subconjunto latino, que cubre todo el español —tildes, eñes, signos de
+ * apertura y comillas angulares—; el cirílico y el vietnamita sobraban.
+ *
+ * Para actualizarlas: scripts/traer-fuentes.mjs.
+ */
+const cormorant = localFont({
+  src: [
+    { path: './fuentes/cormorant-garamond-normal-latin.woff2', weight: '300 600', style: 'normal' },
+    { path: './fuentes/cormorant-garamond-italic-latin.woff2', weight: '300 600', style: 'italic' },
+  ],
   display: 'swap',
   variable: '--fuente-cormorant',
+  // Si la fuente tarda, el texto se ve con esta antes. Se declaran las métricas
+  // para que al cambiar no dé el salto de maquetación.
+  fallback: ['Georgia', 'Times New Roman', 'serif'],
 });
 
-const jost = Jost({
-  subsets: ['latin'],
-  weight: ['300', '400', '500'],
+const jost = localFont({
+  src: [{ path: './fuentes/jost-normal-latin.woff2', weight: '300 500', style: 'normal' }],
   display: 'swap',
   variable: '--fuente-jost',
+  fallback: ['Helvetica Neue', 'Arial', 'sans-serif'],
 });
 
 /** Dominio de producción. Vercel lo expone en VERCEL_PROJECT_PRODUCTION_URL,
@@ -28,7 +50,7 @@ export const metadata: Metadata = {
     template: '%s · Técnica Divine',
   },
   description:
-    'La Técnica Divine no te da otro protocolo. Te da el criterio para decidir qué necesita el cuerpo que hoy tienes en la camilla. Formación presencial en estética avanzada con Sorela Caro.',
+    'Juventud linfática y ganglionar en tus manos. Drenaje linfático manual llevado más lejos: formación de Sorela Caro en dos etapas, primero online y después presencial.',
   applicationName: 'Técnica Divine',
   authors: [{ name: 'Sorela Caro' }],
   creator: 'Sorela Caro',
@@ -40,13 +62,13 @@ export const metadata: Metadata = {
     url: SITIO,
     title: 'Antes de poner las manos, aprende a mirar.',
     description:
-      'Formación presencial en estética avanzada. Grupos de ocho, cuerpo real desde la primera hora.',
+      'Formación en estética avanzada con Sorela Caro. Primero online, después presencial, con práctica sobre cuerpo real.',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Sorela Caro · Técnica Divine',
     description:
-      'Formación presencial en estética avanzada. Grupos de ocho, cuerpo real desde la primera hora.',
+      'Formación en estética avanzada con Sorela Caro. Primero online, después presencial, con práctica sobre cuerpo real.',
   },
 };
 

@@ -14,8 +14,12 @@ export const INSTAGRAM_USUARIO = '@sorelacaro_';
  */
 export const WHATSAPP_SORELA: string = '';
 
-/** Cuántas hay ya en la lista de espera de la comunidad. */
-export const EN_LISTA = 128;
+/*
+ * Aquí estaba EN_LISTA = 128, «cuántas hay ya en la lista de espera». Era una
+ * cifra del prototipo que se enseñaba como real. Cuando la lista guarde de
+ * verdad en Firestore, este número se lee de ahí; hasta entonces no se
+ * publica ninguno.
+ */
 
 export type Testimonio = {
   frase: string;
@@ -24,29 +28,18 @@ export type Testimonio = {
   iniciales: string;
 };
 
-export const TESTIMONIOS: Testimonio[] = [
-  {
-    frase:
-      '«Dejé de improvisar cuando la clienta no encajaba en el guion. Ahora sé qué mirar y por qué.»',
-    nombre: 'Marta Ibáñez',
-    ciudad: 'Madrid',
-    iniciales: 'MI',
-  },
-  {
-    frase:
-      '«Subí el precio de la sesión un 30 % porque por fin puedo explicar lo que estoy haciendo.»',
-    nombre: 'Nuria Sanchís',
-    ciudad: 'Valencia',
-    iniciales: 'NS',
-  },
-  {
-    frase:
-      '«La primera visita cambió entera: valoro diez minutos y la clienta entiende el plan completo.»',
-    nombre: 'Carla Redondo',
-    ciudad: 'Sevilla',
-    iniciales: 'CR',
-  },
-];
+/**
+ * Aquí había tres testimonios firmados por Marta Ibáñez, Nuria Sanchís y
+ * Carla Redondo: las tres primeras terapeutas del mapa, que eran inventadas.
+ * Uno de ellos además decía «subí el precio de la sesión un 30 %», que es una
+ * promesa de rentabilidad con cifra, de las que no se pueden publicar.
+ *
+ * Cuando haya testimonios reales: con consentimiento escrito de la persona,
+ * hablando de criterio y de trabajo, nunca de precios, porcentajes ni
+ * facturación.
+ */
+export const TESTIMONIOS: Testimonio[] = [];
+
 
 export type Pregunta = { q: string; a: string };
 
@@ -60,12 +53,12 @@ export const FAQS: Pregunta[] = [
     a: 'Necesitas experiencia real con clientas. Titulación concreta no pido; manos con kilómetros, sí.',
   },
   {
-    q: '¿Se puede hacer online?',
-    a: 'No. El trabajo manual no se corrige por videollamada. El aula online es el apoyo de antes y de después, nunca el curso.',
+    q: '¿Se puede hacer todo online?',
+    a: 'La formación tiene dos etapas y hay que hacer las dos, en ese orden: primero la online, donde trabajas la anatomía y el protocolo, y después la presencial. Las manos no se corrigen por videollamada.',
   },
   {
     q: '¿Qué diferencia hay entre la formación y la comunidad?',
-    a: 'La formación es el curso presencial donde te certificas. La comunidad es lo que viene después, y todavía la estoy montando: por ahora solo hay lista de espera.',
+    a: 'La formación es el recorrido donde te certificas: primero online y después presencial. La comunidad es lo que viene después, para no quedarte sola con los casos raros. Abre el 17 de octubre y cuesta 47 € al mes.',
   },
   {
     q: '¿Puedo entrar en la comunidad sin haberme formado?',
@@ -88,14 +81,14 @@ export const FAQS_CURSO: Pregunta[] = [
   },
   {
     q: '¿Hay facilidades de pago?',
-    a: 'Reservas con el primer pago y abonas el resto el primer día. Si necesitas fraccionarlo en tres meses, escríbeme antes de reservar y lo vemos.',
+    a: 'Sí, se puede fraccionar. Las condiciones van con cada convocatoria, y las próximas todavía se están cerrando: déjame tu contacto y te las mando con la fecha.',
   },
 ];
 
 export const OBJECIONES: Pregunta[] = [
   {
     q: '¿Cuándo abre?',
-    a: 'No pongo fecha que no pueda cumplir. Cuando la primera tanda de contenido esté lista, escribo a la lista antes de anunciarlo en ningún sitio.',
+    a: 'El sábado 17 de octubre a las 16:00, hora de España. Quien esté en la lista lo sabe antes que nadie y entra con el precio fundador.',
   },
   {
     q: '¿Me compromete a algo apuntarme?',
@@ -106,8 +99,8 @@ export const OBJECIONES: Pregunta[] = [
     a: 'Para entrar el día que abra, sí. Para estar en la lista, no: si tienes plaza en una formación, apúntate igual.',
   },
   {
-    q: '¿Qué precio tendrá?',
-    a: 'Aún no está cerrado. Lo que sí está decidido es que quien entre desde la lista mantiene condición de fundadora mientras siga dentro.',
+    q: '¿Cuánto cuesta?',
+    a: '47 € al mes. Quien entra ahora conserva ese precio fundador mientras siga dentro, aunque más adelante suba.',
   },
 ];
 
@@ -186,37 +179,39 @@ export const PIEZAS_COMUNIDAD: PiezaComunidad[] = [
   {
     titulo: 'Agenda inteligente',
     texto:
-      'La misma plataforma de citas que uso yo, con inteligencia artificial: gestiona tus reservas y tus clientas sin que vivas pegada al móvil.',
-    estado: 'Incluida',
+      'La misma plataforma de citas que usa Sorela, con inteligencia artificial: gestionará tus reservas y tus clientas sin que vivas pegada al móvil.',
+    // «Incluida» daba a entender que ya funciona, y todavía es maqueta.
+    estado: 'Próximamente',
     color: 'var(--oro)',
   },
   {
     titulo: 'Tu centro, en el mapa',
-    texto:
-      'Tu ficha en Localiza tu terapeuta y posición dentro de las búsquedas: apareces donde las clientas buscan.',
-    estado: 'Incluida',
+    // Se quita «y posición dentro de las búsquedas»: prometía un
+    // posicionamiento que no existe ni se puede garantizar.
+    texto: 'Tu ficha en Localiza tu terapeuta: apareces donde las clientas buscan.',
+    estado: 'Próximamente',
     color: 'var(--arcilla)',
   },
 ];
 
+/*
+ * La marquesina decía «87 terapeutas certificadas en España» y «tres días
+ * presenciales». La cifra venía del prototipo y nadie la ha confirmado; los
+ * tres días contradicen el recorrido real, que es online y después dos
+ * jornadas. Se queda solo lo que se puede sostener.
+ */
 export const MARQUESINA = [
   'Método propio de Sorela Caro',
-  '87 terapeutas certificadas en España',
-  'Grupos de ocho, cuerpo real desde la primera hora',
-  'Tres días presenciales, cero teoría de relleno',
+  'Drenaje linfático manual llevado más lejos',
+  'Primero online, después presencial',
+  'Grupos reducidos y práctica sobre cuerpo real',
   'Certificado y sitio en el mapa público',
 ];
 
 /** Días y horas de ejemplo del calendario de reserva de una terapeuta. */
-export const DIAS_RESERVA = [
-  { dow: 'Lun', num: 1 },
-  { dow: 'Mar', num: 2 },
-  { dow: 'Mié', num: 3 },
-  { dow: 'Jue', num: 4 },
-  { dow: 'Vie', num: 5 },
-  { dow: 'Lun', num: 8 },
-  { dow: 'Mar', num: 9 },
-  { dow: 'Mié', num: 10 },
-];
-
-export const HORAS_RESERVA = ['09:30', '11:30', '13:00', '16:00', '17:30'];
+/*
+ * Aquí vivían DIAS_RESERVA y HORAS_RESERVA: un calendario de marzo de 2027 con
+ * cinco horas libres, inventado. Ninguna terapeuta tenía agenda detrás, así que
+ * quien elegía un hueco elegía uno que no existía. Se retira hasta que las
+ * agendas sean reales dentro de la plataforma.
+ */

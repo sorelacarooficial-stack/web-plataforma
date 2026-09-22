@@ -15,45 +15,63 @@ const errores = [];
 p.on('pageerror', (e) => errores.push(e.message));
 p.on('console', (m) => m.type() === 'error' && errores.push(m.text()));
 
-/* ---------- Mapa: clic en un punto abre la ficha ---------- */
+/* ---------- Mapa vacío ----------
+   Las seis terapeutas del mapa eran inventadas y se han retirado. Lo que hay
+   que comprobar ahora es que la página vacía se comporta: que lo dice en vez
+   de fingir, y que no queda ningún punto ni ninguna ficha de nadie. */
 await p.goto(B + '/terapeutas', { waitUntil: 'networkidle' });
-await p.waitForTimeout(1200);
-await p.locator('g[aria-label^="Marta"]').click();
+await p.waitForTimeout(1000);
+
+const textoMapa = await p.locator('main').innerText();
+check('mapa: dice que todavía no hay terapeutas', /todav[íi]a no hay terapeutas/i.test(textoMapa));
+check(
+  'mapa: no queda ninguna terapeuta inventada',
+  !/Marta Ib[áa][ñn]ez|Nuria Sanch[íi]s|Carla Redondo|Luc[íi]a Ferrer/i.test(textoMapa)
+);
+check('mapa: no quedan puntos que pinchar', (await p.locator('g[aria-label]').count()) === 0);
+check(
+  'mapa: la leyenda no dice que haya consultas certificadas',
+  !/consultas divine certificadas/i.test(textoMapa)
+);
+check(
+  'mapa: el filtro ya no ofrece «Postquirúrgico»',
+  !/postquir[úu]rgico/i.test(await p.locator('select[aria-label="Filtrar por tratamiento"]').innerText())
+);
+await p.screenshot({ path: `${OUT}/int-mapa-vacio.png` });
+
+/* ---------- La ficha de una terapeuta inventada ya no existe ---------- */
+const r = await p.request.get(B + '/terapeutas/marta-ibanez');
+check('las fichas inventadas devuelven 404', r.status() === 404, String(r.status()));
+
+await p.goto(B + '/', { waitUntil: 'networkidle' });
+
+/* ---------- El formulario del inicio ----------
+   La petición de cita vivía en la ficha de una terapeuta, y esas fichas ya no
+   existen. La puerta de entrada ahora es la ventana del inicio. */
+await p.getByRole('button', { name: 'Quiero la información' }).first().click();
+await p.waitForTimeout(500);
+const ventana = p.locator('dialog[open]');
+await ventana.getByPlaceholder('Tu nombre').fill('Ana Ruiz');
+await ventana.getByPlaceholder('tucorreo@ejemplo.com').fill('ana@ejemplo.com');
+await ventana.getByPlaceholder('600 00 00 00').fill('600111222');
+
+// Sin aceptar el consentimiento no se envía: es obligatorio antes de recoger
+// datos personales.
+await ventana.getByRole('button', { name: 'Enviarme la información' }).click();
 await p.waitForTimeout(400);
-check('mapa: ficha al pinchar punto', await p.getByText('Calle de Ponzano, 42 · Chamberí').isVisible());
-await p.screenshot({ path: `${OUT}/int-mapa-ficha.png` });
+check('formulario: exige el consentimiento', await p.getByText('Necesito que lo aceptes').isVisible());
 
-/* ---------- Filtro reencuadra y apaga los que no cumplen ---------- */
-await p.selectOption('select[aria-label="Filtrar por ciudad"]', 'Bilbao');
-await p.waitForTimeout(1200);
-check('filtro: contador a 1', /1 terapeuta/i.test(await p.getByRole('status').first().innerText()));
-await p.screenshot({ path: `${OUT}/int-mapa-filtro.png` });
-
-/* ---------- Sin resultados ---------- */
-await p.selectOption('select[aria-label="Filtrar por ciudad"]', 'Zaragoza');
-await p.waitForTimeout(900);
-check('filtro: estado sin resultados', await p.getByText('Todavía no hay terapeuta Divine en Zaragoza.').isVisible());
-
-/* ---------- Ficha → perfil ---------- */
-await p.selectOption('select[aria-label="Filtrar por ciudad"]', 'Todas las ciudades');
-await p.waitForTimeout(1200);
-await p.locator('g[aria-label^="Lucía"]').click();
-await p.waitForTimeout(300);
-await p.getByRole('button', { name: 'Ver perfil y reservar' }).click();
-await p.waitForURL('**/terapeutas/lucia-ferrer', { timeout: 5000 }).catch(() => {});
-check('mapa: "ver perfil" navega a la ficha', p.url().endsWith('/terapeutas/lucia-ferrer'));
-
-/* ---------- Reserva ---------- */
-await p.getByRole('button', { name: '17:30' }).click();
-await p.getByRole('button', { name: 'Mar 9' }).click();
-check('reserva: resumen se actualiza', (await p.locator('form p').first().innerText()).includes('Día 9 de marzo · 17:30'));
-await p.locator('input[aria-label="Nombre y apellidos"]').fill('Ana Ruiz');
-await p.locator('input[aria-label="Teléfono"]').fill('600111222');
-await p.locator('input[aria-label="Correo"]').fill('ana@ejemplo.com');
-await p.getByRole('button', { name: 'Confirmar reserva' }).click();
-await p.waitForTimeout(400);
-check('reserva: confirma', await p.getByText('Solicitud enviada.').isVisible());
+await ventana.getByRole('checkbox').check();
+await ventana.getByRole('button', { name: 'Enviarme la información' }).click();
+await p.waitForTimeout(1500);
+check(
+  'formulario: al enviar contesta algo (no se queda mudo)',
+  (await p.getByText('Ya estás dentro').count()) > 0 ||
+    (await p.getByText('No he podido guardarlo').count()) > 0
+);
 await p.screenshot({ path: `${OUT}/int-reserva.png` });
+await p.keyboard.press('Escape');
+await p.waitForTimeout(300);
 
 /* ---------- Asistente ---------- */
 await p.goto(B + '/', { waitUntil: 'networkidle' });
@@ -83,29 +101,52 @@ check('tema: persiste tras recargar', (await p.evaluate(() => document.documentE
 await p.getByRole('button', { name: /Ver en/ }).click();
 
 /* ---------- FAQ ---------- */
-const preg = p.getByRole('button', { name: /¿Se puede hacer online\?/ });
+const preg = p.getByRole('button', { name: /¿Se puede hacer todo online\?/ });
 await preg.scrollIntoViewIfNeeded();
 await preg.click();
 await p.waitForTimeout(300);
-check('faq: abre respuesta', await p.getByText(/El trabajo manual no se corrige por videollamada/).isVisible());
+check('faq: abre respuesta', await p.getByText(/Las manos no se corrigen por videollamada/).isVisible());
 
 /* ---------- Lista de espera ---------- */
 await p.goto(B + '/comunidad', { waitUntil: 'networkidle' });
 await p.locator('input[aria-label="Nombre"]').fill('Marta');
 await p.locator('input[aria-label="Correo"]').fill('marta@ejemplo.com');
 await p.locator('input[aria-label="Ciudad donde trabajas"]').fill('Gijón');
+
 await p.getByRole('button', { name: 'Apuntarme a la lista' }).click();
 await p.waitForTimeout(400);
-check('lista de espera: confirma', await p.getByText('Estás dentro.').isVisible());
+check('lista: exige el consentimiento', await p.getByText('Necesito que lo aceptes').isVisible());
+
+await p.locator('form input[type="checkbox"]').check();
+await p.getByRole('button', { name: 'Apuntarme a la lista' }).click();
+await p.waitForTimeout(1500);
+// Sin Firebase ni Apps Script configurados, el formulario dice que no ha
+// podido guardarlo, que es lo correcto: lo que se comprueba es que contesta
+// una cosa o la otra, nunca que se quede mudo.
+check(
+  'lista de espera: contesta al enviar',
+  (await p.getByText('Estás dentro.').count()) > 0 ||
+    (await p.getByText('No he podido guardarlo.').count()) > 0
+);
 
 /* ---------- Contacto ---------- */
 await p.goto(B + '/contacto', { waitUntil: 'networkidle' });
 await p.locator('input[aria-label="Nombre"]').fill('Lucía');
 await p.locator('input[aria-label="Correo"]').fill('l@ejemplo.com');
 await p.locator('textarea[aria-label="Cuéntame"]').fill('Quiero información de Madrid.');
+// Sin aceptar el consentimiento no se envía.
 await p.getByRole('button', { name: 'Enviar', exact: true }).click();
 await p.waitForTimeout(400);
-check('contacto: confirma', await p.getByText('Recibido.').isVisible());
+check('contacto: exige el consentimiento', await p.getByText('Necesito que lo aceptes').isVisible());
+
+await p.locator('form input[type="checkbox"]').check();
+await p.getByRole('button', { name: 'Enviar', exact: true }).click();
+await p.waitForTimeout(1500);
+check(
+  'contacto: contesta al enviar',
+  (await p.getByText('Recibido.').count()) > 0 ||
+    (await p.getByText('No he podido enviarlo.').count()) > 0
+);
 
 /* ---------- Navegación y 404 ---------- */
 await p.goto(B + '/no-existe-esta-pagina', { waitUntil: 'networkidle' });
