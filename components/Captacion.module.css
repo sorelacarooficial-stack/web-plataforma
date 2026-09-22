@@ -1,0 +1,222 @@
+/* Formulario de captación. En su versión compacta tiene que caber entero en
+   la primera pantalla de un móvil, botón incluido: quien llega por el QR no
+   debería tener que hacer scroll para dejar su dato. */
+
+.forma {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 460px;
+}
+
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.etiqueta {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.campo {
+  width: 100%;
+  /* 16px exactos: por debajo de eso Safari en iPhone hace zoom al tocar el
+     campo y descoloca la página entera. Es el fallo clásico de un formulario
+     que solo se ha probado en el ordenador. */
+  font-size: 16px;
+  min-height: 48px;
+}
+
+.campo:focus-visible {
+  outline: 2px solid var(--arcilla);
+  outline-offset: 1px;
+}
+
+.campoMal {
+  border-color: var(--arcilla);
+}
+
+.error {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--arcilla);
+}
+
+.consentimiento {
+  display: flex;
+  align-items: flex-start;
+  /* Lo que se toca es la etiqueta entera, no el cuadradito de 20 px, así que
+     es ella la que tiene que medir los 44 px que pide un dedo. */
+  min-height: 44px;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.consentimiento input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  accent-color: var(--arcilla);
+}
+
+.consentimiento a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.enviar {
+  justify-content: center;
+  width: 100%;
+  min-height: 54px;
+}
+
+.enviar:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.nota {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.nota a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* El señuelo no puede llevar display:none: algunos robots lo detectan y se lo
+   saltan. Se saca de la pantalla, que sí se lo tragan. */
+.senuelo {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ---------- Confirmación y salida de emergencia ---------- */
+
+.exito {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  max-width: 460px;
+  animation: divineUp 0.35s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.exitoTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(26px, 3.4vw, 38px);
+  line-height: 1.08;
+  color: var(--ink);
+}
+
+.exitoTexto {
+  margin: 0;
+  font-weight: 300;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.reintentar {
+  padding: 0;
+  min-height: 44px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line-5);
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.reintentar:hover {
+  color: var(--ink);
+}
+
+/* ---------- Versión compacta, la del hero ---------- */
+
+.compacta {
+  gap: 12px;
+}
+
+.compacta .campos {
+  gap: 8px;
+}
+
+/* En el hero las etiquetas sobran a la vista: los marcadores de posición ya
+   dicen qué va en cada campo, y quitarlas ahorra sesenta píxeles de alto, que
+   es justo lo que hace que el botón entre en la primera pantalla. Se sacan de
+   la pantalla en vez de ocultarlas: así el lector de pantalla las sigue
+   leyendo y cada campo conserva su nombre. */
+@media (max-width: 900px) {
+  .compacta .etiqueta {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .compacta .nota {
+    font-size: 12px;
+  }
+
+  .compacta .enviar {
+    min-height: 52px;
+  }
+}
+
+/* Móviles bajos: se aprieta todo un punto más. Los 44 px de los campos son el
+   suelo, no una preferencia: por debajo de eso el dedo falla. */
+@media (max-height: 760px) {
+  .compacta {
+    gap: 10px;
+  }
+
+  .compacta .campos {
+    gap: 6px;
+  }
+
+  .compacta .campo {
+    min-height: 44px;
+  }
+
+  .compacta .enviar {
+    min-height: 48px;
+  }
+
+  .compacta .consentimiento {
+    font-size: 13px;
+    line-height: 1.42;
+  }
+
+  .compacta .nota {
+    display: none;
+  }
+}

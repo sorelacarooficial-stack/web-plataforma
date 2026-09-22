@@ -43,9 +43,17 @@ const anclaOk = await p.evaluate(() => {
 });
 check('el ancla #lista no queda tapada por la cabecera', anclaOk);
 
-// El hero sigue vendiendo formación
-const heroCta = await p.locator('main section').first().locator('a').first().innerText();
-check('el hero mantiene el botón de la formación', /Ver próximas fechas/i.test(heroCta), heroCta);
+// El hero capta: su acción principal es el formulario, no un enlace. Desde
+// que la web recibe tráfico de un QR, quien llega decide en esa pantalla.
+const hero = p.locator('main section').first();
+check(
+  'el hero pide el contacto',
+  await hero.getByRole('button', { name: 'Enviarme la información' }).isVisible()
+);
+check(
+  'el hero deja salida hacia las fechas para quien no quiera dar el dato',
+  await hero.getByRole('link', { name: /fechas abiertas/i }).isVisible()
+);
 
 // Apuntarse funciona desde la home
 await p.locator('input[aria-label="Nombre"]').fill('Marta');

@@ -72,7 +72,9 @@ for (const [w, h] of ANCHOS) {
 
   // Palabra larga sin espacios
   await p.locator('input[aria-label="Escribe tu pregunta"]').fill('a'.repeat(40));
-  await p.getByRole('button', { name: 'Enviar' }).click();
+  // Exacto: desde que el hero tiene «Enviarme la información», un nombre
+  // parcial encaja con dos botones distintos de la página.
+  await p.getByRole('button', { name: 'Enviar', exact: true }).click();
   await p.waitForTimeout(800);
 
   const lleno = await medir();

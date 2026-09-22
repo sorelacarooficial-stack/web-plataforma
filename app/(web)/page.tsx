@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Motas from '@/components/Motas';
 import Marquesina from '@/components/Marquesina';
 import Acordeon from '@/components/Acordeon';
+import Captacion from '@/components/Captacion';
 import ListaEspera from '@/components/ListaEspera';
 import {
   EN_LISTA,
@@ -44,21 +45,31 @@ export default function Home() {
               Formación presencial en estética avanzada
             </span>
 
-            <h1 className={css.heroTitulo}>Antes de poner las manos, aprende a mirar.</h1>
+            {/* El titular va al dolor, pero desde la clienta, no contra la esteticista:
+                lo que duele no es «lo haces mal», es notar que hay algo más y no
+                tener con qué leerlo. La acusación al oficio queda implícita. */}
+            <h1 className={css.heroTitulo}>
+              Tu clienta no necesita otra sesión. Necesita que alguien la mire entera.
+            </h1>
 
+            {/* Dos líneas en móvil, ni una más: cada línea de más empuja el botón
+                de enviar por debajo del borde de la pantalla. */}
             <p className={css.heroLede}>
-              La Técnica Divine no te da otro protocolo. Te da el criterio para decidir qué
-              necesita el cuerpo que hoy tienes en la camilla.
+              Y tú ya lo notas. Nadie te enseñó a leerlo. Te mando cómo se hace y las próximas
+              fechas.
             </p>
 
-            <div className={css.heroAcciones}>
-              <Link href="/formaciones" className="btn">
-                Ver próximas fechas
-              </Link>
-              <Link href="/metodo" className="enlace-subrayado">
-                Cómo funciona el método
-              </Link>
-            </div>
+            {/* El formulario va dentro del hero, no debajo: casi todo el tráfico de
+                esta semana llega por un código QR, y quien escanea decide en la
+                primera pantalla. Un botón que lleva a otro sitio pierde la mitad. */}
+            <Captacion compacto />
+
+            {/* Salida para quien no quiere dar su dato todavía. Va debajo del
+                botón a propósito: no compite con él, pero evita que alguien
+                con prisa se vaya sin ver que hay fechas abiertas. */}
+            <Link href="/formaciones" className="enlace-subrayado">
+              O ver las tres fechas abiertas
+            </Link>
 
             <p className={css.heroFirma}>
               <span className={css.heroRaya} />
@@ -69,6 +80,91 @@ export default function Home() {
       </section>
 
       <Marquesina />
+
+      {/* ---------- Quién está detrás ---------- */}
+      <section className="seccion superficie borde-arriba">
+        <div className="wrap rejilla-290">
+          <div className="foto foto-45">
+            <Image
+              src={alumna}
+              alt="Sorela Caro repasando casos con una alumna"
+              sizes="(max-width: 860px) 100vw, 45vw"
+              placeholder="blur"
+              style={{ objectPosition: '56% 34%' }}
+            />
+          </div>
+
+          <div className="columna-texto">
+            <p className="antetitulo" style={{ color: 'var(--oro)' }}>
+              Quién está detrás
+            </p>
+            <h2 className="titulo-lg">Sorela Caro, creadora de la Técnica Divine.</h2>
+            <p className="texto max-500">
+              Empecé como todas: aplicando el protocolo que me habían enseñado. Ordené en un método
+              lo que hasta entonces llamaba intuición, y ese método es lo que enseño. Doy yo las
+              formaciones, corrijo yo en la camilla y respondo yo los correos. La comunidad la voy
+              a llevar igual.
+            </p>
+
+            <div className={css.datos}>
+              <div className="dato" style={{ borderTop: '2px solid var(--arcilla)' }}>
+                <span className="dato-cifra" data-count="87">
+                  87
+                </span>
+                <span className="dato-pie">terapeutas formadas por ella</span>
+              </div>
+              <div className="dato" style={{ borderTop: '2px solid var(--salvia)' }}>
+                <span className="dato-cifra">8</span>
+                <span className="dato-pie">alumnas por grupo, nunca más</span>
+              </div>
+              <div className="dato" style={{ borderTop: '2px solid var(--azul)' }}>
+                <span className="dato-cifra">0</span>
+                <span className="dato-pie">clases delegadas a terceros</span>
+              </div>
+            </div>
+
+            <div className={css.acciones}>
+              <Link href="/sobre" className="btn btn-md">
+                Conocer a Sorela
+              </Link>
+              <a href={INSTAGRAM} className="enlace-fino" target="_blank" rel="noopener">
+                {INSTAGRAM_USUARIO}
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Banda de formaciones: copy a la izquierda, foto entera a la derecha ---------- */}
+      <section className={css.banda}>
+        <div className={css.bandaTexto}>
+          <div className={css.bandaCaja}>
+            <p className="antetitulo" style={{ color: 'var(--accent-inverse)' }}>
+              Formaciones presenciales
+            </p>
+            <h2 className="titulo-lg" style={{ color: 'var(--inverse-ink)' }}>
+              A la cuarta sesión te pregunta por qué no ve nada. Y no sabes qué decirle.
+            </h2>
+            <p className="texto" style={{ color: 'var(--on-inverse-2)' }}>
+              Ahí se pierde la clienta, se regala la sesión y se baja el precio. Tres días conmigo
+              al lado de la camilla y esa conversación cambia de bando: le explicas qué estás
+              viendo, qué toca ahora y por qué.
+            </p>
+            <Link href="/formaciones" className="btn btn-claro" style={{ marginTop: 8 }}>
+              Madrid, Valencia y Sevilla
+            </Link>
+          </div>
+        </div>
+        <div className={css.bandaFoto} data-parallax>
+          <Image
+            src={corrigiendo}
+            alt="Sorela Caro corrigiendo a dos alumnas junto a la camilla"
+            sizes="(max-width: 860px) 100vw, 50vw"
+            placeholder="blur"
+            style={{ objectPosition: '46% 30%' }}
+          />
+        </div>
+      </section>
 
       {/* ---------- Las dos puertas: qué existe hoy y qué está en beta ----------
            Contesta en el primer scroll qué es esto, qué funciona ya y qué viene.
@@ -183,90 +279,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Quién está detrás ---------- */}
-      <section className="seccion superficie borde-arriba">
-        <div className="wrap rejilla-290">
-          <div className="foto foto-45">
-            <Image
-              src={alumna}
-              alt="Sorela Caro repasando casos con una alumna"
-              sizes="(max-width: 860px) 100vw, 45vw"
-              placeholder="blur"
-              style={{ objectPosition: '56% 34%' }}
-            />
-          </div>
-
-          <div className="columna-texto">
-            <p className="antetitulo" style={{ color: 'var(--oro)' }}>
-              Quién está detrás
-            </p>
-            <h2 className="titulo-lg">Sorela Caro, creadora de la Técnica Divine.</h2>
-            <p className="texto max-500">
-              Empecé como todas: aplicando el protocolo que me habían enseñado. Ordené en un método
-              lo que hasta entonces llamaba intuición, y ese método es lo que enseño. Doy yo las
-              formaciones, corrijo yo en la camilla y respondo yo los correos. La comunidad la voy
-              a llevar igual.
-            </p>
-
-            <div className={css.datos}>
-              <div className="dato" style={{ borderTop: '2px solid var(--arcilla)' }}>
-                <span className="dato-cifra" data-count="87">
-                  87
-                </span>
-                <span className="dato-pie">terapeutas formadas por ella</span>
-              </div>
-              <div className="dato" style={{ borderTop: '2px solid var(--salvia)' }}>
-                <span className="dato-cifra">8</span>
-                <span className="dato-pie">alumnas por grupo, nunca más</span>
-              </div>
-              <div className="dato" style={{ borderTop: '2px solid var(--azul)' }}>
-                <span className="dato-cifra">0</span>
-                <span className="dato-pie">clases delegadas a terceros</span>
-              </div>
-            </div>
-
-            <div className={css.acciones}>
-              <Link href="/sobre" className="btn btn-md">
-                Conocer a Sorela
-              </Link>
-              <a href={INSTAGRAM} className="enlace-fino" target="_blank" rel="noopener">
-                {INSTAGRAM_USUARIO}
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- Banda de formaciones: copy a la izquierda, foto entera a la derecha ---------- */}
-      <section className={css.banda}>
-        <div className={css.bandaTexto}>
-          <div className={css.bandaCaja}>
-            <p className="antetitulo" style={{ color: 'var(--accent-inverse)' }}>
-              Formaciones presenciales
-            </p>
-            <h2 className="titulo-lg" style={{ color: 'var(--inverse-ink)' }}>
-              A la cuarta sesión te pregunta por qué no ve nada. Y no sabes qué decirle.
-            </h2>
-            <p className="texto" style={{ color: 'var(--on-inverse-2)' }}>
-              Ahí se pierde la clienta, se regala la sesión y se baja el precio. Tres días conmigo
-              al lado de la camilla y esa conversación cambia de bando: le explicas qué estás
-              viendo, qué toca ahora y por qué.
-            </p>
-            <Link href="/formaciones" className="btn btn-claro" style={{ marginTop: 8 }}>
-              Madrid, Valencia y Sevilla
-            </Link>
-          </div>
-        </div>
-        <div className={css.bandaFoto} data-parallax>
-          <Image
-            src={corrigiendo}
-            alt="Sorela Caro corrigiendo a dos alumnas junto a la camilla"
-            sizes="(max-width: 860px) 100vw, 50vw"
-            placeholder="blur"
-            style={{ objectPosition: '46% 30%' }}
-          />
-        </div>
-      </section>
 
       {/* ---------- La comunidad: por qué existe y en qué punto está ---------- */}
       <section className={css.comunidad}>
