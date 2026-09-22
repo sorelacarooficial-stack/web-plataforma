@@ -6,10 +6,9 @@ import Acordeon from '@/components/Acordeon';
 import Contador from '@/components/Contador';
 import LlamadaDivine from '@/components/LlamadaDivine';
 import BotonAsistente from '@/components/BotonAsistente';
-import ListaEspera from '@/components/ListaEspera';
+import BotonCaptacion from '@/components/BotonCaptacion';
 import {
   COMUNIDAD,
-  EN_LISTA,
   FAQS,
   INSTAGRAM,
   INSTAGRAM_USUARIO,
@@ -20,8 +19,6 @@ import {
 import retrato from '@/fotos/sorela-retrato.webp';
 import lumbar from '@/fotos/trabajo-lumbar.webp';
 import alumna from '@/fotos/sorela-alumna.webp';
-import corrigiendo from '@/fotos/sorela-corrigiendo.webp';
-import consulta from '@/fotos/sesion-consulta.webp';
 import css from './home.module.css';
 
 export default function Home() {
@@ -118,9 +115,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Los cinco pilares: es la estructura con la que Sorela enseña el
-            método, y cuenta mejor que cualquier lista de beneficios qué se
-            aprende de verdad en la formación. */}
+        {/* Los tres pilares: es el orden con el que Sorela enseña el método, y
+            cuenta mejor que cualquier lista de beneficios qué se aprende de
+            verdad en la formación. */}
         <div className="wrap" style={{ marginTop: 'clamp(44px,6vw,80px)' }}>
           <p className="antetitulo" style={{ marginBottom: 'clamp(22px,3vw,34px)' }}>
             Los tres pilares
@@ -274,37 +271,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Banda: la conversación que cambia ---------- */}
-      <section className={css.banda}>
-        <div className={css.bandaTexto}>
-          <div className={css.bandaCaja}>
-            <p className="antetitulo" style={{ color: 'var(--accent-inverse)' }}>
-              Por qué cambia tu trabajo
-            </p>
-            <h2 className="titulo-lg" style={{ color: 'var(--inverse-ink)' }}>
-              A la cuarta sesión te pregunta por qué no ve nada. Y no sabes qué decirle.
-            </h2>
-            <p className="texto" style={{ color: 'var(--on-inverse-2)' }}>
-              Ahí se pierde la clienta, se regala la sesión y se baja el precio. Con un método
-              detrás, esa conversación cambia de bando: le explicas qué estás viendo, qué toca
-              ahora y por qué.
-            </p>
-            <Link href="/formaciones" className="btn btn-claro" style={{ marginTop: 8 }}>
-              Ver las formaciones
-            </Link>
-          </div>
-        </div>
-        <div className={css.bandaFoto} data-parallax>
-          <Image
-            src={corrigiendo}
-            alt="Sorela Caro corrigiendo a dos alumnas junto a la camilla"
-            sizes="(max-width: 860px) 100vw, 50vw"
-            placeholder="blur"
-            style={{ objectPosition: '46% 30%' }}
-          />
-        </div>
-      </section>
-
       {/* ---------- Comunidad Divine ---------- */}
       <section id="comunidad" className={css.comunidad}>
         <div className="wrap">
@@ -333,10 +299,18 @@ export default function Home() {
                 Abre el {COMUNIDAD.apertura}
               </p>
               <Contador />
+              {/* Antes bajaba a una sección de lista que ya no existe. Ahora
+                  abre la misma ventana que el resto de la página: un único
+                  formulario, una única casilla de consentimiento. */}
               <div className={css.aperturaAcciones}>
-                <a href="#lista" className="btn btn-md">
+                <BotonCaptacion
+                  className="btn btn-md"
+                  titulo="Entra en la lista"
+                  entradilla="Te aviso en cuanto abra la Comunidad Divine, y entras con el precio fundador. No pido tarjeta y puedes salirte con un correo."
+                  etiquetaVentana="Entrar en la lista de la Comunidad Divine"
+                >
                   Entrar en la lista
-                </a>
+                </BotonCaptacion>
                 <Link href="/comunidad" className="enlace-fino">
                   Qué hay dentro
                 </Link>
@@ -354,62 +328,6 @@ export default function Home() {
                 </p>
               </article>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- La lista de espera ---------- */}
-      <section id="lista" className={`seccion ${css.lista}`}>
-        <div className="wrap rejilla-290" style={{ alignItems: 'start' }}>
-          <div className="columna-texto">
-            <p className="antetitulo">La lista</p>
-            <h2 className="titulo-lg">Las primeras entran con condición de fundadora.</h2>
-            <p className="texto max-480">
-              Y la conservan mientras sigan dentro. Eso sí te lo puedo prometer.
-            </p>
-            <p className="texto max-480">
-              No pido tarjeta, no hay reserva que pagar y puedes salirte con un correo. Nada de
-              correos cada semana.
-            </p>
-            <p className="texto max-480">
-              Para entrar el día que abra hay que estar certificada conmigo. Para estar en la
-              lista, no: si ya tienes plaza en una formación, apúntate igual.
-            </p>
-            <p className={css.contador}>
-              <span data-count={String(EN_LISTA)}>{EN_LISTA}</span> terapeutas están ya en la lista.
-            </p>
-          </div>
-
-          <div className={css.cajaLista}>
-            <ListaEspera />
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- Localiza tu terapeuta ---------- */}
-      <section className="seccion">
-        <div className="wrap rejilla-290" style={{ gap: 'clamp(28px,4vw,60px)' }}>
-          <div className="columna-texto">
-            <p className="antetitulo" style={{ color: 'var(--azul)' }}>
-              Localiza tu terapeuta Divine
-            </p>
-            <h2 className="titulo-lg">¿No eres profesional? También hay sitio para ti.</h2>
-            <p className="texto max-480">
-              En el mapa están las terapeutas certificadas por Sorela, con su ciudad y su forma de
-              reservar. Cada sesión empieza con unos minutos de valoración: no se trabaja sobre un
-              cuerpo sin haberlo mirado antes.
-            </p>
-            <Link href="/terapeutas" className="btn btn-md" style={{ marginTop: 6 }}>
-              Abrir el mapa
-            </Link>
-          </div>
-          <div className="foto foto-45">
-            <Image
-              src={consulta}
-              alt="Sesión de trabajo corporal en consulta"
-              sizes="(max-width: 860px) 100vw, 45vw"
-              placeholder="blur"
-            />
           </div>
         </div>
       </section>

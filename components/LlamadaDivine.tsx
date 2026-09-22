@@ -1,8 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import Captacion from './Captacion';
-import ModalDivine from './ModalDivine';
+import BotonCaptacion from './BotonCaptacion';
 import { abrirAsistente } from '@/lib/abrir-asistente';
 import css from './LlamadaDivine.module.css';
 
@@ -26,35 +24,14 @@ export default function LlamadaDivine({
   preguntaCita?: string;
   alineacion?: 'izquierda' | 'centro';
 }) {
-  const [abierto, setAbierto] = useState(false);
-
   return (
-    <>
-      <div className={`${css.acciones} ${alineacion === 'centro' ? css.centro : ''}`}>
-        <button type="button" className="btn btn-latido" onClick={() => setAbierto(true)}>
-          {textoPrincipal}
-        </button>
+    <div className={`${css.acciones} ${alineacion === 'centro' ? css.centro : ''}`}>
+      <BotonCaptacion>{textoPrincipal}</BotonCaptacion>
 
-        <button
-          type="button"
-          className={css.cita}
-          onClick={() => abrirAsistente(preguntaCita)}
-        >
-          <span className={css.citaPunto} aria-hidden="true" />
-          {textoCita}
-        </button>
-      </div>
-
-      <ModalDivine
-        abierto={abierto}
-        alCerrar={() => setAbierto(false)}
-        titulo="Recibir la información de la Técnica Divine"
-      >
-        <Captacion
-          titulo="Te mando la información"
-          entradilla="Déjame dónde escribirte y recibes en tu correo qué es la Técnica Divine, cómo se aprende y cuándo son las próximas formaciones."
-        />
-      </ModalDivine>
-    </>
+      <button type="button" className={css.cita} onClick={() => abrirAsistente(preguntaCita)}>
+        <span className={css.citaPunto} aria-hidden="true" />
+        {textoCita}
+      </button>
+    </div>
   );
 }
