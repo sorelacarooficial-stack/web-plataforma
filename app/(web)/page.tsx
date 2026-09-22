@@ -14,7 +14,6 @@ import {
   INSTAGRAM_USUARIO,
   PILARES,
   PIEZAS_COMUNIDAD,
-  TESTIMONIOS,
 } from '@/lib/contenido';
 import retrato from '@/fotos/sorela-retrato.webp';
 import lumbar from '@/fotos/trabajo-lumbar.webp';
@@ -242,16 +241,20 @@ export default function Home() {
               a llevar igual.
             </p>
 
+            {/* La primera cifra era «87 terapeutas formadas», heredada del
+                prototipo y sin confirmar. Se sustituye por los quince años de
+                cabina, que sí están en sus documentos. Vuelve el número real
+                en cuanto Sorela lo dé. */}
             <div className={css.datos}>
               <div className="dato" style={{ borderTop: '2px solid var(--arcilla)' }}>
-                <span className="dato-cifra" data-count="87">
-                  87
+                <span className="dato-cifra" data-count="15">
+                  15
                 </span>
-                <span className="dato-pie">terapeutas formadas por ella</span>
+                <span className="dato-pie">años de cabina antes del método</span>
               </div>
               <div className="dato" style={{ borderTop: '2px solid var(--salvia)' }}>
-                <span className="dato-cifra">8</span>
-                <span className="dato-pie">alumnas por grupo, nunca más</span>
+                <span className="dato-cifra">2</span>
+                <span className="dato-pie">etapas: online y después presencial</span>
               </div>
               <div className="dato" style={{ borderTop: '2px solid var(--azul)' }}>
                 <span className="dato-cifra">0</span>
@@ -327,27 +330,6 @@ export default function Home() {
                   {p.texto}
                 </p>
               </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- Testimonios ---------- */}
-      <section className={css.testimonios}>
-        <div className="wrap">
-          <h2 className={`titulo-lg max-640 ${css.tituloBloque}`}>Lo que dicen sus alumnas.</h2>
-          <div className="rejilla-tarjetas">
-            {TESTIMONIOS.map((t) => (
-              <figure key={t.nombre} className={css.testimonio}>
-                <blockquote className={css.testimonioFrase}>{t.frase}</blockquote>
-                <figcaption className={css.testimonioPie}>
-                  <span className={css.iniciales}>{t.iniciales}</span>
-                  <span className="columna" style={{ gap: 3 }}>
-                    <span className={css.testimonioNombre}>{t.nombre}</span>
-                    <span className={css.testimonioCiudad}>{t.ciudad}</span>
-                  </span>
-                </figcaption>
-              </figure>
             ))}
           </div>
         </div>

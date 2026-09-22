@@ -9,7 +9,7 @@ const COLUMNAS = [
     enlaces: [
       { href: '/metodo', texto: 'Método' },
       { href: '/formaciones', texto: 'Formaciones' },
-      { href: '/comunidad', texto: 'Lista de espera' },
+      { href: '/comunidad', texto: 'Comunidad Divine' },
     ],
   },
   {

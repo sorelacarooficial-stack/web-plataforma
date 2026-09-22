@@ -10,7 +10,7 @@ import css from './sobre.module.css';
 export const metadata: Metadata = {
   title: 'Sobre Sorela Caro',
   description:
-    'Sorela Caro, creadora de la Técnica Divine. 87 profesionales certificadas, ocho alumnas por grupo y ninguna clase delegada.',
+    'Sorela Caro, creadora de la Técnica Divine. Quince años de cabina, grupos reducidos y ninguna clase delegada.',
 };
 
 export default function Sobre() {
@@ -96,22 +96,28 @@ export default function Sobre() {
             Hoy formo a terapeutas.
           </h2>
           <div className={css.cifras}>
+            {/* Aquí ponía «87 profesionales certificadas» y una lista de
+                ciudades —Madrid, Valencia, Sevilla, Bilbao— que venían del
+                prototipo y que nadie ha confirmado. Publicar una cifra que no
+                se puede sostener es justo lo que no puede hacer una web que
+                vive de que se la crean. Vuelven en cuanto Sorela dé las
+                reales. */}
             <div className={css.cifra}>
-              <p className={css.cifraGrande} data-count="87">
-                87
+              <p className={css.cifraGrande} data-count="15">
+                15
               </p>
-              <p className={css.cifraPie}>Profesionales certificadas</p>
+              <p className={css.cifraPie}>Años de cabina antes del método</p>
             </div>
             <div className={css.cifra}>
               <p className={css.cifraMedia}>
-                Madrid · Valencia
+                Primero online,
                 <br />
-                Sevilla · Bilbao
+                después presencial
               </p>
-              <p className={css.cifraPie}>Donde he formado</p>
+              <p className={css.cifraPie}>Cómo se aprende</p>
             </div>
             <div className={css.cifra}>
-              <p className={css.cifraMedia}>Ocho alumnas por grupo, nunca más</p>
+              <p className={css.cifraMedia}>Grupos reducidos, ninguna clase delegada</p>
               <p className={css.cifraPie}>Cómo enseño</p>
             </div>
           </div>

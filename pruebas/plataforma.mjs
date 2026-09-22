@@ -16,6 +16,42 @@ const p = await ctx.newPage();
 p.on('pageerror', (e) => errores.push(e.message));
 p.on('console', (m) => m.type() === 'error' && errores.push(m.text()));
 
+
+/* ---------------------------------------------------------------------------
+ * Desde que el acceso es real, esta suite necesita una sesión de Firebase.
+ * Sin las variables de entorno configuradas no se puede abrir ninguna, así que
+ * lo que se comprueba es lo que de verdad importa en ese caso: que la
+ * plataforma NO se sirva. Las vistas de dentro se prueban cuando haya un
+ * proyecto de Firebase de pruebas.
+ * ------------------------------------------------------------------------- */
+await p.goto(B + '/entrar', { waitUntil: 'networkidle' });
+const authLista = (await p.getByText('El acceso todavía no está conectado').count()) === 0;
+
+if (!authLista) {
+  check('sin Firebase: el acceso lo dice en vez de fingir', true);
+
+  await p.goto(B + '/plataforma', { waitUntil: 'networkidle' });
+  const cuerpo = await p.locator('main').innerText();
+  check(
+    'sin sesión: la plataforma NO se sirve',
+    /todavía no está conectado/i.test(cuerpo)
+  );
+  check(
+    'sin sesión: no se filtra nada de dentro',
+    !/Mis clientas|Facturación|Ver como/i.test(cuerpo)
+  );
+  await p.screenshot({ path: `${OUT}/plataforma-protegida.png` });
+
+  await nav.close();
+  console.log('OK (' + ok.length + ') — el resto se salta: hace falta Firebase configurado');
+  ok.forEach((n) => console.log('  ✓ ' + n));
+  if (mal.length) {
+    console.log('\nFALLOS (' + mal.length + '):');
+    mal.forEach((n) => console.log('  ✗ ' + n));
+  }
+  process.exit(mal.length ? 1 : 0);
+}
+
 /* ---------- El login entra ---------- */
 await p.goto(B + '/entrar', { waitUntil: 'networkidle' });
 await p.screenshot({ path: `${OUT}/login-claro.png` });

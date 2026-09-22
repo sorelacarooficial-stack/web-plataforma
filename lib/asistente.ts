@@ -39,9 +39,9 @@ export const PROMPT_SISTEMA = [
   'PROHIBIDO PROMETER EFECTOS DE SALUD. Esto es estética, no sanidad. Nunca hables de toxinas, litros de líquido, defensas, inmunidad, hormonas, metabolismo, tránsito intestinal, sueño, ansiedad, dolor, linfedema, postoperatorio, diástasis, cicatrices, estrías, acné, pérdida de peso ni reducción de grasa o celulitis. Nunca digas "la única", "la número uno" ni cifras de casos de éxito. Si te preguntan por resultados: cambios perceptibles, sensación de ligereza y contorno más definido, y siempre que la respuesta varía según cada persona.',
   'FORMACIÓN, EN DOS ETAPAS Y EN ESTE ORDEN: (1) Online, obligatoria y previa: anatomía linfática, lógica del método y protocolo por fases, a su ritmo y desde su país. (2) Presencial, dos jornadas con Sorela: día 1 lipodrenaje, día 2 moldeo y tonificación, con práctica sobre modelos reales. No se puede empezar por la presencial.',
   'FECHAS: las próximas convocatorias son en Sudamérica y están a punto de confirmarse. NO inventes ciudades, fechas ni precios. Lo que ofreces es guardar el sitio: pides nombre, correo y teléfono y dices que Sorela avisa en cuanto se cierre la fecha.',
-  'AGENDAR CITA: pides nombre, correo y teléfono, y dices que se confirma por correo con las opciones de agenda. No des horas concretas: no tienes acceso al calendario.',
+  'AGENDAR CITA: NO pidas los datos dentro del chat. El chat no tiene casilla de consentimiento ni enlace a la política de privacidad, y lo que se escriba aquí no se guarda en ninguna parte. Manda siempre al formulario («Quiero la información»). Tampoco des horas concretas: no tienes acceso al calendario.',
   'COMUNIDAD DIVINE: abre el sábado 17 de octubre a las 16:00, hora de España. Cuesta 47 € al mes y quien entra ahora conserva ese precio fundador mientras siga dentro. Incluye una clase en vivo al mes de actualizaciones, acompañamiento personalizado, canal privado en Telegram, la agenda inteligente con IA y ficha en el mapa de terapeutas. Es para certificadas por Sorela; en la lista de espera puede entrar cualquiera.',
-  'CLIENTAS (no profesionales): en Localiza tu terapeuta hay un mapa con las terapeutas certificadas; se reserva con cada una. Toda sesión empieza con unos minutos de valoración.',
+  'CLIENTAS (no profesionales): el mapa de terapeutas certificadas todavía está vacío, porque las primeras aún se están formando. No mandes a nadie a reservar con una terapeuta: recoge el contacto por el formulario y di que Sorela avisa cuando haya alguna cerca.',
   'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
   'Termina siempre orientando al siguiente paso concreto.',
 ].join('\n');
@@ -50,7 +50,7 @@ const REGLAS: { patron: RegExp; respuesta: string }[] = [
   {
     patron: /agend|cita|resérv|reserv|hueco|disponib|calendario|hora/,
     respuesta:
-      'Te guardo el sitio. Déjame nombre, correo y teléfono por aquí o en el formulario de arriba, y te confirmo por correo las opciones de agenda.\nSi es una sesión como clienta, dime también tu ciudad y te digo qué terapeuta tienes cerca.',
+      'Te guardo el sitio. Para eso necesito tus datos en el formulario, no aquí en el chat: ahí es donde puedes aceptar cómo se tratan.\nPulsa «Quiero la información» arriba, déjame nombre, correo y teléfono, y te escribo yo con las opciones de agenda.',
   },
   {
     patron: /fecha|cuándo|cuando|próxim|proxim|plaza|queda|ciudad|sudamérica|sudamerica|suramérica|suramerica/,
@@ -85,7 +85,7 @@ const REGLAS: { patron: RegExp; respuesta: string }[] = [
   {
     patron: /clienta|cliente|terapeuta|cerca|mapa|sesión|sesion/,
     respuesta:
-      'Si buscas sesión como clienta, abre Localiza tu terapeuta: en el mapa ves quién tiene consulta cerca de ti y reservas con ella.\nToda sesión empieza con unos minutos de valoración. No se trabaja sobre un cuerpo sin haberlo mirado antes.',
+      'Todavía no hay terapeutas certificadas en el mapa: las primeras entrarán en cuanto terminen su formación.\nSi buscas sesión, déjame tu contacto en el formulario y te aviso yo en cuanto haya una cerca de ti.',
   },
   {
     patron: /certific|diploma|título|titulo/,
@@ -101,6 +101,15 @@ const REGLAS: { patron: RegExp; respuesta: string }[] = [
 
 const POR_DEFECTO =
   'Puedo ayudarte con la formación, con la agenda o con la Comunidad Divine.\nSi es algo más concreto, déjame tu contacto en el formulario y te contesto yo, o escríbeme por Instagram: @sorelacaro_.';
+
+/*
+ * Nota para quien conecte un modelo aquí: las respuestas de arriba mandan al
+ * formulario en vez de recoger el dato en la conversación. No es pereza. El
+ * chat no tiene casilla de consentimiento ni enlace a la política de
+ * privacidad, y responder() se ejecuta en el navegador: lo que alguien escriba
+ * aquí no llega a ninguna parte. Recoger un correo así sería a la vez ilegal e
+ * inútil.
+ */
 
 export function responder(pregunta: string): string {
   const t = (pregunta || '').toLowerCase();

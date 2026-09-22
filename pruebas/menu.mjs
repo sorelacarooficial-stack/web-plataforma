@@ -68,8 +68,25 @@ for (const [w, h] of [[320, 568], [390, 844], [768, 900]]) {
   await ctx.close();
 }
 
-/* ================= Plataforma ================= */
-for (const [w, h] of [[320, 568], [390, 844]]) {
+/* ================= Plataforma =================
+   Desde que el acceso es real hace falta sesión para entrar. Sin Firebase
+   configurado no se puede abrir ninguna, así que el cajón de la plataforma no
+   se puede medir: se comprueba en su lugar que la puerta está cerrada, que es
+   lo que importa. */
+const conAuth = await (async () => {
+  const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, locale: 'es-ES' });
+  const p = await ctx.newPage();
+  await p.goto(B + '/plataforma', { waitUntil: 'networkidle' });
+  const protegida = (await p.locator('main').innerText()).includes('todavía no está conectado');
+  if (protegida) {
+    check('plataforma · sin sesión no se sirve', true);
+    await p.screenshot({ path: `${OUT}/plataforma-protegida-movil.png` });
+  }
+  await ctx.close();
+  return !protegida;
+})();
+
+for (const [w, h] of conAuth ? [[320, 568], [390, 844]] : []) {
   const ctx = await nav.newContext({ viewport: { width: w, height: h }, locale: 'es-ES' });
   const p = await ctx.newPage();
   await p.goto(B + '/plataforma', { waitUntil: 'networkidle' });
@@ -104,7 +121,7 @@ for (const [w, h] of [[320, 568], [390, 844]]) {
 }
 
 /* Escritorio: la lateral es fija y sin hamburguesa */
-{
+if (conAuth) {
   const ctx = await nav.newContext({ viewport: { width: 1440, height: 900 }, locale: 'es-ES' });
   const p = await ctx.newPage();
   await p.goto(B + '/plataforma', { waitUntil: 'networkidle' });
@@ -120,6 +137,10 @@ for (const [w, h] of [[320, 568], [390, 844]]) {
   const p = await ctx.newPage();
   await p.goto(B + '/entrar', { waitUntil: 'networkidle' });
   await p.waitForTimeout(500);
+  if ((await p.getByText('El acceso todavía no está conectado').count()) > 0) {
+    check('login · sin Firebase, lo dice en vez de fingir', true);
+    await ctx.close();
+  } else {
   const colores = await p.evaluate(() => {
     const btn = [...document.querySelectorAll('button')].find((b) => /Continuar con Google/.test(b.textContent || ''));
     const svg = btn?.querySelector('svg');
@@ -130,6 +151,7 @@ for (const [w, h] of [[320, 568], [390, 844]]) {
   check('login · sin cartel de maqueta', !(await p.getByText(/Maqueta para revisión/).isVisible().catch(() => false)));
   await p.screenshot({ path: `${OUT}/login-google.png` });
   await ctx.close();
+  }
 }
 
 await nav.close();

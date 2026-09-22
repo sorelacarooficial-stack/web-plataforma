@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Contador from '@/components/Contador';
 import ListaEspera from '@/components/ListaEspera';
-import { EN_LISTA, OBJECIONES, PIEZAS_COMUNIDAD } from '@/lib/contenido';
+import { COMUNIDAD, OBJECIONES, PIEZAS_COMUNIDAD } from '@/lib/contenido';
 import css from './comunidad.module.css';
 
 export const metadata: Metadata = {
   title: 'Comunidad de Terapeutas Divine',
   description:
-    'La Comunidad Divine todavía no existe: la estoy montando. Quien esté en la lista entra primero y ayuda a decidir qué lleva dentro. Gratis y sin compromiso.',
+    'La Comunidad Divine abre el 17 de octubre a las 16:00. Clase mensual, acompañamiento, canal privado y agenda inteligente por 47 € al mes, con precio fundador para las primeras.',
 };
 
 export default function Comunidad() {
@@ -16,16 +17,16 @@ export default function Comunidad() {
       <section className={css.portada}>
         <div className="wrap rejilla-290" style={{ alignItems: 'start' }}>
           <div className="columna" style={{ gap: 24, alignItems: 'flex-start' }}>
-            <span className="distintivo">Lista de espera abierta</span>
-            <h1 className={css.titulo}>La Comunidad Divine todavía no existe.</h1>
+            <span className="distintivo">Abre el {COMUNIDAD.apertura}</span>
+            {/* Titular distinto del que lleva el inicio a propósito: si las dos
+                páginas encabezan con la misma frase, la segunda parece un error. */}
+            <h1 className={css.titulo}>Lo que viene después de certificarte.</h1>
             <p className="lede max-540" style={{ lineHeight: 1.62 }}>
-              Prefiero decírtelo así: la estoy montando. No quiero abrir una comunidad a medias
-              para cobrarte desde el primer mes. Cuando esté, entrarán primero las que estén en
-              esta lista.
+              Una clase en vivo al mes, tus casos mirados uno a uno, un canal privado donde
+              preguntar y la agenda inteligente para no vivir pegada al móvil. Y tu ficha en el
+              mapa, donde las clientas buscan.
             </p>
-            <p className={css.contador}>
-              <span data-count={String(EN_LISTA)}>{EN_LISTA}</span> terapeutas están ya en la lista.
-            </p>
+            <Contador />
           </div>
 
           <div className={css.caja}>
@@ -37,7 +38,7 @@ export default function Comunidad() {
       <section className={css.piezasSeccion}>
         <div className="wrap">
           <p className="antetitulo" style={{ marginBottom: 'clamp(30px,4vw,52px)' }}>
-            Lo que quiero que tenga
+            Lo que hay dentro
           </p>
           <div className={css.piezas}>
             {PIEZAS_COMUNIDAD.map((m) => (
@@ -60,11 +61,11 @@ export default function Comunidad() {
       <section className={css.precio}>
         <div className="wrap wrap-900">
           <h2 className={css.precioTitulo}>
-            Todavía no hay precio. Cuando lo haya, lo sabrás tú antes que nadie.
+            {COMUNIDAD.precio} € {COMUNIDAD.periodo}, con precio fundador para las primeras.
           </h2>
           <p className={css.precioTexto}>
-            Las primeras de la lista entran con condición de fundadora y la mantienen mientras
-            sigan dentro. Eso sí te lo puedo prometer.
+            Quien entra ahora conserva ese precio mientras siga dentro, aunque más adelante suba.
+            Eso sí te lo puedo prometer.
           </p>
         </div>
       </section>

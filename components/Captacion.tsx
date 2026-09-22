@@ -67,9 +67,18 @@ export default function Captacion({
 
     const datos = { ...v, consentimiento: acepta, origen, empresa: senuelo };
     const revision = revisar(datos);
-    if (!revision.ok) {
-      setErrores(revision.errores);
-      const primero = Object.keys(revision.errores)[0];
+
+    // El teléfono es opcional para el servidor, porque la lista de la comunidad
+    // no lo pide. Este formulario sí lo pide, así que aquí sí se exige: un
+    // campo con asterisco que se puede dejar en blanco confunde.
+    const faltaTelefono = !v.whatsapp.trim();
+    if (!revision.ok || faltaTelefono) {
+      const errores = {
+        ...(revision.ok ? {} : revision.errores),
+        ...(faltaTelefono ? { whatsapp: 'Escribe tu teléfono.' } : {}),
+      };
+      setErrores(errores);
+      const primero = Object.keys(errores)[0];
       document.getElementById(`${id}-${primero}`)?.focus();
       return;
     }
