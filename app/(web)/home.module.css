@@ -523,10 +523,18 @@
    Móvil: la cara sube y el texto entra debajo a todo el ancho.
    ========================================================================== */
 @media (max-width: 860px) {
-  .heroFoto {
-    object-position: 60% 10%;
-    transform: scale(1.12) translateX(0);
-    animation: none;
+  /* En vertical la foto se va del hero. No es un capricho de diseño, son
+     números: la cabecera va fija encima, así que de la franja superior solo
+     quedan unos 114 px a la vista, y en 114 px de un retrato vertical no
+     entra una cara —asoma el pelo y parece un recorte mal hecho—. Para que
+     entrase habría que robarle ochenta píxeles al formulario, y entonces el
+     botón de enviar se sale de la pantalla.
+     Se queda el botón. Sorela da la cara en la sección siguiente, con una
+     foto compuesta para ese sitio. */
+  .heroFoto,
+  .heroVelo,
+  .heroMotas {
+    display: none;
   }
 
   /* El velo de escritorio va de izquierda a derecha, que es como se reparte
@@ -544,12 +552,73 @@
     );
   }
 
-  .heroCaja {
-    padding-top: min(86vw, 360px);
+  /* Con el formulario dentro del hero, el alto es un recurso escaso: todo lo
+     que ocupe la foto se lo quita al botón de enviar. Se deja una franja de
+     foto reconocible y el resto es captación. */
+  /* En escritorio el hero ocupa la pantalla y el texto se apoya abajo. En
+     móvil eso es justo lo contrario de lo que hace falta: con el contenido
+     pegado al borde inferior, recortar la foto no sube el botón ni un píxel,
+     porque el bloque sigue cayendo al fondo de una caja de una pantalla de
+     alto. Aquí el hero mide lo que miden la franja de foto y el formulario,
+     y empieza arriba. */
+  .hero {
+    min-height: 0;
+    align-items: flex-start;
+    /* Sin foto detrás, el fondo de la foto asomaba como una franja gris
+       suelta entre la cabecera y el filete dorado. */
+    background: var(--bg);
   }
 
+  /* El hueco es exactamente la cabecera, que va fija por encima: así el filete
+     dorado arranca pegado a ella y el aire se mete dentro del bloque. Sin este
+     hueco, la cabecera se come la primera línea del titular. */
+  .heroCaja {
+    padding: var(--cabecera) 0 0;
+  }
+
+  /* El bloque de captación va sobre superficie opaca y a todo el ancho: sin
+     foto detrás, el filete dorado de arriba es lo que lo ata a la marca. */
   .heroTexto {
     max-width: 100%;
+    gap: 13px;
+    background: var(--bg);
+    border-top: 3px solid var(--arcilla);
+    padding: clamp(24px, 6vw, 34px) clamp(20px, 5vw, 28px) clamp(24px, 5vw, 32px);
+  }
+
+  .heroTitulo {
+    font-size: clamp(29px, 7.6vw, 38px);
+  }
+
+  .heroLede {
+    font-size: 15.5px;
+    line-height: 1.55;
+  }
+
+  /* El sello y la firma repiten lo que ya dicen el logotipo de la cabecera y
+     el titular, y cuestan los setenta píxeles de alto que necesita el botón. */
+  .sello,
+  .heroFirma {
+    display: none;
+  }
+
+}
+
+/* Pantallas de móvil bajas (iPhone SE y compañía): aquí el botón de enviar se
+   juega cada píxel, así que se aprieta todo lo que no sea el propio formulario. */
+@media (max-width: 860px) and (max-height: 760px) {
+  .heroTexto {
+    gap: 9px;
+    padding-top: 16px;
+  }
+
+  .heroTitulo {
+    font-size: 25px;
+  }
+
+  .heroLede {
+    font-size: 14.5px;
+    line-height: 1.5;
   }
 
   .bandaTexto {

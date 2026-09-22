@@ -691,7 +691,10 @@ img {
   background: var(--bg);
   border: 1px solid var(--line-4);
   border-radius: 0;
-  font-size: 15px;
+  /* 16px exactos y no menos: Safari en iPhone hace zoom automático al enfocar
+     un campo de menos de 16px, y el zoom descoloca la página entera. Con casi
+     todo el tráfico llegando por un QR desde el móvil, eso es abandono. */
+  font-size: 16px;
   font-weight: 300;
   color: var(--ink);
 }
@@ -713,7 +716,8 @@ textarea.campo {
   background: var(--surface);
   border: 1px solid var(--line-4);
   border-radius: 999px;
-  font-size: 15px;
+  /* Mismo motivo que en .campo: por debajo de 16px, iPhone hace zoom. */
+  font-size: 16px;
   font-weight: 300;
   color: var(--ink);
   min-width: 0;

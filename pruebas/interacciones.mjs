@@ -63,7 +63,7 @@ await p.getByRole('button', { name: 'Precio y forma de pago' }).click();
 await p.waitForTimeout(900);
 check('asistente: responde precios', await p.getByText(/1\.450 €, reservas con 350 €/).isVisible());
 await p.locator('input[aria-label="Escribe tu pregunta"]').fill('quiero entrar en la comunidad');
-await p.getByRole('button', { name: 'Enviar' }).click();
+await p.getByRole('button', { name: 'Enviar', exact: true }).click();
 await p.waitForTimeout(900);
 check('asistente: responde comunidad', await p.getByText(/todavía no está abierta/).isVisible());
 await p.screenshot({ path: `${OUT}/int-asistente.png` });
@@ -101,7 +101,7 @@ await p.goto(B + '/contacto', { waitUntil: 'networkidle' });
 await p.locator('input[aria-label="Nombre"]').fill('Lucía');
 await p.locator('input[aria-label="Correo"]').fill('l@ejemplo.com');
 await p.locator('textarea[aria-label="Cuéntame"]').fill('Quiero información de Madrid.');
-await p.getByRole('button', { name: 'Enviar' }).click();
+await p.getByRole('button', { name: 'Enviar', exact: true }).click();
 await p.waitForTimeout(400);
 check('contacto: confirma', await p.getByText('Recibido.').isVisible());
 

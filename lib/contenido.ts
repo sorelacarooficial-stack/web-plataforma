@@ -4,6 +4,16 @@
 export const INSTAGRAM = 'https://instagram.com/sorelacaro_';
 export const INSTAGRAM_USUARIO = '@sorelacaro_';
 
+/**
+ * Móvil de Sorela, con prefijo, para la salida de emergencia del formulario:
+ * si la captación falla, se le ofrece a la persona escribir por WhatsApp con
+ * el mensaje ya redactado, y así el contacto no se pierde.
+ *
+ * PENDIENTE: mientras esté vacío, esa salida manda a Instagram, que funciona
+ * pero convierte bastante peor. Rellenar antes de la exposición.
+ */
+export const WHATSAPP_SORELA: string = '';
+
 /** Cuántas hay ya en la lista de espera de la comunidad. */
 export const EN_LISTA = 128;
 
