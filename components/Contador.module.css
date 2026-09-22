@@ -1,0 +1,99 @@
+/* Cuenta atrás. Las cifras van en la serif de la marca y bien grandes: es el
+   único sitio de la web donde un número es el protagonista. */
+
+.contador {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bloques {
+  display: flex;
+  gap: clamp(8px, 1.4vw, 16px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bloque {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: clamp(62px, 8vw, 86px);
+  padding: clamp(12px, 1.6vw, 18px) clamp(8px, 1.2vw, 14px);
+  background: var(--surface);
+  border: 1px solid var(--line-4);
+  /* Filete dorado arriba, el mismo recurso que marca las cosas abiertas en el
+     resto de la web. */
+  border-top: 2px solid var(--arcilla);
+}
+
+.cifra {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(30px, 4vw, 46px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  /* Cifras de ancho fijo: sin esto el bloque da un salto cada vez que el
+     segundo pasa de 1 a 8, y el movimiento se ve desde la otra punta. */
+  font-variant-numeric: tabular-nums;
+}
+
+.unidad {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.compacto .bloque {
+  min-width: 56px;
+  padding: 10px 8px;
+}
+
+.compacto .cifra {
+  font-size: clamp(24px, 3vw, 32px);
+}
+
+.abierta {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 2.6vw, 30px);
+  color: var(--arcilla);
+}
+
+/* Solo para lectores de pantalla. */
+.paraLeer {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 420px) {
+  .bloques {
+    gap: 6px;
+  }
+
+  .bloque {
+    min-width: 0;
+    flex: 1;
+    padding: 10px 4px;
+  }
+
+  .cifra {
+    font-size: 26px;
+  }
+
+  .unidad {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+}

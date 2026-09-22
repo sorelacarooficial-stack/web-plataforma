@@ -111,6 +111,36 @@ export const OBJECIONES: Pregunta[] = [
   },
 ];
 
+/**
+ * Los tres pilares del método, en el orden en que se ejecutan.
+ *
+ * Se cuentan como pasos y no como beneficios a propósito. Los documentos de
+ * Sorela están llenos de promesas sobre el organismo —defensas, hormonas,
+ * toxinas, litros de líquido— que en una web pública española de estética no
+ * se pueden publicar: son reclamos sanitarios. Lo que sí se puede contar, y
+ * además distingue de verdad a la técnica, es el método: qué se mira, en qué
+ * orden se trabaja y por qué ese orden.
+ */
+export type Pilar = { titulo: string; texto: string };
+
+export const PILARES: Pilar[] = [
+  {
+    titulo: 'Observar antes de tocar',
+    texto:
+      'Lees el biotipo, el estado del tejido y la zona antes de empezar. De ahí sale la sesión. No hay un protocolo único para todas las personas.',
+  },
+  {
+    titulo: 'Abrir antes de drenar',
+    texto:
+      'Pulsaciones lentas sobre ganglios y estaciones linfáticas. Mientras el paso no esté abierto, no se arrastra nada. Ese orden sostiene todo lo demás.',
+  },
+  {
+    titulo: 'Moldear al final',
+    texto:
+      'Sobre la base drenante entran las maniobras de presión variable: toques, despegues, pastoreo, rastrillo. Movilizan el tejido y redefinen el contorno.',
+  },
+];
+
 export type PiezaComunidad = {
   titulo: string;
   texto: string;
@@ -118,41 +148,54 @@ export type PiezaComunidad = {
   color: string;
 };
 
+/**
+ * Precio de la Comunidad Divine. En fase de fundadoras: quien entra ahora lo
+ * conserva, y por eso el número aparece siempre acompañado de esa condición.
+ * Si algún día sube, este es el único sitio donde hay que tocarlo.
+ */
+export const COMUNIDAD = {
+  precio: 47,
+  periodo: 'al mes',
+  condicion: 'Precio fundador para las primeras',
+  /** 17 de octubre de 2026, 16:00 en España. Ver components/Contador.tsx. */
+  apertura: 'sábado 17 de octubre, 16:00 (hora de España)',
+} as const;
+
 export const PIEZAS_COMUNIDAD: PiezaComunidad[] = [
   {
     titulo: 'Una clase en vivo al mes',
     texto:
-      'Un caso real resuelto delante de ti, con preguntas al final. Grabada, para cuando cierres la cabina.',
-    estado: 'Ya decidido',
+      'Actualizaciones Divine: lo nuevo del método explicado y aplicado sobre un caso real. Queda grabada, para cuando cierres la cabina.',
+    estado: 'Cada mes',
     color: 'var(--arcilla)',
   },
   {
-    titulo: 'Canal privado para preguntar',
+    titulo: 'Acompañamiento personalizado',
     texto:
-      'El caso raro del martes, resuelto el martes. Ni el mes que viene ni en un foro abierto.',
-    estado: 'Ya decidido',
+      'Tus casos, mirados uno a uno. No un foro donde preguntas y te contesta quien pasaba por allí.',
+    estado: 'Continuo',
     color: 'var(--salvia)',
   },
   {
-    titulo: 'Fichas y protocolos descargables',
+    titulo: 'Canal privado en Telegram',
     texto:
-      'Para usar en consulta, no para archivar: valoración, primera visita, progresiones por zona.',
-    estado: 'Ya decidido',
+      'La duda del martes, resuelta el martes, entre terapeutas que trabajan con la misma técnica que tú.',
+    estado: 'Siempre abierto',
     color: 'var(--azul)',
   },
   {
-    titulo: 'Tu ficha en el mapa público',
+    titulo: 'Agenda inteligente',
     texto:
-      'Apareces donde las clientas buscan, con tu ciudad y tu botón de reserva.',
-    estado: 'Ya decidido',
+      'La misma plataforma de citas que uso yo, con inteligencia artificial: gestiona tus reservas y tus clientas sin que vivas pegada al móvil.',
+    estado: 'Incluida',
     color: 'var(--oro)',
   },
   {
-    titulo: 'Negocio y clientas',
+    titulo: 'Tu centro, en el mapa',
     texto:
-      'Cómo se consigue clienta, cómo se cuenta lo que haces y cómo usar la IA para no vivir pegada al móvil.',
-    estado: 'Lo estoy escribiendo',
-    color: 'var(--faint)',
+      'Tu ficha en Localiza tu terapeuta y posición dentro de las búsquedas: apareces donde las clientas buscan.',
+    estado: 'Incluida',
+    color: 'var(--arcilla)',
   },
 ];
 

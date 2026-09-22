@@ -3,13 +3,17 @@ import Link from 'next/link';
 import Motas from '@/components/Motas';
 import Marquesina from '@/components/Marquesina';
 import Acordeon from '@/components/Acordeon';
-import Captacion from '@/components/Captacion';
+import Contador from '@/components/Contador';
+import LlamadaDivine from '@/components/LlamadaDivine';
+import BotonAsistente from '@/components/BotonAsistente';
 import ListaEspera from '@/components/ListaEspera';
 import {
+  COMUNIDAD,
   EN_LISTA,
   FAQS,
   INSTAGRAM,
   INSTAGRAM_USUARIO,
+  PILARES,
   PIEZAS_COMUNIDAD,
   TESTIMONIOS,
 } from '@/lib/contenido';
@@ -23,7 +27,7 @@ import css from './home.module.css';
 export default function Home() {
   return (
     <main>
-      {/* ---------- Hero: su retrato a sangre, cara libre a la derecha ---------- */}
+      {/* ---------- Hero ---------- */}
       <section className={css.hero}>
         <Image
           src={retrato}
@@ -42,34 +46,26 @@ export default function Home() {
           <div className={css.heroTexto}>
             <span className={css.sello}>
               <span className={css.selloPunto} />
-              Formación presencial en estética avanzada
+              Formación en estética avanzada
             </span>
 
-            {/* El titular va al dolor, pero desde la clienta, no contra la esteticista:
-                lo que duele no es «lo haces mal», es notar que hay algo más y no
-                tener con qué leerlo. La acusación al oficio queda implícita. */}
-            <h1 className={css.heroTitulo}>
-              Tu clienta no necesita otra sesión. Necesita que alguien la mire entera.
-            </h1>
+            <h1 className={css.heroTitulo}>Juventud linfática y ganglionar en tus manos.</h1>
 
-            {/* Dos líneas en móvil, ni una más: cada línea de más empuja el botón
-                de enviar por debajo del borde de la pantalla. */}
+            {/* La entradilla describe el trabajo, no promete efectos. «Sin
+                aparatología» no se usa como ventaja a propósito: encuadraría la
+                técnica como alternativa a un tratamiento médico. */}
             <p className={css.heroLede}>
-              Y tú ya lo notas. Nadie te enseñó a leerlo. Te mando cómo se hace y las próximas
-              fechas.
+              La Técnica Divine es drenaje linfático manual llevado más lejos. Aprendes a leer el
+              cuerpo que tienes delante y a decidir qué necesita antes de ponerle las manos encima.
             </p>
 
-            {/* El formulario va dentro del hero, no debajo: casi todo el tráfico de
-                esta semana llega por un código QR, y quien escanea decide en la
-                primera pantalla. Un botón que lleva a otro sitio pierde la mitad. */}
-            <Captacion compacto />
-
-            {/* Salida para quien no quiere dar su dato todavía. Va debajo del
-                botón a propósito: no compite con él, pero evita que alguien
-                con prisa se vaya sin ver que hay fechas abiertas. */}
-            <Link href="/formaciones" className="enlace-subrayado">
-              O ver las tres fechas abiertas
-            </Link>
+            {/* Dos salidas y una jerarquía clara: la información abre una ventana
+                aquí mismo, la cita abre el asistente. Nadie sale de la página. */}
+            <LlamadaDivine
+              textoPrincipal="Quiero la información"
+              textoCita="Agendar una cita"
+              preguntaCita="Quiero agendar una cita. ¿Cómo lo hacemos?"
+            />
 
             <p className={css.heroFirma}>
               <span className={css.heroRaya} />
@@ -81,8 +77,151 @@ export default function Home() {
 
       <Marquesina />
 
+      {/* ---------- Qué es la Técnica Divine ----------
+           Sustituye al antiguo bloque «el problema». Quien llega por un QR o por
+           Instagram no sabe qué es esto, y sin esa respuesta lo demás no se
+           sostiene. El texto habla de técnica y de criterio a propósito: los
+           efectos sobre la salud no se prometen en una web de estética. */}
+      <section id="metodo" className={`seccion ${css.metodo}`}>
+        <div className="wrap rejilla">
+          <div className="columna" style={{ gap: 22 }}>
+            <p className="antetitulo">Qué es la Técnica Divine</p>
+            <h2 className="titulo-lg max-560">
+              Un método manual con un orden: primero abrir, después drenar, después moldear.
+            </h2>
+            <p className="texto max-480">
+              Divine es drenaje linfático manual avanzado. Lo creó Sorela Caro sobre la base del
+              drenaje clásico, después de quince años de cabina. Se trabaja con las manos y aceite,
+              por zonas: abdomen, piernas y glúteos, brazos, cintura, espalda, y el rostro en su
+              versión facial.
+            </p>
+            <p className="texto max-480">
+              El orden manda. Primero se abren los ganglios y las estaciones linfáticas con
+              pulsaciones lentas y rítmicas. Solo después se arrastra, de proximal a distal,
+              siguiendo el recorrido natural del sistema linfático. Sobre esa base llegan las
+              maniobras de moldeo.
+            </p>
+            <p className="texto max-480">
+              El protocolo está pautado por fases, pero se ajusta al biotipo de cada persona. Lo
+              habitual es terminar la sesión con sensación de ligereza y un contorno más definido.
+              La respuesta varía según cada persona y cada momento.
+            </p>
+          </div>
+          <div className="foto foto-45">
+            <Image
+              src={lumbar}
+              alt="Manos trabajando la zona lumbar"
+              sizes="(max-width: 860px) 100vw, 45vw"
+              placeholder="blur"
+              style={{ objectPosition: '50% 45%' }}
+            />
+          </div>
+        </div>
+
+        {/* Los cinco pilares: es la estructura con la que Sorela enseña el
+            método, y cuenta mejor que cualquier lista de beneficios qué se
+            aprende de verdad en la formación. */}
+        <div className="wrap" style={{ marginTop: 'clamp(44px,6vw,80px)' }}>
+          <p className="antetitulo" style={{ marginBottom: 'clamp(22px,3vw,34px)' }}>
+            Los tres pilares
+          </p>
+          <ol className={css.pilares}>
+            {PILARES.map((p, i) => (
+              <li key={p.titulo} className={css.pilar}>
+                <span className={css.pilarNumero}>{String(i + 1).padStart(2, '0')}</span>
+                <h3 className={css.pilarTitulo}>{p.titulo}</h3>
+                <p className="texto-fijo" style={{ fontSize: 15.5 }}>
+                  {p.texto}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ---------- La cita ---------- */}
+      <section className={css.cita}>
+        <div className="wrap wrap-1040">
+          <blockquote className={css.citaTexto}>
+            Cada persona vive una frecuencia diferente, su cuerpo también lo expresa. Aprender a
+            observarlo, interpretarlo y decidir cómo trabajar es el verdadero comienzo.
+          </blockquote>
+          <span className={css.citaFirma}>Sorela Caro</span>
+        </div>
+      </section>
+
+      {/* ---------- Formaciones: el recorrido ----------
+           El orden importa y es la regla del método: primero online, después
+           presencial. Por eso se cuenta como un camino de dos etapas y no como
+           dos productos que compiten entre sí. */}
+      <section id="formaciones" className="seccion superficie borde-arriba">
+        <div className="wrap">
+          <div className={css.formacionIntro}>
+            <p className="antetitulo">Formarte conmigo</p>
+            <h2 className="titulo-lg max-640">Para ser terapeuta Divine hay un orden.</h2>
+            <p className="texto max-560">
+              Para formarte como terapeuta Divine el orden no cambia: primero la formación online,
+              después la presencial. Así llegas con la teoría resuelta y los dos días con Sorela se
+              dedican enteros a tus manos.
+            </p>
+          </div>
+
+          <div className={css.etapas}>
+            <article className={css.etapa}>
+              <span className={css.etapaOrden}>Primera etapa</span>
+              <h3 className={css.etapaTitulo}>Formación online</h3>
+              <p className="texto-fijo">
+                Aquí empieza todo. Trabajas la anatomía linfática, la lógica del método y el
+                protocolo por fases antes de ponerte a tocar. Desde tu país y a tu ritmo, para
+                llegar preparada a los dos días presenciales.
+              </p>
+              <ul className={css.etapaLista}>
+                <li>Anatomía linfática y lógica del método</li>
+                <li>Dossier precurso con el protocolo por fases</li>
+                <li>Acceso flexible, desde tu país y a tu ritmo</li>
+                <li>Requisito previo para la formación presencial</li>
+              </ul>
+            </article>
+
+            <article className={`${css.etapa} ${css.etapaDestacada}`}>
+              <span className={css.etapaOrden}>Segunda etapa</span>
+              <h3 className={css.etapaTitulo}>Formación presencial</h3>
+              <p className="texto-fijo">
+                Dos jornadas con Sorela. El primer día, lipodrenaje: protocolo completo y
+                aplicación. El segundo, moldeo y tonificación. Se practica sobre modelos reales,
+                con corrección directa sobre tus manos.
+              </p>
+              <ul className={css.etapaLista}>
+                <li>Día 1 · Lipodrenaje, protocolo completo y aplicación</li>
+                <li>Día 2 · Moldeo y tonificación de silueta</li>
+                <li>Práctica sobre modelos reales, no solo demostración</li>
+                <li>Corrección de Sorela sobre tus manos</li>
+              </ul>
+            </article>
+          </div>
+
+          {/* Fechas: hoy no hay ninguna cerrada, y eso se dice. Poner una fecha
+              que luego se mueve cuesta más que no ponerla. */}
+          <div className={css.fechas}>
+            <div>
+              <p className="antetitulo" style={{ color: 'var(--oro)' }}>
+                Próximas fechas
+              </p>
+              <h3 className={css.fechasTitulo}>Sudamérica, próximamente.</h3>
+              <p className="texto max-520">
+                Las fechas y las ciudades están a punto de confirmarse. Si quieres que te guarde
+                sitio antes de que se publiquen, dímelo y te reservo el espacio.
+              </p>
+            </div>
+            <BotonAsistente pregunta="Quiero consultar las próximas fechas en Sudamérica y que me guardes sitio.">
+              Consultar fechas
+            </BotonAsistente>
+          </div>
+        </div>
+      </section>
+
       {/* ---------- Quién está detrás ---------- */}
-      <section className="seccion superficie borde-arriba">
+      <section className="seccion">
         <div className="wrap rejilla-290">
           <div className="foto foto-45">
             <Image
@@ -135,23 +274,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Banda de formaciones: copy a la izquierda, foto entera a la derecha ---------- */}
+      {/* ---------- Banda: la conversación que cambia ---------- */}
       <section className={css.banda}>
         <div className={css.bandaTexto}>
           <div className={css.bandaCaja}>
             <p className="antetitulo" style={{ color: 'var(--accent-inverse)' }}>
-              Formaciones presenciales
+              Por qué cambia tu trabajo
             </p>
             <h2 className="titulo-lg" style={{ color: 'var(--inverse-ink)' }}>
               A la cuarta sesión te pregunta por qué no ve nada. Y no sabes qué decirle.
             </h2>
             <p className="texto" style={{ color: 'var(--on-inverse-2)' }}>
-              Ahí se pierde la clienta, se regala la sesión y se baja el precio. Tres días conmigo
-              al lado de la camilla y esa conversación cambia de bando: le explicas qué estás
-              viendo, qué toca ahora y por qué.
+              Ahí se pierde la clienta, se regala la sesión y se baja el precio. Con un método
+              detrás, esa conversación cambia de bando: le explicas qué estás viendo, qué toca
+              ahora y por qué.
             </p>
             <Link href="/formaciones" className="btn btn-claro" style={{ marginTop: 8 }}>
-              Madrid, Valencia y Sevilla
+              Ver las formaciones
             </Link>
           </div>
         </div>
@@ -166,161 +305,48 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Las dos puertas: qué existe hoy y qué está en beta ----------
-           Contesta en el primer scroll qué es esto, qué funciona ya y qué viene.
-           La jerarquía de color dice sola cuál es la que tiene fechas abiertas:
-           filete de arcilla en la formación, neutro en la comunidad. */}
-      <section id="estado" className={`seccion ${css.estado}`}>
+      {/* ---------- Comunidad Divine ---------- */}
+      <section id="comunidad" className={css.comunidad}>
         <div className="wrap">
-          <div className={css.estadoIntro}>
-            <p className="antetitulo">Dos cosas distintas</p>
-            <h2 className="titulo-lg max-640">Aquí dentro hay dos cosas. Te digo cuál es cuál.</h2>
-            <p className="texto max-520">
-              La formación presencial existe, tiene fechas abiertas y es lo único que puedes hacer
-              conmigo ahora mismo. Si hoy quieres algo mío, es esto.
-            </p>
-            <p className="texto max-520">
-              La Comunidad Divine es lo que viene después del curso, y está en beta: todavía no
-              abre. Lo que sí está abierto es la lista, y las que están dentro son las que deciden
-              qué lleva.
-            </p>
-          </div>
-
-          <div className={css.puertas}>
-            <article className={`${css.puerta} ${css.puertaAbierta}`}>
-              <span className={css.puertaSello}>Con fechas abiertas</span>
-              <h3 className={css.puertaTitulo}>Formación presencial</h3>
-              <p className="texto-fijo">
-                Madrid, Valencia y Sevilla. Tres días, ocho alumnas, certificado y tu sitio en el
-                mapa público.
+          <div className={css.comunidadCabeza}>
+            <div className={css.comunidadTexto}>
+              <p className="antetitulo">Comunidad Divine</p>
+              <h2 className="titulo-lg max-560">Terminar la formación no es llegar.</h2>
+              <p className="texto max-520">
+                Sales del curso con criterio nuevo y muchas ganas. A las tres semanas aparece el
+                primer caso raro, no tienes a quién preguntar y vuelves a lo de siempre. La
+                Comunidad Divine existe para cortar ese patrón.
               </p>
-              <Link href="/formaciones" className="btn btn-md">
-                Ver próximas fechas
-              </Link>
-            </article>
 
-            <article className={css.puerta}>
-              <span className={`${css.puertaSello} ${css.puertaSelloNeutro}`}>En beta</span>
-              <h3 className={css.puertaTitulo}>Comunidad Divine</h3>
-              <p className="texto-fijo">
-                Todavía no abre. Quien está en la lista entra primero y ayuda a decidir qué lleva
-                dentro.
+              <div className={css.precio}>
+                <span className={css.precioCifra}>{COMUNIDAD.precio} €</span>
+                <span className={css.precioPeriodo}>{COMUNIDAD.periodo}</span>
+                <span className={css.precioSello}>{COMUNIDAD.condicion}</span>
+              </div>
+              <p className="nota" style={{ maxWidth: 440 }}>
+                Quien entra ahora conserva ese precio mientras siga dentro.
               </p>
-              <a href="#lista" className="enlace-subrayado">
-                Entrar en la lista de espera
-              </a>
-            </article>
-          </div>
-        </div>
-      </section>
+            </div>
 
-      {/* ---------- El problema ---------- */}
-      <section className="seccion">
-        <div className="wrap rejilla">
-          <div className="columna" style={{ gap: 22 }}>
-            <p className="antetitulo">El problema</p>
-            <h2 className="titulo-lg">Te enseñaron una secuencia. No a leer un cuerpo.</h2>
-            <p className="texto max-480">
-              Estos movimientos, este orden, estos minutos. Funciona hasta que entra la clienta
-              que no encaja en el guion: la operada hace tres semanas, la que retiene sin causa
-              aparente, la que lleva seis meses sin resultados. Y entra cada semana.
-            </p>
-          </div>
-          <div className="foto foto-45">
-            <Image
-              src={lumbar}
-              alt="Manos trabajando la zona lumbar"
-              sizes="(max-width: 860px) 100vw, 45vw"
-              placeholder="blur"
-              style={{ objectPosition: '50% 45%' }}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- La cita ---------- */}
-      <section className={css.cita}>
-        <div className="wrap wrap-1040">
-          <blockquote className={css.citaTexto}>
-            No se trata simplemente de poner las manos. Se trata de saber qué observar, qué
-            interpretar y cómo decidir antes de trabajar.
-          </blockquote>
-          <span className={css.citaFirma}>Sorela Caro</span>
-        </div>
-      </section>
-
-      {/* ---------- Qué cambia ---------- */}
-      <section className="seccion">
-        <div className="wrap">
-          <h2 className={`titulo-lg max-640 ${css.tituloBloque}`}>
-            Se acaba el «vamos a ver cómo responde».
-          </h2>
-          <div className="rejilla-tarjetas">
-            <article className="tarjeta" style={{ borderTop: '3px solid var(--arcilla)' }}>
-              <h3>Criterio</h3>
-              <p className="texto-fijo">
-                En los dos primeros minutos ya sabes qué mirar y qué te está diciendo lo que ves.
+            <div className={css.apertura}>
+              <p className="antetitulo" style={{ color: 'var(--oro)' }}>
+                Abre el {COMUNIDAD.apertura}
               </p>
-            </article>
-            <article className="tarjeta" style={{ borderTop: '3px solid var(--salvia)' }}>
-              <h3>Decisión</h3>
-              <p className="texto-fijo">
-                Eliges el trabajo para ese cuerpo y ese día. También sabes qué no tocar todavía.
-              </p>
-            </article>
-            <article className="tarjeta" style={{ borderTop: '3px solid var(--azul)' }}>
-              <h3>Palabras</h3>
-              <p className="texto-fijo">
-                Le cuentas a tu clienta qué has visto y por qué trabajas así. Por eso vuelve, y por
-                eso paga lo que cuesta.
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ---------- La comunidad: por qué existe y en qué punto está ---------- */}
-      <section className={css.comunidad}>
-        <div className="wrap rejilla">
-          <div className="columna-texto" style={{ order: 1 }}>
-            <p className="antetitulo">La comunidad</p>
-            <h2 className="titulo-lg">Terminar la formación no es llegar.</h2>
-            <p className="texto max-480">
-              Sales del curso con criterio nuevo y muchas ganas. A las tres semanas aparece el
-              primer caso raro, no tienes a quién preguntar y vuelves a lo de siempre. Llevo tiempo
-              viendo ese patrón: la Comunidad Divine existe para cortarlo.
-            </p>
-            <p className="texto max-480">
-              Está en beta. Significa que ya sé qué va dentro y todavía no está grabado: cuatro
-              piezas están decididas y la quinta la estoy escribiendo. La estoy montando con las que
-              ya están en la lista. Primero les pregunto qué necesitan tener dentro, luego lo
-              escribo.
-            </p>
-            <p className="texto max-480">
-              El precio y la fecha de apertura, todavía no lo sé. No pongo fecha que no pueda
-              cumplir y no te voy a dar un precio que luego cambie. Cuando los tenga, lo sabe la
-              lista antes que nadie.
-            </p>
+              <Contador />
+              <div className={css.aperturaAcciones}>
+                <a href="#lista" className="btn btn-md">
+                  Entrar en la lista
+                </a>
+                <Link href="/comunidad" className="enlace-fino">
+                  Qué hay dentro
+                </Link>
+              </div>
+            </div>
           </div>
 
-          <div className="foto foto-45" style={{ order: 2 }}>
-            <Image
-              src={consulta}
-              alt="Sesión de trabajo corporal en consulta"
-              sizes="(max-width: 860px) 100vw, 45vw"
-              placeholder="blur"
-            />
-          </div>
-        </div>
-
-        <div className="wrap" style={{ marginTop: 'clamp(40px,6vw,72px)' }}>
-          <p className="antetitulo" style={{ marginBottom: 'clamp(24px,3vw,36px)' }}>
-            Lo que quiero que tenga
-          </p>
           <div className={css.piezas}>
             {PIEZAS_COMUNIDAD.map((p) => (
-              <article key={p.titulo} className={css.pieza}>
+              <article key={p.titulo} className={css.pieza} style={{ borderTopColor: p.color }}>
                 <span className={css.piezaEstado}>{p.estado}</span>
                 <h3 className={css.piezaTitulo}>{p.titulo}</h3>
                 <p className="texto-fijo" style={{ fontSize: 16 }}>
@@ -329,34 +355,25 @@ export default function Home() {
               </article>
             ))}
           </div>
-          <p className={css.remate} style={{ marginTop: 'clamp(30px,4vw,48px)' }}>
-            No te lo enseño como si estuviera terminado, porque no lo está.{' '}
-            <span style={{ color: 'var(--arcilla)' }}>Te lo enseño para que me digas qué falta.</span>
-          </p>
-          <Link href="/comunidad" className="enlace-fino" style={{ marginTop: 10 }}>
-            Las preguntas de la lista
-          </Link>
         </div>
       </section>
 
-      {/* ---------- La lista de espera, con el formulario en la propia home ---------- */}
+      {/* ---------- La lista de espera ---------- */}
       <section id="lista" className={`seccion ${css.lista}`}>
         <div className="wrap rejilla-290" style={{ alignItems: 'start' }}>
           <div className="columna-texto">
             <p className="antetitulo">La lista</p>
-            <h2 className="titulo-lg">Las primeras de la lista entran con condición de fundadora.</h2>
+            <h2 className="titulo-lg">Las primeras entran con condición de fundadora.</h2>
             <p className="texto max-480">
-              Y la mantienen mientras sigan dentro. Eso sí te lo puedo prometer.
+              Y la conservan mientras sigan dentro. Eso sí te lo puedo prometer.
             </p>
             <p className="texto max-480">
               No pido tarjeta, no hay reserva que pagar y puedes salirte con un correo. Nada de
               correos cada semana.
             </p>
             <p className="texto max-480">
-              Para entrar el día que abra hay que estar certificada conmigo. Para estar en la lista,
-              no: si tienes plaza en una formación, apúntate igual. Y si reservas plaza en una de
-              las tres, tu sitio en la lista ya va incluido. Si todavía no te has formado, el orden
-              es ese. Primero los tres días.
+              Para entrar el día que abra hay que estar certificada conmigo. Para estar en la
+              lista, no: si ya tienes plaza en una formación, apúntate igual.
             </p>
             <p className={css.contador}>
               <span data-count={String(EN_LISTA)}>{EN_LISTA}</span> terapeutas están ya en la lista.
@@ -365,56 +382,34 @@ export default function Home() {
 
           <div className={css.cajaLista}>
             <ListaEspera />
-            <Link href="/formaciones" className="enlace-fino" style={{ marginTop: 6 }}>
-              Ver próximas fechas
-            </Link>
           </div>
         </div>
       </section>
 
-      {/* ---------- Para clientas ---------- */}
+      {/* ---------- Localiza tu terapeuta ---------- */}
       <section className="seccion">
         <div className="wrap rejilla-290" style={{ gap: 'clamp(28px,4vw,60px)' }}>
           <div className="columna-texto">
             <p className="antetitulo" style={{ color: 'var(--azul)' }}>
-              Para clientas
+              Localiza tu terapeuta Divine
             </p>
-            <h2 className="titulo-lg">Si está en el mapa, se formó conmigo.</h2>
-            <p className="texto max-460">
-              Ninguna terapeuta aparece ahí por pagar. Aparece porque hizo la formación, se
-              certificó y trabaja con el método. Abre el mapa, mira quién tienes cerca y reserva
-              con ella.
+            <h2 className="titulo-lg">¿No eres profesional? También hay sitio para ti.</h2>
+            <p className="texto max-480">
+              En el mapa están las terapeutas certificadas por Sorela, con su ciudad y su forma de
+              reservar. Cada sesión empieza con unos minutos de valoración: no se trabaja sobre un
+              cuerpo sin haberlo mirado antes.
             </p>
-            <Link href="/terapeutas" className={`btn ${css.btnAzul}`} style={{ marginTop: 4 }}>
+            <Link href="/terapeutas" className="btn btn-md" style={{ marginTop: 6 }}>
               Abrir el mapa
             </Link>
           </div>
-
-          <div className={css.cifras}>
-            <div className={css.cifra} style={{ background: 'var(--azul-tint)' }}>
-              <span className={css.cifraNum} style={{ color: 'var(--azul)' }} data-count="6">
-                6
-              </span>
-              <span className={css.cifraPie} style={{ color: 'var(--azul-ink)' }}>
-                ciudades con consulta abierta
-              </span>
-            </div>
-            <div className={css.cifra} style={{ background: 'var(--salvia-tint)' }}>
-              <span className={css.cifraNum} style={{ color: 'var(--salvia)' }} data-count="87">
-                87
-              </span>
-              <span className={css.cifraPie} style={{ color: 'var(--salvia-ink)' }}>
-                terapeutas certificadas
-              </span>
-            </div>
-            <div className={css.cifra} style={{ background: 'var(--arcilla-tint)' }}>
-              <span className={css.cifraNum} style={{ color: 'var(--arcilla)' }}>
-                10 min
-              </span>
-              <span className={css.cifraPie} style={{ color: 'var(--arcilla-ink)' }}>
-                de valoración antes de tocarte
-              </span>
-            </div>
+          <div className="foto foto-45">
+            <Image
+              src={consulta}
+              alt="Sesión de trabajo corporal en consulta"
+              sizes="(max-width: 860px) 100vw, 45vw"
+              placeholder="blur"
+            />
           </div>
         </div>
       </section>
@@ -422,8 +417,8 @@ export default function Home() {
       {/* ---------- Testimonios ---------- */}
       <section className={css.testimonios}>
         <div className="wrap">
-          <h2 className={`titulo-lg max-620 ${css.tituloBloque}`}>Lo que cambió en su cabina.</h2>
-          <div className="rejilla-tarjetas" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(270px,1fr))' }}>
+          <h2 className={`titulo-lg max-640 ${css.tituloBloque}`}>Lo que dicen sus alumnas.</h2>
+          <div className="rejilla-tarjetas">
             {TESTIMONIOS.map((t) => (
               <figure key={t.nombre} className={css.testimonio}>
                 <blockquote className={css.testimonioFrase}>{t.frase}</blockquote>
@@ -440,26 +435,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- FAQ ---------- */}
+      {/* ---------- Preguntas ---------- */}
       <section className="seccion superficie">
-        <div className="wrap wrap-1000">
-          <h2 className={`titulo-sm ${css.tituloFaq}`}>Lo que me preguntáis siempre</h2>
+        <div className="wrap wrap-1040">
+          <h2 className={`titulo-lg max-640 ${css.tituloBloque}`}>Lo que más me preguntan.</h2>
           <Acordeon preguntas={FAQS} />
         </div>
       </section>
 
       {/* ---------- Cierre ---------- */}
       <section className={css.cierre}>
-        <div className="wrap wrap-820">
-          <p className="antetitulo" style={{ color: 'var(--accent-inverse)' }}>
-            Próxima convocatoria
-          </p>
+        <div className="wrap wrap-1040">
           <h2 className={css.cierreTitulo}>
-            Madrid, del 14 al 16 de noviembre. Quedan tres plazas.
+            Si has llegado hasta aquí, ya sabes que no es otro protocolo.
           </h2>
-          <Link href="/formaciones/formacion-base" className="btn btn-claro" style={{ marginTop: 6 }}>
-            Reservar mi plaza
-          </Link>
+          <p className={css.cierreTexto}>
+            Déjame tu contacto y te mando la información completa: qué es el método, cómo se
+            aprende y cuándo son las próximas formaciones.
+          </p>
+          <LlamadaDivine
+            textoPrincipal="Quiero la información"
+            textoCita="Agendar una cita"
+            preguntaCita="Quiero agendar una cita. ¿Cómo lo hacemos?"
+            alineacion="centro"
+          />
         </div>
       </section>
     </main>

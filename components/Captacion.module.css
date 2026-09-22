@@ -10,6 +10,26 @@
   max-width: 460px;
 }
 
+.titulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(27px, 3.4vw, 36px);
+  line-height: 1.08;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.entradilla {
+  margin: 0;
+  font-weight: 300;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
 .campos {
   display: flex;
   flex-direction: column;
