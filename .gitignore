@@ -18,3 +18,20 @@ npm-debug.log*
 /asistente-informe.txt
 /auditoria-matriz.json
 /capturas.mjs
+
+# Las capturas sin optimizar de los manuales: las originales a 2× pesan de más
+# y se regeneran con `node --env-file=.env.local docs/capturas.mjs`. Se guardan
+# solo las recortadas que de verdad entran en el PDF.
+docs/capturas/menu.png
+docs/capturas/entrar.png
+docs/capturas/entrar-form.png
+docs/capturas/agenda.png
+docs/capturas/clientes.png
+docs/capturas/cuentas.png
+docs/capturas/calendario.png
+docs/capturas/anadir-cliente.png
+docs/capturas/clientes-fila.png
+docs/capturas/clientes-embudo.png
+docs/capturas/cuentas-enlace.png
+docs/capturas/cuentas-formulario.png
+docs/capturas/cuentas-lista.png
