@@ -263,15 +263,16 @@ export default function Cuentas() {
 
   return (
     <div className={css.columna}>
-      {/* Lo primero que hay que saber: una cuenta nueva se crea bien, pero
-          todavía no puede entrar. Sin este aviso, el alta parecería rota. */}
+      {/* El registro público está cerrado, y eso es lo que hace que esta
+          pantalla importe: aquí se decide quién entra y quién no. Antes este
+          aviso decía que la cuenta nueva «todavía no podrá entrar» y nombraba
+          una variable del código; ya no es verdad ni hace falta. */}
       {!abierta && (
         <div className={css.aviso} role="note">
           <p className={css.parrafo} style={{ flex: '1 1 320px', margin: 0 }}>
-            <strong>La plataforma está cerrada.</strong> Puedes dar de alta a quien quieras y
-            mandarle su enlace, pero <strong>todavía no podrá entrar</strong>: mientras esté
-            cerrada, el servidor solo deja pasar a las administradoras. No es que la cuenta esté
-            rota. Se abre poniendo <code>PLATAFORMA_ABIERTA</code> en <code>lib/roles.ts</code>.
+            <strong>Solo entra quien des de alta aquí.</strong> Nadie puede hacerse una cuenta por
+            su cuenta, aunque conozca la dirección. Das el alta, le mandas su enlace, y con eso ya
+            entra.
           </p>
         </div>
       )}
