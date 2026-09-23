@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
+import { tipoDeOrigen } from '@/lib/origenes';
 
 /**
  * Los contactos que entran por la web, para verlos desde la plataforma.
@@ -55,6 +56,17 @@ export async function GET() {
       nota: v.nota ?? '',
       origen: v.origen ?? 'web',
       estado: (v.estado as EstadoContacto) ?? 'Nuevo',
+      // De dónde entró decide qué busca: una sesión, formarse o la comunidad.
+      // Se resuelve aquí y no en el navegador para que la lista y el correo
+      // digan lo mismo. Ver lib/origenes.ts.
+      tipo: tipoDeOrigen(v.origen),
+      // Lo que Sorela ha ido apuntando de esa persona, lo más nuevo primero.
+      seguimiento: Array.isArray(v.seguimiento)
+        ? v.seguimiento.map((n: { cuando?: string; texto?: string }) => ({
+            cuando: n?.cuando ?? '',
+            texto: n?.texto ?? '',
+          }))
+        : [],
       // Un Timestamp de Firestore no sobrevive a JSON.stringify de forma
       // legible, así que se manda como texto ISO y se formatea en pantalla.
       creado: v.creado?.toDate?.().toISOString() ?? null,
@@ -74,22 +86,48 @@ export async function PATCH(peticion: Request) {
   const guardia = await exigirAdmin();
   if (guardia.error) return guardia.error;
 
-  let cuerpo: { id?: string; estado?: string };
+  let cuerpo: { id?: string; estado?: string; nota?: string };
   try {
     cuerpo = await peticion.json();
   } catch {
     return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
   }
 
-  const { id, estado } = cuerpo;
-  if (!id || !estado || !(ESTADOS as readonly string[]).includes(estado)) {
+  const { id, estado, nota } = cuerpo;
+  if (!id) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
+
+  const ref = baseDeDatos().collection(COLECCIONES.contactos).doc(id);
+
+  /*
+   * Apuntar algo de una persona.
+   *
+   * Se añade al final del array con arrayUnion y NO se reescribe el array
+   * entero: si Sorela tiene la ficha abierta en el móvil y en el ordenador,
+   * mandar la lista completa desde cada uno haría que la última en guardar
+   * borrase lo que hubiera escrito la otra.
+   *
+   * La hora la pone el servidor, pero dentro del elemento no se puede usar
+   * serverTimestamp —Firestore no lo admite dentro de un array—, así que se
+   * escribe la del servidor en texto ISO.
+   */
+  if (typeof nota === 'string' && nota.trim()) {
+    await ref.set(
+      {
+        seguimiento: FieldValue.arrayUnion({
+          cuando: new Date().toISOString(),
+          texto: nota.trim().slice(0, 1000),
+        }),
+      },
+      { merge: true }
+    );
+    return NextResponse.json({ ok: true, id });
+  }
+
+  if (!estado || !(ESTADOS as readonly string[]).includes(estado)) {
     return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
   }
 
-  await baseDeDatos()
-    .collection(COLECCIONES.contactos)
-    .doc(id)
-    .set({ estado, estadoCambiado: FieldValue.serverTimestamp() }, { merge: true });
+  await ref.set({ estado, estadoCambiado: FieldValue.serverTimestamp() }, { merge: true });
 
   return NextResponse.json({ ok: true, id, estado });
 }

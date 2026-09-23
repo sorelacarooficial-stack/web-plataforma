@@ -57,6 +57,21 @@ async function exigirAdmin() {
 
 const recortar = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
 
+/**
+ * Si un identificador de documento se puede usar tal cual.
+ *
+ * Firestore lee la barra como separador de rutas, así que el id no es un dato
+ * inerte: con «a/b/c», doc() apuntaría a un documento colgado de OTRA colección
+ * dentro de agenda, y con «a/b» no apunta a ningún documento y lanza una
+ * excepción que, al no estar recogida, sale al navegador como un 500 con su
+ * traza. Aquí solo entra Sorela, así que esto no es un agujero; es que un id
+ * roto —un enlace viejo, un copiar y pegar a medias— debe contestar «datos» y
+ * no una pantalla de error.
+ */
+function idValido(id: string): boolean {
+  return id.length > 0 && id.length <= 200 && !id.includes('/') && id !== '.' && id !== '..';
+}
+
 /* ==========================================================================
    Dónde empieza «hoy»
    ========================================================================== */
@@ -110,9 +125,15 @@ function desfaseDeMadrid(instante: Date): number {
  *
  * Los dos tanteos no son manía: el desfase de ahora mismo no tiene por qué ser
  * el de esta medianoche, y los dos domingos del año en que se cambia la hora no
- * lo es. De los dos candidatos se queda el más temprano, porque errar por una
- * hora de más solo cuela en la lista la tarde de ayer, mientras que errar por
- * una hora de menos escondería lo de primera hora de hoy.
+ * lo es. El primer tanteo cae como mucho a una hora de la medianoche buena, que
+ * es justo lo que salta España al cambiar la hora; por eso medir el desfase ahí
+ * y restarlo otra vez da el instante exacto, y no hace falta un tercer tanteo.
+ *
+ * Aquí había un Math.min entre los dos candidatos, pensado como red de
+ * seguridad. No lo era: el domingo de marzo el primer tanteo se va una hora
+ * antes y el mínimo se quedaba con él, así que ese día la agenda enseñaba
+ * también la última hora de ayer. El segundo cálculo es correcto en los dos
+ * cambios de hora y en cualquier día normal, y no tiene ese efecto.
  */
 function inicioDeHoy(): Date {
   const ahora = new Date();
@@ -120,8 +141,7 @@ function inicioDeHoy(): Date {
   const medianoche = Date.UTC(r.year, r.month - 1, r.day);
 
   const tanteo = medianoche - desfaseDeMadrid(ahora);
-  const afinado = medianoche - desfaseDeMadrid(new Date(tanteo));
-  return new Date(Math.min(tanteo, afinado));
+  return new Date(medianoche - desfaseDeMadrid(new Date(tanteo)));
 }
 
 /* ==========================================================================
@@ -152,8 +172,15 @@ function revisar(entrada: Record<string, unknown>, parcial: boolean): Revision {
     // Llega en ISO desde el navegador, que es quien sabe en qué hora vive
     // Sorela. Aquí solo se comprueba que sea una fecha de verdad.
     const fecha = new Date(recortar(entrada.cuando, 40));
+    const anio = fecha.getUTCFullYear();
     if (Number.isNaN(fecha.getTime())) errores.cuando = 'Falta el día o la hora.';
-    else datos.cuando = Timestamp.fromDate(fecha);
+    else if (anio < 2000 || anio > 2100) {
+      // Un dedazo en el año —«20026» en vez de «2026»— da una fecha que para
+      // JavaScript es perfectamente válida, pero que Firestore rechaza al
+      // escribirla. Sin este corte, el error llegaría como un 500 sin explicar
+      // en vez de como un fallo del formulario junto al campo.
+      errores.cuando = 'Revisa el año de la fecha.';
+    } else datos.cuando = Timestamp.fromDate(fecha);
   }
 
   if (toca('duracionMin')) {
@@ -284,7 +311,9 @@ export async function PATCH(peticion: Request) {
   }
 
   const id = recortar(cuerpo.id, 200);
-  if (!id) return NextResponse.json({ ok: false, motivo: 'datos', errores: {} }, { status: 400 });
+  if (!idValido(id)) {
+    return NextResponse.json({ ok: false, motivo: 'datos', errores: {} }, { status: 400 });
+  }
 
   const revision = revisar(cuerpo, true);
   if (!revision.ok) {
@@ -316,8 +345,8 @@ export async function DELETE(peticion: Request) {
   const guardia = await exigirAdmin();
   if (guardia.error) return guardia.error;
 
-  const id = new URL(peticion.url).searchParams.get('id')?.trim();
-  if (!id) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
+  const id = recortar(new URL(peticion.url).searchParams.get('id'), 200);
+  if (!idValido(id)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
 
   // Borrar algo que ya no está no es un error para Firestore, y aquí tampoco:
   // si se pulsa dos veces seguidas, el resultado es el mismo y no hay susto.

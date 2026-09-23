@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import FichaPersona, { type Persona } from './FichaPersona';
+import { ETIQUETA_TIPO, TIPOS, comoLlego, type Tipo } from '@/lib/origenes';
 import css from './plataforma.module.css';
 
 /**
@@ -14,24 +16,18 @@ import css from './plataforma.module.css';
  * El estado se guarda al pulsar y se pinta antes de que conteste el servidor.
  * Si el servidor dice que no, se deshace: para marcar veinte contactos
  * seguidos, esperar a cada respuesta es insufrible.
+ *
+ * La lista va separada por lo que busca cada persona, no por orden de llegada.
+ * Quien deja su contacto en la portada quiere que le traten, quien lo deja en
+ * formaciones quiere aprender y quien lo deja en la comunidad ya es terapeuta:
+ * son tres conversaciones distintas y llamarlas igual obliga a adivinar cuál
+ * toca. De dónde vino lo decide `lib/origenes.ts`, en el servidor.
  */
 
 const ESTADOS = ['Nuevo', 'Contactado', 'En conversación', 'Cerrado', 'Descartado'] as const;
 type Estado = (typeof ESTADOS)[number];
 
-type Contacto = {
-  id: string;
-  nombre: string;
-  correo: string;
-  whatsapp: string;
-  perfil: string;
-  ciudad: string;
-  nota: string;
-  origen: string;
-  estado: Estado;
-  creado: string | null;
-  veces: number;
-};
+type Contacto = Persona & { estado: Estado; tipo: Tipo };
 
 /* Se reutilizan los distintivos que ya tiene la plataforma en vez de inventar
    cuatro colores nuevos: el sin atender destaca, el descartado se apaga. */
@@ -62,7 +58,12 @@ export default function Contactos() {
   const [lista, setLista] = useState<Contacto[] | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
   const [filtro, setFiltro] = useState<'Todos' | Estado>('Todos');
+  const [tipo, setTipo] = useState<'Todos' | Tipo>('Todos');
   const [busca, setBusca] = useState('');
+  // Qué ficha está abierta. Se guarda el id y no la persona entera para que,
+  // al cambiarle el estado o apuntarle algo, la ficha se repinte con lo nuevo
+  // en vez de quedarse con la copia de cuando se abrió.
+  const [abierta, setAbierta] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     setFallo(null);
@@ -109,6 +110,19 @@ export default function Contactos() {
     }
   }
 
+  /** Apunta algo de una persona. Se recarga para que la ficha lo enseñe ya. */
+  async function apuntar(id: string, texto: string) {
+    const r = await fetch('/api/contactos', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, nota: texto }),
+    });
+    if (!(await r.json().catch(() => ({ ok: false }))).ok) {
+      throw new Error('No se ha podido guardar la nota.');
+    }
+    await cargar();
+  }
+
   /** Descarga la lista tal como se ve, para abrirla en una hoja de cálculo. */
   function exportar() {
     if (!visibles.length) return;
@@ -136,22 +150,25 @@ export default function Contactos() {
     return (lista ?? []).filter(
       (c) =>
         (filtro === 'Todos' || c.estado === filtro) &&
+        (tipo === 'Todos' || c.tipo === tipo) &&
         (!t ||
           c.nombre.toLowerCase().includes(t) ||
           c.correo.toLowerCase().includes(t) ||
           c.ciudad.toLowerCase().includes(t))
     );
-  }, [lista, filtro, busca]);
+  }, [lista, filtro, tipo, busca]);
 
   const resumen = useMemo(() => {
     const l = lista ?? [];
     const ahora = Date.now();
     const de = (dias: number) =>
       l.filter((c) => c.creado && ahora - new Date(c.creado).getTime() < dias * 86400000).length;
+    const porTipo = (t: Tipo) => l.filter((c) => c.tipo === t).length;
     return [
-      { label: 'Contactos sin atender', valor: String(l.filter((c) => c.estado === 'Nuevo').length), nota: 'los que nadie ha tocado' },
-      { label: 'Esta semana', valor: String(de(7)), nota: 'entrados en los últimos 7 días' },
-      { label: 'En total', valor: String(l.length), nota: 'desde que la web capta' },
+      { label: 'Sin atender', valor: String(l.filter((c) => c.estado === 'Nuevo').length), nota: 'nadie les ha escrito todavía' },
+      { label: 'Posibles clientas', valor: String(porTipo('clienta')), nota: 'quieren que les trates' },
+      { label: 'Posibles alumnas', valor: String(porTipo('alumna')), nota: 'quieren formarse' },
+      { label: 'Esta semana', valor: String(de(7)), nota: 'han entrado en los últimos 7 días' },
     ];
   }, [lista]);
 
@@ -183,6 +200,28 @@ export default function Contactos() {
           </button>
         </p>
       )}
+
+      {/* Primero se separa por lo que busca cada uno, y solo después por en
+          qué punto está. Son dos cortes distintos y mezclarlos en una sola
+          fila de botones hace que nadie entienda cuál está aplicado. */}
+      <div className={css.chips}>
+        {(['Todos', ...TIPOS] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTipo(t)}
+            aria-pressed={tipo === t}
+            className={`${css.chip} ${tipo === t ? css.chipActivo : ''}`}
+          >
+            {t === 'Todos' ? 'Todos' : ETIQUETA_TIPO[t]}
+            {t !== 'Todos' && (
+              <span style={{ marginLeft: 7, opacity: 0.6 }}>
+                {(lista ?? []).filter((c) => c.tipo === t).length}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
 
       <div
         style={{
@@ -232,10 +271,17 @@ export default function Contactos() {
               <span
                 style={{ flex: '1 1 220px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 }}
               >
-                <span style={{ fontSize: 15.5, color: 'var(--ink)' }}>
+                {/* El nombre abre la ficha. Es donde va a pulsar cualquiera
+                    que quiera saber más de esa persona, así que mejor que sea
+                    eso a poner un botón «ver» al final de la fila. */}
+                <button
+                  type="button"
+                  onClick={() => setAbierta(c.id)}
+                  className={css.abrirFicha}
+                >
                   {c.nombre}
                   {c.ciudad && ` · ${c.ciudad}`}
-                </span>
+                </button>
                 <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
                   {c.correo}
                   {c.whatsapp && ` · ${c.whatsapp}`}
@@ -247,12 +293,22 @@ export default function Contactos() {
                 )}
               </span>
 
-              <span style={{ flex: '0 1 170px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--ink-3)' }}>
-                  {c.perfil || '—'}
+              <span style={{ flex: '0 1 200px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {/* Qué busca, en la propia fila. Los botones de arriba filtran,
+                    pero con «Todos» puesto —que es como se mira casi siempre—
+                    hacía falta poder distinguirlos de un vistazo. */}
+                <span className={css.tipoPersona} data-tipo={c.tipo}>
+                  {ETIQUETA_TIPO[c.tipo]}
                 </span>
+                {c.perfil && (
+                  <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--ink-3)' }}>
+                    {c.perfil}
+                  </span>
+                )}
                 <span style={{ fontSize: 11.5, fontWeight: 300, color: 'var(--faint)' }}>
-                  {c.origen} · {cuando(c.creado)}
+                  {/* El origen en crudo —«cita-madrid»— no se le enseña a
+                      nadie: se traduce a lo que significa. */}
+                  {comoLlego(c.origen)} · {cuando(c.creado)}
                   {c.veces > 1 && ` · ${c.veces} veces`}
                 </span>
               </span>
@@ -286,6 +342,16 @@ export default function Contactos() {
           ))
         )}
       </section>
+
+      {/* La ficha se busca en la lista por su id en cada repintado: así, al
+          cambiarle el estado o apuntarle algo, se ve al momento y no se queda
+          con la copia de cuando se abrió. */}
+      <FichaPersona
+        persona={(lista ?? []).find((c) => c.id === abierta) ?? null}
+        onCerrar={() => setAbierta(null)}
+        onCambiarEstado={(id, estado) => cambiarEstado(id, estado as Estado)}
+        onApuntar={apuntar}
+      />
     </div>
   );
 }
