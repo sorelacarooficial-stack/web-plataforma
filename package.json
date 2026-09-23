@@ -1,6 +1,9 @@
 {
   "name": "sorela-divine-web",
   "version": "1.0.0",
+  "engines": {
+    "node": "22.x"
+  },
   "private": true,
   "description": "Web pública de Sorela Caro · Técnica Divine",
   "scripts": {
