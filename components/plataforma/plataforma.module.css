@@ -1913,6 +1913,71 @@
   color: var(--on-inverse-2);
 }
 
+/* ==========================================================================
+   Cuentas de acceso
+   ========================================================================== */
+
+/* El enlace para poner la contraseña.
+   Es una dirección larguísima y sin un solo espacio: sin break-all no encuentra
+   dónde partir, se sale de la tarjeta y empuja la columna entera a lo ancho.
+   Va en monoespaciada porque lleva la clave de un solo uso y ahí una ele y un
+   uno tienen que distinguirse. `user-select: all` lo selecciona entero de una
+   pasada, que es lo único que queda el día que el portapapeles del navegador
+   no deje copiar. */
+.enlaceClave {
+  display: block;
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-3);
+  border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  word-break: break-all;
+  user-select: all;
+}
+
+/* Los <select> dentro de .etiquetaCampo heredaban de la etiqueta un espaciado
+   entre letras pensado para un rótulo corto en mayúsculas, y el texto de la
+   opción salía descoyuntado. La regla de arriba solo alcanza a input y
+   textarea; esta la completa sin tocarla. */
+.etiquetaCampo select {
+  letter-spacing: 0;
+}
+
+/* ==========================================================================
+   Apuntar clientes a mano
+   ========================================================================== */
+
+/* El fallo de un campo, pegado debajo de él.
+   Va como clase y no como un objeto de estilos suelto porque lo usan ocho
+   campos del formulario de añadir cliente, y un objeto repetido se
+   desincroniza en cuanto se toca uno. Deshace las versalitas de
+   .etiquetaCampo, que envuelve el campo entero: sin esto el error se leería
+   como otro rótulo en mayúsculas y no como lo que es. */
+.errorCampo {
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--arcilla);
+  text-wrap: pretty;
+}
+
+/* La marca de los contactos que Sorela apuntó a mano, en su línea de la lista.
+   En una lista donde todo lo demás ha entrado solo por un formulario, saber
+   cuáles escribiste tú cambia cómo se leen: de esos ya has hablado con la
+   persona, y no están esperando una primera respuesta. Se distingue con un
+   filete y no con otro color, que en esa fila ya hay tres. */
+.marcaMano {
+  padding-left: 7px;
+  border-left: 2px solid var(--oro-line);
+  color: var(--muted);
+}
+
 /*
  * Este fotograma vive aquí y no en globals.css, aunque se repita en otros
  * módulos, y la razón no es de estilo: los CSS Modules le cambian el nombre a
