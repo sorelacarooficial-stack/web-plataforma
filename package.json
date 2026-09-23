@@ -49,5 +49,8 @@
     "playwright": "^1.57.0",
     "typescript": "^5.7.2",
     "world-atlas": "^2.0.2"
+  },
+  "overrides": {
+    "jose": "^5.10.0"
   }
 }
