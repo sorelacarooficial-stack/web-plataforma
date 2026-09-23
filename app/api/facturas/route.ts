@@ -436,7 +436,7 @@ export async function POST(peticion: Request) {
 
   const resultado = await db.runTransaction(async (t) => {
     const snap = await t.get(refContador);
-    const datos = snap.exists ? (snap.data() ?? {}) : {};
+    const datos: Record<string, unknown> = snap.data() ?? {};
     const serieDatos = (datos[clave] ?? {}) as { emitidas?: number; ultimaFecha?: string };
     const emitidas = typeof serieDatos.emitidas === 'number' ? serieDatos.emitidas : 0;
     const ultimaFecha = typeof serieDatos.ultimaFecha === 'string' ? serieDatos.ultimaFecha : '';

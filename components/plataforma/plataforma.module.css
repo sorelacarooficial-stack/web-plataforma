@@ -1364,3 +1364,294 @@
   font-weight: 300;
   color: var(--ink-2);
 }
+
+/* ==========================================================================
+   Facturación de Sorela
+   ========================================================================== */
+
+/* Aviso de que algo ha salido bien. El de fallo ya existía arriba; este es su
+   pareja y se distingue por el color del filete, no por un icono. */
+.avisoBien {
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--salvia-tint);
+  border-left: 3px solid var(--salvia);
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--ink-2);
+}
+
+/* Texto a la izquierda y botones a la derecha, que caen debajo si no caben. */
+.barraAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Campos de formulario en dos o tres columnas según el ancho que haya. */
+.formRejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+/* Una línea de la factura: el concepto se lleva el ancho que sobre, la
+   cantidad y el precio van estrechos y la cruz de quitar al final. */
+.lineaFactura {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px 120px 40px;
+  gap: 10px;
+  align-items: end;
+}
+
+/* En móvil no caben cuatro columnas sin que el concepto quede en dos letras:
+   cada campo pasa a su propia fila. */
+@media (max-width: 640px) {
+  .lineaFactura {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.quitarLinea {
+  height: 46px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--line-3);
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
+}
+
+.quitarLinea:hover:not(:disabled) {
+  border-color: var(--arcilla-line);
+  color: var(--arcilla);
+}
+
+.quitarLinea:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* El total mientras se escribe la factura. */
+.totalVivo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--oro-tint);
+  border: 1px solid var(--oro-line);
+  border-radius: 10px;
+}
+
+.totalVivoCifra {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 27px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.desglose {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--muted-2);
+}
+
+/* --------------------------------------------------------------------------
+   La hoja imprimible
+
+   En pantalla es una capa por encima de todo, para revisar la factura antes de
+   mandarla a la impresora. Cuelga directamente del <body> —React la saca ahí
+   con un portal— y eso es lo que permite que la regla de @media print apague a
+   todos sus hermanos y deje en el papel solo la factura.
+   -------------------------------------------------------------------------- */
+.hoja {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow-y: auto;
+  padding: clamp(14px, 3vw, 36px);
+  background: rgba(12, 10, 9, 0.6);
+}
+
+.sinImprimir {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  max-width: 780px;
+  margin: 0 auto 14px;
+}
+
+/* Negro sobre blanco a pelo, sin variables de tema: esto es un papel. Heredar
+   el tema oscuro daría una factura en negativo que se lleva medio tóner y que
+   además no es lo que espera quien la recibe. */
+.hojaPapel {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 48px);
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1a1613;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.55;
+}
+
+.hojaCabecera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #1a1613;
+}
+
+.hojaTitulo {
+  display: block;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 28px;
+  line-height: 1.1;
+  color: #1a1613;
+}
+
+.hojaDerecha {
+  text-align: right;
+}
+
+.hojaNumero {
+  margin: 4px 0 2px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 15px;
+  color: #1a1613;
+}
+
+.hojaRotulo {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8a7f6f;
+}
+
+.hojaLineas {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #4a433a;
+}
+
+.hojaPartes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px 0 24px;
+}
+
+.hojaTabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+/* Las cifras a la derecha y el concepto a la izquierda: así las columnas de
+   importes se leen en vertical sin tener que buscar la coma. */
+.hojaTabla th {
+  padding: 8px 6px;
+  border-bottom: 1px solid #1a1613;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: right;
+  color: #6b6154;
+}
+
+.hojaTabla td {
+  padding: 10px 6px;
+  border-bottom: 1px solid #e6e0d6;
+  text-align: right;
+  vertical-align: top;
+}
+
+.hojaTabla th:first-child,
+.hojaTabla td:first-child {
+  text-align: left;
+}
+
+.hojaTotales {
+  width: min(320px, 100%);
+  margin-left: auto;
+  padding-top: 16px;
+}
+
+.hojaTotalFila {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5px 0;
+}
+
+.hojaTotalFinal {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #1a1613;
+  font-size: 17px;
+}
+
+.hojaNota {
+  margin: 26px 0 0;
+  font-size: 12.5px;
+  color: #4a433a;
+}
+
+.hojaPie {
+  margin-top: 26px;
+  padding-top: 14px;
+  border-top: 1px solid #e6e0d6;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: #8a7f6f;
+}
+
+@media print {
+  /* Mientras se imprime, del <body> solo sobrevive la hoja. Los hermanos se
+     apagan con display:none y no con visibility para que no dejen detrás
+     páginas en blanco del alto de la plataforma entera. La clase la pone y la
+     quita el componente al abrir y cerrar la vista. */
+  .imprimiendoFactura > * {
+    display: none !important;
+  }
+
+  .imprimiendoFactura > .hoja {
+    display: block !important;
+    position: static;
+    overflow: visible;
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .hojaPapel {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  /* Los botones de la capa no se imprimen: en papel no sirven para nada. */
+  .sinImprimir {
+    display: none !important;
+  }
+}
