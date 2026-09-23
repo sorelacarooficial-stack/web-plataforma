@@ -30,6 +30,56 @@ export function hayFirebase(): boolean {
   );
 }
 
+/**
+ * La clave privada, limpia de todo lo que le puede pasar por el camino.
+ *
+ * Copiar una clave de un JSON y pegarla en el panel de un servicio sale mal de
+ * tres formas distintas, y las tres dan el mismo error ilegible de firma:
+ *
+ *   1. Se pegan también las comillas que la envuelven en el JSON.
+ *   2. Los saltos de línea llegan escritos como la pareja de caracteres \n en
+ *      vez de como saltos de verdad.
+ *   3. Se cuela un salto o un espacio al principio o al final.
+ *
+ * Se deshacen las tres. Una clave que ya venía bien pasa por aquí sin cambiar.
+ */
+function clavePrivada(): string {
+  let v = (process.env.FIREBASE_CLAVE_PRIVADA || '').trim();
+  if (v.length > 1 && ((v[0] === '"' && v.endsWith('"')) || (v[0] === "'" && v.endsWith("'")))) {
+    v = v.slice(1, -1);
+  }
+  return v
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .trim();
+}
+
+/**
+ * Qué tal está la configuración, sin decir nunca qué vale cada cosa.
+ *
+ * Existe porque cuando el acceso falla en el servidor, quien lo sufre solo ve
+ * «no he podido abrir la sesión», y desde fuera no hay manera de saber si
+ * falta una variable, si la clave está mal pegada o si es otra cosa. Esto lo
+ * responde sin enseñar un solo carácter de ningún secreto.
+ */
+export function diagnostico() {
+  const clave = clavePrivada();
+  return {
+    proyecto: process.env.FIREBASE_PROYECTO_ID || null,
+    tieneProyecto: Boolean(process.env.FIREBASE_PROYECTO_ID),
+    tieneCorreoDeServicio: Boolean(process.env.FIREBASE_CLIENTE_CORREO),
+    tieneClave: clave.length > 0,
+    // Una clave sana empieza y acaba por su marca y tiene varios saltos de
+    // línea. Si falla esto, está mal pegada, y eso es casi siempre el motivo.
+    claveConForma:
+      clave.startsWith('-----BEGIN PRIVATE KEY-----') &&
+      clave.trimEnd().endsWith('-----END PRIVATE KEY-----') &&
+      clave.split('\n').length > 3,
+    hayAdministradoras: (process.env.ADMIN_CORREOS || '').trim().length > 0,
+  };
+}
+
 function app(): App {
   if (cacheApp) return cacheApp;
 
@@ -45,12 +95,8 @@ function app(): App {
   cacheApp = initializeApp({
     credential: cert({
       projectId: process.env.FIREBASE_PROYECTO_ID,
-      clientEmail: process.env.FIREBASE_CLIENTE_CORREO,
-      // Al pegar la clave en Vercel, los saltos de línea se quedan escritos
-      // como la pareja de caracteres \n en vez de como saltos de verdad, y
-      // entonces la firma no valida y el error que da no lo dice. Esto lo
-      // deshace, y aguanta igual si la clave viene con saltos reales.
-      privateKey: (process.env.FIREBASE_CLAVE_PRIVADA || '').replace(/\\n/g, '\n'),
+      clientEmail: (process.env.FIREBASE_CLIENTE_CORREO || '').trim(),
+      privateKey: clavePrivada(),
     }),
     projectId: process.env.FIREBASE_PROYECTO_ID,
   });

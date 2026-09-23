@@ -66,7 +66,7 @@ export default function AvisarCiudad() {
   if (estado === 'hecho') {
     return (
       <p className={css.confirmacion} role="status">
-        Apuntado. Te escribo en cuanto abra fecha por tu zona.{' '}
+        Gracias, te apunto. Te escribo en cuanto abra fecha por tu zona.{' '}
         <button
           type="button"
           className={css.deshacer}

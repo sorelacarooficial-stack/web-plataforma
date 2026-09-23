@@ -85,11 +85,13 @@ export default function ListaEspera() {
   if (estado === 'hecho') {
     return (
       <div className={css.exito} role="status">
-        <h2 className={css.exitoTitulo}>Estás dentro.</h2>
+        {/* «Estás dentro» sonaba a haber entrado en algún sitio, y lo que ha
+            hecho es guardar su sitio en una lista que todavía no ha abierto. */}
+        <h2 className={css.exitoTitulo}>Gracias. Tu sitio está guardado.</h2>
         <p className={css.exitoTexto}>
           {conCorreo
-            ? 'Te acabo de mandar un correo. Te aviso yo en cuanto abra, y entras con el precio fundador. Nada de correos cada semana.'
-            : 'Tengo tu sitio guardado. Te aviso yo en cuanto abra, y entras con el precio fundador. Nada de correos cada semana.'}
+            ? 'Te acabo de mandar un correo para confirmártelo. Te aviso yo en cuanto abra, y entras con el precio fundador. Nada de correos cada semana.'
+            : 'Te aviso yo en cuanto abra, y entras con el precio fundador. Nada de correos cada semana.'}
         </p>
         <button
           type="button"
