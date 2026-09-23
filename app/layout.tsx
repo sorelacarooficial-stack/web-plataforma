@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
+import DatosEstructurados from '@/components/DatosEstructurados';
 import './globals.css';
 
 /**
@@ -107,17 +108,27 @@ export const metadata: Metadata = {
     // El título, la descripción y la imagen los hereda de openGraph.
     card: 'summary_large_image',
   },
+  /**
+   * Solo los dos permisos que hacen falta: foto grande y texto entero en el
+   * resultado, en vez del recorte corto que se usa por defecto.
+   *
+   * Aquí NO se escribe `index: true, follow: true`. Indexar y seguir es lo que
+   * pasa cuando no se dice nada, así que no añaden nada a las siete páginas
+   * públicas, y en la de «no encontrado» hacían daño: esa página lleva su
+   * propio `noindex`, puesto por Next, y le quedaba encima un `index, follow`
+   * heredado de aquí diciendo lo contrario. Peor aún con el `googleBot`
+   * aparte: una orden dirigida a un buscador concreto manda sobre la general,
+   * así que para Google la que ganaba era la de indexar.
+   *
+   * Van en la clave general y no dentro de `googleBot` para que los demás
+   * buscadores también las lean; Google entiende las dos igual.
+   *
+   * Las páginas privadas (/entrar, /plataforma) y las legales declaran su
+   * propio `robots`, que sustituye a este entero, no lo completa.
+   */
   robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      // Para que en los resultados pueda salir la foto grande y el texto
-      // entero, en vez del recorte corto que Google usa por defecto.
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
+    'max-image-preview': 'large',
+    'max-snippet': -1,
   },
   /**
    * Los iconos NO se declaran en este objeto. Next los toma de app/icon.png y
@@ -163,7 +174,17 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: TEMA_INICIAL }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {/*
+          Quién está detrás y qué es este sitio, en el formato que lee Google.
+          Va en el layout raíz y no en cada página porque son los datos de la
+          casa, no los de una habitación: repetirlos en cada página le daría a
+          Google el mismo negocio descrito siete veces. Lo que sí es de cada
+          página —las preguntas, las formaciones— se declara allí.
+        */}
+        <DatosEstructurados negocio="Organization" web />
+        {children}
+      </body>
     </html>
   );
 }

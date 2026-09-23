@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import AvisarCiudad from '@/components/AvisarCiudad';
 import BotonAsistente from '@/components/BotonAsistente';
 import BotonCaptacion from '@/components/BotonCaptacion';
+import DatosEstructurados from '@/components/DatosEstructurados';
 import css from './formaciones.module.css';
 
 /**
@@ -64,9 +65,38 @@ const ETAPAS = [
   },
 ];
 
+/**
+ * Las dos etapas, dichas en el formato que lee un buscador.
+ *
+ * El nombre y la descripción salen de ETAPAS, que es lo que se ve en la
+ * página: no se escriben aparte, porque un dato estructurado que no coincide
+ * con lo que hay a la vista es peor que no tener ninguno.
+ *
+ * Sin fechas, sin precio y sin convocatoria: hoy no hay ninguna cerrada y la
+ * propia página lo dice. El único requisito que se declara es el que la página
+ * afirma —la online es previa a la presencial— y no se declara ningún
+ * certificado, porque aquí no se promete ninguno.
+ */
+const CURSOS = ETAPAS.map((e, i) => ({
+  nombre: `${e.titulo} de la Técnica Divine`,
+  descripcion: e.texto,
+  ruta: '/formaciones',
+  // Las dos viven en esta misma página, así que hace falta algo que las
+  // distinga o quedarían con el mismo identificador.
+  ancla: i === 0 ? 'online' : 'presencial',
+  ...(i === 1 ? { requisitos: 'Haber completado antes la formación online.' } : {}),
+}));
+
 export default function Formaciones() {
   return (
     <main className="pagina">
+      <DatosEstructurados
+        cursos={CURSOS}
+        migas={[
+          { nombre: 'Inicio', ruta: '/' },
+          { nombre: 'Formaciones', ruta: '/formaciones' },
+        ]}
+      />
       <section className={css.portada}>
         <div className="wrap">
           <h1 className="titulo-xl" style={{ marginBottom: 24 }}>

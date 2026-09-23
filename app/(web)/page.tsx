@@ -8,6 +8,7 @@ import Contador from '@/components/Contador';
 import LlamadaDivine from '@/components/LlamadaDivine';
 import BotonAsistente from '@/components/BotonAsistente';
 import BotonCaptacion from '@/components/BotonCaptacion';
+import DatosEstructurados from '@/components/DatosEstructurados';
 import {
   FAQS,
   INSTAGRAM,
@@ -295,6 +296,14 @@ export default function Home() {
         <div className="wrap wrap-1040">
           <h2 className={`titulo-lg max-640 ${css.tituloBloque}`}>Lo que más me preguntan.</h2>
           <Acordeon preguntas={FAQS} />
+          {/*
+            Las mismas preguntas, dichas en el formato que lee un buscador. Se
+            le pasa la MISMA lista que al acordeón, no una copia: si mañana
+            cambia una respuesta, cambia en los dos sitios a la vez. Y va aquí
+            y no en otra página porque este bloque solo se puede declarar donde
+            las preguntas de verdad se ven.
+          */}
+          <DatosEstructurados preguntas={FAQS} />
         </div>
       </section>
 
