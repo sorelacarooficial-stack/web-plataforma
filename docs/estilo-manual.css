@@ -1,0 +1,476 @@
+/*
+ * La hoja de estilo de los manuales de Sorela, en PDF.
+ *
+ * Vive aparte del proyecto porque no se sirve a nadie: la lee Chromium al
+ * imprimir, una vez, cuando se generan los documentos. Los colores y las
+ * tipografías son los de la web para que el manual no parezca de otra casa.
+ *
+ * Las fuentes se cargan del propio repositorio con una ruta de archivo: dentro
+ * de un PDF no hay red, así que una fuente de Google se quedaría sin cargar y
+ * saldría todo en Times New Roman.
+ */
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('../app/fuentes/cormorant-garamond-normal-latin.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('../app/fuentes/cormorant-garamond-italic-latin.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Jost';
+  src: url('../app/fuentes/jost-normal-latin.woff2') format('woff2');
+  font-weight: 300 600;
+  font-style: normal;
+}
+
+:root {
+  --bg: #fbf9f6;
+  --tinta: #141210;
+  --tinta-2: #3e3831;
+  --tinta-3: #4f4840;
+  --suave: #6c645a;
+  --tenue: #a79e92;
+  --oro: #8a6a32;
+  --oro-claro: #a98551;
+  --oro-tinte: #f5efe2;
+  --oro-linea: rgba(138, 106, 50, 0.35);
+  --linea: rgba(20, 18, 16, 0.1);
+  --linea-2: rgba(20, 18, 16, 0.16);
+  --superficie: #f5f2ec;
+}
+
+@page {
+  size: A4;
+  margin: 17mm 16mm 19mm;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--tinta-2);
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: 10.6pt;
+  line-height: 1.62;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ==========================================================================
+   Portada
+   ========================================================================== */
+
+.portada {
+  /* Alto de la caja imprimible de una A4 con los márgenes de arriba. */
+  height: 261mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  page-break-after: always;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.marca img {
+  width: 42px;
+  height: 42px;
+}
+
+.marcaNombre {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15pt;
+  letter-spacing: 0.06em;
+  color: var(--tinta);
+  line-height: 1;
+}
+
+.marcaPie {
+  font-size: 6.6pt;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--oro);
+  margin-top: 3px;
+}
+
+.portadaCentro {
+  padding-bottom: 26mm;
+}
+
+.sello {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 15px;
+  border: 1px solid var(--oro-linea);
+  border-radius: 999px;
+  font-size: 7pt;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--oro);
+  margin-bottom: 20px;
+}
+
+.sello::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--oro);
+}
+
+h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 38pt;
+  /* 1.04 apretaba tanto las dos líneas que la itálica de la segunda se comía
+     su propio trazo superior. Cormorant necesita aire. */
+  line-height: 1.14;
+  color: var(--tinta);
+  margin: 0 0 18px;
+  max-width: 15ch;
+}
+
+h1 em {
+  font-style: italic;
+  color: var(--oro);
+}
+
+.entradilla {
+  font-size: 12pt;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--tinta-3);
+  max-width: 46ch;
+  margin: 0;
+}
+
+.portadaPie {
+  border-top: 1px solid var(--linea);
+  padding-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 7.4pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tenue);
+}
+
+/* ==========================================================================
+   Índice
+   ========================================================================== */
+
+.indice {
+  margin: 0 0 4mm;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+
+.indice li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--linea);
+  font-size: 10pt;
+  color: var(--tinta-3);
+}
+
+.indice li::before {
+  counter-increment: paso;
+  content: counter(paso, decimal-leading-zero);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11pt;
+  color: var(--oro);
+  min-width: 22px;
+}
+
+/* ==========================================================================
+   Secciones
+   ========================================================================== */
+
+section {
+  /* Un apartado no se parte por la mitad si puede evitarse. */
+  break-inside: avoid;
+  margin-bottom: 9mm;
+}
+
+.rotulo {
+  font-size: 7pt;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--oro);
+  margin: 0 0 5px;
+}
+
+h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 21pt;
+  line-height: 1.12;
+  color: var(--tinta);
+  margin: 0 0 10px;
+}
+
+h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 14.5pt;
+  line-height: 1.2;
+  color: var(--tinta);
+  margin: 0 0 7px;
+}
+
+p {
+  margin: 0 0 11px;
+  max-width: 68ch;
+}
+
+strong {
+  font-weight: 500;
+  color: var(--tinta);
+}
+
+em {
+  font-style: italic;
+}
+
+a {
+  color: var(--oro);
+  text-decoration: none;
+  border-bottom: 1px solid var(--oro-linea);
+}
+
+/* Lo que se ve escrito en la pantalla: se cita con su forma. */
+.pantalla {
+  font-weight: 400;
+  color: var(--tinta);
+  background: var(--superficie);
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Los pasos
+   ========================================================================== */
+
+.pasos {
+  counter-reset: n;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pasos > li {
+  position: relative;
+  padding: 0 0 13px 40px;
+  margin-bottom: 13px;
+  border-bottom: 1px solid var(--linea);
+  break-inside: avoid;
+}
+
+.pasos > li:last-child {
+  border-bottom: 0;
+}
+
+.pasos > li::before {
+  counter-increment: n;
+  content: counter(n);
+  position: absolute;
+  left: 0;
+  top: -2px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--oro-linea);
+  border-radius: 999px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12pt;
+  /* Cormorant trae cifras elzevirianas —las que suben y bajan de la línea—, y
+     a este tamaño el 1 se confunde con una I mayúscula. En un número de paso
+     eso no puede pasar. */
+  font-variant-numeric: lining-nums;
+  color: var(--oro);
+}
+
+.pasos h3 {
+  margin-bottom: 5px;
+}
+
+.pasos p:last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   Avisos
+   ========================================================================== */
+
+.aviso {
+  border: 1px solid var(--oro-linea);
+  background: var(--oro-tinte);
+  border-radius: 9px;
+  padding: 14px 17px;
+  margin: 0 0 13px;
+  break-inside: avoid;
+}
+
+.aviso .rotulo {
+  margin-bottom: 4px;
+}
+
+.aviso p:last-child {
+  margin-bottom: 0;
+}
+
+.nota {
+  border-left: 2px solid var(--linea-2);
+  padding: 2px 0 2px 14px;
+  margin: 0 0 13px;
+  color: var(--suave);
+  font-size: 10pt;
+  break-inside: avoid;
+}
+
+.nota p:last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   Tablas
+   ========================================================================== */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 13px;
+  font-size: 9.6pt;
+  break-inside: avoid;
+}
+
+th {
+  text-align: left;
+  font-weight: 400;
+  font-size: 7pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--oro);
+  padding: 0 10px 7px 0;
+  border-bottom: 1px solid var(--linea-2);
+  vertical-align: bottom;
+}
+
+td {
+  padding: 9px 10px 9px 0;
+  border-bottom: 1px solid var(--linea);
+  vertical-align: top;
+  color: var(--tinta-3);
+}
+
+td:first-child {
+  color: var(--tinta);
+  font-weight: 400;
+  white-space: nowrap;
+  padding-right: 18px;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+/* ==========================================================================
+   El correo de ejemplo
+   ========================================================================== */
+
+.correo {
+  border: 1px solid var(--linea-2);
+  border-radius: 9px;
+  overflow: hidden;
+  margin: 0 0 13px;
+  background: #fff;
+  break-inside: avoid;
+}
+
+.correoCabecera {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--linea);
+  background: var(--superficie);
+  font-size: 8.6pt;
+  color: var(--suave);
+}
+
+.correoCabecera b {
+  font-weight: 400;
+  color: var(--tinta);
+}
+
+.correoCuerpo {
+  padding: 16px;
+  font-size: 9.8pt;
+  line-height: 1.6;
+  color: var(--tinta-3);
+}
+
+.correoCuerpo p {
+  margin: 0 0 10px;
+}
+
+.correoBoton {
+  display: inline-block;
+  padding: 9px 20px;
+  background: var(--tinta);
+  color: var(--bg);
+  border-radius: 999px;
+  font-size: 7.6pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 4px 0 12px;
+}
+
+.enlaceLargo {
+  display: block;
+  padding: 10px 12px;
+  background: var(--superficie);
+  border: 1px solid var(--linea-2);
+  border-radius: 7px;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 7.6pt;
+  line-height: 1.55;
+  color: var(--tinta-2);
+  word-break: break-all;
+  margin: 0 0 11px;
+}
+
+/* ==========================================================================
+   Cierre
+   ========================================================================== */
+
+.cierre {
+  border-top: 1px solid var(--oro-linea);
+  padding-top: 13px;
+  margin-top: 4mm;
+  break-inside: avoid;
+}
+
+.cierre p {
+  color: var(--suave);
+  font-size: 9.6pt;
+}
