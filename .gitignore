@@ -35,3 +35,10 @@ docs/capturas/clientes-embudo.png
 docs/capturas/cuentas-enlace.png
 docs/capturas/cuentas-formulario.png
 docs/capturas/cuentas-lista.png
+
+# Los manuales con la contraseña escrita dentro. Se generan con
+# `CLAVE_SORELA='...' node docs/generar.mjs` y NUNCA se suben: este repositorio
+# es público, y ahí la contraseña de la administradora sería descargable por
+# cualquiera junto a su correo. El manual que sí se sube lleva el hueco en
+# blanco para escribirla a mano.
+docs/privado/
