@@ -47,13 +47,9 @@ export default function Home() {
 
             <h1 className={css.heroTitulo}>Juventud linfática y ganglionar en tus manos.</h1>
 
-            {/* La entradilla describe el trabajo, no promete efectos. «Sin
-                aparatología» no se usa como ventaja a propósito: encuadraría la
-                técnica como alternativa a un tratamiento médico. */}
-            <p className={css.heroLede}>
-              La Técnica Divine es drenaje linfático manual llevado más lejos. Aprendes a leer el
-              cuerpo que tienes delante y a decidir qué necesita antes de ponerle las manos encima.
-            </p>
+            {/* Sin entradilla a propósito. El titular y el botón bastan para
+                decidir, y lo que es la Técnica Divine se explica entero en la
+                sección de abajo, que es donde alguien lo va a leer de verdad. */}
 
             {/* Dos salidas y una jerarquía clara: la información abre una ventana
                 aquí mismo, la cita abre el asistente. Nadie sale de la página. */}
