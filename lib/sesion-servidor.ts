@@ -40,6 +40,28 @@ export type Sesion = {
 };
 
 /**
+ * Si a esta persona la dio de alta Sorela desde la plataforma.
+ *
+ * Se mira `altaPor`, que solo escribe el alta de `app/api/usuarios/route.ts`.
+ * No vale con que exista la ficha: `asegurarRol` también la escribe, y si
+ * bastara con eso, al segundo intento entraría cualquiera que hubiera
+ * conseguido colarse una vez.
+ *
+ * Si Firestore no contesta, se devuelve false y la persona no entra. Es lo
+ * prudente: ante la duda, la puerta se queda cerrada, y Sorela sigue pudiendo
+ * entrar porque a ella la deja pasar la regla de antes.
+ */
+async function tieneAlta(uid: string): Promise<boolean> {
+  try {
+    const ficha = await baseDeDatos().collection(COLECCIONES.usuarios).doc(uid).get();
+    return ficha.exists && Boolean(ficha.data()?.altaPor);
+  } catch (e) {
+    console.error('[sesion] No se ha podido comprobar el alta:', e);
+    return false;
+  }
+}
+
+/**
  * Cambia el token del navegador por una cookie de sesión, y de paso asegura
  * que la persona tiene un rol asignado.
  */
@@ -60,10 +82,24 @@ export async function crearSesion(tokenId: string): Promise<Sesion> {
    * conseguir ese token no requiere pasar por esta web: la clave del navegador
    * es pública y con ella se crea una cuenta llamando a Firebase directamente.
    *
-   * Mientras la plataforma esté cerrada, aquí solo entra quien esté en
-   * ADMIN_CORREOS. Ver PLATAFORMA_ABIERTA en lib/roles.ts.
+   * Por eso la puerta NO puede ser «tiene cuenta en Firebase»: eso se lo hace
+   * cualquiera. Tiene que ser «Sorela la ha dado de alta».
+   *
+   * Y esa diferencia se puede comprobar, porque al dar de alta desde la
+   * plataforma se escribe `altaPor` en la ficha (ver app/api/usuarios/route.ts)
+   * y quien llega por la puerta de atrás no tiene ninguna ficha: se escribiría
+   * en `asegurarRol`, que es la línea siguiente y a la que no llega.
+   *
+   * Tres casos, en este orden:
+   *   · Sorela (ADMIN_CORREOS): entra siempre, incluso antes de existir su
+   *     ficha. Si no, no habría por dónde empezar.
+   *   · Dada de alta desde la plataforma: entra.
+   *   · Cualquier otro: no entra, tenga el token que tenga.
+   *
+   * PLATAFORMA_ABIERTA sigue existiendo para el día en que el registro se abra
+   * de verdad; mientras sea false, manda el alta.
    */
-  if (!PLATAFORMA_ABIERTA && !correoEsAdmin(datos.email ?? null)) {
+  if (!PLATAFORMA_ABIERTA && !correoEsAdmin(datos.email ?? null) && !(await tieneAlta(datos.uid))) {
     throw new PlataformaCerrada();
   }
 

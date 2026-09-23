@@ -26,6 +26,7 @@ import { Comunidad, Contenido, FormacionesAdmin, PanelSorela } from './Vistas';
 import Contactos from './Contactos';
 import Proximamente from './Proximamente';
 import AgendaSorela from './AgendaSorela';
+import Cuentas from './Cuentas';
 import FacturacionSorela from './FacturacionSorela';
 import css from './plataforma.module.css';
 
@@ -245,6 +246,7 @@ export default function Plataforma({ sesion }: { sesion: Sesion }) {
           {esAdmin && actual === 'contenido' && <Contenido />}
           {esAdmin && actual === 'agenda' && <AgendaSorela />}
           {esAdmin && actual === 'facturacion' && <FacturacionSorela />}
+          {esAdmin && actual === 'cuentas' && <Cuentas />}
           {esAdmin && actual === 'comunidad' && <Comunidad rol={rol} ir={ir} iniciales={iniciales} />}
         </main>
       </div>

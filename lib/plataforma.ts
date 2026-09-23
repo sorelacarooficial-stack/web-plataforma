@@ -30,7 +30,8 @@ export type Vista =
   | 'pagos'
   | 'leads'
   | 'formaciones'
-  | 'contenido';
+  | 'contenido'
+  | 'cuentas';
 
 /**
  * El menú de cada rol.
@@ -55,6 +56,9 @@ export function navDe(rol: Rol): { id: Vista; label: string }[] {
       { id: 'formaciones', label: 'Formaciones' },
       { id: 'contenido', label: 'Subir contenido' },
       { id: 'comunidad', label: 'Comunidad' },
+      // Al final del menú a propósito: dar de alta a alguien se hace de vez en
+      // cuando, no todos los días como llamar a una clienta o cobrar.
+      { id: 'cuentas', label: 'Cuentas' },
     ];
   return [{ id: 'inicio', label: 'Inicio' }];
 }
@@ -81,6 +85,7 @@ export function tituloDe(vista: Vista, rol: Rol) {
     facturacion: admin ? 'Ingresos y facturas' : 'Facturación',
     perfil: 'Tu ficha en el buscador',
     agenda: 'Tu agenda',
+    cuentas: 'Quién puede entrar',
     suscripcion: admin ? 'Cobros' : 'Comunidad de Terapeutas Divine',
   };
   return titulos[vista];
@@ -101,6 +106,7 @@ export function seccionDe(vista: Vista, rol: Rol) {
     pagos: 'Tu formación',
     contenido: 'Aula · autoría',
     agenda: 'Lo que tienes por delante',
+    cuentas: 'Administración',
     suscripcion: 'Comunidad en beta',
   };
   return secciones[vista];

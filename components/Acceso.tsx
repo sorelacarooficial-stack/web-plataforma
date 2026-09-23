@@ -100,7 +100,7 @@ function Formulario() {
         cuerpo.motivo === 'sin-configurar'
           ? 'El servidor todavía no tiene Firebase configurado.'
           : cuerpo.motivo === 'cerrada'
-            ? 'Tu cuenta es correcta, pero la plataforma todavía no está abierta. Te aviso en cuanto lo esté.'
+            ? 'Tu contraseña es correcta, pero esta cuenta todavía no tiene acceso. Escríbeme y te lo doy.'
             : cuerpo.motivo === 'servidor'
               ? 'Tu contraseña es correcta, pero el servidor no ha podido abrir la sesión. Es un problema de configuración, no tuyo.'
               : 'No he podido abrir la sesión. Vuelve a intentarlo.'
