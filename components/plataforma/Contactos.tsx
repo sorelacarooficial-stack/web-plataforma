@@ -338,6 +338,15 @@ function PanelCliente({
                 ? 'Lo que corrijas aquí se queda en su ficha. Lo que tengas apuntado de sus conversaciones no se toca.'
                 : 'Para quien conozcas fuera de la web: en una exposición, por teléfono o porque te lo han presentado. Entra en la misma lista que los demás.'}
             </p>
+            {/* Se dice antes de escribir nada, no después de pulsar: esto manda
+                un correo a una persona de verdad y no se puede deshacer. */}
+            {!editando && (
+              <p className={css.apunte}>
+                Al guardarlo le llega por correo la información de la Técnica Divine con el PDF,
+                el mismo que reciben quienes la piden desde la web. Si lo apuntas solo con el
+                móvil, no se le manda nada.
+              </p>
+            )}
           </header>
 
           {fallo && (
@@ -486,7 +495,11 @@ function PanelCliente({
 
           <div className={css.acciones}>
             <button type="submit" className={css.btn} disabled={guardando}>
-              {guardando ? 'Guardando…' : editando ? 'Guardar los cambios' : 'Apuntar en la lista'}
+              {guardando
+                ? 'Guardando…'
+                : editando
+                  ? 'Guardar los cambios'
+                  : 'Apuntar y mandarle la información'}
             </button>
             <button type="button" className={css.btnLinea} onClick={intentarCerrar}>
               Cancelar
@@ -616,8 +629,21 @@ export default function Contactos() {
       }
 
       setModo(null);
+      /*
+       * Al apuntar a alguien nuevo se le manda la información de la Técnica
+       * Divine, con su PDF: el mismo correo que recibe quien la pide desde la
+       * portada. El servidor contesta si salió, y aquí se dice, porque son dos
+       * situaciones muy distintas para Sorela: si salió, esa persona ya tiene
+       * la información y ella puede llamarla sabiéndolo; si no salió —porque
+       * lo apuntó solo con el móvil, o porque Google falló—, tiene que
+       * escribirle ella o la persona se queda esperando algo que no llega.
+       */
       setAviso(
-        corrigiendo ? 'Ficha corregida.' : 'Apuntado. Ya está en la lista, sin atender todavía.'
+        corrigiendo
+          ? 'Ficha corregida.'
+          : c.correo
+            ? 'Apuntado, y le acaba de salir el correo con la información y el PDF.'
+            : 'Apuntado. El correo con la información NO ha salido: escríbele tú.'
       );
       await cargar();
       return { ok: true };
