@@ -474,3 +474,81 @@ tr:last-child td {
   color: var(--suave);
   font-size: 9.6pt;
 }
+
+/* ==========================================================================
+   Las capturas
+   ==========================================================================
+   Salen de la plataforma de verdad, no son dibujos: las hace docs/capturas.mjs
+   abriéndola con una sesión y fotografiando cada trozo. Los nombres que se ven
+   dentro son de mentira y cada pie lo dice, porque una pantalla de ejemplo que
+   parezca real es justo lo que esta plataforma evita. */
+
+figure {
+  margin: 0 0 14px;
+  break-inside: avoid;
+}
+
+figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--linea-2);
+  border-radius: 9px;
+}
+
+/* Una captura estrecha —el menú, un formulario— no se estira a todo el ancho:
+   ampliada pierde nitidez y engaña sobre su tamaño real en pantalla. */
+figure.media img {
+  max-width: 62%;
+}
+
+figure.estrecha img {
+  max-width: 40%;
+}
+
+figcaption {
+  margin-top: 6px;
+  font-size: 8.4pt;
+  line-height: 1.5;
+  color: var(--tenue);
+  max-width: 68ch;
+}
+
+figcaption b {
+  font-weight: 400;
+  color: var(--suave);
+}
+
+/* El hueco para escribir a mano lo que no se imprime. */
+.rellenar {
+  border: 1px dashed var(--oro-linea);
+  border-radius: 9px;
+  padding: 15px 18px;
+  margin: 0 0 13px;
+  break-inside: avoid;
+}
+
+.rellenar dl {
+  margin: 0;
+}
+
+.rellenar dt {
+  font-size: 7pt;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--oro);
+  margin-bottom: 3px;
+}
+
+.rellenar dd {
+  margin: 0 0 13px;
+  font-size: 11pt;
+  color: var(--tinta);
+  border-bottom: 1px solid var(--linea-2);
+  padding-bottom: 6px;
+  min-height: 20px;
+}
+
+.rellenar dd:last-child {
+  margin-bottom: 0;
+}
