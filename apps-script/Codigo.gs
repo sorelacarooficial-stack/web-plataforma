@@ -196,7 +196,17 @@ function doPost(e) {
     //   · Ya se le mandó hoy (alguien que rellena el formulario tres veces).
     //   · Se ha agotado la cuota diaria de Gmail.
     var repetido = yaSeLeEscribioHoy(correo);
-    var sinCuota = MailApp.getRemainingDailyQuota() < 5;
+    var sinCuota = false;
+    try {
+      // Cinco de margen: cada contacto gasta dos correos, uno para la persona
+      // y otro para el aviso de Sorela.
+      sinCuota = MailApp.getRemainingDailyQuota() < 5;
+    } catch (falloCuota) {
+      // Si Google no contesta cuántos quedan, se intenta mandar igual. Dar por
+      // agotada la cuota sin saberlo dejaría sin correo a alguien que sí podía
+      // recibirlo; si de verdad no queda, el envío fallará y quedará anotado.
+      console.warn('No se pudo consultar la cuota de correo: ' + falloCuota);
+    }
 
     /* ---------- 5. Guardar la fila ---------- */
     // Primero la fila, después el correo, y la fila se escribe con el estado
@@ -249,9 +259,27 @@ function doPost(e) {
       }
     }
 
-    // Si era repetido se contesta ok igualmente: para la persona todo ha ido
-    // bien, y de hecho su correo de esta mañana sigue en su buzón.
-    return responder({ ok: true, correoEnviado: correoEnviado || repetido });
+    // QUÉ SIGNIFICA ESTE «ok», QUE NO ES OBVIO
+    //
+    // La web no lee `correoEnviado`: mira solo el `ok` (app/api/captar/route.ts,
+    // función llamarAppsScript) y con él decide si le enseña a la persona «te
+    // acabo de mandar un correo» o «te escribo yo». Así que aquí `ok` no puede
+    // significar «he terminado sin reventar»: tiene que significar «su correo
+    // ha salido». Si se contestara que sí cuando el envío ha fallado o cuando
+    // se ha agotado la cuota, la web le diría que mire en spam un correo que
+    // no existe, y esperaría en vez de escribir.
+    //
+    // Si era repetido sí se contesta que sí: su correo salió hace un rato y
+    // sigue en su buzón.
+    //
+    // El precio de esto: la web, además, cuenta este «ok» como una de las dos
+    // maneras de dar el contacto por guardado. Si el correo falla Y Firestore
+    // está caído a la vez, la web dará el envío por fallido y enseñará la
+    // salida por WhatsApp, aunque la fila esté escrita en la hoja. Se pierde un
+    // mensaje de confirmación, no el contacto: la fila está y Sorela ya tiene
+    // su aviso. Es mejor eso que prometer un correo que no ha salido.
+    var todoBien = correoEnviado || repetido;
+    return responder({ ok: todoBien, correoEnviado: todoBien, guardado: Boolean(fila) });
   } catch (fallo) {
     // Red de seguridad final. Aquí no se debería llegar nunca, pero si se
     // llega, la web recibe un JSON y no una página de error de Google.
@@ -293,6 +321,15 @@ function doGet() {
     hayHoja = false;
   }
 
+  var quedan = null;
+  try {
+    quedan = MailApp.getRemainingDailyQuota();
+  } catch (falloCuota) {
+    // Si esto falla es que el script no tiene todavía los permisos de correo:
+    // hay que ejecutar «probar» una vez a mano y aceptarlos.
+    quedan = 'no se sabe: falta ejecutar «probar» una vez y dar permisos';
+  }
+
   return responder({
     ok: true,
     // «Listo» es poder mandar un correo con su PDF. La hoja es el respaldo y
@@ -301,7 +338,7 @@ function doGet() {
     faltan: faltan,
     encuentraElPdf: hayPdf,
     encuentraLaHoja: hayHoja,
-    correosQueQuedanHoy: MailApp.getRemainingDailyQuota(),
+    correosQueQuedanHoy: quedan,
   });
 }
 
@@ -382,6 +419,14 @@ function comoLlego(origen) {
     asistente: 'Conversación con el asistente de la web',
     'avisar-ciudad': 'Pidió aviso cuando haya fecha en su ciudad',
     terapeutas: 'Buscador de terapeutas',
+    // Los que nacen de una conversación con el asistente de la web. Van aquí
+    // porque ahí ya ha preguntado algo concreto, y saber qué preguntó vale al
+    // llamarla. Sin estas cuatro líneas, «cita-asistente» caía en la regla de
+    // abajo y a Sorela le llegaba «Pidió cita en Asistente».
+    'cita-asistente': 'Preguntó al asistente por una cita',
+    'formacion-asistente': 'Preguntó al asistente por las fechas de formación',
+    'formacion-precio': 'Preguntó al asistente por el precio de la formación',
+    'comunidad-asistente': 'Preguntó al asistente por la comunidad',
   };
   if (tabla[o]) return tabla[o];
 
@@ -519,29 +564,39 @@ var TEXTOS = {
   otro: {
     saludo: 'Gracias por escribirme.',
     parrafos: [
-      'Te contesto yo en menos de 48 horas. Mientras tanto te adjunto la información de la Técnica Divine.',
+      {
+        con: 'Te contesto yo en menos de 48 horas. Mientras tanto te adjunto la información de la Técnica Divine.',
+        sin: 'Te contesto yo en menos de 48 horas. Quería adjuntarte la información de la Técnica Divine y se me ha quedado fuera del correo: respóndeme y te la mando.',
+      },
       'Para no hacerte perder el tiempo: ¿buscas una sesión para ti, quieres formarte en la técnica, o es otra cosa? Con saber eso te mando lo que te sirve.',
     ],
   },
 };
 
 /**
- * Los párrafos que le tocan a esta persona.
+ * Elige la versión que toca de un texto.
  *
- * Los cuatro textos dan por hecho que el PDF va adjunto, porque es lo normal.
- * El día que no pueda ir —se ha borrado de Drive, o se ha cambiado el
- * PDF_ID—, se añade una última línea que lo dice. Es preferible una frase
- * incómoda a que alguien busque un archivo que no está.
+ * Si es una cadena, vale igual con PDF y sin él. Si es una pareja
+ * { con, sin }, se coge la que corresponde. Esto existe porque el correo no
+ * puede decir «va adjunta a este correo, en PDF» el día que el adjunto no ha
+ * podido ir: quien lo reciba buscaría un archivo que no está y pensaría que se
+ * le ha perdido a él.
  */
+function segunPdf(texto, hayPdf) {
+  if (texto && typeof texto === 'object') return hayPdf ? texto.con : texto.sin;
+  return texto;
+}
+
+/** La primera línea que le toca a esta persona. */
+function saludoDe(tipo, hayPdf) {
+  return segunPdf((TEXTOS[tipo] || TEXTOS.otro).saludo, hayPdf);
+}
+
+/** Los párrafos que le tocan a esta persona, ya elegida la versión de cada uno. */
 function parrafosDe(tipo, hayPdf) {
-  var texto = TEXTOS[tipo] || TEXTOS.otro;
-  var parrafos = texto.parrafos.slice();
-  if (!hayPdf) {
-    parrafos.push(
-      'Una cosa: se me ha quedado fuera el archivo adjunto. Respóndeme a este correo y te lo mando ahora mismo.'
-    );
-  }
-  return parrafos;
+  return (TEXTOS[tipo] || TEXTOS.otro).parrafos.map(function (p) {
+    return segunPdf(p, hayPdf);
+  });
 }
 
 /**
@@ -553,12 +608,10 @@ function parrafosDe(tipo, hayPdf) {
  * aquí la firma y el pie hay que escribirlos, porque no hay plantilla.
  */
 function textoPlano(tipo, n, hayPdf) {
-  var texto = TEXTOS[tipo] || TEXTOS.otro;
-
   return [
     n ? 'Hola ' + n + ',' : 'Hola,',
     '',
-    texto.saludo,
+    saludoDe(tipo, hayPdf),
     '',
     parrafosDe(tipo, hayPdf).join('\n\n'),
     '',
@@ -612,7 +665,6 @@ function plantilla(tipo, n, hayPdf) {
   var ETIQUETA_P =
     '<p style="margin:0 0 16px 0; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:1.65; color:#141210;">';
 
-  var texto = TEXTOS[tipo] || TEXTOS.otro;
   var cuerpo = parrafosDe(tipo, hayPdf)
     .map(function (p) {
       return ETIQUETA_P + escapar(p) + '</p>';
@@ -623,15 +675,14 @@ function plantilla(tipo, n, hayPdf) {
     // Fuera las notas internas del final.
     carta = carta.split('<!-- CORTAR-AQUI')[0];
 
-    return carta
-      .replace(/\{\{NOMBRE\}\}/g, n ? escapar(n) + ',' : '')
-      .replace(/\{\{SALUDO\}\}/g, escapar(texto.saludo))
-      .replace(/\{\{ENLACE_WEB\}\}/g, WEB)
-      .replace(/\{\{WHATSAPP\}\}/g, enlaceWhatsapp())
-      // El cuerpo se sustituye el último, y a propósito: es el único trozo que
-      // ya viene con etiquetas, y así no se le vuelve a pasar el buscar y
-      // sustituir por encima.
-      .replace(/\{\{CUERPO\}\}/g, cuerpo);
+    carta = rellenar(carta, 'NOMBRE', n ? escapar(n) + ',' : '');
+    carta = rellenar(carta, 'SALUDO', escapar(saludoDe(tipo, hayPdf)));
+    carta = rellenar(carta, 'ENLACE_WEB', WEB);
+    carta = rellenar(carta, 'WHATSAPP', enlaceWhatsapp());
+    // El cuerpo se rellena el último, y a propósito: es el único trozo que ya
+    // viene con etiquetas, y así no se le vuelve a pasar el buscar y sustituir
+    // por encima.
+    return rellenar(carta, 'CUERPO', cuerpo);
   }
 
   // Marco de emergencia, por si falta correo.html.
@@ -645,7 +696,7 @@ function plantilla(tipo, n, hayPdf) {
     (n ? escapar(n) + ',' : '') +
     '</p>' +
     ETIQUETA_P +
-    escapar(texto.saludo) +
+    escapar(saludoDe(tipo, hayPdf)) +
     '</p>' +
     cuerpo +
     ETIQUETA_P +
@@ -660,11 +711,6 @@ function enlaceWhatsapp() {
   return 'https://wa.me/' + WHATSAPP_SORELA;
 }
 
-/**
- * Coge el PDF de Drive. Si no hay PDF_ID, si el archivo se ha borrado o si se
- * le ha cambiado el permiso, devuelve null y el correo sale sin adjunto.
- * Quedarse sin mandar el correo por esto sería mucho peor.
- */
 /**
  * El PDF que va adjunto.
  *
@@ -734,9 +780,9 @@ function avisarASorela(datos, nombre, correo, origen, tipo, correoEnviado, repet
     lineas.push('WhatsApp: no lo ha dejado');
   }
 
-  if (datos.ciudad) lineas.push('Ciudad: ' + datos.ciudad);
-  if (datos.perfil) lineas.push('Se dedica a: ' + datos.perfil);
-  if (datos.nota) lineas.push('', 'Ha escrito:', String(datos.nota));
+  if (datos.ciudad) lineas.push('Ciudad: ' + comoTexto(datos.ciudad));
+  if (datos.perfil) lineas.push('Se dedica a: ' + comoTexto(datos.perfil));
+  if (datos.nota) lineas.push('', 'Ha escrito:', comoTexto(datos.nota));
 
   lineas.push('', 'De dónde viene: ' + comoLlego(origen));
 
@@ -855,16 +901,21 @@ function guardarFila(datos, correo, nombre, origen, tipo) {
   }
 
   try {
+    // Todo lo que venga de fuera se mete como texto. La hoja no acepta
+    // cualquier cosa en una celda: si alguien llamara al script a mano y
+    // mandara una lista o un objeto donde va la nota, appendRow se quejaría y
+    // se perdería la fila entera. Como texto, en el peor caso queda una celda
+    // fea, pero el contacto está.
     pestana.appendRow([
       new Date(),
       nombre,
       correo,
       // El apóstrofo obliga a la hoja a tratarlo como texto. Sin él, Google se
       // come el signo + del prefijo y el número queda inservible.
-      datos.whatsapp ? "'" + datos.whatsapp : '',
-      datos.ciudad || '',
-      datos.perfil || '',
-      datos.nota || '',
+      datos.whatsapp ? "'" + comoTexto(datos.whatsapp) : '',
+      comoTexto(datos.ciudad),
+      comoTexto(datos.perfil),
+      comoTexto(datos.nota),
       comoLlego(origen),
       ETIQUETA[tipo],
       'pendiente',
@@ -955,6 +1006,16 @@ function pareceCorreo(correo) {
   return /^[^\s@]+@[^\s@,]+\.[a-z]{2,}$/i.test(correo);
 }
 
+/**
+ * Un dato de fuera, convertido en texto y recortado. Vacío si no hay nada.
+ * El recorte es por si alguien manda un texto larguísimo: una celda de la hoja
+ * admite hasta 50.000 caracteres, y un correo con eso dentro no lo lee nadie.
+ */
+function comoTexto(valor) {
+  if (valor === null || valor === undefined) return '';
+  return String(valor).slice(0, 1000);
+}
+
 /** El nombre de pila, que es como se saluda a alguien. */
 function nombreCorto(nombre) {
   return String(nombre || '').trim().split(/\s+/)[0] || '';
@@ -962,6 +1023,21 @@ function nombreCorto(nombre) {
 
 function empiezaPor(texto, principio) {
   return texto.lastIndexOf(principio, 0) === 0;
+}
+
+/**
+ * Cambia un hueco de la carta —{{NOMBRE}}, {{CUERPO}}...— por su texto.
+ *
+ * Se pasa una función en vez del texto a secas por un motivo que no se ve: el
+ * buscar y sustituir de JavaScript trata el símbolo del dólar como una orden.
+ * Alguien que se llame «Ma$'rta» —o que lo escriba por probar— haría que en su
+ * carta se repitiera entera la mitad de abajo. Con una función, el texto entra
+ * tal cual, sin que nadie lo interprete.
+ */
+function rellenar(carta, hueco, valor) {
+  return carta.replace(new RegExp('\\{\\{' + hueco + '\\}\\}', 'g'), function () {
+    return valor;
+  });
 }
 
 /** Para meter texto dentro de HTML sin romperlo. */
