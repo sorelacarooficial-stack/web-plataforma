@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import Motas from '@/components/Motas';
@@ -17,6 +18,22 @@ import retrato from '@/fotos/sorela-retrato.webp';
 import lumbar from '@/fotos/trabajo-lumbar.webp';
 import alumna from '@/fotos/sorela-alumna.webp';
 import css from './home.module.css';
+
+/**
+ * La portada no tenía bloque de metadatos propio: heredaba el `title.default`
+ * y la `description` del layout raíz (app/layout.tsx), que siguen sirviendo de
+ * respaldo para las rutas sin metadatos propios. Ese título por defecto
+ * —«Sorela Caro · Técnica Divine»— solo pelea por el nombre, y la portada es
+ * la página que mejor puede ganar «formación drenaje linfático».
+ *
+ * `absolute` evita que se le aplique la plantilla «%s · Técnica Divine» del
+ * layout: con ella el título se iría a 70 caracteres y Google lo cortaría.
+ */
+export const metadata: Metadata = {
+  title: { absolute: 'Formación en drenaje linfático manual con Sorela Caro' },
+  description:
+    'Te enseño la Técnica Divine, mi método de drenaje linfático manual avanzado: primero la formación online y después dos días presenciales conmigo.',
+};
 
 export default function Home() {
   return (

@@ -7,10 +7,15 @@ import alumna from '@/fotos/sorela-alumna.webp';
 import valoracion from '@/fotos/valoracion-abdomen.webp';
 import css from './sobre.module.css';
 
+/**
+ * Esta es la página que pelea por el nombre: quien ya ha oído hablar de ella
+ * y busca «sorela caro». Por eso el título empieza por «Quién es» —que es
+ * como se busca a una persona— y no por «Sobre», que no lo busca nadie.
+ */
 export const metadata: Metadata = {
-  title: 'Sobre Sorela Caro',
+  title: { absolute: 'Quién es Sorela Caro, creadora de la Técnica Divine' },
   description:
-    'Sorela Caro, creadora de la Técnica Divine. Quince años de cabina, grupos reducidos y ninguna clase delegada.',
+    'Quince años de cabina antes de ordenar en un método lo que hasta entonces llamaba intuición. Hoy formo a terapeutas: grupos reducidos y ninguna clase delegada.',
 };
 
 export default function Sobre() {

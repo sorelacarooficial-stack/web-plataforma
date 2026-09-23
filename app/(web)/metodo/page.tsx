@@ -4,10 +4,18 @@ import Link from 'next/link';
 import valoracion from '@/fotos/valoracion-abdomen.webp';
 import css from './metodo.module.css';
 
+/**
+ * El título va en `absolute` para esquivar la plantilla «%s · Técnica Divine»
+ * del layout raíz: con ella el resultado diría «Técnica Divine» dos veces y se
+ * pasaría de los 60 caracteres que Google enseña antes de cortar.
+ *
+ * Esta página pelea por la búsqueda de marca («técnica divine»), no por
+ * «formación drenaje linfático»: de esa se ocupan la portada y /formaciones.
+ */
 export const metadata: Metadata = {
-  title: 'El método',
+  title: { absolute: 'Qué es la Técnica Divine y cómo se trabaja en cabina' },
   description:
-    'La Técnica Divine empieza donde terminan los protocolos: en la lectura del cuerpo que tienes delante. Observar, interpretar y decidir antes de trabajar.',
+    'Divine no es una lista de maniobras que repetir: es aprender a observar, interpretar y decidir antes de poner las manos. Te cuento cómo funciona el método.',
 };
 
 const PASOS = [

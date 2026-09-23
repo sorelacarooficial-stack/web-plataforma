@@ -39,37 +39,95 @@ const jost = localFont({
   fallback: ['Helvetica Neue', 'Arial', 'sans-serif'],
 });
 
-/** Dominio de producción. Vercel lo expone en VERCEL_PROJECT_PRODUCTION_URL,
- *  pero se fija aquí para que las URL canónicas sean correctas también en local. */
-const SITIO = 'https://sorelacarodivine.com';
+/**
+ * Dominio de producción, CON www.
+ *
+ * Vercel expone el suyo en VERCEL_PROJECT_PRODUCTION_URL, pero se fija aquí
+ * para que las direcciones canónicas sean correctas también en local y en las
+ * vistas previas. Va con www porque la versión sin www responde 308 hacia
+ * esta: una canónica sin www estaría señalando una dirección que redirige.
+ * La misma cadena está escrita en app/robots.ts y app/sitemap.ts; las tres
+ * tienen que cambiar juntas el día que cambie el dominio.
+ */
+const SITIO = 'https://www.sorelacarodivine.com';
 
 export const metadata: Metadata = {
+  /**
+   * Sin esto, Next no sabe convertir en absolutas las rutas de la imagen de
+   * compartir ni de la canónica, y quien reciba el enlace ve una caja gris.
+   */
   metadataBase: new URL(SITIO),
   title: {
     default: 'Sorela Caro · Técnica Divine',
     template: '%s · Técnica Divine',
   },
   description:
-    'Juventud linfática y ganglionar en tus manos. Drenaje linfático manual llevado más lejos: formación de Sorela Caro en dos etapas, primero online y después presencial.',
+    'Drenaje linfático manual llevado más lejos. Te enseño mi método en dos etapas: primero online y después presencial, corrigiéndote las manos.',
   applicationName: 'Técnica Divine',
   authors: [{ name: 'Sorela Caro' }],
   creator: 'Sorela Caro',
-  icons: { icon: '/icono.png', apple: '/icono.png' },
+  publisher: 'Sorela Caro',
+  /**
+   * Cada página se declara canónica de sí misma. El './' lo resuelve Next con
+   * la ruta de cada una sobre metadataBase, así que sale siempre con www y sin
+   * el 308 de por medio. Escribir aquí una dirección fija haría que las ocho
+   * páginas dijeran ser la portada.
+   */
+  alternates: { canonical: './' },
   openGraph: {
     type: 'website',
     locale: 'es_ES',
     siteName: 'Sorela Caro · Técnica Divine',
-    url: SITIO,
-    title: 'Antes de poner las manos, aprende a mirar.',
-    description:
-      'Formación en estética avanzada con Sorela Caro. Primero online, después presencial, con práctica sobre cuerpo real.',
+    url: './',
+    /**
+     * Aquí no hay title ni description, y es a propósito: al faltar, Next
+     * rellena cada página con SU título y SU descripción. Antes había un
+     * título fijo —«Antes de poner las manos, aprende a mirar»— y las ocho
+     * páginas se compartían por WhatsApp con el mismo texto, daba igual si el
+     * enlace era el de formaciones o el de contacto.
+     */
+    images: [
+      {
+        /*
+         * 1200×630, que es la medida que piden WhatsApp, Instagram y el resto.
+         *
+         * Antes iba el logotipo cuadrado de 512, y con `summary_large_image`
+         * —que espera una apaisada— salía recortado y con franjas. Esta lleva
+         * la cara de Sorela a un lado y el logotipo al otro: por WhatsApp se
+         * comparte más una persona que un logotipo suelto.
+         */
+        url: '/compartir.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Sorela Caro, creadora de la Técnica Divine',
+      },
+    ],
   },
   twitter: {
+    // El título, la descripción y la imagen los hereda de openGraph.
     card: 'summary_large_image',
-    title: 'Sorela Caro · Técnica Divine',
-    description:
-      'Formación en estética avanzada con Sorela Caro. Primero online, después presencial, con práctica sobre cuerpo real.',
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      // Para que en los resultados pueda salir la foto grande y el texto
+      // entero, en vez del recorte corto que Google usa por defecto.
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  /**
+   * Los iconos NO se declaran en este objeto. Next los toma de app/icon.png y
+   * app/apple-icon.png, y así escribe él solo el tamaño y el tipo de cada uno.
+   *
+   * Importa el orden: en cuanto se pone `icons` aquí, Next ignora esos dos
+   * archivos por completo. Mientras hubo un `icons: { icon: '/icono.png' }`,
+   * la pestaña seguía enseñando el logotipo entero con sus franjas negras
+   * —ilegible a 16 píxeles— aunque el icono nuevo ya estuviera en su sitio.
+   */
 };
 
 export const viewport: Viewport = {
