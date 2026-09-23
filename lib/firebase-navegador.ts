@@ -1,6 +1,5 @@
 import { getApp, getApps, initializeApp, type FirebaseApp } from 'firebase/app';
 import {
-  GoogleAuthProvider,
   browserLocalPersistence,
   getAuth,
   setPersistence,
@@ -54,10 +53,10 @@ export function auth(): Auth {
   return a;
 }
 
-export function proveedorGoogle() {
-  const p = new GoogleAuthProvider();
-  // Obliga a elegir cuenta en vez de entrar con la última usada, que es la
-  // causa número uno de «me ha entrado con el correo equivocado».
-  p.setCustomParameters({ prompt: 'select_account' });
-  return p;
-}
+/*
+ * Aquí estaba proveedorGoogle(), para el botón de «Continuar con Google». El
+ * botón se quitó: las cuentas las da de alta Sorela una a una, y entrar con
+ * Google es una forma de darse de alta solo. Quitar además el proveedor en la
+ * consola de Firebase —Authentication → Sign-in method— es lo que lo cierra
+ * de verdad; esto solo era el resto que quedaba colgando en el código.
+ */

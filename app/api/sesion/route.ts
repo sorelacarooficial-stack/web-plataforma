@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { hayFirebase } from '@/lib/firebase-servidor';
-import { cerrarSesion, crearSesion, sesionActual } from '@/lib/sesion-servidor';
+import { cerrarSesion, crearSesion, PlataformaCerrada, sesionActual } from '@/lib/sesion-servidor';
 
 /**
  * Abrir, consultar y cerrar la sesión.
@@ -36,6 +36,12 @@ export async function POST(peticion: Request) {
     const sesion = await crearSesion(tokenId);
     return NextResponse.json({ ok: true, sesion });
   } catch (e) {
+    // Cuenta válida, pero todavía no le toca entrar. No es culpa de su
+    // contraseña, así que no se le dice que la revise.
+    if (e instanceof PlataformaCerrada) {
+      return NextResponse.json({ ok: false, motivo: 'cerrada' }, { status: 403 });
+    }
+
     console.error('[sesion] No se pudo abrir la sesión:', e);
 
     /*

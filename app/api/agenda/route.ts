@@ -87,6 +87,20 @@ function relojDeMadrid(instante: Date): Record<string, number> {
 }
 
 /**
+ * Cuánto va adelantado el reloj de Madrid respecto al de UTC en ese instante.
+ *
+ * Se mide en vez de escribirse a mano porque España cambia de hora dos veces
+ * al año: en invierno es una hora y en verano dos.
+ */
+function desfaseDeMadrid(instante: Date): number {
+  const r = relojDeMadrid(instante);
+  // Los milisegundos se tiran: el reloj formateado solo llega al segundo, y si
+  // no se igualan las dos medidas el desfase sale con un resto absurdo.
+  const enSegundos = Math.floor(instante.getTime() / 1000) * 1000;
+  return Date.UTC(r.year, r.month - 1, r.day, r.hour, r.minute, r.second) - enSegundos;
+}
+
+/**
  * El instante en que empezó el día de hoy en España.
  *
  * Hace falta porque el servidor de Vercel va en UTC y Sorela vive en España.
@@ -94,17 +108,20 @@ function relojDeMadrid(instante: Date): Record<string, number> {
  * de la madrugada española desaparecerían de la agenda los eventos de esa
  * misma madrugada: ya habrían quedado «antes de hoy».
  *
- * El desfase se mide en vez de escribirlo a mano porque España cambia de hora
- * dos veces al año: en invierno es una hora y en verano dos.
+ * Los dos tanteos no son manía: el desfase de ahora mismo no tiene por qué ser
+ * el de esta medianoche, y los dos domingos del año en que se cambia la hora no
+ * lo es. De los dos candidatos se queda el más temprano, porque errar por una
+ * hora de más solo cuela en la lista la tarde de ayer, mientras que errar por
+ * una hora de menos escondería lo de primera hora de hoy.
  */
 function inicioDeHoy(): Date {
   const ahora = new Date();
   const r = relojDeMadrid(ahora);
-  // Los milisegundos se tiran: el reloj formateado solo llega al segundo, y si
-  // no se igualan las dos medidas el desfase sale con un resto absurdo.
-  const enSegundos = Math.floor(ahora.getTime() / 1000) * 1000;
-  const desfase = Date.UTC(r.year, r.month - 1, r.day, r.hour, r.minute, r.second) - enSegundos;
-  return new Date(Date.UTC(r.year, r.month - 1, r.day) - desfase);
+  const medianoche = Date.UTC(r.year, r.month - 1, r.day);
+
+  const tanteo = medianoche - desfaseDeMadrid(ahora);
+  const afinado = medianoche - desfaseDeMadrid(new Date(tanteo));
+  return new Date(Math.min(tanteo, afinado));
 }
 
 /* ==========================================================================
