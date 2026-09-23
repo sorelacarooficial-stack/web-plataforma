@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import css from './plataforma.module.css';
 
 /**
@@ -129,11 +129,20 @@ export default function AgendaSorela() {
   const [errores, setErrores] = useState<Partial<Record<string, string>>>({});
   const [guardando, setGuardando] = useState(false);
 
+  /* Cada carga lleva número de turno. El chip de lo pasado cambia la petición
+     que se hace, así que pulsándolo dos veces seguidas hay dos en el aire, y no
+     tienen por qué contestar en orden: si la primera llega la última, pinta la
+     lista del filtro que ya no está puesto y no hay nada que lo delate. Solo se
+     hace caso a la respuesta del último turno pedido. */
+  const turno = useRef(0);
+
   const cargar = useCallback(async () => {
+    const mio = ++turno.current;
     setFallo(null);
     try {
       const r = await fetch(`/api/agenda${verPasado ? '?todos=1' : ''}`);
       const c = await r.json().catch(() => ({ ok: false }));
+      if (mio !== turno.current) return;
       if (!c.ok) {
         setFallo(
           c.motivo === 'sin-configurar'
@@ -147,6 +156,7 @@ export default function AgendaSorela() {
       }
       setLista(c.eventos);
     } catch {
+      if (mio !== turno.current) return;
       setFallo('No hay conexión con el servidor.');
       setLista([]);
     }
@@ -205,7 +215,13 @@ export default function AgendaSorela() {
       setTelefono('');
       setLugar('');
       setNota('');
-      await cargar();
+
+      /* Apuntar algo de ayer —una sesión que se olvidó meter— se guarda bien,
+         pero la lista empieza en hoy: el evento no saldría por ningún lado y
+         parecería que no se ha guardado. Se enciende el filtro de lo pasado, y
+         eso ya recarga solo porque `cargar` depende de él. */
+      if (local && distanciaEnDias(local) < 0 && !verPasado) setVerPasado(true);
+      else await cargar();
     } catch {
       setFallo('No hay conexión con el servidor.');
     } finally {
@@ -225,6 +241,9 @@ export default function AgendaSorela() {
         body: JSON.stringify({ id, estado }),
       });
       if (!(await r.json().catch(() => ({ ok: false }))).ok) throw new Error();
+      // Si un intento anterior dejó el aviso puesto, este acierto lo retira:
+      // si no, se queda en pantalla diciendo que algo falló cuando ya no falla.
+      setFallo(null);
     } catch {
       // Se deshace y se avisa: dejar la pantalla diciendo «hecho» cuando no se
       // ha guardado es peor que no haber dejado pulsar.
@@ -242,6 +261,7 @@ export default function AgendaSorela() {
     try {
       const r = await fetch(`/api/agenda?id=${encodeURIComponent(evento.id)}`, { method: 'DELETE' });
       if (!(await r.json().catch(() => ({ ok: false }))).ok) throw new Error();
+      setFallo(null);
     } catch {
       setLista(antes ?? null);
       setFallo('No se ha podido borrar. Vuelve a intentarlo.');
@@ -283,9 +303,12 @@ export default function AgendaSorela() {
     const semana = porDelante.filter((x) => x.t - ahora < 7 * 86400000);
 
     return [
-      { label: 'Hoy', valor: String(hoy.length), nota: 'lo que tienes en el día' },
-      { label: 'Próximos 7 días', valor: String(semana.length), nota: 'sin contar lo ya hecho' },
-      { label: 'Por delante', valor: String(porDelante.length), nota: 'todo lo que queda apuntado' },
+      // Las tres notas dicen exactamente lo que cuenta cada número: «Hoy» sí
+      // incluye lo ya hecho —es lo que tienes en el día, hayas pasado por ello
+      // o no—, y las otras dos solo lo pendiente, sin lo hecho ni lo cancelado.
+      { label: 'Hoy', valor: String(hoy.length), nota: 'todo lo del día, hecho o no' },
+      { label: 'Próximos 7 días', valor: String(semana.length), nota: 'solo lo que sigue pendiente' },
+      { label: 'Por delante', valor: String(porDelante.length), nota: 'todo lo pendiente de aquí en adelante' },
     ];
   }, [lista]);
 
@@ -431,7 +454,10 @@ export default function AgendaSorela() {
             <input
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
-              placeholder="Sesión con María, revisión de la formación…"
+              /* El ejemplo no lleva nombre propio a posta: un «Sesión con
+                 María» de muestra, en un panel donde todavía no hay nadie, se
+                 lee como una clienta que existe. */
+              placeholder="Sesión, revisión de la formación, llamada…"
               className={css.campoCaja}
             />
             {errores.titulo && (

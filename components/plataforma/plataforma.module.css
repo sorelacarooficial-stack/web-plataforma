@@ -1366,6 +1366,189 @@
 }
 
 /* ==========================================================================
+   Ficha de una persona
+   Cajón pegado a la derecha, montado sobre <dialog>. Los estilos que trae el
+   navegador para <dialog> hay que desmontarlos antes de construir encima:
+   borde, fondo, relleno y un ancho máximo que no es el nuestro.
+   ========================================================================== */
+.fichaPanel {
+  width: min(520px, 100vw);
+  max-width: none;
+  height: 100dvh;
+  max-height: 100dvh;
+  /* El navegador centra el diálogo con `margin: auto`. Aquí se quiere pegado
+     a la derecha y de arriba abajo: el margen izquierdo automático lo empuja. */
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  overflow: visible;
+}
+
+.fichaPanel::backdrop {
+  background: color-mix(in srgb, var(--ink) 52%, transparent);
+  /* El desenfoque separa la ficha de la lista sin tapar del todo dónde
+     estabas: se sigue intuyendo la fila de la que vienes. */
+  backdrop-filter: blur(4px);
+  animation: fichaVelo 0.2s ease-out;
+}
+
+.fichaCaja {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  /* Al llegar al final, el rebote no debe arrastrar la lista de detrás. */
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(18px, 2.4vw, 26px);
+  padding: clamp(22px, 3vw, 32px);
+  background: var(--bg);
+  border-left: 1px solid var(--line-2);
+  box-shadow: -30px 0 80px -30px color-mix(in srgb, var(--ink) 40%, transparent);
+  animation: fichaEntra 0.28s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* La X se queda arriba aunque la ficha sea larga: cerrar no debería obligar a
+   subir haciendo scroll hasta el principio. Ocupa su propia fila en vez de
+   flotar sobre el título con un margen negativo: el nombre de una persona
+   puede ser largo, y ahí el botón le pasaría por encima. */
+.fichaCerrar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  align-self: flex-end;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: -4px -4px 0 0;
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.fichaCerrar:hover {
+  color: var(--ink);
+  border-color: var(--oro-line);
+}
+
+.fichaCerrar:focus-visible {
+  outline: 2px solid var(--arcilla);
+  outline-offset: 2px;
+}
+
+/* Cada dato de la persona: rótulo a la izquierda, valor a la derecha y, si lo
+   hay, el botón de copiar. En pantalla estrecha el valor cae debajo. */
+.fichaDato {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--line-1);
+}
+
+.fichaEtiqueta {
+  flex: 0 0 126px;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.fichaValor {
+  flex: 1 1 170px;
+  min-width: 0;
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--ink-3);
+  /* Un correo largo no puede ensanchar el cajón y sacar el resto de la vista. */
+  overflow-wrap: anywhere;
+}
+
+.fichaEnlace {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--oro-line);
+  text-underline-offset: 3px;
+}
+
+.fichaEnlace:hover {
+  color: var(--oro);
+}
+
+@keyframes fichaEntra {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fichaVelo {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* En móvil el cajón lateral no cabe: se convierte en una hoja pegada abajo,
+   que es donde llega el pulgar, y deja ver un poco de la lista por arriba. */
+@media (max-width: 560px) {
+  .fichaPanel {
+    width: 100vw;
+    height: 92dvh;
+    max-height: 92dvh;
+    margin: auto 0 0;
+  }
+
+  .fichaCaja {
+    border-left: none;
+    border-top: 3px solid var(--arcilla);
+    padding: 20px 18px 28px;
+    animation-name: fichaSube;
+  }
+
+  .fichaEtiqueta {
+    flex-basis: 100%;
+  }
+}
+
+@keyframes fichaSube {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Va DESPUÉS del bloque de móvil a propósito. Las dos reglas tienen la misma
+   especificidad, así que gana la última: si este bloque estuviera antes, el
+   `animation-name: fichaSube` de móvil volvería a encender la animación en un
+   teléfono con el movimiento reducido activado. */
+@media (prefers-reduced-motion: reduce) {
+  .fichaCaja,
+  .fichaPanel::backdrop {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
    Facturación de Sorela
    ========================================================================== */
 
@@ -1411,6 +1594,15 @@
 @media (max-width: 640px) {
   .lineaFactura {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* En una sola columna la cruz ocupa todo el ancho y ya no se entiende qué
+     quita. Se le pone el nombre al lado. Va como pseudoelemento y no como
+     texto del botón para no repetirlo en el escritorio, donde no cabe. */
+  .quitarLinea::after {
+    content: ' Quitar';
+    font-size: 13px;
+    font-weight: 300;
   }
 }
 
@@ -1635,6 +1827,16 @@
     display: none !important;
   }
 
+  /* Dos arreglos sobre el propio <body>, los dos con !important porque van
+     contra estilos puestos a mano desde el componente o desde globals:
+     el fondo crema del tema tiñe la hoja si se imprimen los fondos, y el
+     overflow:hidden que evita que la página de detrás se desplace mientras se
+     revisa la factura corta la impresión en la primera página. */
+  .imprimiendoFactura {
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+
   .imprimiendoFactura > .hoja {
     display: block !important;
     position: static;
@@ -1654,4 +1856,59 @@
   .sinImprimir {
     display: none !important;
   }
+}
+
+/* El nombre de la lista de clientes, que abre su ficha. Se pinta como texto y
+   no como botón: en una lista de veinte, veinte botones son veinte manchas. */
+.abrirFicha {
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 300;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  align-self: flex-start;
+}
+
+.abrirFicha:hover,
+.abrirFicha:focus-visible {
+  border-bottom-color: var(--oro-line);
+  color: var(--oro);
+}
+
+/* Qué busca cada persona, en su fila de la lista de clientes. Un color por
+   tipo, porque con la lista sin filtrar hay que distinguirlos de un vistazo y
+   leer tres etiquetas parecidas una por una cansa. */
+.tipoPersona {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line-3);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.tipoPersona[data-tipo='clienta'] {
+  border-color: var(--oro-line);
+  background: var(--oro-tint);
+  color: var(--oro);
+}
+
+.tipoPersona[data-tipo='alumna'] {
+  border-color: var(--line-5);
+  background: var(--surface-2);
+  color: var(--ink-3);
+}
+
+.tipoPersona[data-tipo='comunidad'] {
+  border-color: var(--line-4);
+  background: var(--inverse-bg);
+  color: var(--on-inverse-2);
 }

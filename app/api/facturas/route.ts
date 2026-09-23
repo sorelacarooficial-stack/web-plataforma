@@ -104,6 +104,10 @@ function dos(n: number): string {
 function fechaValida(v: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
   const [a, m, d] = v.split('-').map(Number);
+  // El año se acota además de comprobarse la forma. Un dedazo del tipo
+  // '0226-09-23' pasa el resto de controles y no tiene vuelta atrás: el número
+  // saldría como A226/0001 y una factura emitida no se borra.
+  if (a < 2000 || a > 2100) return false;
   if (m < 1 || m > 12 || d < 1) return false;
   // El día 0 del mes siguiente es el último del mes actual: así se cazan los
   // 31 de febrero sin tener que saberse los años bisiestos.
@@ -188,6 +192,17 @@ export function nifValido(valor: string): boolean {
    ========================================================================== */
 
 /**
+ * Tope de un precio unitario: un millón de euros en céntimos.
+ *
+ * No es por desconfianza, es aritmética. Con la cantidad llegando hasta 100.000
+ * y cincuenta líneas por factura, un precio sin techo se sale del entero exacto
+ * de JavaScript y las sumas empiezan a perder unidades en silencio, que es
+ * justo lo que no puede pasar con dinero. Con este tope, el peor caso posible
+ * se queda muy por debajo de Number.MAX_SAFE_INTEGER.
+ */
+const PRECIO_MAXIMO_CENT = 100_000_000;
+
+/**
  * Un importe en euros recibido del navegador, en céntimos enteros.
  *
  * Acepta la coma como separador decimal porque es lo que escribe cualquiera en
@@ -199,15 +214,38 @@ function aCentimos(valor: unknown): number | null {
   if (!Number.isFinite(n) || n < 0) return null;
   // Este es el único redondeo de euros a céntimos de todo el flujo. A partir
   // de aquí solo hay enteros.
-  return Math.round(n * 100);
+  const cent = Math.round(n * 100);
+  return cent > PRECIO_MAXIMO_CENT ? null : cent;
 }
 
-/** Un porcentaje de impuesto: un número entre 0 y 100, con decimales o sin ellos. */
+/**
+ * Un porcentaje de impuesto: un número entre 0 y 100, con decimales o sin ellos.
+ *
+ * Ojo con la diferencia entre «no lo manda» y «lo manda vacío», que no es la
+ * misma cosa: si el campo no viene, se aplica el valor por defecto; si viene
+ * pero está en blanco es que Sorela ha borrado la casilla, y en pantalla esa
+ * casilla vacía enseña un 0 %. Devolver aquí el 21 % por defecto emitiría una
+ * factura con un IVA que ella no ha visto en ningún momento.
+ */
 function aPorcentaje(valor: unknown, pordefecto: number): number | null {
-  if (valor === undefined || valor === null || valor === '') return pordefecto;
+  if (valor === undefined || valor === null) return pordefecto;
+  if (typeof valor === 'string' && valor.trim() === '') return 0;
   const n = typeof valor === 'number' ? valor : Number(String(valor).replace(',', '.'));
   if (!Number.isFinite(n) || n < 0 || n > 100) return null;
   return n;
+}
+
+/**
+ * Un número que viene de Firestore, siempre usable.
+ *
+ * Lo que sale de la base de datos no está tipado: un campo que falte o que
+ * alguien haya escrito a mano desde la consola de Firebase llega como undefined
+ * o como texto, y Number() de eso es NaN. Un NaN suelto no revienta, que sería
+ * lo cómodo: se propaga por las sumas y acaba imprimiéndose en una factura.
+ */
+function cifra(valor: unknown): number {
+  const n = Number(valor);
+  return Number.isFinite(n) ? n : 0;
 }
 
 function texto(valor: unknown, maximo = 300): string {
@@ -218,6 +256,15 @@ function texto(valor: unknown, maximo = 300): string {
    Leer
    ========================================================================== */
 
+/** La serie que PATCH deja escrita, o 'A' si lo guardado no tiene forma de serie. */
+function serieValida(valor: unknown): string {
+  const s = texto(valor, 6).toUpperCase();
+  // Se vuelve a comprobar aquí aunque PATCH ya lo haga al guardar: esta serie
+  // acaba siendo nombre de campo del contador, y lo que hay en la base de datos
+  // pudo escribirlo cualquiera desde la consola de Firebase.
+  return /^[A-Z0-9]{1,6}$/.test(s) ? s : 'A';
+}
+
 async function leerFiscales(): Promise<DatosFiscales | null> {
   const doc = await baseDeDatos().collection(COLECCIONES.ajustes).doc('fiscales').get();
   if (!doc.exists) return null;
@@ -227,7 +274,28 @@ async function leerFiscales(): Promise<DatosFiscales | null> {
   const direccion = texto(v.direccion);
   // Media ficha no sirve para emitir: se trata igual que no tener ninguna.
   if (!nombre || !nif || !direccion) return null;
-  return { nombre, nif, direccion, serie: texto(v.serie, 6) || 'A' };
+  return { nombre, nif, direccion, serie: serieValida(v.serie) };
+}
+
+/**
+ * Las líneas de una factura guardada, una por una y con todos sus campos.
+ *
+ * Se normalizan de verdad en vez de dar el array por bueno porque la pantalla
+ * llama a toLocaleString sobre `cantidad` para imprimir la hoja: una línea a la
+ * que le falte ese campo no enseña un hueco, tira abajo la factura entera al
+ * abrirla.
+ */
+function lineasDe(valor: unknown): LineaGuardada[] {
+  if (!Array.isArray(valor)) return [];
+  return valor.map((l) => {
+    const linea = (l ?? {}) as Record<string, unknown>;
+    return {
+      concepto: texto(linea.concepto, 200),
+      cantidad: cifra(linea.cantidad),
+      precioCent: cifra(linea.precioCent),
+      importeCent: cifra(linea.importeCent),
+    };
+  });
 }
 
 export async function GET() {
@@ -250,7 +318,6 @@ export async function GET() {
 
   const facturas = lista.docs.map((d) => {
     const v = d.data();
-    const lineas: LineaGuardada[] = Array.isArray(v.lineas) ? (v.lineas as LineaGuardada[]) : [];
     return {
       id: d.id,
       numero: texto(v.numero, 40),
@@ -266,15 +333,20 @@ export async function GET() {
         nif: texto(v.cliente?.nif, 20),
         direccion: texto(v.cliente?.direccion),
       },
-      lineas,
-      ivaPorcentaje: Number(v.ivaPorcentaje ?? 0),
-      irpfPorcentaje: Number(v.irpfPorcentaje ?? 0),
-      baseCent: Number(v.baseCent ?? 0),
-      ivaCent: Number(v.ivaCent ?? 0),
-      irpfCent: Number(v.irpfCent ?? 0),
-      totalCent: Number(v.totalCent ?? 0),
+      lineas: lineasDe(v.lineas),
+      ivaPorcentaje: cifra(v.ivaPorcentaje),
+      irpfPorcentaje: cifra(v.irpfPorcentaje),
+      baseCent: cifra(v.baseCent),
+      ivaCent: cifra(v.ivaCent),
+      irpfCent: cifra(v.irpfCent),
+      totalCent: cifra(v.totalCent),
       nota: texto(v.nota, 400),
-      estado: (v.estado as EstadoFactura) ?? 'Pendiente',
+      // El estado se comprueba contra la lista en vez de creérselo: la pantalla
+      // elige con él la clase del distintivo, y un valor que no esté previsto
+      // pintaría el rótulo sin estilo ninguno.
+      estado: (ESTADOS_FACTURA as readonly string[]).includes(v.estado)
+        ? (v.estado as EstadoFactura)
+        : 'Pendiente',
       // Un Timestamp de Firestore no sobrevive a JSON.stringify de forma
       // legible, así que se manda como texto ISO y se formatea en pantalla.
       creado: v.creado?.toDate?.().toISOString() ?? null,
@@ -397,6 +469,8 @@ export async function POST(peticion: Request) {
     if (!Number.isFinite(cantidad) || cantidad <= 0 || cantidad > 100000) {
       return falta(`La cantidad de la línea ${i + 1} no es válida.`);
     }
+    // Cae aquí tanto lo que no es un número como lo que pasa del tope: las dos
+    // cosas se arreglan mirando el precio, así que el aviso es el mismo.
     if (precioCent === null) return falta(`El precio de la línea ${i + 1} no es válido.`);
 
     lineas.push({
@@ -545,16 +619,36 @@ export async function PATCH(peticion: Request) {
   // --- Cobrada o pendiente ---
   const id = texto(cuerpo.id, 60);
   const estado = texto(cuerpo.estado, 20);
-  if (!id || !(ESTADOS_FACTURA as readonly string[]).includes(estado)) {
+  // Del identificador se comprueba la FORMA, no solo que venga algo: un id con
+  // barras dentro no es un identificador para Firestore, es una ruta, y
+  // 'facturas/x/otra/y' escribiría en una colección que no es esta.
+  if (!/^[A-Za-z0-9_-]{1,60}$/.test(id) || !(ESTADOS_FACTURA as readonly string[]).includes(estado)) {
     return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
   }
 
-  // merge y no set entero: lo único que se toca de una factura emitida es si
-  // está cobrada. Los importes, el número y las fechas no se tocan nunca.
-  await baseDeDatos()
-    .collection(COLECCIONES.facturas)
-    .doc(id)
-    .set({ estado, estadoCambiado: FieldValue.serverTimestamp() }, { merge: true });
+  try {
+    // update y no set con merge, que es lo que parecería natural: set CREA el
+    // documento si el identificador no existe, y dejaría en la colección una
+    // factura fantasma con un estado y nada más —sin número, sin importes y sin
+    // el campo 'orden' por el que se ordena la lista, así que ni siquiera se
+    // vería—. update falla, que es justo lo que queremos.
+    //
+    // Se escribe solo el estado: lo único que se puede cambiar de una factura
+    // emitida es si está cobrada. Los importes, el número y las fechas no.
+    await baseDeDatos()
+      .collection(COLECCIONES.facturas)
+      .doc(id)
+      .update({ estado, estadoCambiado: FieldValue.serverTimestamp() });
+  } catch (e) {
+    // Se distingue «esa factura no existe» de «Firestore no contesta». Tratar
+    // las dos igual diría que la factura no está cuando lo que pasa es que la
+    // base de datos está caída, y eso asusta a cualquiera que esté mirando.
+    const codigo = (e as { code?: unknown } | null)?.code;
+    if (codigo === 5 || codigo === 'not-found') {
+      return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
+    }
+    throw e;
+  }
 
   return NextResponse.json({ ok: true, id, estado });
 }

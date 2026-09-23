@@ -315,6 +315,12 @@ export default function FacturacionSorela() {
   const [fecha, setFecha] = useState('');
   const [nota, setNota] = useState('');
   const [emitiendo, setEmitiendo] = useState(false);
+  /* El botón se apaga con `emitiendo`, pero eso no surte efecto hasta el
+     siguiente pintado: dos clics muy seguidos entran los dos y emiten DOS
+     facturas, con dos números correlativos gastados, por el mismo servicio. Y
+     una factura emitida no se borra. El cerrojo va en un ref porque hay que
+     leerlo y cerrarlo en el mismo instante, sin esperar a React. */
+  const emitiendoYa = useRef(false);
   // null significa «no ha decidido»: entonces manda el valor por defecto.
   const [abierto, setAbierto] = useState<boolean | null>(null);
 
@@ -413,6 +419,8 @@ export default function FacturacionSorela() {
 
   async function emitir(e: React.FormEvent) {
     e.preventDefault();
+    if (emitiendoYa.current) return;
+    emitiendoYa.current = true;
     setEmitiendo(true);
     setFallo(null);
     setAviso(null);
@@ -442,14 +450,25 @@ export default function FacturacionSorela() {
       setNota('');
       await cargar();
     } catch {
-      setFallo('No hay conexión con el servidor.');
+      // Aquí, y solo aquí, no se sabe qué ha pasado: la petición pudo morir de
+      // ida —y entonces no hay factura— o de vuelta —y entonces sí la hay—. En
+      // cualquier otra pantalla daría igual, pero volver a darle a emitir
+      // gastaría OTRO número correlativo para la misma factura y no hay forma
+      // de deshacerlo. Así que se recarga la lista y se le dice que mire.
+      // El fallo se pone DESPUÉS de cargar porque cargar() empieza borrándolo.
+      await cargar();
+      setFallo(
+        'Se ha cortado la conexión al emitir. Mira en la lista de abajo si la factura ha entrado: si entró, volver a emitirla gastaría otro número.'
+      );
     } finally {
+      emitiendoYa.current = false;
       setEmitiendo(false);
     }
   }
 
   async function cambiarEstado(id: string, estado: Estado) {
     const antes = datos;
+    setAviso(null);
     // Se pinta antes de que conteste el servidor: marcar varias cobradas
     // seguidas esperando a cada respuesta es insufrible.
     setDatos((d) =>
@@ -462,13 +481,18 @@ export default function FacturacionSorela() {
         body: JSON.stringify({ id, estado }),
       });
       if (!(await r.json().catch(() => ({ ok: false }))).ok) throw new Error();
-      // Se recarga para que los totales del trimestre reflejen el cambio: el
-      // cobrado y el pendiente los suma el servidor, no esta pantalla.
-      await cargar();
     } catch {
       setDatos(antes);
       setFallo('No se ha podido guardar el cambio. Vuelve a intentarlo.');
+      return;
     }
+
+    // La recarga va FUERA del try de arriba a propósito. Si se metiera dentro,
+    // un tropiezo AL RECARGAR desharía en pantalla un cambio que el servidor ya
+    // tiene guardado: la factura volvería a verse pendiente estando cobrada,
+    // que es la mentira peor de las dos. Se recarga porque el cobrado y el
+    // pendiente del trimestre los suma el servidor, no esta pantalla.
+    await cargar();
   }
 
   function cambiarLinea(i: number, campo: 'concepto' | 'cantidad' | 'precio', v: string) {
@@ -504,9 +528,21 @@ export default function FacturacionSorela() {
       valor: euros(t.totalCent),
       nota: t.cuantas === 0 ? `ninguna factura en el ${t.etiqueta}` : `${t.cuantas} en el ${t.etiqueta}`,
     },
-    { label: 'Cobrado', valor: euros(t.cobradoCent), nota: 'ya está en la cuenta' },
-    { label: 'Pendiente de cobro', valor: euros(t.pendienteCent), nota: 'emitido y sin cobrar' },
-    { label: 'IVA repercutido', valor: euros(t.ivaCent), nota: `lo que toca declarar del ${t.etiqueta}` },
+    {
+      label: 'Cobrado',
+      valor: euros(t.cobradoCent),
+      nota: t.cobradoCent === 0 ? 'nada cobrado todavía' : 'ya está en la cuenta',
+    },
+    {
+      label: 'Pendiente de cobro',
+      valor: euros(t.pendienteCent),
+      nota: t.pendienteCent === 0 ? 'nada pendiente' : 'emitido y sin cobrar',
+    },
+    {
+      label: 'IVA repercutido',
+      valor: euros(t.ivaCent),
+      nota: t.ivaCent === 0 ? 'nada que declarar todavía' : `a declarar en el ${t.etiqueta}`,
+    },
   ];
 
   const fichaFormulario = (
