@@ -204,7 +204,7 @@ export const PIEZAS_COMUNIDAD: PiezaComunidad[] = [
  * jornadas. Se queda solo lo que se puede sostener.
  */
 export const MARQUESINA = [
-  'Un método creado por mí',
+  'Un método nacido en cabina',
   'Drenaje linfático manual llevado más lejos',
   'Primero online, después presencial',
   'Grupos reducidos y práctica sobre cuerpo real',

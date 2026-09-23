@@ -98,8 +98,8 @@ export default function Home() {
               Un método manual con un orden: primero estimular, después drenar, después moldear.
             </h2>
             <p className="texto max-480">
-              Divine es drenaje linfático manual avanzado. Lo creé yo sobre la base del drenaje
-              clásico, después de casi treinta años de cabina. Se trabaja con las manos y aceite,
+              Divine es drenaje linfático manual avanzado. Nació de casi treinta años de cabina, de
+              ordenar sobre la base del drenaje clásico lo que hasta entonces llamaba intuición. Se trabaja con las manos y aceite,
               por zonas: abdomen, piernas y glúteos, brazos, cintura, espalda, y el rostro en su
               versión facial.
             </p>
@@ -203,7 +203,7 @@ export default function Home() {
                 <li>Día 1 · Lipodrenaje, protocolo completo y aplicación</li>
                 <li>Día 2 · Moldeo y tonificación de silueta</li>
                 <li>Práctica sobre modelos reales, no solo demostración</li>
-                <li>Te corrijo yo, sobre tus manos</li>
+                <li>Te corrijo sobre tus manos</li>
               </ul>
             </article>
           </div>
@@ -245,7 +245,7 @@ export default function Home() {
             <p className="antetitulo" style={{ color: 'var(--oro)' }}>
               Quién está detrás
             </p>
-            <h2 className="titulo-lg">Soy Sorela Caro y la Técnica Divine la creé yo.</h2>
+            <h2 className="titulo-lg">Soy Sorela Caro y llevo casi treinta años en cabina.</h2>
 
             <div className={css.acciones}>
               <Link href="/sobre" className="btn btn-md">

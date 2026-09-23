@@ -58,7 +58,7 @@ const ETAPAS = [
       'Día 1 · Lipodrenaje: protocolo completo y aplicación',
       'Día 2 · Moldeo y tonificación de silueta',
       'Práctica sobre modelos reales, no solo demostración',
-      'Te corrijo yo, sobre tus manos',
+      'Te corrijo sobre tus manos',
       'Grupos reducidos',
     ],
     destacada: true,
