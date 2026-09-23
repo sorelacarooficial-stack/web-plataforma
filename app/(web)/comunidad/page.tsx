@@ -8,7 +8,7 @@ import css from './comunidad.module.css';
 export const metadata: Metadata = {
   title: 'Comunidad de Terapeutas Divine',
   description:
-    'La membresía de Sorela Caro abre el 17 de octubre a las 16:00. Clase mensual, acompañamiento, canal privado y agenda inteligente por 47 € al mes, precio de lanzamiento.',
+    'La Comunidad de Terapeutas Divine abre el 17 de octubre a las 16:00. Clase en vivo al mes, acompañamiento, canal privado y tu ficha en el mapa por 47 € al mes, precio de lanzamiento.',
 };
 
 export default function Comunidad() {
@@ -18,16 +18,19 @@ export default function Comunidad() {
         <div className="wrap rejilla-290" style={{ alignItems: 'start' }}>
           <div className="columna" style={{ gap: 24, alignItems: 'flex-start' }}>
             <span className="distintivo">Abre el {COMUNIDAD.apertura}</span>
-            {/* Titular distinto del que lleva el inicio a propósito: si las dos
-                páginas encabezan con la misma frase, la segunda parece un error. */}
-            <h1 className={css.titulo}>La membresía de Sorela.</h1>
+            {/* En primera persona, y titular distinto del que lleva el inicio:
+                si las dos páginas encabezan igual, la segunda parece un error.
+                Antes ponía «La membresía de Sorela», que habla de ella en
+                tercera persona como si lo contara otro; aquí quien escribe es
+                ella y quien lee es una terapeuta a la que conoce. */}
+            <h1 className={css.titulo}>Estoy preparando algo especial para ti.</h1>
             <p className="lede max-540" style={{ lineHeight: 1.62 }}>
-              Donde sigue enseñando después del curso. Una clase en vivo al mes con lo nuevo del
-              método, tus casos mirados uno a uno, un canal privado donde preguntar y tu ficha en
-              el mapa.
+              El sitio donde sigo enseñando después del curso: una clase en vivo al mes con lo
+              nuevo del método, tus casos mirados uno a uno, un canal privado donde preguntarme y
+              tu ficha en el mapa.
             </p>
             <p className="texto max-540">
-              Abre una sola vez, y quien entre en el lanzamiento se queda con el precio de
+              Abro una sola vez, y quien entre en el lanzamiento se queda con el precio de
               fundadora.
             </p>
             <Contador />
