@@ -105,19 +105,6 @@
   text-wrap: pretty;
 }
 
-.heroLede {
-  margin: 0;
-  max-width: 520px;
-  /* Sobre una foto, el gris de párrafo del resto de la web se queda corto.
-     Aquí va el mismo tono que el titular, con el peso justo para que no
-     compita con él. */
-  font-weight: 350;
-  font-size: clamp(16px, 1.4vw, 19.5px);
-  line-height: 1.6;
-  color: var(--ink);
-  text-wrap: pretty;
-}
-
 .heroAcciones {
   display: flex;
   flex-wrap: wrap;
@@ -578,11 +565,6 @@
     font-size: clamp(29px, 7.6vw, 38px);
   }
 
-  .heroLede {
-    font-size: 15.5px;
-    line-height: 1.55;
-  }
-
   /* El sello y la firma repiten lo que ya dicen el logotipo de la cabecera y
      el titular, y cuestan los setenta píxeles de alto que necesita el botón. */
   .sello,
@@ -602,11 +584,6 @@
 
   .heroTitulo {
     font-size: 25px;
-  }
-
-  .heroLede {
-    font-size: 14.5px;
-    line-height: 1.5;
   }
 }
 
