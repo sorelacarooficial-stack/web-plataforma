@@ -49,6 +49,24 @@ function limpiar(texto: string): string {
     .slice(0, 200);
 }
 
+/**
+ * Si este Node puede cargar la librería de Firebase.
+ *
+ * firebase-admin 14 arrastra `jose` en su versión 6, que es un módulo moderno,
+ * y lo carga a la manera antigua. Esa mezcla solo la aguanta Node a partir de
+ * 20.19 o de 22.12: por debajo, la librería no carga y todo lo que toque el
+ * acceso deja de funcionar, aunque las claves estén perfectas. Cuesta días
+ * dar con ello si no se mira, así que se mira aquí.
+ */
+function nodeSirve(version: string): boolean {
+  const [may, men] = version.replace(/^v/, '').split('.').map(Number);
+  if (!Number.isFinite(may) || !Number.isFinite(men)) return false;
+  if (may >= 23) return true;
+  if (may === 22) return men >= 12;
+  if (may === 20) return men >= 19;
+  return false;
+}
+
 export async function GET() {
   try {
     const { aplicacion, diagnostico, hayFirebase } = await import('@/lib/firebase-servidor');
@@ -94,7 +112,9 @@ export async function GET() {
       {
         listo: hablaConFirebase && d.hayAdministradoras,
         proyecto: d.proyecto,
+        node: process.version,
         comprobaciones: {
+          'version de Node suficiente': nodeSirve(process.version),
           'variable del proyecto': d.tieneProyecto,
           'correo de la cuenta de servicio': d.tieneCorreoDeServicio,
           'clave privada presente': d.tieneClave,
@@ -113,7 +133,10 @@ export async function GET() {
     return NextResponse.json(
       {
         listo: false,
-        porQueNo: 'la comprobación se rompió antes de terminar',
+        node: process.version,
+        porQueNo: nodeSirve(process.version)
+          ? 'la comprobación se rompió antes de terminar'
+          : `este servidor corre Node ${process.version} y la librería de Firebase necesita 20.19 o 22.12 en adelante`,
         seRompioCon: {
           tipo: (e as Error)?.name ?? 'desconocido',
           mensaje: limpiar(String((e as Error)?.message || e)),
