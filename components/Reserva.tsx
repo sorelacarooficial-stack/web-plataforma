@@ -95,10 +95,10 @@ export default function Reserva({ ciudad }: { ciudad: string }) {
     return (
       <div className="formulario">
         <div className={formCss.exito} role="status">
-          <h3 className={formCss.exitoTitulo}>Petición enviada.</h3>
+          <h3 className={formCss.exitoTitulo}>Gracias, ya está enviada.</h3>
           <p className={formCss.exitoTexto}>
-            Tu petición para la consulta de {ciudad} está enviada. Te escribe ella por correo con
-            las horas que tiene libres, no un robot.
+            Tu petición para la consulta de {ciudad} ha llegado. Te escribe ella por correo con las
+            horas que tiene libres, no un robot.
           </p>
           <button
             type="button"

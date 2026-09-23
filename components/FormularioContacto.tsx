@@ -85,7 +85,7 @@ export default function FormularioContacto() {
     <div className={css.contactoCaja}>
       {estado === 'hecho' ? (
         <div className={css.exito} role="status">
-          <h2 className={css.exitoTitulo}>Recibido.</h2>
+          <h2 className={css.exitoTitulo}>Gracias por escribirme.</h2>
           <p className={css.exitoTexto}>
             Te contesto yo, y tardo menos de 48 horas. Si es urgente, por Instagram voy más rápido.
           </p>

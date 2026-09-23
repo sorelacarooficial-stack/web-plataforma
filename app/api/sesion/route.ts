@@ -36,10 +36,28 @@ export async function POST(peticion: Request) {
     const sesion = await crearSesion(tokenId);
     return NextResponse.json({ ok: true, sesion });
   } catch (e) {
-    // Token caducado, de otro proyecto o manipulado. No se distingue en la
-    // respuesta: dar detalles solo ayuda a quien está probando.
-    console.error('[sesion] Token rechazado:', e);
-    return NextResponse.json({ ok: false, motivo: 'token' }, { status: 401 });
+    console.error('[sesion] No se pudo abrir la sesión:', e);
+
+    /*
+     * Dos cosas muy distintas caían antes en el mismo «token»:
+     *
+     *   - el token del navegador no vale (caducado, de otro proyecto), que es
+     *     culpa de quien entra y se arregla volviendo a intentarlo;
+     *   - la llave del servidor está mal puesta, que no es culpa suya y no se
+     *     arregla nunca por mucho que insista.
+     *
+     * Decir «vuelve a intentarlo» en el segundo caso es mandar a alguien a dar
+     * vueltas. Así que se separan. Del error real no sale nada hacia fuera:
+     * solo se mira para elegir cuál de los dos es.
+     */
+    const texto = String((e as Error)?.message || e);
+    const esDelServidor = /DECODER|PEM|private key|invalid_grant|Invalid JWT|signature|credential/i.test(
+      texto
+    );
+
+    return esDelServidor
+      ? NextResponse.json({ ok: false, motivo: 'servidor' }, { status: 500 })
+      : NextResponse.json({ ok: false, motivo: 'token' }, { status: 401 });
   }
 }
 

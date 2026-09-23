@@ -121,17 +121,24 @@ export default function Captacion({
   if (estado === 'hecho') {
     return (
       <div className={css.exito} role="status">
-        <h2 className={css.exitoTitulo}>Ya estás dentro, {v.nombre.trim().split(' ')[0]}.</h2>
+        {/* El título hablaba de estar «dentro», y quien lo lee no ha entrado en
+            ningún sitio: acaba de dejar su contacto. Ahora se le agradece, que
+            es lo que toca, y se le dice exactamente qué va a pasar. */}
+        <h2 className={css.exitoTitulo}>
+          Gracias por contar conmigo, {v.nombre.trim().split(' ')[0]}.
+        </h2>
         <p className={css.exitoTexto}>
           {conCorreo ? (
             <>
-              Te acabo de mandar un correo con la información de la Técnica Divine. Si no lo ves en
-              un par de minutos, mira en spam: a veces se esconde ahí la primera vez.
+              Te acabo de mandar un correo con toda la información de la Técnica Divine: qué es,
+              cómo se aprende y cuándo son las próximas formaciones. Si no lo ves en un par de
+              minutos, mira en spam: la primera vez suele esconderse ahí.
             </>
           ) : (
             <>
-              Tengo tu contacto. Te escribo yo con la información de la Técnica Divine en cuanto
-              pueda, no hace falta que hagas nada más.
+              Ya tengo tus datos. Te escribo yo con toda la información de la Técnica Divine —qué
+              es, cómo se aprende y cuándo son las próximas formaciones—. No tienes que hacer nada
+              más.
             </>
           )}
         </p>

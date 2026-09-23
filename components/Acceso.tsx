@@ -5,45 +5,45 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import {
-  createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
-  signInWithPopup,
-  updateProfile,
   type UserCredential,
 } from 'firebase/auth';
 import CambiarTema from './CambiarTema';
-import IconoGoogle from './IconoGoogle';
-import { auth, hayAuth, proveedorGoogle } from '@/lib/firebase-navegador';
+import { auth, hayAuth } from '@/lib/firebase-navegador';
 import logo from '@/fotos/logo-sorela.png';
 import consulta from '@/fotos/acceso-consulta.webp';
 import css from './Acceso.module.css';
 
-type Modo = 'acceso' | 'registro';
-
 /**
- * Pantalla de acceso a la plataforma: la de Sorela y la de sus alumnas y
- * terapeutas certificadas. Es la misma puerta para las tres; el rol se
- * resuelve al autenticar, no aquí.
+ * Puerta de la plataforma.
  *
- * Autentica de verdad contra Firebase. El camino tiene dos pasos y conviene
- * entenderlo: Firebase devuelve al navegador un token que solo vive en la
- * memoria de la pestaña, y con eso el servidor no puede proteger nada. Por eso
- * en cuanto hay token se manda a /api/sesion, que lo cambia por una cookie
- * firmada. Hasta que esa cookie no existe, no se navega a la plataforma.
+ * Es una puerta CERRADA: aquí no se crean cuentas. Las da de alta Sorela, una
+ * a una, cuando alguien se matricula o se certifica. Antes esta pantalla tenía
+ * un botón de Google y un formulario de registro abierto, y eso significaba
+ * que cualquiera que llegase por el buscador podía darse de alta en la
+ * plataforma privada de un negocio que todavía no ha abierto.
+ *
+ * Importante para quien mantenga esto: quitar el registro de aquí NO lo cierra
+ * del todo. La clave del navegador es pública por diseño y con ella se puede
+ * llamar a Firebase desde fuera. El cierre de verdad está en la consola:
+ * Authentication → Settings → User actions → impedir la creación de cuentas.
+ * Esta pantalla y esa casilla van juntas; una sin la otra no basta.
+ *
+ * El acceso tiene dos pasos y conviene entenderlo: Firebase devuelve al
+ * navegador un token que solo vive en la memoria de la pestaña, y con eso el
+ * servidor no puede proteger nada. Por eso en cuanto hay token se manda a
+ * /api/sesion, que lo cambia por una cookie firmada. Hasta que esa cookie no
+ * existe, no se navega a la plataforma.
  */
 export default function Acceso() {
   return (
     // useSearchParams obliga a envolver en Suspense para que el resto de la
     // página se siga generando de forma estática.
-    <Suspense fallback={<Pantalla />}>
-      <Pantalla conParametros />
+    <Suspense fallback={<Marco>{null}</Marco>}>
+      <Formulario />
     </Suspense>
   );
-}
-
-function Pantalla({ conParametros = false }: { conParametros?: boolean }) {
-  return conParametros ? <Formulario /> : <Marco>{null}</Marco>;
 }
 
 /** Traduce los códigos de Firebase, que son ilegibles para quien los recibe. */
@@ -53,13 +53,10 @@ function mensaje(codigo: string): string {
     'auth/invalid-email': 'Ese correo no parece correcto.',
     'auth/user-not-found': 'No hay ninguna cuenta con ese correo.',
     'auth/wrong-password': 'El correo o la contraseña no son correctos.',
-    'auth/email-already-in-use': 'Ya hay una cuenta con ese correo. Entra en vez de registrarte.',
-    'auth/weak-password': 'La contraseña necesita al menos seis caracteres.',
+    'auth/user-disabled': 'Esa cuenta está desactivada.',
     'auth/too-many-requests': 'Demasiados intentos seguidos. Espera un momento y vuelve a probar.',
-    'auth/popup-closed-by-user': 'Has cerrado la ventana de Google antes de terminar.',
-    'auth/popup-blocked': 'El navegador ha bloqueado la ventana de Google. Permítela y vuelve a intentarlo.',
     'auth/network-request-failed': 'No hay conexión. Revisa la red y vuelve a intentarlo.',
-    'auth/operation-not-allowed': 'Ese método de acceso no está activado en Firebase.',
+    'auth/operation-not-allowed': 'El acceso con correo no está activado en Firebase.',
     // Este sale cuando el dominio desde el que se entra no está en la lista de
     // dominios autorizados de Firebase. Sin un mensaje propio caía en el
     // genérico —«vuelve a intentarlo»— y quien lo viera volvería a intentarlo
@@ -67,8 +64,6 @@ function mensaje(codigo: string): string {
     'auth/unauthorized-domain':
       'Este dominio no está autorizado en Firebase. Hay que añadirlo en Authentication → Settings → Authorized domains.',
     'auth/invalid-api-key': 'La clave de Firebase del navegador no es válida.',
-    'auth/account-exists-with-different-credential':
-      'Ya hay una cuenta con ese correo, creada de otra forma. Entra como la creaste la primera vez.',
   };
   return mapa[codigo] || 'No he podido entrar. Vuelve a intentarlo en un momento.';
 }
@@ -78,15 +73,11 @@ function Formulario() {
   const parametros = useSearchParams();
   const volver = parametros.get('volver') || '/plataforma';
 
-  const [modo, setModo] = useState<Modo>('acceso');
-  const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [clave, setClave] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
-
-  const esRegistro = modo === 'registro';
 
   /**
    * El paso que de verdad abre la sesión: cambia el token por la cookie. Si
@@ -102,29 +93,21 @@ function Formulario() {
     });
     const cuerpo = await r.json().catch(() => ({ ok: false }));
     if (!cuerpo.ok) {
+      // Los tres casos se resuelven de forma distinta, así que se cuentan de
+      // forma distinta. Decir «vuelve a intentarlo» cuando el fallo está en la
+      // configuración del servidor es mandar a alguien a dar vueltas.
       throw new Error(
         cuerpo.motivo === 'sin-configurar'
           ? 'El servidor todavía no tiene Firebase configurado.'
-          : 'No he podido abrir la sesión. Vuelve a intentarlo.'
+          : cuerpo.motivo === 'servidor'
+            ? 'Tu contraseña es correcta, pero el servidor no ha podido abrir la sesión. Es un problema de configuración, no tuyo.'
+            : 'No he podido abrir la sesión. Vuelve a intentarlo.'
       );
     }
     router.push(volver);
     // Sin refresh, Next puede servir la plataforma desde su caché de cliente,
     // que se guardó cuando no había sesión.
     router.refresh();
-  }
-
-  async function conGoogle() {
-    if (cargando) return;
-    setError(null);
-    setAviso(null);
-    setCargando(true);
-    try {
-      await abrirSesion(await signInWithPopup(auth(), proveedorGoogle()));
-    } catch (e) {
-      setError(traducir(e));
-      setCargando(false);
-    }
   }
 
   async function conCorreo(e: React.FormEvent) {
@@ -134,17 +117,7 @@ function Formulario() {
     setAviso(null);
     setCargando(true);
     try {
-      if (esRegistro) {
-        const credencial = await createUserWithEmailAndPassword(auth(), correo, clave);
-        if (nombre.trim()) {
-          await updateProfile(credencial.user, { displayName: nombre.trim() });
-          // El token se pide de nuevo dentro de abrirSesion, así que el nombre
-          // recién puesto ya viaja en él.
-        }
-        await abrirSesion(credencial);
-      } else {
-        await abrirSesion(await signInWithEmailAndPassword(auth(), correo, clave));
-      }
+      await abrirSesion(await signInWithEmailAndPassword(auth(), correo.trim(), clave));
     } catch (e) {
       setError(traducir(e));
       setCargando(false);
@@ -155,7 +128,7 @@ function Formulario() {
     setError(null);
     setAviso(null);
     if (!correo.trim()) {
-      setError('Escribe tu correo y vuelvo a mandarte el acceso.');
+      setError('Escribe tu correo y te mando el enlace para cambiarla.');
       return;
     }
     try {
@@ -190,35 +163,10 @@ function Formulario() {
 
   return (
     <Marco>
-      <h1 className={css.titulo}>{esRegistro ? 'Crea tu cuenta' : 'Entra en tu espacio'}</h1>
+      <h1 className={css.titulo}>Entra en tu espacio</h1>
 
       <div className={css.caja}>
-        <button type="button" onClick={conGoogle} className={css.google} disabled={cargando}>
-          <span className={css.googleMarca}>
-            <IconoGoogle size={18} />
-          </span>
-          <span>{esRegistro ? 'Registrarme con Google' : 'Continuar con Google'}</span>
-        </button>
-
-        <div className={css.separador}>
-          <span className={css.raya} />
-          <span className={css.separadorTexto}>o con tu correo</span>
-          <span className={css.raya} />
-        </div>
-
         <form className={css.formulario} onSubmit={conCorreo}>
-          {esRegistro && (
-            <input
-              required
-              autoComplete="name"
-              placeholder="Nombre y apellidos"
-              aria-label="Nombre y apellidos"
-              className={css.campo}
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-            />
-          )}
-
           <input
             required
             type="email"
@@ -235,30 +183,13 @@ function Formulario() {
           <input
             required
             type="password"
-            autoComplete={esRegistro ? 'new-password' : 'current-password'}
+            autoComplete="current-password"
             placeholder="Contraseña"
             aria-label="Contraseña"
             className={css.campo}
             value={clave}
             onChange={(e) => setClave(e.target.value)}
           />
-
-          {esRegistro && (
-            <label className={css.condiciones}>
-              <input type="checkbox" required className={css.casilla} />
-              <span>
-                Acepto las{' '}
-                <Link href="/legal/condiciones" className={css.enlaceFino}>
-                  condiciones
-                </Link>{' '}
-                y la{' '}
-                <Link href="/legal/privacidad" className={css.enlaceFino}>
-                  política de privacidad
-                </Link>
-                .
-              </span>
-            </label>
-          )}
 
           {error && (
             <p className={css.error} role="alert">
@@ -272,35 +203,24 @@ function Formulario() {
           )}
 
           <button type="submit" className={css.enviar} disabled={cargando}>
-            {cargando ? 'Un momento…' : esRegistro ? 'Crear cuenta' : 'Entrar'}
+            {cargando ? 'Un momento…' : 'Entrar'}
           </button>
 
-          {!esRegistro && (
-            <button type="button" onClick={recuperar} className={css.olvido}>
-              ¿Has olvidado la contraseña?
-            </button>
-          )}
+          <button type="button" onClick={recuperar} className={css.olvido}>
+            ¿Has olvidado la contraseña?
+          </button>
         </form>
       </div>
 
-      <p className={css.cambio}>
-        {esRegistro ? '¿Ya tienes cuenta?' : '¿Aún no tienes cuenta?'}{' '}
-        <button
-          type="button"
-          onClick={() => {
-            setModo(esRegistro ? 'acceso' : 'registro');
-            setError(null);
-            setAviso(null);
-          }}
-          className={css.enlaceBoton}
-        >
-          {esRegistro ? 'Entrar' : 'Crear cuenta'}
-        </button>
-      </p>
-
+      {/* Quien llegue aquí sin cuenta tiene que salir con algo, no con una
+          puerta cerrada y nada más. */}
       <p className={css.letraPequena}>
-        Si entras con Google usamos solo tu nombre y tu correo. Tu acceso a la comunidad se activa
-        cuando te certificas.
+        Este acceso es para alumnas y terapeutas certificadas. Las cuentas las doy yo cuando te
+        matriculas.{' '}
+        <Link href="/formaciones" className={css.enlaceFino}>
+          Ver las formaciones
+        </Link>
+        .
       </p>
     </Marco>
   );
