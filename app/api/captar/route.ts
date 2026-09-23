@@ -65,9 +65,19 @@ const hayAppsScript = () =>
 /**
  * Llama al Apps Script, que guarda su fila y manda los dos correos: el de
  * bienvenida con la información de la técnica y el aviso a Sorela.
+ *
+ * Devuelve las dos cosas por separado, y no una sola, porque son dos preguntas
+ * distintas: si SALIÓ EL CORREO decide qué se le dice a la persona, y si QUEDÓ
+ * GUARDADA decide si el contacto se ha perdido. Juntándolas, un correo que
+ * falla con Firestore caído daría el contacto por perdido aunque su fila
+ * estuviera escrita en la hoja, y esa persona vería la salida de emergencia
+ * sin motivo.
  */
-async function llamarAppsScript(datos: Contacto & { origen: string }): Promise<boolean> {
-  if (!hayAppsScript()) return false;
+type Respuesta = { correo: boolean; guardado: boolean };
+
+async function llamarAppsScript(datos: Contacto & { origen: string }): Promise<Respuesta> {
+  const nada: Respuesta = { correo: false, guardado: false };
+  if (!hayAppsScript()) return nada;
 
   try {
     const r = await fetch(process.env.APPS_SCRIPT_URL as string, {
@@ -86,18 +96,19 @@ async function llamarAppsScript(datos: Contacto & { origen: string }): Promise<b
 
     const texto = await r.text();
     try {
-      return Boolean(JSON.parse(texto).ok);
+      const c = JSON.parse(texto);
+      return { correo: Boolean(c.ok), guardado: Boolean(c.guardado ?? c.ok) };
     } catch {
       // Apps Script devuelve una página HTML de error cuando el despliegue no
       // es público o la autorización ha caducado. Es el fallo más habitual al
       // montarlo, así que se deja en el registro tal cual viene.
       console.error('[captar] El Apps Script no devolvió JSON:', texto.slice(0, 300));
-      return false;
+      return nada;
     }
   } catch (e) {
     const porTiempo = e instanceof Error && e.name === 'TimeoutError';
     console.error(`[captar] ${porTiempo ? 'Google tardó demasiado' : 'Fallo al llamar a Google'}:`, e);
-    return false;
+    return nada;
   }
 }
 
@@ -182,10 +193,12 @@ export async function POST(peticion: Request) {
   /* ---------- 2. Correos por Apps Script ---------- */
   // Se llama aunque Firestore haya fallado: además de mandar los correos deja
   // su fila en la hoja, así que sirve de red de seguridad para el dato.
-  const porAppsScript = await llamarAppsScript(datos);
+  const google = await llamarAppsScript(datos);
 
-  const correoEnviado = porAppsScript || (!hayAppsScript() && (await correoPorSmtp(datos)));
-  const guardado = enFirestore || porAppsScript;
+  const correoEnviado = google.correo || (!hayAppsScript() && (await correoPorSmtp(datos)));
+  // Para dar el contacto por guardado vale con que esté en uno de los dos
+  // sitios, y la fila de la hoja cuenta aunque el correo no haya salido.
+  const guardado = enFirestore || google.guardado;
 
   if (!guardado) {
     console.error(
