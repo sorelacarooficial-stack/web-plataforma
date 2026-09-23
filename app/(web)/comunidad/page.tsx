@@ -5,10 +5,21 @@ import ListaEspera from '@/components/ListaEspera';
 import { COMUNIDAD, OBJECIONES, PIEZAS_COMUNIDAD } from '@/lib/contenido';
 import css from './comunidad.module.css';
 
+/**
+ * Se usa «Comunidad Divine», que es como la nombran el pie de página, el
+ * asistente y el contador; «Comunidad de Terapeutas Divine» solo aparece
+ * dentro de la plataforma. El título aclara para quién es —terapeutas ya
+ * certificadas— para que no se cuele quien todavía busca formarse.
+ *
+ * La descripción ya no lleva la fecha de apertura ni el precio: la fecha
+ * caduca el 17 de octubre y en Google tarda semanas en refrescarse, así que
+ * quedaría anunciando algo que ya pasó. Ambos están en la página, que sí se
+ * actualiza sola.
+ */
 export const metadata: Metadata = {
-  title: 'Comunidad de Terapeutas Divine',
+  title: { absolute: 'La Comunidad Divine para terapeutas ya certificadas' },
   description:
-    'La Comunidad de Terapeutas Divine abre el 17 de octubre a las 16:00. Clase en vivo al mes, acompañamiento, canal privado y tu ficha en el mapa por 47 € al mes, precio de lanzamiento.',
+    'Donde sigo enseñando cuando acaba el curso: una clase en vivo al mes, tus casos mirados uno a uno, canal privado y tu ficha en el mapa. Lista de espera abierta.',
 };
 
 export default function Comunidad() {

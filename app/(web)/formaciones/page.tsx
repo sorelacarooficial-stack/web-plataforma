@@ -4,10 +4,19 @@ import BotonAsistente from '@/components/BotonAsistente';
 import BotonCaptacion from '@/components/BotonCaptacion';
 import css from './formaciones.module.css';
 
+/**
+ * Junto con la portada, es la página que pelea por la búsqueda principal: una
+ * esteticista que quiere formarse. La portada dice «formación» y esta dice
+ * «curso», que es la otra manera de buscarlo, para que no compitan entre sí.
+ *
+ * La descripción no promete fechas, porque no hay ninguna cerrada (ver el
+ * comentario de abajo). Prometer en Google lo que la página no da es peor que
+ * no salir.
+ */
 export const metadata: Metadata = {
-  title: 'Formaciones',
+  title: { absolute: 'Curso de drenaje linfático manual, online y presencial' },
   description:
-    'Dos etapas y un orden: primero la formación online, después la presencial con Sorela. Próximas convocatorias en Sudamérica.',
+    'Primero la formación online, después dos días presenciales conmigo sobre modelos reales. Aún no hay fechas cerradas: dime tu ciudad y te guardo el sitio.',
 };
 
 /**
