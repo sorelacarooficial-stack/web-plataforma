@@ -116,3 +116,23 @@
     animation: none;
   }
 }
+
+/*
+ * Este fotograma vive aquí y no en globals.css, aunque se repita en otros
+ * módulos, y la razón no es de estilo: los CSS Modules le cambian el nombre a
+ * la animación —«divineUp» se convierte en «Fichero-module__hash__divineUp»—,
+ * y ese nombre no existe entre los globales. La animación se queda en nada, sin
+ * error ni aviso: simplemente no se mueve. Así estaba la barra de la portada,
+ * parada desde el principio. Definiéndolo en el mismo fichero que lo usa, el
+ * nombre se cambia en los dos sitios y vuelven a coincidir.
+ */
+@keyframes divineUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

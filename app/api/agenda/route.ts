@@ -116,18 +116,19 @@ function desfaseDeMadrid(instante: Date): number {
 }
 
 /**
- * El instante en que empezó el día de hoy en España.
+ * El instante en que empezó ese día en España, dándole el día en números.
  *
  * Hace falta porque el servidor de Vercel va en UTC y Sorela vive en España.
  * Si se cortara la lista por la medianoche de UTC, entre las 00:00 y las 02:00
  * de la madrugada española desaparecerían de la agenda los eventos de esa
  * misma madrugada: ya habrían quedado «antes de hoy».
  *
- * Los dos tanteos no son manía: el desfase de ahora mismo no tiene por qué ser
- * el de esta medianoche, y los dos domingos del año en que se cambia la hora no
- * lo es. El primer tanteo cae como mucho a una hora de la medianoche buena, que
- * es justo lo que salta España al cambiar la hora; por eso medir el desfase ahí
- * y restarlo otra vez da el instante exacto, y no hace falta un tercer tanteo.
+ * Los dos tanteos no son manía: el desfase de un instante cualquiera no tiene
+ * por qué ser el de esa medianoche, y los dos domingos del año en que se cambia
+ * la hora no lo es. El primer tanteo cae como mucho a una hora de la medianoche
+ * buena, que es justo lo que salta España al cambiar la hora; por eso medir el
+ * desfase ahí y restarlo otra vez da el instante exacto, y no hace falta un
+ * tercer tanteo.
  *
  * Aquí había un Math.min entre los dos candidatos, pensado como red de
  * seguridad. No lo era: el domingo de marzo el primer tanteo se va una hora
@@ -135,13 +136,31 @@ function desfaseDeMadrid(instante: Date): number {
  * también la última hora de ayer. El segundo cálculo es correcto en los dos
  * cambios de hora y en cualquier día normal, y no tiene ese efecto.
  */
-function inicioDeHoy(): Date {
-  const ahora = new Date();
-  const r = relojDeMadrid(ahora);
-  const medianoche = Date.UTC(r.year, r.month - 1, r.day);
-
-  const tanteo = medianoche - desfaseDeMadrid(ahora);
+function inicioDelDia(anio: number, mes: number, dia: number): Date {
+  const medianoche = Date.UTC(anio, mes - 1, dia);
+  const tanteo = medianoche - desfaseDeMadrid(new Date(medianoche));
   return new Date(medianoche - desfaseDeMadrid(new Date(tanteo)));
+}
+
+/** El instante en que empezó el día de hoy en España. */
+function inicioDeHoy(): Date {
+  const r = relojDeMadrid(new Date());
+  return inicioDelDia(r.year, r.month, r.day);
+}
+
+/**
+ * Desde cuándo quiere mirar quien pregunta, escrito como `2026-08-31`.
+ *
+ * Lo usa el calendario: al pasar a un mes anterior necesita los eventos de ese
+ * mes, que por defecto no vienen. Devuelve null si no es una fecha con forma de
+ * fecha —así un parámetro roto no tumba la consulta, simplemente se ignora.
+ */
+function desdeCuando(crudo: string | null): Date | null {
+  const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(crudo ?? '');
+  if (!partes) return null;
+  const [anio, mes, dia] = partes.slice(1).map(Number);
+  if (anio < 2000 || anio > 2100 || mes < 1 || mes > 12 || dia < 1 || dia > 31) return null;
+  return inicioDelDia(anio, mes, dia);
 }
 
 /* ==========================================================================
@@ -231,14 +250,24 @@ export async function GET(peticion: Request) {
   const guardia = await exigirAdmin();
   if (guardia.error) return guardia.error;
 
-  const todos = new URL(peticion.url).searchParams.get('todos') === '1';
+  const parametros = new URL(peticion.url).searchParams;
+  const todos = parametros.get('todos') === '1';
+
+  /* Dónde empieza lo que se devuelve. Por defecto, hoy. El calendario puede
+     pedir que empiece antes con `desde`, pero NUNCA después: adelantar el corte
+     escondería lo de hoy y lo de la semana que viene, y los tres contadores de
+     la pantalla —que se calculan sobre esta misma lista— dejarían de cuadrar
+     solo por estar mirando el calendario de diciembre. */
+  const hoy = inicioDeHoy();
+  const pedido = desdeCuando(parametros.get('desde'));
+  const corte = pedido && pedido.getTime() < hoy.getTime() ? pedido : hoy;
 
   let consulta: Query = baseDeDatos().collection(COLECCIONES.agenda);
   if (!todos) {
     // El filtro y la ordenación caen sobre el MISMO campo, así que a Firestore
     // le basta con su índice automático: esto no pide crear ningún índice
     // compuesto a mano en la consola.
-    consulta = consulta.where('cuando', '>=', Timestamp.fromDate(inicioDeHoy()));
+    consulta = consulta.where('cuando', '>=', Timestamp.fromDate(corte));
   }
 
   const lista = await consulta.orderBy('cuando', 'asc').limit(500).get();

@@ -366,3 +366,21 @@
   outline: 2px solid var(--arcilla);
   outline-offset: 2px;
 }
+
+/*
+ * Este fotograma vive aquí y no en globals.css, aunque se repita en otros
+ * módulos, y la razón no es de estilo: los CSS Modules le cambian el nombre a
+ * la animación —«divineUp» se convierte en «Fichero-module__hash__divineUp»—,
+ * y ese nombre no existe entre los globales. La animación se queda en nada, sin
+ * error ni aviso: simplemente no se mueve. Así estaba la barra de la portada,
+ * parada desde el principio. Definiéndolo en el mismo fichero que lo usa, el
+ * nombre se cambia en los dos sitios y vuelven a coincidir.
+ */
+@keyframes divineOrbit {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

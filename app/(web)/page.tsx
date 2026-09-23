@@ -94,7 +94,7 @@ export default function Home() {
           <div className="columna" style={{ gap: 22 }}>
             <p className="antetitulo">Qué es la Técnica Divine</p>
             <h2 className="titulo-lg max-560">
-              Un método manual con un orden: primero abrir, después drenar, después moldear.
+              Un método manual con un orden: primero estimular, después drenar, después moldear.
             </h2>
             <p className="texto max-480">
               Divine es drenaje linfático manual avanzado. Lo creó Sorela Caro sobre la base del
