@@ -123,9 +123,9 @@ export const PILARES: Pilar[] = [
       'Lees el biotipo, el estado del tejido y la zona antes de empezar. De ahí sale la sesión. No hay un protocolo único para todas las personas.',
   },
   {
-    titulo: 'Abrir antes de drenar',
+    titulo: 'Estimular antes de drenar',
     texto:
-      'Pulsaciones lentas sobre ganglios y estaciones linfáticas. Mientras el paso no esté abierto, no se arrastra nada. Ese orden sostiene todo lo demás.',
+      'Pulsaciones lentas sobre ganglios y estaciones linfáticas. Mientras esa zona no está trabajada, no se arrastra nada. Ese orden sostiene todo lo demás.',
   },
   {
     titulo: 'Moldear al final',
