@@ -111,6 +111,7 @@ export default function Formaciones() {
                 titulo="Te guardo el sitio"
                 entradilla="Déjame dónde escribirte y te aviso en cuanto se cierre la primera convocatoria, con la ciudad, las fechas y el precio."
                 etiquetaVentana="Guardar sitio en la próxima formación"
+                origen="formacion"
               >
                 Guardar mi sitio
               </BotonCaptacion>
