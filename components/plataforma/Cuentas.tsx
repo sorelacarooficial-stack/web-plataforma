@@ -145,7 +145,18 @@ export default function Cuentas() {
         // Si el servidor no dice qué campo falla, el problema no está en lo
         // escrito: se avisa arriba, donde se ven los fallos generales.
         if (!c.errores || Object.keys(c.errores).length === 0) {
-          setFallo('No he podido crear la cuenta.');
+          /*
+           * «cuenta-suelta» es el único caso en que hace falta que ella haga
+           * algo fuera de aquí: el alta se quedó a medias y tampoco se pudo
+           * deshacer, así que en Firebase hay una cuenta con ese correo que no
+           * sale en esta lista y que va a impedir volver a intentarlo. Si no se
+           * dice, se queda pulsando «crear» contra un «ya existe» eterno.
+           */
+          setFallo(
+            c.motivo === 'cuenta-suelta'
+              ? 'La cuenta se creó a medias y no he podido deshacerla. Ha quedado suelta en Firebase con ese correo: bórrala desde allí y vuelve a intentarlo.'
+              : 'No he podido crear la cuenta.'
+          );
         }
         return;
       }

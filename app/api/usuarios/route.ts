@@ -208,29 +208,60 @@ export async function POST(peticion: Request) {
     return NextResponse.json({ ok: false, motivo: 'fallo' }, { status: 500 });
   }
 
-  // El rol de verdad vive en la claim, que viaja firmada dentro del token. Lo
-  // de Firestore de abajo es la copia que se enseña en la lista.
-  await auth.setCustomUserClaims(usuario.uid, { role: rol });
+  /*
+   * Los dos pasos que quedan van dentro de un try, y si falla alguno se
+   * DESHACE la cuenta.
+   *
+   * Sin esto quedaba una cuenta zombi, y no de las inofensivas: la lista de
+   * esta pantalla sale de Firestore, así que una cuenta de Firebase sin ficha
+   * no aparece por ningún lado, y el borrado se pide por un uid que Sorela no
+   * tiene forma de conocer. Queda ocupando el correo para siempre —al volver a
+   * intentar el alta contesta «ya hay una cuenta con ese correo»— y solo se
+   * puede quitar entrando en la consola de Firebase, que es justo de lo que
+   * esta pantalla venía a librarla.
+   *
+   * Deshacerla es lo correcto y no una pérdida: el alta acaba de empezar,
+   * nadie ha recibido nada todavía y volver a intentarlo cuesta un clic.
+   */
+  try {
+    // El rol de verdad vive en la claim, que viaja firmada dentro del token. Lo
+    // de Firestore de abajo es la copia que se enseña en la lista.
+    await auth.setCustomUserClaims(usuario.uid, { role: rol });
 
-  await baseDeDatos()
-    .collection(COLECCIONES.usuarios)
-    .doc(usuario.uid)
-    .set({
-      correo,
-      nombre,
-      rol,
-      /*
-       * ultimoAcceso en null y NO sin escribir, que es la trampa: el GET de
-       * arriba ordena por ese campo, y Firestore deja FUERA de una consulta
-       * ordenada los documentos que no lo tienen. Sin esta línea, la cuenta
-       * recién creada no saldría en la lista hasta que la persona entrase por
-       * primera vez, y parecería que el alta no ha funcionado. Puesto a null sí
-       * aparece, y al final, que es donde tiene que estar quien no ha entrado.
-       */
-      ultimoAcceso: null,
-      creado: FieldValue.serverTimestamp(),
-      altaPor: guardia.sesion.uid,
-    });
+    await baseDeDatos()
+      .collection(COLECCIONES.usuarios)
+      .doc(usuario.uid)
+      .set({
+        correo,
+        nombre,
+        rol,
+        /*
+         * ultimoAcceso en null y NO sin escribir, que es la trampa: el GET de
+         * arriba ordena por ese campo, y Firestore deja FUERA de una consulta
+         * ordenada los documentos que no lo tienen. Sin esta línea, la cuenta
+         * recién creada no saldría en la lista hasta que la persona entrase por
+         * primera vez, y parecería que el alta no ha funcionado. Puesto a null
+         * sí aparece, y al final, que es donde tiene que estar quien no ha
+         * entrado.
+         */
+        ultimoAcceso: null,
+        creado: FieldValue.serverTimestamp(),
+        altaPor: guardia.sesion.uid,
+      });
+  } catch (e) {
+    console.error('[usuarios] Alta a medias, se deshace la cuenta:', e);
+    // Si tampoco se puede deshacer, se dice: queda una cuenta suelta en
+    // Firebase y hay que quitarla desde la consola. Callarlo la dejaría ahí
+    // sin que nadie lo supiera.
+    const deshecha = await auth
+      .deleteUser(usuario.uid)
+      .then(() => true)
+      .catch(() => false);
+    return NextResponse.json(
+      { ok: false, motivo: deshecha ? 'fallo' : 'cuenta-suelta', correo },
+      { status: 500 }
+    );
+  }
 
   /*
    * El enlace para poner la contraseña.

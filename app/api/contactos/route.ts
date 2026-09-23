@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
-import { tipoDeOrigen } from '@/lib/origenes';
+import { tipoDeOrigen, TIPOS, type Tipo } from '@/lib/origenes';
 import { PERFILES, normalizarTelefono, revisar as revisarComoLaWeb } from '@/lib/captacion';
 import { mandarInformacion } from '@/lib/enviar-informacion';
 
@@ -215,7 +215,16 @@ export async function GET() {
       // De dónde entró decide qué busca: una sesión, formarse o la comunidad.
       // Se resuelve aquí y no en el navegador para que la lista y el correo
       // digan lo mismo. Ver lib/origenes.ts.
-      tipo: tipoDeOrigen(v.origen),
+      /*
+       * El tipo sale del origen, salvo que Sorela lo haya cambiado a mano:
+       * entonces manda lo que ella dijo. El origen se queda como estaba —es de
+       * dónde entró, un hecho que ya pasó— y la clasificación va aparte, que es
+       * lo que sí puede estar mal: la portada vende la técnica a quien la va a
+       * recibir, así que quien entra por ahí se clasifica como posible clienta,
+       * y de vez en cuando es una esteticista que quiere formarse.
+       */
+      tipo: TIPOS.includes(v.tipoManual) ? (v.tipoManual as Tipo) : tipoDeOrigen(v.origen),
+      reclasificado: TIPOS.includes(v.tipoManual),
       // Lo que Sorela ha ido apuntando de esa persona, lo más nuevo primero.
       seguimiento: Array.isArray(v.seguimiento)
         ? v.seguimiento.map((n: { cuando?: string; texto?: string }) => ({
@@ -255,14 +264,20 @@ export async function PATCH(peticion: Request) {
    * habría quedado apuntado como una nota de seguimiento, que es justo lo
    * contrario de lo que se pedía.
    */
-  let cuerpo: { id?: string; estado?: string; nota?: string; datos?: Record<string, unknown> };
+  let cuerpo: {
+    id?: string;
+    estado?: string;
+    nota?: string;
+    tipo?: string;
+    datos?: Record<string, unknown>;
+  };
   try {
     cuerpo = await peticion.json();
   } catch {
     return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
   }
 
-  const { estado, nota, datos } = cuerpo;
+  const { estado, nota, datos, tipo } = cuerpo;
   // Antes bastaba con que el id no estuviera vacío. Un id con barras —de un
   // enlace viejo o de un copiar y pegar a medias— llegaba hasta doc() y salía
   // como un 500 con su traza; ahora contesta «datos», que es lo que es.
@@ -272,6 +287,28 @@ export async function PATCH(peticion: Request) {
   }
 
   const ref = baseDeDatos().collection(COLECCIONES.contactos).doc(id);
+
+  /*
+   * Reclasificar: decir que esta persona no busca lo que parecía.
+   *
+   * Se guarda en `tipoManual` y NO se toca el origen. El origen es de dónde
+   * entró —un hecho— y la clasificación es una lectura de ese hecho, que puede
+   * fallar: quien deja su contacto en la portada se clasifica como posible
+   * clienta, y de vez en cuando resulta ser una esteticista que quiere
+   * formarse. Machacando el origen se perdería para siempre por dónde llegó,
+   * que es lo que dice cómo llamarla.
+   */
+  if (typeof tipo === 'string') {
+    if (!TIPOS.includes(tipo as Tipo)) {
+      return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
+    }
+    try {
+      await ref.update({ tipoManual: tipo, tipoCambiado: FieldValue.serverTimestamp() });
+    } catch {
+      return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true, id, tipo });
+  }
 
   /*
    * Apuntar algo de una persona.
@@ -286,15 +323,29 @@ export async function PATCH(peticion: Request) {
    * escribe la del servidor en texto ISO.
    */
   if (typeof nota === 'string' && nota.trim()) {
-    await ref.set(
-      {
+    /*
+     * update() y NO set(merge). Es una letra de diferencia y cambia el
+     * resultado: set(merge) CREA el documento si no existe, y aquí eso
+     * significaba resucitar a alguien ya borrado. La pantalla puede tener la
+     * lista de hace un rato —otra pestaña, el móvil—, así que apuntar una nota
+     * sobre un contacto que ya no está escribía una ficha nueva con el
+     * seguimiento y nada más: sin nombre, sin correo, sin `creado`. Y sin
+     * `creado` no sale en la lista, porque el GET ordena por ese campo: un
+     * documento invisible que contesta «guardado» y que ya no se puede ni ver
+     * ni borrar desde ninguna pantalla.
+     *
+     * update() falla si no existe, y entonces se dice lo que pasa.
+     */
+    try {
+      await ref.update({
         seguimiento: FieldValue.arrayUnion({
           cuando: new Date().toISOString(),
           texto: nota.trim().slice(0, 1000),
         }),
-      },
-      { merge: true }
-    );
+      });
+    } catch {
+      return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
+    }
     return NextResponse.json({ ok: true, id });
   }
 
@@ -339,7 +390,14 @@ export async function PATCH(peticion: Request) {
     return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
   }
 
-  await ref.set({ estado, estadoCambiado: FieldValue.serverTimestamp() }, { merge: true });
+  // update() y no set(merge), por lo mismo que la nota de arriba: cambiarle el
+  // estado a alguien ya borrado no puede crearlo otra vez, y menos como una
+  // ficha sin nombre que ninguna pantalla vuelve a enseñar.
+  try {
+    await ref.update({ estado, estadoCambiado: FieldValue.serverTimestamp() });
+  } catch {
+    return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
+  }
 
   return NextResponse.json({ ok: true, id, estado });
 }
@@ -452,7 +510,13 @@ export async function POST(peticion: Request) {
         { status: 409 }
       );
     }
-    console.error('[contactos] No se ha podido guardar el contacto a mano:', id);
+    /*
+     * Sin el id: ese id ES el correo o el móvil de una persona, y los
+     * registros de Vercel los lee cualquiera que tenga acceso al panel y se
+     * guardan fuera de aquí. Para saber qué ha fallado no hace falta saber de
+     * quién era.
+     */
+    console.error('[contactos] No se ha podido guardar un contacto apuntado a mano.');
     return NextResponse.json({ ok: false, motivo: 'guardar' }, { status: 502 });
   }
 

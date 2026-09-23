@@ -104,7 +104,7 @@ export default function Home() {
               versión facial.
             </p>
             <p className="texto max-480">
-              El orden manda. Primero se abren los ganglios y las estaciones linfáticas con
+              El orden manda. Primero se trabajan los ganglios y las estaciones linfáticas con
               pulsaciones lentas y rítmicas. Solo después se arrastra, de proximal a distal,
               siguiendo el recorrido natural del sistema linfático. Sobre esa base llegan las
               maniobras de moldeo.
