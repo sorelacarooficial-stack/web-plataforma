@@ -50,13 +50,12 @@ function limpiar(texto: string): string {
 }
 
 /**
- * Si este Node puede cargar la librería de Firebase.
+ * Si este Node es de los que pueden cargar módulos modernos a la antigua.
  *
- * firebase-admin 14 arrastra `jose` en su versión 6, que es un módulo moderno,
- * y lo carga a la manera antigua. Esa mezcla solo la aguanta Node a partir de
- * 20.19 o de 22.12: por debajo, la librería no carga y todo lo que toque el
- * acceso deja de funcionar, aunque las claves estén perfectas. Cuesta días
- * dar con ello si no se mira, así que se mira aquí.
+ * Se enseña porque es un dato que ahorra horas cuando algo no carga, no
+ * porque haga falta: `jose` está fijado en una versión que no lo necesita
+ * (ver overrides en package.json). Si alguien quita ese ajuste, este número
+ * vuelve a ser la diferencia entre que el acceso funcione o no.
  */
 function nodeSirve(version: string): boolean {
   const [may, men] = version.replace(/^v/, '').split('.').map(Number);
@@ -114,7 +113,7 @@ export async function GET() {
         proyecto: d.proyecto,
         node: process.version,
         comprobaciones: {
-          'version de Node suficiente': nodeSirve(process.version),
+          'Node carga módulos modernos': nodeSirve(process.version),
           'variable del proyecto': d.tieneProyecto,
           'correo de la cuenta de servicio': d.tieneCorreoDeServicio,
           'clave privada presente': d.tieneClave,
@@ -134,9 +133,7 @@ export async function GET() {
       {
         listo: false,
         node: process.version,
-        porQueNo: nodeSirve(process.version)
-          ? 'la comprobación se rompió antes de terminar'
-          : `este servidor corre Node ${process.version} y la librería de Firebase necesita 20.19 o 22.12 en adelante`,
+        porQueNo: 'la comprobación se rompió antes de terminar',
         seRompioCon: {
           tipo: (e as Error)?.name ?? 'desconocido',
           mensaje: limpiar(String((e as Error)?.message || e)),
