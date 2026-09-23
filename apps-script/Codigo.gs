@@ -19,11 +19,15 @@
  *  ---------------------------------------------------------------------------
  *
  *  1. Sube el PDF de la Técnica Divine a Google Drive, con la cuenta de Sorela.
+ *     El archivo tiene que llamarse EXACTAMENTE «TECNICA-DIVINE.pdf»: si algún
+ *     día falla el identificador, el script lo busca por ese nombre.
  *     Ábrelo y mira la dirección del navegador: entre «/d/» y «/view» hay un
  *     churro de letras y números. Ése es el PDF_ID.
  *
  *  2. Crea una hoja de cálculo en blanco (sheets.new) y llámala «Captación
- *     Divine». En su dirección, entre «/d/» y «/edit», está el HOJA_ID.
+ *     Divine», exactamente así, con la tilde. En su dirección, entre «/d/» y
+ *     «/edit», está el HOJA_ID. El nombre importa por lo mismo que el del PDF:
+ *     es por donde la busca el script si el identificador falla.
  *
  *  3. Entra en script.google.com → Nuevo proyecto. Llámalo «Captación Divine».
  *     Borra lo que venga escrito y pega este archivo entero.
@@ -85,6 +89,11 @@
  *  sobre la salud: ni defensas, ni toxinas, ni circulación, ni celulitis, ni
  *  dolor, ni adelgazar. Sí se puede contar qué es la técnica, cómo se trabaja,
  *  en qué orden, qué se aprende, cuánto dura y para quién es.
+ *
+ *  Tampoco se puede escribir «drenaje linfático» ni «drenar». Suena inofensivo
+ *  y es la trampa más fácil de pisar, porque está en el PDF y en medio sector:
+ *  nombra un efecto sobre el sistema linfático, que es sanitario. Se dice qué
+ *  se hace con las manos, no qué le pasa al cuerpo por dentro.
  */
 
 /* ==========================================================================
@@ -107,11 +116,19 @@ var WHATSAPP_SORELA = '34686154556';
 /** Nombre de la pestaña dentro de la hoja de cálculo. */
 var PESTANA = 'Contactos';
 
-/** Nombre con el que llega el PDF adjunto al buzón de la persona. */
+/**
+ * Nombre del PDF: con el que llega al buzón de la persona y, a la vez, con el
+ * que se busca en Drive si el identificador falla. Tiene que ser idéntico al
+ * del archivo que está subido en Drive.
+ */
 var NOMBRE_PDF = 'TECNICA-DIVINE.pdf';
 
-/* Y el de la hoja de respaldo, por si tampoco se pone su identificador. */
-var NOMBRE_HOJA = 'Respaldo';
+/**
+ * Nombre de la hoja de respaldo, por si tampoco se pone su identificador. Es
+ * el mismo que dice el paso 2 de arriba y el de la guía: «Captación Divine».
+ * Si aquí pusiera otra cosa, la búsqueda por nombre no encontraría nada.
+ */
+var NOMBRE_HOJA = 'Captación Divine';
 
 /** Las columnas de la hoja, en este orden. */
 var COLUMNAS = [
@@ -248,16 +265,42 @@ function doPost(e) {
  * nada. Se pega la dirección /exec en la barra del navegador y contesta.
  */
 function doGet() {
+  /*
+   * Se comprueba lo que de verdad importa, no si hay variables escritas.
+   *
+   * Antes esto miraba si estaban PDF_ID y HOJA_ID y, como ahora los archivos
+   * se buscan por su nombre, decía que faltaban cosas cuando en realidad todo
+   * estaba bien. Y al revés: un identificador puesto pero apuntando a un
+   * archivo borrado se daba por bueno. Así que ahora se intenta abrir el PDF y
+   * la hoja de verdad, que es lo único que responde la pregunta.
+   */
   var faltan = [];
   if (!propiedad('SECRETO')) faltan.push('SECRETO');
-  if (!propiedad('HOJA_ID')) faltan.push('HOJA_ID');
-  if (!propiedad('PDF_ID')) faltan.push('PDF_ID');
   if (!propiedad('AVISO_A')) faltan.push('AVISO_A');
+
+  var hayPdf = false;
+  try {
+    hayPdf = Boolean(buscarPdf());
+  } catch (falloPdf) {
+    hayPdf = false;
+  }
+
+  var hayHoja = false;
+  try {
+    hoja();
+    hayHoja = true;
+  } catch (falloHoja) {
+    hayHoja = false;
+  }
 
   return responder({
     ok: true,
-    listo: faltan.length === 0,
+    // «Listo» es poder mandar un correo con su PDF. La hoja es el respaldo y
+    // su ausencia no impide nada, así que se informa pero no tumba el estado.
+    listo: faltan.length === 0 && hayPdf,
     faltan: faltan,
+    encuentraElPdf: hayPdf,
+    encuentraLaHoja: hayHoja,
     correosQueQuedanHoy: MailApp.getRemainingDailyQuota(),
   });
 }
@@ -412,26 +455,46 @@ function asunto(tipo, n) {
  * `saludo` es la primera línea, suelta. `parrafos` son los del medio. La firma
  * y el pie no se escriben aquí: ya van en la carta.
  *
+ * Cualquiera de los dos puede ser una cadena suelta o una pareja
+ * { con: ..., sin: ... }: lo que se escribe cuando el PDF va adjunto y lo que
+ * se escribe el día que no pueda ir. Solo llevan pareja las frases que nombran
+ * el archivo; el resto valen igual en los dos casos.
+ *
  * CUIDADO AL TOCARLOS. Esto es estética, no sanidad. Se cuenta qué es la
  * técnica y cómo se trabaja, nunca qué le hace al cuerpo por dentro. No pueden
  * entrar ni las defensas, ni el sistema inmunológico, ni las toxinas, ni la
  * circulación, ni la celulitis, ni el metabolismo, ni el dolor, ni adelgazar,
  * ni ninguna enfermedad.
+ *
+ * Y tampoco «drenaje linfático» ni «drenar», por mucho que lo ponga el PDF y
+ * lo diga todo el sector: nombra un efecto sobre el sistema linfático y eso es
+ * sanitario. Aquí se describe el gesto —las manos, el aceite, el orden—, no lo
+ * que se supone que pasa por dentro.
  */
 var TEXTOS = {
   // Quiere que la traten.
   clienta: {
-    saludo: 'Gracias por pedirme la información. Va adjunta a este correo, en PDF.',
+    saludo: {
+      con: 'Gracias por pedirme la información. Va adjunta a este correo, en PDF.',
+      sin: 'Gracias por pedirme la información. El PDF se me ha quedado fuera de este correo: respóndeme y te lo mando. Mientras tanto te lo cuento aquí.',
+    },
     parrafos: [
-      'La Técnica Divine es drenaje linfático manual llevado más lejos: mis manos, aceite y, en algunas zonas, herramientas de aluminio. Sin máquinas.',
-      'Lo que manda es el orden: primero se abre, después se drena y solo al final se moldea. En el PDF lo tienes entero, con las fases y las zonas en las que se trabaja.',
+      'La Técnica Divine es un masaje manual: mis manos, aceite y, en algunas zonas, herramientas de aluminio. Sin máquinas y sin nada invasivo.',
+      {
+        con: 'Lo que manda es el orden. Se empieza con la apertura de cinco puntos; después se trabaja la zona por partes —en el abdomen, primero la de abajo, luego la de arriba, luego los laterales— y se termina juntándolo todo. En el PDF tienes las fases completas y las zonas en las que se trabaja.',
+        sin: 'Lo que manda es el orden. Se empieza con la apertura de cinco puntos; después se trabaja la zona por partes —en el abdomen, primero la de abajo, luego la de arriba, luego los laterales— y se termina juntándolo todo. Las fases completas y las zonas en las que se trabaja van en el PDF que te mando en cuanto me respondas.',
+      },
+      'Antes de empezar hablamos. Hay situaciones en las que esta técnica no se aplica, y eso lo miramos juntas antes de que te subas a la camilla.',
       'Si quieres una sesión o te queda alguna duda, respóndeme a este correo. Lo leo yo.',
     ],
   },
 
   // Quiere aprender la técnica.
   alumna: {
-    saludo: 'Gracias por interesarte por la formación. Te adjunto la información de la técnica en PDF.',
+    saludo: {
+      con: 'Gracias por interesarte por la formación. Te adjunto la información de la técnica en PDF.',
+      sin: 'Gracias por interesarte por la formación. Tengo un PDF con la información de la técnica, pero se me ha quedado fuera de este correo: respóndeme y te lo mando.',
+    },
     parrafos: [
       'La formación son dos etapas y van siempre en este orden: primero online y después presencial. Lo online te prepara; en lo presencial te corrijo la mano sobre cuerpo real.',
       'Las próximas fechas las estoy cerrando ahora mismo. En cuanto las tenga te las mando, sin que tengas que estar pendiente.',
@@ -444,7 +507,10 @@ var TEXTOS = {
     saludo: 'Gracias por apuntarte a la lista. Como ya eres terapeuta, voy al grano.',
     parrafos: [
       'La Comunidad Divine abre el sábado 17 de octubre a las 16:00, hora de España. Quien entra en el lanzamiento conserva el precio de fundadora mientras siga dentro.',
-      'A ti te aviso antes que a nadie. Te adjunto la información de la técnica por si quieres repasarla.',
+      {
+        con: 'A ti te aviso antes que a nadie. Te adjunto la información de la técnica por si quieres repasarla.',
+        sin: 'A ti te aviso antes que a nadie. Quería adjuntarte la información de la técnica por si querías repasarla y se me ha quedado fuera del correo: respóndeme y te la mando.',
+      },
       'Cualquier duda hasta entonces, respóndeme a este correo.',
     ],
   },

@@ -4,34 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
 <title>Técnica Divine</title>
 </head>
 
-<!--
-  Plantilla del correo de bienvenida. La rellena el Apps Script sustituyendo
-  cinco marcadores: NOMBRE, SALUDO, CUERPO, ENLACE_WEB y WHATSAPP. En la carta
-  van escritos entre llaves dobles; aquí arriba los nombro sin llaves a
-  propósito, para que el buscar y sustituir del script no los toque.
-
-  Esto no es una página web y no se comporta como tal. Está maquetado con
-  tablas y con los estilos escritos en cada etiqueta porque Gmail recorta las
-  hojas de estilo y Outlook no entiende la maquetación moderna. Lo que aquí
-  parece anticuado es lo único que se ve igual en todas partes.
-
-  No hay ni una imagen ni una fuente traída de fuera: la mayoría de los
-  clientes de correo las bloquean por defecto y el correo llegaría roto.
-
-  Al final del fichero, dentro de un comentario, están los textos de SALUDO y
-  CUERPO para los cuatro casos. Ese bloque NO se manda: el script corta la
-  plantilla antes de sustituir nada. Está explicado allí mismo.
--->
-
-<body style="margin:0; padding:0; width:100%; background-color:#fbf9f6; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+<body bgcolor="#fbf9f6" style="margin:0; padding:0; width:100%; background-color:#fbf9f6; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
 
 <!-- Fondo. Una tabla exterior a todo el ancho, con la carta centrada dentro. -->
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; background-color:#fbf9f6;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#fbf9f6" style="width:100%; background-color:#fbf9f6; border-collapse:collapse;">
   <tr>
-    <td align="center" style="padding:24px 16px 32px 16px;">
+    <td align="center" bgcolor="#fbf9f6" style="padding:24px 16px 32px 16px;">
 
       <!-- La carta. 600px como mucho; por debajo de eso se estira sola. -->
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px; border-collapse:collapse;">
@@ -45,23 +28,20 @@
 
         <!-- Filo dorado. Separa la cabecera de la carta sin cargar el correo. -->
         <tr>
-          <td style="font-size:0; line-height:0; height:2px; background-color:#8a6a32;">&nbsp;</td>
+          <td height="2" bgcolor="#8a6a32" style="font-size:0; line-height:0; height:2px; background-color:#8a6a32;">&nbsp;</td>
         </tr>
 
         <!-- Cuerpo de la carta. -->
         <tr>
-          <td style="padding:32px 24px 28px 24px; background-color:#fbf9f6;">
+          <td bgcolor="#fbf9f6" style="padding:32px 24px 28px 24px; background-color:#fbf9f6;">
 
-            <!--
-              El saludo. Si la persona no dejó su nombre, el marcador llega
-              vacío y aquí queda «Hola» a secas, que se lee bien igual.
-            -->
+            <!-- El saludo. -->
             <p style="margin:0 0 20px 0; font-family:Georgia,'Times New Roman',Times,serif; font-size:22px; line-height:1.35; color:#141210;">Hola {{NOMBRE}}</p>
 
-            <!-- Primera línea. Cambia según quién sea: ver los textos del final. -->
+            <!-- Primera línea. -->
             <p style="margin:0 0 16px 0; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:1.65; color:#141210;">{{SALUDO}}</p>
 
-            <!-- Los párrafos del medio. Los mete el script ya envueltos en <p>. -->
+            <!-- Párrafos del medio. -->
             {{CUERPO}}
 
             <!-- Salida por WhatsApp. Un enlace de texto, no un botón. -->
@@ -105,8 +85,8 @@
 ===============================================================================
   TEXTOS DE SALUDO Y CUERPO, CASO POR CASO
 
-  PARA EL OTRO AGENTE: ESTE BLOQUE NO SE MANDA
-  --------------------------------------------
+  LEE ESTO ANTES DE TOCAR NADA: ESTE BLOQUE NO SE MANDA
+  -----------------------------------------------------
   Es documentación, no plantilla. Antes de sustituir nada, corta el fichero por
   la marca de arriba. En el script:
 
@@ -116,12 +96,47 @@
   Si no lo cortas, cada correo se va con todas estas notas internas dentro, y
   cualquiera que abra «ver original» las lee.
 
-  Son cuatro casos, y el que toca sale del origen con el que entró la persona.
-  Eso ya está resuelto en lib/origenes.ts: tipoDeOrigen devuelve 'clienta',
-  'alumna', 'comunidad' u 'otro'. No lo vuelvas a calcular a mano, cópialo.
+  Y el corte solo se lleva lo que hay DEBAJO de la marca. Todo lo que quieras
+  explicar, explícalo aquí abajo: lo que escribas arriba, dentro de la carta,
+  viaja en cada correo. Por eso ahí arriba solo quedan comentarios de una
+  línea que nombran cada bloque de la maqueta, y nada que cuente cómo
+  funciona el script.
 
-  CÓMO SE MONTAN LOS DOS MARCADORES
+  QUÉ ES ESTE ARCHIVO Y POR QUÉ ESTÁ MAQUETADO ASÍ
+  ------------------------------------------------
+  Esto no es una página web y no se comporta como tal. Está maquetado con
+  tablas y con los estilos escritos en cada etiqueta porque Gmail recorta las
+  hojas de estilo y Outlook no entiende la maquetación moderna. Lo que parece
+  anticuado es lo único que se ve igual en todas partes. No metas <style>, ni
+  flexbox, ni rejilla: se rompe.
+
+  No hay ni una imagen ni una fuente traída de fuera: la mayoría de los
+  clientes de correo las bloquean por defecto y el correo llegaría roto. Las
+  dos etiquetas color-scheme de la cabecera le piden al cliente que no invierta
+  los colores por su cuenta en modo oscuro; los bgcolor repetidos al lado de
+  cada background-color son para los Outlook viejos, que ignoran el estilo.
+
+  MAPA DE LA CARTA, DE ARRIBA ABAJO
   ---------------------------------
+  Fondo crema a todo el ancho · carta centrada de 600px como mucho, que por
+  debajo de eso se estira sola · cabecera con el nombre, solo texto, sin
+  logotipo · filo dorado de 2px · cuerpo (saludo, primera línea, párrafos,
+  salida por WhatsApp, firma) · pie con la web y la frase de baja, que es
+  obligatoria.
+
+  LOS CINCO MARCADORES
+  --------------------
+  NOMBRE, SALUDO, CUERPO, ENLACE_WEB y WHATSAPP. En la carta van escritos
+  entre llaves dobles.
+
+  OJO CON ESTO: ENLACE_WEB aparece DOS VECES en el pie, una en el href y otra
+  como texto visible. Los otros cuatro, una sola vez. Así que el sustituir
+  tiene que ser global —replace con /g, como hace Codigo.gs—; con un replace
+  de texto suelto solo cambiaría la primera y a todo el mundo le llegaría un
+  «{{ENLACE_WEB}}» a la vista en el pie del correo.
+
+  CÓMO SE MONTAN LOS DOS MARCADORES DE TEXTO
+  ------------------------------------------
   SALUDO   es texto suelto. Va dentro de un <p> que ya está en la carta, así
            que se sustituye tal cual, sin etiquetas.
 
@@ -132,6 +147,10 @@
 
            Lo más limpio es guardar los párrafos de cada caso en un array y
            unirlos con esa etiqueta al sustituir.
+
+  CUERPO se sustituye EL ÚLTIMO, después de los otros cuatro. Es el único
+  trozo que ya viene con etiquetas puestas, y así no se le vuelve a pasar el
+  buscar y sustituir por encima.
 
   UN DETALLE DEL NOMBRE
   ---------------------
@@ -150,10 +169,40 @@
   las toxinas, ni la circulación, ni la celulitis, ni el metabolismo, ni el
   dolor, ni adelgazar, ni ninguna patología.
 
+  EL PDF ADJUNTO NO CUMPLE ESE LÍMITE. HAY QUE ARREGLARLO ANTES DE ENVIAR
+  ----------------------------------------------------------------------
+  La carta está limpia, pero la carta no viaja sola: lleva adjunto el PDF de
+  la técnica, y ese PDF sí promete efectos sobre la salud. Repartirlo por
+  correo es publicarlo, y responde Sorela.
+
+  Lo que dice hoy el PDF (TECNICA-DIVINE.pdf, 22 páginas), por páginas:
+  la 1 habla de eliminar líquidos y toxinas; la 3, de reforzar defensas y
+  estimular el sistema inmunológico; la 6, de circulación y depuración; la 11
+  y la 12, otra vez de toxinas y circulación; la 13 y la 14, de circulación y
+  regeneración celular; la 15, de reducir celulitis; la 16 y la 18, de activar
+  y mejorar la circulación.
+
+  Todo eso son promesas de efecto sobre la salud en publicidad de un centro de
+  estética. Mientras el PDF siga así, el correo de bienvenida las reparte
+  aunque su texto sea impecable. Esto NO se arregla en este archivo: hay que
+  rehacer el PDF dejando solo qué es la técnica, cómo se trabaja, en qué orden,
+  qué se aprende, cuánto dura y para quién es. Hasta entonces, lo prudente es
+  no mandar adjunto.
+
+  SI SE QUITA EL ADJUNTO, HAY QUE TOCAR TAMBIÉN EL SALUDO DE CLIENTA
+  -----------------------------------------------------------------
+  El saludo del caso CLIENTA dice «Va adjunta a este correo, en PDF», y el
+  tercer párrafo remite al PDF. Codigo.gs, cuando no encuentra el archivo,
+  añade una línea al final pidiendo disculpas, pero el saludo sigue prometiendo
+  el adjunto: la persona lee la promesa en la primera línea y el desmentido en
+  la última. Si el PDF deja de ir —porque se retire o porque falle—, ese saludo
+  y ese párrafo tienen que cambiar en TEXTOS, dentro de Codigo.gs, no solo
+  aquí. Lo mismo vale para las líneas de ALUMNA y OTRO que dicen «te adjunto».
+
 ===============================================================================
   CASO 1 · CLIENTA
   Quiere que la traten. Entró por 'web', 'informacion', 'expo', 'cita-<ciudad>',
-  'terapeutas' o 'avisar-ciudad'.
+  'terapeutas', 'avisar-ciudad' o cualquier origen que empiece por 'qr'.
 ===============================================================================
 
   SALUDO:
@@ -215,8 +264,9 @@ este correo.
 
 ===============================================================================
   CASO 3 · COMUNIDAD
-  Ya es terapeuta certificada y espera la membresía. Entró por 'comunidad' o
-  'lista-comunidad'.
+  Ya es terapeuta certificada y espera la membresía. Entró por 'comunidad', por
+  'lista-comunidad' o por cualquier origen que empiece por 'comunidad-', como
+  'comunidad-asistente'.
 ===============================================================================
 
   SALUDO:
@@ -235,9 +285,27 @@ en tu correo antes de que se abra al resto.
 
 Si te surge cualquier duda hasta entonces, respóndeme a este correo.
 
+  DOS AVISOS SOBRE ESTE CASO, QUE CADUCA
+  --------------------------------------
+  El 17 de octubre de 2026 cae en sábado, así que la fecha cuadra. Pero este
+  es el único texto de los cuatro con fecha dentro: en cuanto pase el
+  lanzamiento, quien se apunte a la lista recibirá un correo anunciándole algo
+  que ya ha ocurrido. Hay que reescribirlo ese mismo día, en TEXTOS de
+  Codigo.gs y aquí.
+
+  Y la frase «Es la única vez que ese precio va a estar disponible» es un
+  compromiso, no un adorno. Si el precio de fundadora vuelve a ofrecerse más
+  adelante, esa frase pasa a ser publicidad engañosa y se la habremos mandado
+  por escrito a todas las terapeutas. Si Sorela no está segura de poder
+  sostenerlo, se quita la frase y no pasa nada: el resto del párrafo ya dice
+  lo que importa.
+
 ===============================================================================
   CASO 4 · OTRO
-  No se sabe qué busca. Entró por 'contacto' o 'asistente'.
+  No se sabe qué busca. Entró por 'contacto', por 'asistente', sin origen, o
+  por uno que no encaja en ninguno de los tres casos anteriores. Este es el
+  caso por defecto: si mañana aparece un origen nuevo y nadie lo clasifica,
+  la persona recibe este correo.
 ===============================================================================
 
   SALUDO:
