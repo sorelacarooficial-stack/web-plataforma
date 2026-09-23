@@ -15,7 +15,7 @@ import css from './sobre.module.css';
 export const metadata: Metadata = {
   title: { absolute: 'Quién es Sorela Caro, creadora de la Técnica Divine' },
   description:
-    'Quince años de cabina antes de ordenar en un método lo que hasta entonces llamaba intuición. Hoy formo a terapeutas: grupos reducidos y ninguna clase delegada.',
+    'Casi treinta años de cabina antes de ordenar en un método lo que hasta entonces llamaba intuición. Hoy formo a terapeutas: grupos reducidos y ninguna clase delegada.',
 };
 
 export default function Sobre() {
@@ -48,11 +48,16 @@ export default function Sobre() {
               era el «casi»: las clientas que no encajaban en el guion y para las que nadie me
               había dado herramientas.
             </p>
-            {/* Único hueco de copy pendiente: su historia real, en su voz. */}
-            <p className={css.pendiente}>
-              Sorela: aquí va tu historia real. Lo de arriba es la estructura. Necesito de ti qué
-              te hizo dejar de seguir protocolos y cuándo. Cuanto más concreto, mejor.
-            </p>
+            {/*
+              Aquí había un recuadro que decía «Sorela: aquí va tu historia
+              real. Necesito de ti qué te hizo dejar de seguir protocolos». Era
+              una nota de trabajo, para ella, y estaba PUBLICADA: con su fondo y
+              su borde, en la página que más la busca por su nombre. Se retira.
+
+              El hueco sigue abierto: falta su historia contada por ella. Pero
+              una página a la que le falta un párrafo se lee bien; una que
+              enseña el recado que alguien le dejó a la dueña, no.
+            */}
           </div>
 
           <div className="columna" style={{ gap: 20 }}>
@@ -108,8 +113,8 @@ export default function Sobre() {
                 vive de que se la crean. Vuelven en cuanto Sorela dé las
                 reales. */}
             <div className={css.cifra}>
-              <p className={css.cifraGrande} data-count="15">
-                15
+              <p className={css.cifraGrande} data-count="30">
+                30
               </p>
               <p className={css.cifraPie}>Años de cabina antes del método</p>
             </div>

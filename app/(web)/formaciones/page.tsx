@@ -53,12 +53,12 @@ const ETAPAS = [
     orden: 'Segunda etapa',
     titulo: 'Formación presencial',
     texto:
-      'Dos jornadas con Sorela al lado de la camilla. Es donde el método deja de ser teoría y pasa a tus manos, que es el único sitio donde sirve.',
+      'Dos jornadas conmigo al lado de la camilla. Es donde el método deja de ser teoría y pasa a tus manos, que es el único sitio donde sirve.',
     puntos: [
       'Día 1 · Lipodrenaje: protocolo completo y aplicación',
       'Día 2 · Moldeo y tonificación de silueta',
       'Práctica sobre modelos reales, no solo demostración',
-      'Corrección de Sorela sobre tus manos',
+      'Te corrijo yo, sobre tus manos',
       'Grupos reducidos',
     ],
     destacada: true,
@@ -104,7 +104,7 @@ export default function Formaciones() {
           </h1>
           <p className="lede">
             Para ser terapeuta Divine hay un orden: primero la formación online y después la
-            presencial. Así los días con Sorela se dedican enteros a tus manos.
+            presencial. Así los días conmigo se dedican enteros a tus manos.
           </p>
         </div>
       </section>
