@@ -2,7 +2,7 @@
 
 import Image, { type StaticImageData } from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ACCESOS,
   AGENDA_SORELA,
@@ -19,14 +19,11 @@ import {
   FILTROS_CRM,
   FILTROS_FACT,
   FILTROS_FEED,
-  FILTROS_LEADS,
   INGRESOS_ADMIN,
   INSCRITAS,
   KPIS_ADMIN,
   KPIS_CRM,
   KPIS_FACT,
-  KPIS_LEADS,
-  LEADS,
   PAGOS_ALUMNA,
   POR_APROBAR,
   POR_CONFIRMAR,
@@ -40,6 +37,7 @@ import {
   TRATAMIENTOS_PERFIL,
   metaCurso,
   progresoCurso,
+  type CursoAula,
   type Factura,
   type Rol,
   type Vista,
@@ -59,6 +57,22 @@ const FOTOS: Record<string, StaticImageData> = {
 
 type Props = { rol: Rol; ir: (v: Vista) => void };
 
+/* Lo que el panel necesita de un contacto de Firestore. La lista completa,
+   con sus filtros y su exportación, vive en `Contactos.tsx`. */
+type ContactoBreve = {
+  id: string;
+  nombre: string;
+  correo: string;
+  whatsapp: string;
+  origen: string;
+  estado: string;
+  creado: string | null;
+};
+
+/* La comunidad necesita además las iniciales de quien escribe, para el avatar
+   del compositor. Antes ponía «MI» a todo el mundo. */
+type PropsFeed = Props & { iniciales?: string };
+
 /* ==========================================================================
    Piezas compartidas
    ========================================================================== */
@@ -73,6 +87,22 @@ export function Kpis({ datos }: { datos: { label: string; valor: string; nota: s
         </div>
       ))}
     </div>
+  );
+}
+
+/**
+ * Lo que se ve cuando una lista está vacía.
+ *
+ * La plataforma acaba de nacer: no hay clientas, ni facturas, ni citas, ni
+ * publicaciones. Antes estas pantallas venían rellenas de nombres y cifras de
+ * maqueta, y eso engaña: parece que hay un negocio en marcha dentro. Un hueco
+ * que explica qué va a aparecer ahí es más honesto y más útil.
+ */
+function Vacio({ children }: { children: React.ReactNode }) {
+  return (
+    <section className={css.punteada}>
+      <p className={css.vacioTexto}>{children}</p>
+    </section>
   );
 }
 
@@ -124,7 +154,8 @@ const CLASE_ESTADO: Record<string, string> = {
   Pagado: css.estadoOro,
 };
 
-function ListaFacturas({ facturas }: { facturas: Factura[] }) {
+function ListaFacturas({ facturas, vacio }: { facturas: Factura[]; vacio: string }) {
+  if (facturas.length === 0) return <Vacio>{vacio}</Vacio>;
   return (
     <section className={css.tarjeta}>
       {facturas.map((f) => (
@@ -157,7 +188,7 @@ export function InicioAlumna({ ir }: Props) {
           <p className={css.rotulo}>Tu formación</p>
           <h2 className={css.h2}>Técnica Divine · Formación Base</h2>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 300, color: 'var(--muted-2)' }}>
-            14–16 de noviembre de 2026 · Madrid
+            Fecha y ciudad, por confirmar. Te avisamos en cuanto se cierre.
           </p>
           <button type="button" className={css.btn} onClick={() => ir('aula')} style={{ marginTop: 4 }}>
             Entrar al aula
@@ -176,12 +207,19 @@ export function InicioAlumna({ ir }: Props) {
 
       <section className={css.tarjeta}>
         <h2 className={css.rotuloSeccion}>Antes de venir</h2>
-        {PREPARACION.map((p) => (
-          <div key={p.nombre} className={css.fila}>
-            <span className={css.filaNombre}>{p.nombre}</span>
-            <span className={css.filaTipo}>{p.tipo}</span>
-          </div>
-        ))}
+        {PREPARACION.length === 0 ? (
+          <p className={css.vacioTexto}>
+            Aquí aparecerá lo que tienes que traer y leer antes del primer día. Todavía no hay nada
+            subido.
+          </p>
+        ) : (
+          PREPARACION.map((p) => (
+            <div key={p.nombre} className={css.fila}>
+              <span className={css.filaNombre}>{p.nombre}</span>
+              <span className={css.filaTipo}>{p.tipo}</span>
+            </div>
+          ))
+        )}
       </section>
     </>
   );
@@ -193,6 +231,12 @@ export function InicioAlumna({ ir }: Props) {
 export function Aula() {
   return (
     <div className={css.columna}>
+      {BLOQUES_AULA.length === 0 && (
+        <Vacio>
+          El material de tu formación se abre por partes: lo de antes de venir, lo que usarás
+          durante y las grabaciones de después. Todavía no hay nada publicado.
+        </Vacio>
+      )}
       {BLOQUES_AULA.map((b) => (
         <section key={b.titulo} className={css.tarjeta}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 14, justifyContent: 'space-between' }}>
@@ -237,18 +281,15 @@ export function InicioMiembro({ ir }: Props) {
             Próxima clase en vivo
           </p>
           <h2 className={css.h2} style={{ color: 'var(--inverse-ink)', fontSize: 'clamp(24px,2.8vw,36px)' }}>
-            Retención severa en piernas: por dónde empezar
+            Sin fecha todavía
           </h2>
           <p style={{ margin: 0, fontSize: 14.5, fontWeight: 300, color: 'var(--on-inverse-2)' }}>
-            Jueves 8 de octubre · 20:00 h
+            La primera clase en vivo se anuncia aquí y en el canal privado.
           </p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' }}>
-          <button type="button" className={css.btnClaro}>
-            Apuntarme
-          </button>
           <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--on-inverse-3)' }}>
-            Si no puedes venir, la tendrás grabada aquí.
+            Cuando haya fecha, podrás apuntarte desde aquí. Si no puedes venir, la tendrás grabada.
           </span>
         </div>
       </section>
@@ -270,8 +311,15 @@ export function InicioMiembro({ ir }: Props) {
       <section className={css.tarjeta}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
           <h2 className={css.rotuloSeccion}>Clases anteriores</h2>
-          <input placeholder="Buscar por tema" aria-label="Buscar clase por tema" className={css.campoRedondo} style={{ flex: '0 1 240px' }} />
+          {CLASES_ANTERIORES.length > 0 && (
+            <input placeholder="Buscar por tema" aria-label="Buscar clase por tema" className={css.campoRedondo} style={{ flex: '0 1 240px' }} />
+          )}
         </div>
+        {CLASES_ANTERIORES.length === 0 && (
+          <p className={css.vacioTexto}>
+            Todavía no se ha dado ninguna. Según se vayan dando, quedan grabadas aquí.
+          </p>
+        )}
         {CLASES_ANTERIORES.map((c) => (
           <div key={c.tema} className={css.fila} style={{ padding: '15px 0' }}>
             <span style={{ fontSize: 15.5, fontWeight: 300, color: 'var(--ink-4)', maxWidth: 520 }}>{c.tema}</span>
@@ -291,14 +339,13 @@ export function InicioMiembro({ ir }: Props) {
 /* ==========================================================================
    Comunidad
    ========================================================================== */
-export function Comunidad({ rol, ir }: Props) {
+export function Comunidad({ rol, ir, iniciales = 'D' }: PropsFeed) {
   const [filtro, setFiltro] = useState('Todo');
   const [likes, setLikes] = useState<Record<string, boolean>>({});
 
   const esAdmin = rol === 'sorela';
   const esAlumna = rol === 'alumna';
   const esMiembro = !esAdmin && !esAlumna;
-  const iniciales = esAdmin ? 'SC' : 'MI';
 
   const posts = POSTS.filter((p) => filtro === 'Todo' || p.etiqueta === filtro);
 
@@ -340,7 +387,15 @@ export function Comunidad({ rol, ir }: Props) {
           </section>
         )}
 
-        <Chips opciones={FILTROS_FEED} activo={filtro} onElegir={setFiltro} />
+        {POSTS.length > 0 && <Chips opciones={FILTROS_FEED} activo={filtro} onElegir={setFiltro} />}
+
+        {posts.length === 0 && (
+          <Vacio>
+            {POSTS.length === 0
+              ? 'Todavía no ha publicado nadie. La primera que escriba abre la comunidad.'
+              : 'Ninguna publicación con ese filtro.'}
+          </Vacio>
+        )}
 
         {posts.map((p) => {
           const meGusta = !!likes[p.id];
@@ -384,11 +439,11 @@ export function Comunidad({ rol, ir }: Props) {
           <section className={css.tarjetaOro}>
             <p className={css.rotulo}>Tu nivel</p>
             <p className={css.h3} style={{ fontSize: 'clamp(22px,2.3vw,28px)' }}>
-              Nivel 3 · Terapeuta activa
+              Sin actividad todavía
             </p>
-            <Barra pct={62} gruesa />
             <p style={{ margin: 0, fontSize: 13, fontWeight: 300, lineHeight: 1.55, color: 'var(--ink-3)' }}>
-              Ocho aportaciones más y pasas a nivel 4: acceso a las sesiones de casos en privado.
+              El nivel sube con lo que aportas: casos, respuestas y resultados. Se empieza a contar
+              con la primera publicación.
             </p>
           </section>
         )}
@@ -397,14 +452,11 @@ export function Comunidad({ rol, ir }: Props) {
           <section className={css.tarjetaOro}>
             <p className={css.rotulo}>Moderación</p>
             <p className={css.h3} style={{ fontSize: 'clamp(22px,2.3vw,28px)' }}>
-              3 publicaciones sin responder
+              Nada sin responder
             </p>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 300, lineHeight: 1.55, color: 'var(--ink-3)' }}>
-              Dos miembros nuevos esta semana. Un caso lleva 18 horas abierto sin respuesta tuya.
+              Cuando alguien publique y se quede sin respuesta, te aparecerá aquí.
             </p>
-            <button type="button" className={`${css.btn} ${css.btnSm}`} style={{ alignSelf: 'flex-start', marginTop: 4 }}>
-              Ver sin responder
-            </button>
           </section>
         )}
 
@@ -423,6 +475,11 @@ export function Comunidad({ rol, ir }: Props) {
 
         <section className={css.tarjeta} style={{ gap: 12 }}>
           <p className={css.rotulo}>Más activas este mes</p>
+          {RANKING.length === 0 && (
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 300, lineHeight: 1.55, color: 'var(--muted)' }}>
+              Se ordena por participación. Sin publicaciones todavía no hay nada que ordenar.
+            </p>
+          )}
           {RANKING.map((r) => (
             <div key={r.nombre} className={css.rankingFila}>
               <span className={css.rankingPos}>{r.pos}</span>
@@ -437,21 +494,11 @@ export function Comunidad({ rol, ir }: Props) {
             Próxima clase
           </p>
           <p style={{ margin: 0, fontFamily: 'var(--fuente-cormorant), serif', fontSize: 20, lineHeight: 1.15, color: 'var(--inverse-ink)' }}>
-            Retención severa en piernas
+            Sin fecha todavía
           </p>
           <p style={{ margin: 0, fontSize: 13, fontWeight: 300, color: 'var(--on-inverse-2)' }}>
-            Jueves 8 · 20:00 h
+            {esAdmin ? 'Convoca la primera cuando quieras.' : 'Se anuncia aquí en cuanto haya una.'}
           </p>
-          {esMiembro && (
-            <button type="button" className={css.btnClaro} style={{ marginTop: 6, padding: '11px 22px', fontSize: 11 }}>
-              Apuntarme
-            </button>
-          )}
-          {esAdmin && (
-            <button type="button" className={css.btnClaro} style={{ marginTop: 6, padding: '11px 22px', fontSize: 11 }}>
-              Editar clase
-            </button>
-          )}
         </section>
       </aside>
     </div>
@@ -462,8 +509,20 @@ export function Comunidad({ rol, ir }: Props) {
    Clases y material (aula de la comunidad)
    ========================================================================== */
 export function Clases() {
-  const [sel, setSel] = useState(CURSOS_AULA[0].id);
+  // Ojo con el orden: `CURSOS_AULA[0].id` reventaba en cuanto la lista se
+  // quedó vacía. Sin cursos publicados no hay nada que seleccionar.
+  const [sel, setSel] = useState(CURSOS_AULA[0]?.id ?? '');
   const curso = CURSOS_AULA.find((c) => c.id === sel) ?? CURSOS_AULA[0];
+
+  if (!curso) {
+    return (
+      <Vacio>
+        Aquí van las clases grabadas y el material de la comunidad. Todavía no hay ningún curso
+        publicado.
+      </Vacio>
+    );
+  }
+
   const prog = progresoCurso(curso);
 
   return (
@@ -522,6 +581,9 @@ export function Clases() {
 
       <section className={css.tarjeta}>
         <h2 className={css.rotuloSeccion}>Descargables del curso</h2>
+        {DESCARGABLES.length === 0 && (
+          <p className={css.vacioTexto}>Este curso todavía no tiene material para descargar.</p>
+        )}
         {DESCARGABLES.map((d) => (
           <div key={d.nombre} className={css.fila} style={{ padding: '13px 0' }}>
             <span className={css.filaNombre}>{d.nombre}</span>
@@ -566,6 +628,14 @@ export function Clientas() {
         </button>
       </div>
 
+      {lista.length === 0 && (
+        <Vacio>
+          {CLIENTAS.length === 0
+            ? 'Aquí llevas tu cartera: quién está en plan, cuántas sesiones lleva y cuándo vuelve. Da de alta a tu primera clienta para empezar.'
+            : 'Ninguna clienta con ese filtro.'}
+        </Vacio>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(270px,1fr))', gap: 'clamp(12px,1.6vw,18px)' }}>
         {lista.map((c) => (
           <article key={c.nombre} className={css.clienta}>
@@ -582,7 +652,7 @@ export function Clientas() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               <span style={{ fontSize: 13.5, fontWeight: 300, color: 'var(--ink-3)' }}>{c.plan}</span>
-              <Barra pct={Math.round((c.hechas / c.total) * 100)} />
+              <Barra pct={c.total === 0 ? 0 : Math.round((c.hechas / c.total) * 100)} />
               <span style={{ fontSize: 11.5, fontWeight: 300, color: 'var(--faint)' }}>
                 {c.hechas} de {c.total} sesiones
               </span>
@@ -626,31 +696,35 @@ export function Facturacion() {
         </div>
       </div>
 
-      <ListaFacturas facturas={lista} />
+      <ListaFacturas
+        facturas={lista}
+        vacio={
+          FACTURAS.length === 0
+            ? 'Todavía no has emitido ninguna factura. Cuando emitas la primera, aparece aquí con su número, su estado y su PDF.'
+            : 'Ninguna factura con ese filtro.'
+        }
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(270px,1fr))', gap: 'clamp(14px,1.8vw,20px)' }}>
         <section className={css.tarjeta} style={{ alignItems: 'flex-start', gap: 12 }}>
           <p className={css.rotulo}>Tus datos fiscales</p>
           <p style={{ margin: 0, fontSize: 14.5, fontWeight: 300, lineHeight: 1.65, color: 'var(--ink-3)' }}>
-            Marta Ibáñez Ruiz · 12345678Z
-            <br />
-            Calle de Ponzano, 42 · 28003 Madrid
-            <br />
-            Serie F2026 · siguiente número 0043
+            Sin rellenar. Hacen falta para poder emitir: nombre fiscal, NIF, dirección y la serie de
+            numeración con la que empiezas.
           </p>
           <button type="button" className={css.btnLinea} style={{ marginTop: 4 }}>
-            Editar datos fiscales
+            Rellenar datos fiscales
           </button>
         </section>
 
         <section className={css.tarjetaOro}>
           <p className={css.rotulo}>Trimestre en curso</p>
           <p className={css.h3} style={{ fontSize: 'clamp(22px,2.3vw,28px)' }}>
-            3T 2026 · 7.240 € facturados
+            0 € facturados
           </p>
           <p style={{ margin: 0, fontSize: 13.5, fontWeight: 300, lineHeight: 1.6, color: 'var(--ink-3)', textWrap: 'pretty' }}>
-            IVA repercutido 1.520 € · retención IRPF 0 €. Exporta el trimestre y se lo mandas a tu
-            asesoría en un clic.
+            Según emitas facturas se va sumando aquí, con su IVA, para que puedas exportar el
+            trimestre y mandárselo a tu asesoría.
           </p>
         </section>
       </div>
@@ -788,7 +862,7 @@ export function Perfil() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(290px,1fr))', gap: 'clamp(16px,2vw,24px)', alignItems: 'start' }}>
         <section className={css.tarjeta}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, paddingBottom: 18, borderBottom: '1px solid var(--line-2)' }}>
-            <span className={`${css.avatar} ${css.avatarLg}`}>MI</span>
+            <span className={`${css.avatar} ${css.avatarLg}`} aria-hidden="true" />
             <button type="button" className={css.btnLinea}>
               Cambiar foto
             </button>
@@ -796,11 +870,11 @@ export function Perfil() {
 
           <label className={css.etiquetaCampo}>
             Nombre
-            <input defaultValue="Marta Ibáñez" className={css.campo} />
+            <input placeholder="Tu nombre y apellidos" className={css.campo} />
           </label>
           <label className={css.etiquetaCampo}>
             Ciudad
-            <input defaultValue="Madrid" className={css.campo} />
+            <input placeholder="Dónde atiendes" className={css.campo} />
           </label>
           <label className={css.etiquetaCampo}>
             Sobre mí
@@ -808,32 +882,32 @@ export function Perfil() {
               rows={4}
               className={css.campo}
               style={{ resize: 'vertical' }}
-              defaultValue="Llevo nueve años en cabina. Trabajo postparto, drenaje y reductivo, siempre con una valoración previa."
+              placeholder="Cuántos años llevas, qué trabajas y cómo valoras antes de empezar."
             />
           </label>
           <label className={css.etiquetaCampo}>
             Dirección
-            <input defaultValue="Calle de Ponzano, 42 · Chamberí" className={css.campo} />
+            <input placeholder="Calle, número y barrio" className={css.campo} />
           </label>
           <label className={css.etiquetaCampo}>
             Teléfono
-            <input defaultValue="600 12 34 56" className={css.campo} />
+            <input placeholder="Teléfono de contacto" className={css.campo} />
           </label>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16, marginTop: 8 }}>
             <button type="button" className={css.btn}>
               Guardar cambios
             </button>
-            <Link href="/terapeutas/marta-ibanez" className={css.enlaceAccion} style={{ textDecoration: 'none' }}>
-              Ver mi ficha pública
-            </Link>
+            <span className={css.apunte}>
+              Tu ficha se publica cuando Sorela la aprueba.
+            </span>
           </div>
         </section>
 
         <section style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(16px,2vw,22px)' }}>
           <div className={css.tarjetaOro} style={{ gap: 8 }}>
             <p className={css.rotulo}>Estado</p>
-            <p className={css.h3}>Visible en el buscador desde el 2 de febrero de 2026</p>
+            <p className={css.h3}>Sin publicar todavía</p>
           </div>
 
           <div className={css.tarjeta}>
@@ -962,127 +1036,132 @@ export function Pagos() {
 /* ==========================================================================
    Panel de Sorela
    ========================================================================== */
-export function PanelSorela() {
+/**
+ * Lo primero que ve Sorela al entrar.
+ *
+ * Antes eran tres cajas: terapeutas certificadas, plazas vendidas y reservas
+ * por terapeuta, todas con cifras inventadas. No hay ninguna certificada ni
+ * ninguna convocatoria abierta, así que esas tres cajas eran decoración.
+ *
+ * Lo que sí existe y se mueve todos los días es quién deja su contacto en la
+ * web. Eso es lo que manda aquí: cuántos hay, cuántos siguen sin atender y
+ * los últimos que han entrado, con un salto directo a la lista completa.
+ */
+export function PanelSorela({ ir }: { ir: (v: Vista) => void }) {
+  const [lista, setLista] = useState<ContactoBreve[] | null>(null);
+  const [fallo, setFallo] = useState(false);
+
+  useEffect(() => {
+    let vivo = true;
+    fetch('/api/contactos')
+      .then((r) => r.json())
+      .then((c) => {
+        if (!vivo) return;
+        if (c.ok) setLista(c.contactos);
+        else {
+          setFallo(true);
+          setLista([]);
+        }
+      })
+      .catch(() => {
+        if (!vivo) return;
+        setFallo(true);
+        setLista([]);
+      });
+    // Si Sorela cambia de pantalla mientras carga, no se toca un estado que
+    // ya no está montado.
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  const l = lista ?? [];
+  const ahora = Date.now();
+  const semana = l.filter(
+    (c) => c.creado && ahora - new Date(c.creado).getTime() < 7 * 86400000
+  ).length;
+  const sinAtender = l.filter((c) => c.estado === 'Nuevo').length;
+
+  const kpis = [
+    {
+      label: 'Sin atender',
+      valor: lista === null ? '·' : String(sinAtender),
+      nota: 'contactos que nadie ha tocado',
+    },
+    {
+      label: 'Esta semana',
+      valor: lista === null ? '·' : String(semana),
+      nota: 'han dejado sus datos en la web',
+    },
+    {
+      label: 'En total',
+      valor: lista === null ? '·' : String(l.length),
+      nota: 'desde que la web capta',
+    },
+  ];
+
   return (
     <>
-      <Kpis datos={KPIS_ADMIN} />
+      <Kpis datos={kpis} />
 
-      <section className={css.tarjeta} style={{ gap: 16 }}>
+      {fallo && (
+        <p className={css.avisoFallo} role="alert">
+          No he podido leer los contactos. Comprueba la configuración de Firebase.
+        </p>
+      )}
+
+      <section className={css.tarjeta} style={{ gap: 4 }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
-          <h2 className={css.rotuloSeccion}>Fichas por aprobar</h2>
-          <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
-            El buscador solo publica lo que tú apruebas
-          </span>
+          <h2 className={css.rotuloSeccion}>Últimos contactos</h2>
+          {l.length > 0 && (
+            <button type="button" className={css.enlaceAccion} onClick={() => ir('leads')}>
+              Ver todos
+            </button>
+          )}
         </div>
-        {POR_APROBAR.map((p) => (
-          <div key={p.nombre} className={css.fila} style={{ padding: '16px 0' }}>
-            <span style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <span style={{ fontSize: 15.5, fontWeight: 300, color: 'var(--ink)' }}>
-                {p.nombre} · {p.ciudad}
+
+        {lista === null ? (
+          <p className={css.vacioTexto}>Cargando…</p>
+        ) : l.length === 0 ? (
+          <p className={css.vacioTexto}>
+            Todavía no se ha apuntado nadie. En cuanto alguien deje su nombre y su correo en la
+            web, aparece aquí.
+          </p>
+        ) : (
+          l.slice(0, 5).map((c) => (
+            <div key={c.id} className={css.fila} style={{ padding: '15px 0', gap: 14 }}>
+              <span style={{ flex: '1 1 200px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 15.5, color: 'var(--ink)' }}>{c.nombre}</span>
+                <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
+                  {c.correo}
+                  {c.whatsapp && ` · ${c.whatsapp}`}
+                </span>
               </span>
-              <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--muted)' }}>{p.nota}</span>
+              <span style={{ flex: '0 1 160px', fontSize: 12.5, fontWeight: 300, color: 'var(--faint)' }}>
+                {c.origen}
+              </span>
+              <span className={`${css.estado} ${CLASE_ESTADO[c.estado] ?? ''}`}>{c.estado}</span>
+            </div>
+          ))
+        )}
+      </section>
+
+      <section className={css.tarjeta} style={{ gap: 4 }}>
+        <h2 className={css.rotuloSeccion}>Lo que falta para abrir</h2>
+        {PENDIENTE_BETA.map((p) => (
+          <div key={p.que} className={css.fila} style={{ padding: '13px 0' }}>
+            <span style={{ fontSize: 14.5, fontWeight: 300, color: p.listo ? 'var(--muted)' : 'var(--ink-4)' }}>
+              {p.que}
             </span>
-            <span className={css.acciones}>
-              <button type="button" className={`${css.btn} ${css.btnSm}`}>
-                Aprobar
-              </button>
-              <button type="button" className={`${css.btnLinea} ${css.btnSm}`}>
-                Ver ficha
-              </button>
+            <span
+              className={`${css.estado} ${p.listo ? css.estadoOro : css.estadoApagado}`}
+            >
+              {p.listo ? 'Hecho' : 'Pendiente'}
             </span>
           </div>
         ))}
       </section>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 'clamp(16px,2vw,22px)' }}>
-        <section className={css.tarjeta}>
-          <h2 className={css.rotuloSeccion}>Formaciones e inscritas</h2>
-          {INSCRITAS.map((i) => (
-            <div key={i.curso} className={css.fila}>
-              <span style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-                <span style={{ fontSize: 15, fontWeight: 300, color: 'var(--ink)' }}>{i.curso}</span>
-                <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>{i.cuando}</span>
-              </span>
-              <span style={{ fontFamily: 'var(--fuente-cormorant), serif', fontSize: 19, color: 'var(--oro)' }}>
-                {i.plazas}
-              </span>
-            </div>
-          ))}
-        </section>
-
-        <section className={css.tarjeta}>
-          <h2 className={css.rotuloSeccion}>Reservas del mes por terapeuta</h2>
-          {RESERVAS_AGREGADAS.map((r) => (
-            <div key={r.nombre} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderTop: '1px solid var(--line-2)' }}>
-              <span style={{ flex: '0 0 auto', width: 120, fontSize: 14.5, fontWeight: 300, color: 'var(--ink-4)' }}>
-                {r.nombre}
-              </span>
-              <span style={{ flex: '1 1 auto', minWidth: 40 }}>
-                <Barra pct={r.pct} gruesa />
-              </span>
-              <span style={{ flex: '0 0 auto', fontSize: 13.5, fontWeight: 300, color: 'var(--muted-2)' }}>
-                {r.total}
-              </span>
-            </div>
-          ))}
-          <p className={css.apunte} style={{ marginTop: 6 }}>
-            Solo el dato agregado. El detalle de cada clienta es de su terapeuta.
-          </p>
-        </section>
-      </div>
     </>
-  );
-}
-
-/* ==========================================================================
-   Leads
-   ========================================================================== */
-export function Leads() {
-  const [filtro, setFiltro] = useState('Todos');
-  const lista = LEADS.filter((l) => filtro === 'Todos' || l.estado === filtro);
-
-  return (
-    <div className={css.columna}>
-      <Kpis datos={KPIS_LEADS} />
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', justifyContent: 'space-between' }}>
-        <div className={css.chips}>
-          <input placeholder="Buscar lead" aria-label="Buscar lead" className={css.campoRedondo} style={{ flex: '0 1 200px' }} />
-          <Chips opciones={FILTROS_LEADS} activo={filtro} onElegir={setFiltro} />
-        </div>
-        <button type="button" className={css.btn}>
-          Exportar leads
-        </button>
-      </div>
-
-      <section className={css.tarjeta}>
-        {lista.map((l) => (
-          <article key={l.nombre} className={css.fila} style={{ padding: '16px 0', gap: 14 }}>
-            <span style={{ flex: '1 1 200px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <span style={{ fontSize: 15.5, color: 'var(--ink)' }}>
-                {l.nombre} · {l.ciudad}
-              </span>
-              <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>{l.nota}</span>
-            </span>
-            <span style={{ flex: '0 1 190px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--ink-3)' }}>{l.interes}</span>
-              <span style={{ fontSize: 11.5, fontWeight: 300, color: 'var(--faint)' }}>
-                {l.origen} · {l.cuando}
-              </span>
-            </span>
-            <span className={`${css.estado} ${CLASE_ESTADO[l.estado]}`}>{l.estado}</span>
-            <span className={css.acciones}>
-              <button type="button" className={`${css.btn} ${css.btnSm}`}>
-                Contactada
-              </button>
-              <button type="button" className={`${css.btnLinea} ${css.btnSm}`}>
-                Convertir en plaza
-              </button>
-            </span>
-          </article>
-        ))}
-      </section>
-    </div>
   );
 }
 
@@ -1100,6 +1179,13 @@ export function FormacionesAdmin() {
           Nueva convocatoria
         </button>
       </div>
+
+      {CONVOCATORIAS.length === 0 && (
+        <Vacio>
+          Todavía no hay ninguna convocatoria abierta. Cuando crees la primera, aquí verás sus
+          plazas vendidas, lo cobrado y quién falta por pagar.
+        </Vacio>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 'clamp(14px,1.8vw,20px)' }}>
         {CONVOCATORIAS.map((c) => (
@@ -1126,6 +1212,11 @@ export function FormacionesAdmin() {
 
       <section className={css.tarjeta}>
         <h2 className={css.rotuloSeccion}>Tu calendario</h2>
+        {AGENDA_SORELA.length === 0 && (
+          <p className={css.vacioTexto}>
+            Sin nada apuntado. Las formaciones y las clases en vivo que convoques aparecen aquí.
+          </p>
+        )}
         {AGENDA_SORELA.map((a) => (
           <div key={a.que + a.cuando} className={css.fila} style={{ gap: 14 }}>
             <span style={{ flex: '0 1 190px', fontSize: 12.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--oro)' }}>
@@ -1148,9 +1239,10 @@ export function FormacionesAdmin() {
    Subir contenido (admin)
    ========================================================================== */
 export function Contenido() {
-  const [sel, setSel] = useState(CURSOS_AULA[0].id);
+  // Igual que en Clases: `CURSOS_AULA[0].id` reventaba al vaciar la lista.
+  const [sel, setSel] = useState(CURSOS_AULA[0]?.id ?? '');
   const [publicadas, setPublicadas] = useState<Record<string, boolean>>({});
-  const curso = CURSOS_AULA.find((c) => c.id === sel) ?? CURSOS_AULA[0];
+  const curso: CursoAula | undefined = CURSOS_AULA.find((c) => c.id === sel) ?? CURSOS_AULA[0];
 
   return (
     <div className={css.columna}>
@@ -1188,6 +1280,7 @@ export function Contenido() {
             onChange={(e) => setSel(e.target.value)}
             style={{ cursor: 'pointer' }}
           >
+            {CURSOS_AULA.length === 0 && <option value="">Crea antes un curso</option>}
             {CURSOS_AULA.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.titulo}
@@ -1221,7 +1314,7 @@ export function Contenido() {
             aria-pressed={sel === c.id}
             className={`${css.chip} ${sel === c.id ? css.chipActivo : ''}`}
           >
-            {c.titulo} · {ESTADO_CURSO[c.id]}
+            {c.titulo} · {ESTADO_CURSO[c.id] ?? 'Borrador'}
           </button>
         ))}
         <button type="button" className={css.chip} style={{ color: 'var(--oro)', borderStyle: 'dashed', borderColor: 'var(--oro-line)', background: 'transparent' }}>
@@ -1229,89 +1322,99 @@ export function Contenido() {
         </button>
       </div>
 
-      <section className={css.tarjeta}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
-          <h2 className={css.h2}>{curso.titulo}</h2>
-          <span style={{ fontSize: 11.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)' }}>
-            {curso.lecciones.length} lecciones · {ESTADO_CURSO[curso.id].toLowerCase()}
-          </span>
-        </div>
-
-        {curso.lecciones.map((l, i) => {
-          const clave = `${curso.id}:${i}`;
-          const borradorPorDefecto =
-            ESTADO_CURSO[curso.id] === 'Borrador' || i >= curso.lecciones.length - 1;
-          const publicada = publicadas[clave] ?? !borradorPorDefecto;
-          return (
-            <div key={l.nombre} className={css.fila} style={{ gap: 14 }}>
-              <span className={css.tirador} aria-hidden="true">
-                ⠿
-              </span>
-              <span style={{ flex: '1 1 220px', minWidth: 0, fontSize: 15, fontWeight: 300, color: 'var(--ink)' }}>
-                {l.nombre}
-              </span>
-              <span style={{ flex: '0 0 auto', fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
-                {l.duracion}
-              </span>
-              <span className={`${css.estado} ${publicada ? css.estadoOro : css.estadoNeutro}`}>
-                {publicada ? 'Publicada' : 'Borrador'}
-              </span>
-              <span className={css.acciones}>
-                <button
-                  type="button"
-                  className={`${css.btnLinea} ${css.btnSm}`}
-                  onClick={() => setPublicadas((p) => ({ ...p, [clave]: !publicada }))}
-                >
-                  {publicada ? 'Despublicar' : 'Publicar'}
-                </button>
-                <button type="button" className={`${css.btnLinea} ${css.btnSm}`} style={{ color: 'var(--muted)', borderColor: 'var(--line-3)' }}>
-                  Editar
-                </button>
-              </span>
-            </div>
-          );
-        })}
-      </section>
-
-      <section className={css.tarjetaOscura} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 'clamp(18px,2.4vw,30px)', alignItems: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-          <p style={{ margin: 0, fontSize: 10.5, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent-inverse)' }}>
-            Clase en vivo
-          </p>
-          <h2 className={css.h2} style={{ color: 'var(--inverse-ink)' }}>
-            Programa la clase del mes
-          </h2>
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 300, lineHeight: 1.6, color: 'var(--on-inverse-2)', textWrap: 'pretty' }}>
-            Pones tema, día y hora. A las miembros les llega el aviso y, al terminar, la grabación
-            entra sola en el curso que elijas.
-          </p>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <input
-            placeholder="Tema de la clase"
-            aria-label="Tema de la clase"
-            className={css.campoCaja}
-            style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'var(--line-inverse-2)', color: 'var(--inverse-ink)' }}
-          />
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-            <input
-              type="date"
-              aria-label="Día de la clase"
-              className={css.campoCaja}
-              style={{ flex: '1 1 140px', background: 'rgba(255,255,255,0.08)', borderColor: 'var(--line-inverse-2)', color: 'var(--inverse-ink)' }}
-            />
-            <input
-              type="time"
-              aria-label="Hora de la clase"
-              className={css.campoCaja}
-              style={{ flex: '1 1 110px', background: 'rgba(255,255,255,0.08)', borderColor: 'var(--line-inverse-2)', color: 'var(--inverse-ink)' }}
-            />
+      {!curso ? (
+        <Vacio>
+          Todavía no hay ningún curso creado. Crea el primero y después ve subiéndole las clases:
+          las terapeutas solo ven lo que publiques.
+        </Vacio>
+      ) : (
+        <>
+        <section className={css.tarjeta}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+            <h2 className={css.h2}>{curso.titulo}</h2>
+            <span style={{ fontSize: 11.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)' }}>
+              {curso.lecciones.length} lecciones · {(ESTADO_CURSO[curso.id] ?? 'Borrador').toLowerCase()}
+            </span>
           </div>
-          <button type="button" className={css.btnClaro} style={{ marginTop: 4, alignSelf: 'flex-start' }}>
-            Programar y avisar
-          </button>
-        </div>
-      </section>
+
+          {curso.lecciones.map((l, i) => {
+            const clave = `${curso.id}:${i}`;
+            const borradorPorDefecto =
+              ESTADO_CURSO[curso.id] === 'Borrador' || i >= curso.lecciones.length - 1;
+            const publicada = publicadas[clave] ?? !borradorPorDefecto;
+            return (
+              <div key={l.nombre} className={css.fila} style={{ gap: 14 }}>
+                <span className={css.tirador} aria-hidden="true">
+                  ⠿
+                </span>
+                <span style={{ flex: '1 1 220px', minWidth: 0, fontSize: 15, fontWeight: 300, color: 'var(--ink)' }}>
+                  {l.nombre}
+                </span>
+                <span style={{ flex: '0 0 auto', fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
+                  {l.duracion}
+                </span>
+                <span className={`${css.estado} ${publicada ? css.estadoOro : css.estadoNeutro}`}>
+                  {publicada ? 'Publicada' : 'Borrador'}
+                </span>
+                <span className={css.acciones}>
+                  <button
+                    type="button"
+                    className={`${css.btnLinea} ${css.btnSm}`}
+                    onClick={() => setPublicadas((p) => ({ ...p, [clave]: !publicada }))}
+                  >
+                    {publicada ? 'Despublicar' : 'Publicar'}
+                  </button>
+                  <button type="button" className={`${css.btnLinea} ${css.btnSm}`} style={{ color: 'var(--muted)', borderColor: 'var(--line-3)' }}>
+                    Editar
+                  </button>
+                </span>
+              </div>
+            );
+          })}
+        </section>
+
+        <section className={css.tarjetaOscura} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 'clamp(18px,2.4vw,30px)', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+            <p style={{ margin: 0, fontSize: 10.5, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent-inverse)' }}>
+              Clase en vivo
+            </p>
+            <h2 className={css.h2} style={{ color: 'var(--inverse-ink)' }}>
+              Programa la clase del mes
+            </h2>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 300, lineHeight: 1.6, color: 'var(--on-inverse-2)', textWrap: 'pretty' }}>
+              Pones tema, día y hora. A las miembros les llega el aviso y, al terminar, la grabación
+              entra sola en el curso que elijas.
+            </p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <input
+              placeholder="Tema de la clase"
+              aria-label="Tema de la clase"
+              className={css.campoCaja}
+              style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'var(--line-inverse-2)', color: 'var(--inverse-ink)' }}
+            />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              <input
+                type="date"
+                aria-label="Día de la clase"
+                className={css.campoCaja}
+                style={{ flex: '1 1 140px', background: 'rgba(255,255,255,0.08)', borderColor: 'var(--line-inverse-2)', color: 'var(--inverse-ink)' }}
+              />
+              <input
+                type="time"
+                aria-label="Hora de la clase"
+                className={css.campoCaja}
+                style={{ flex: '1 1 110px', background: 'rgba(255,255,255,0.08)', borderColor: 'var(--line-inverse-2)', color: 'var(--inverse-ink)' }}
+              />
+            </div>
+            <button type="button" className={css.btnClaro} style={{ marginTop: 4, alignSelf: 'flex-start' }}>
+              Programar y avisar
+            </button>
+          </div>
+        </section>
+        </>
+      )}
+
     </div>
   );
 }
@@ -1339,7 +1442,10 @@ export function FacturacionAdmin() {
         </div>
       </div>
 
-      <ListaFacturas facturas={FACTURAS_ADMIN} />
+      <ListaFacturas
+        facturas={FACTURAS_ADMIN}
+        vacio="Todavía no se ha emitido ninguna factura. Las reservas y los pagos de las formaciones aparecerán aquí."
+      />
     </div>
   );
 }
