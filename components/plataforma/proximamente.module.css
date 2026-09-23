@@ -1,0 +1,205 @@
+/* ==========================================================================
+   Pantalla «en preparación» de alumnas y miembros.
+
+   Una sola columna estrecha, centrada, sin cajas ni botones que no llevan a
+   ningún sitio. Lo único que se permite de adorno es el halo dorado del
+   fondo, y va detrás del texto: la pantalla tiene que leerse, no brillar.
+   ========================================================================== */
+.envoltura {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: clamp(28px, 6vh, 80px) 0 clamp(40px, 8vh, 96px);
+}
+
+/* El halo. `radial-gradient` sobre un cuadrado que se sale por arriba: da
+   profundidad sin necesidad de una imagen. */
+.envoltura::before {
+  content: '';
+  position: absolute;
+  top: -12%;
+  left: 50%;
+  width: min(760px, 120%);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, var(--oro-tint) 0%, transparent 62%);
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.centro {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* ---------- Sello ---------- */
+.sello {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 15px 7px 12px;
+  border: 1px solid var(--oro-line);
+  border-radius: 999px;
+  background: var(--oro-tint);
+  color: var(--oro);
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* El punto late despacio: señala «esto sigue vivo», no «esto es urgente». */
+.selloPunto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--oro);
+  animation: latido 2.8s ease-in-out infinite;
+}
+
+@keyframes latido {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.72);
+  }
+}
+
+/* Quien haya pedido no ver movimiento en pantalla, no lo ve. */
+@media (prefers-reduced-motion: reduce) {
+  .selloPunto {
+    animation: none;
+  }
+}
+
+/* ---------- Título ---------- */
+.titulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), Georgia, serif;
+  font-weight: 300;
+  font-size: clamp(34px, 5.4vw, 58px);
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+/* La segunda línea, en cursiva y un punto más clara: la frase respira y el
+   peso cae en el nombre de quien entra. */
+.tituloEnfasis {
+  display: block;
+  font-style: italic;
+  color: var(--oro);
+}
+
+.entradilla {
+  margin: 0;
+  max-width: 52ch;
+  font-size: clamp(15px, 1.5vw, 17px);
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--muted-2);
+  text-wrap: pretty;
+}
+
+.filete {
+  width: 56px;
+  height: 1px;
+  margin: 6px 0;
+  background: var(--oro-line);
+}
+
+.rotulo {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* ---------- Lo que va a haber ---------- */
+.lista {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 20px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line-1);
+}
+
+.item:last-child {
+  border-bottom: 0;
+}
+
+.itemCuerpo {
+  flex: 1 1 240px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.itemTitulo {
+  font-family: var(--fuente-cormorant), Georgia, serif;
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--ink-4);
+}
+
+.itemTexto {
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.itemEstado {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.pie {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.enlace {
+  color: var(--oro);
+  text-decoration: none;
+  border-bottom: 1px solid var(--oro-line);
+  padding-bottom: 1px;
+}
+
+.enlace:hover {
+  border-bottom-color: var(--oro);
+}

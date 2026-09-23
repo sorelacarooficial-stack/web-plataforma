@@ -1323,3 +1323,44 @@
   text-transform: uppercase;
   color: var(--oro);
 }
+
+/* ==========================================================================
+   Contactos reales
+   ========================================================================== */
+.rejillaKpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: clamp(12px, 1.6vw, 18px);
+}
+
+/* Estado vacío y avisos. El vacío se escribe entero, no con un «sin datos»:
+   cuando de verdad no hay nadie apuntado, hay que decir qué va a pasar. */
+.vacioTexto {
+  margin: 0;
+  padding: clamp(24px, 3vw, 40px) 0;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* El mismo texto, pero dentro de la caja punteada: ahí el aire lo pone ya el
+   recuadro, así que el párrafo no vuelve a añadirlo. */
+.punteada .vacioTexto {
+  padding: 0;
+}
+
+.avisoFallo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--oro-tint);
+  border-left: 3px solid var(--arcilla);
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--ink-2);
+}

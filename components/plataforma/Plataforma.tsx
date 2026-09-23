@@ -16,24 +16,15 @@ import {
   type Rol,
   type Vista,
 } from '@/lib/plataforma';
-import {
-  Agenda,
-  Aula,
-  Clases,
-  Clientas,
-  Comunidad,
-  Contenido,
-  Facturacion,
-  FacturacionAdmin,
-  FormacionesAdmin,
-  InicioAlumna,
-  InicioMiembro,
-  Leads,
-  Pagos,
-  PanelSorela,
-  Perfil,
-  Suscripcion,
-} from './Vistas';
+/*
+ * Solo se importa lo que se enruta. Las vistas de alumna y miembro —aula,
+ * clases, clientas, agenda, ficha pública, facturación, pagos— siguen escritas
+ * en `Vistas.tsx` y se volverán a enchufar aquí cuando haya algo real que
+ * enseñar dentro. Hasta entonces, esos roles ven `Proximamente`.
+ */
+import { Comunidad, Contenido, FacturacionAdmin, FormacionesAdmin, PanelSorela } from './Vistas';
+import Contactos from './Contactos';
+import Proximamente from './Proximamente';
 import css from './plataforma.module.css';
 
 /**
@@ -47,8 +38,9 @@ import css from './plataforma.module.css';
  * El selector «ver como» solo lo ve Sorela, y es para que pueda recorrer las
  * tres vistas sin necesidad de tener tres cuentas.
  *
- * Las vistas siguen enseñando datos de maqueta: clientas, facturas y cursos
- * inventados. Lo que ya es real es quién entra y con qué rol.
+ * Dentro no hay datos inventados. Lo de Sorela es lo que existe de verdad
+ * —los contactos salen de Firestore—, y alumnas y miembros ven una pantalla
+ * que dice con claridad que su espacio está en preparación.
  */
 export default function Plataforma({ sesion }: { sesion: Sesion }) {
   const router = useRouter();
@@ -172,7 +164,13 @@ export default function Plataforma({ sesion }: { sesion: Sesion }) {
             <Image src={logo} alt="Sorela Caro · Técnica Divine" sizes="200px" priority />
           </span>
 
-          <nav className={css.nav} aria-label="Secciones de la plataforma">
+          {/* Con un único apartado, el menú sería un botón que dice dónde ya
+              estás. Se calla y deja el aire para lo demás. */}
+          <nav
+            className={css.nav}
+            aria-label="Secciones de la plataforma"
+            hidden={menu.length < 2}
+          >
             <p className={css.navTitulo}>General</p>
             {menu.map((n) => (
               <button
@@ -220,9 +218,14 @@ export default function Plataforma({ sesion }: { sesion: Sesion }) {
 
         <main className={css.principal}>
           <header className={css.cabecera}>
+            {/* Alumnas y miembros no tienen título aquí: su pantalla trae el
+                suyo, con su nombre. Se deja el hueco en blanco antes que
+                pintar una línea vacía. */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <p className={css.seccion}>{seccionDe(actual, rol)}</p>
-              <h1 className={css.titulo}>{tituloDe(actual, rol)}</h1>
+              {seccionDe(actual, rol) && (
+                <p className={css.seccion}>{seccionDe(actual, rol)}</p>
+              )}
+              {tituloDe(actual, rol) && <h1 className={css.titulo}>{tituloDe(actual, rol)}</h1>}
             </div>
             <span className={css.usuario}>
               <span className={`${css.avatar} ${css.avatarSm}`}>{iniciales}</span>
@@ -230,22 +233,16 @@ export default function Plataforma({ sesion }: { sesion: Sesion }) {
             </span>
           </header>
 
-          {actual === 'inicio' && esAlumna && <InicioAlumna rol={rol} ir={ir} />}
-          {actual === 'inicio' && !esAlumna && !esAdmin && <InicioMiembro rol={rol} ir={ir} />}
-          {actual === 'inicio' && esAdmin && <PanelSorela />}
+          {!esAdmin && <Proximamente rol={esAlumna ? 'alumna' : 'miembro'} nombre={usuario} />}
 
-          {actual === 'aula' && <Aula />}
-          {actual === 'comunidad' && <Comunidad rol={rol} ir={ir} />}
-          {actual === 'clases' && <Clases />}
-          {actual === 'clientas' && <Clientas />}
-          {actual === 'agenda' && <Agenda rol={rol} ir={ir} />}
-          {actual === 'perfil' && <Perfil />}
-          {actual === 'facturacion' && (esAdmin ? <FacturacionAdmin /> : <Facturacion />)}
-          {actual === 'suscripcion' && <Suscripcion />}
-          {actual === 'pagos' && <Pagos />}
-          {actual === 'leads' && <Leads />}
-          {actual === 'formaciones' && <FormacionesAdmin />}
-          {actual === 'contenido' && <Contenido />}
+          {esAdmin && actual === 'inicio' && <PanelSorela ir={ir} />}
+          {/* Contactos de verdad, leídos de Firestore. Antes aquí había una lista
+              de leads inventados con nombres y notas de mentira. */}
+          {esAdmin && actual === 'leads' && <Contactos />}
+          {esAdmin && actual === 'formaciones' && <FormacionesAdmin />}
+          {esAdmin && actual === 'contenido' && <Contenido />}
+          {esAdmin && actual === 'facturacion' && <FacturacionAdmin />}
+          {esAdmin && actual === 'comunidad' && <Comunidad rol={rol} ir={ir} iniciales={iniciales} />}
         </main>
       </div>
     </div>

@@ -23,15 +23,25 @@
   animation: divineHero 32s ease-in-out infinite alternate;
 }
 
+/*
+ * El velo que hace legible el texto sobre la foto.
+ *
+ * Los cortes están corridos a la derecha respecto a lo que había: con los
+ * anteriores, la última línea de la entradilla caía ya en la zona clara del
+ * degradado y se leía a duras penas. La caja del hero está centrada y topada
+ * en 1240 px, así que el texto termina siempre cerca del 47 % del ancho de la
+ * pantalla: el velo tiene que llegar entero hasta ahí.
+ */
 .heroVelo {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     97deg,
     var(--scrim-1) 0%,
-    var(--scrim-2) 32%,
-    var(--scrim-3) 54%,
-    var(--scrim-4) 76%,
+    var(--scrim-1) 26%,
+    var(--scrim-2) 44%,
+    var(--scrim-3) 62%,
+    var(--scrim-4) 82%,
     transparent 100%
   );
 }
@@ -60,6 +70,7 @@
   align-items: flex-start;
   gap: clamp(16px, 2vw, 24px);
 }
+
 
 .sello {
   display: inline-flex;
@@ -97,10 +108,13 @@
 .heroLede {
   margin: 0;
   max-width: 520px;
-  font-weight: 300;
-  font-size: clamp(16px, 1.35vw, 19px);
+  /* Sobre una foto, el gris de párrafo del resto de la web se queda corto.
+     Aquí va el mismo tono que el titular, con el peso justo para que no
+     compita con él. */
+  font-weight: 350;
+  font-size: clamp(16px, 1.4vw, 19.5px);
   line-height: 1.6;
-  color: var(--ink-2);
+  color: var(--ink);
   text-wrap: pretty;
 }
 
@@ -120,7 +134,8 @@
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--muted);
+  /* Sobre la foto, el gris de la firma también se quedaba corto. */
+  color: var(--ink-3);
 }
 
 .heroRaya {
