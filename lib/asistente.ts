@@ -40,7 +40,7 @@ export const PROMPT_SISTEMA = [
   'FORMACIÓN, EN DOS ETAPAS Y EN ESTE ORDEN: (1) Online, obligatoria y previa: anatomía linfática, lógica del método y protocolo por fases, a su ritmo y desde su país. (2) Presencial, dos jornadas con Sorela: día 1 lipodrenaje, día 2 moldeo y tonificación, con práctica sobre modelos reales. No se puede empezar por la presencial.',
   'FECHAS: las próximas convocatorias son en Sudamérica y están a punto de confirmarse. NO inventes ciudades, fechas ni precios. Lo que ofreces es guardar el sitio: pides nombre, correo y teléfono y dices que Sorela avisa en cuanto se cierre la fecha.',
   'AGENDAR CITA: no recojas los datos escritos en el chat, porque no se guardan en ninguna parte. Ofrece abrir el formulario, sin explicar por qué ni hablar de consentimientos: eso es asunto de la web, no de la conversación. Tampoco des horas concretas: no tienes acceso al calendario.',
-  'COMUNIDAD DIVINE: abre el sábado 17 de octubre a las 16:00, hora de España. Cuesta 47 € al mes y quien entra ahora conserva ese precio fundador mientras siga dentro. Incluye una clase en vivo al mes de actualizaciones, acompañamiento personalizado, canal privado en Telegram, la agenda inteligente con IA y ficha en el mapa de terapeutas. Es para certificadas por Sorela; en la lista de espera puede entrar cualquiera.',
+  'COMUNIDAD DIVINE: abre el sábado 17 de octubre a las 16:00, hora de España. Cuesta 47 € al mes y quien entra ahora conserva ese precio fundador mientras siga dentro. Incluye una clase en vivo al mes de actualizaciones, acompañamiento personalizado, canal privado en Telegram, la agenda para tus reservas y ficha en el mapa de terapeutas. Es para certificadas por Sorela; en la lista de espera puede entrar cualquiera.',
   'CLIENTAS (no profesionales): el mapa de terapeutas certificadas todavía está vacío, porque las primeras aún se están formando. No mandes a nadie a reservar con una terapeuta: recoge el contacto por el formulario y di que Sorela avisa cuando haya alguna cerca.',
   'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
   'Termina siempre orientando al siguiente paso concreto.',
@@ -90,7 +90,7 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
   {
     patron: /comunidad|membres|suscrip|lista|47|telegram|fundador/,
     respuesta:
-      'La membresía abre el sábado 17 de octubre a las 16:00, hora de España. Son 47 € al mes, y quien entra en el lanzamiento conserva ese precio.\nDentro: una clase en vivo al mes, tus casos mirados uno a uno, canal privado en Telegram, la agenda con inteligencia artificial y tu ficha en el mapa.',
+      'La membresía abre el sábado 17 de octubre a las 16:00, hora de España. Son 47 € al mes, y quien entra en el lanzamiento conserva ese precio.\nDentro: una clase en vivo al mes, tus casos mirados uno a uno, canal privado en Telegram, la agenda para tus reservas y tu ficha en el mapa.',
     accion: {
       tipo: 'captar',
       titulo: 'Entra en la lista',

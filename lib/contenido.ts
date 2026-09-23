@@ -177,10 +177,13 @@ export const PIEZAS_COMUNIDAD: PiezaComunidad[] = [
     color: 'var(--azul)',
   },
   {
-    titulo: 'Agenda inteligente',
+    titulo: 'Tu agenda y tus clientas',
+    // Decía «agenda inteligente, con inteligencia artificial». Se quita: aquí
+    // se cuenta lo que la terapeuta va a tener, no con qué está construido.
+    // Además prometía algo que todavía no existe con un nombre que suena a
+    // mucho más de lo que va a hacer el primer día.
     texto:
-      'La misma plataforma de citas que usa Sorela, con inteligencia artificial: gestionará tus reservas y tus clientas sin que vivas pegada al móvil.',
-    // «Incluida» daba a entender que ya funciona, y todavía es maqueta.
+      'La misma plataforma donde llevas tus reservas y tus clientas, para no vivir pegada al móvil.',
     estado: 'Próximamente',
     color: 'var(--oro)',
   },
