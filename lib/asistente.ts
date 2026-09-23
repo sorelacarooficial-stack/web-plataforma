@@ -52,7 +52,22 @@ export const PROMPT_SISTEMA = [
  * las formaciones. Antes se decía «pulsa el botón de arriba», que es mandar a
  * buscar a quien ya te estaba hablando.
  */
-export type Accion = { tipo: 'captar'; titulo: string; entradilla: string; etiqueta: string };
+/**
+ * Lo que el asistente puede hacer además de contestar: abrir el formulario.
+ *
+ * `origen` importa más de lo que parece. De él sale a quién se parece esa
+ * persona —posible clienta, posible alumna o terapeuta— y, con eso, el correo
+ * que va a recibir. Sin ponerlo, todas caerían en el mismo saco y a quien
+ * pregunta por una sesión le llegaría el correo de las formaciones.
+ * Ver lib/origenes.ts.
+ */
+export type Accion = {
+  tipo: 'captar';
+  titulo: string;
+  entradilla: string;
+  etiqueta: string;
+  origen: string;
+};
 
 const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
   {
@@ -64,6 +79,8 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
       titulo: 'Te guardo el sitio',
       entradilla: 'Déjame nombre, correo y teléfono y te escribo con las opciones de agenda.',
       etiqueta: 'Dejar mi contacto',
+      // Pregunta por agenda y horas: quiere que la traten.
+      origen: 'cita-asistente',
     },
   },
   {
@@ -75,6 +92,8 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
       titulo: 'Te aviso el primero',
       entradilla: 'En cuanto se cierre la ciudad y la fecha, te escribo yo con todo: precio, plazas y cómo reservar.',
       etiqueta: 'Guardarme el sitio',
+      // Pregunta por fechas y plazas de formación: quiere aprender.
+      origen: 'formacion-asistente',
     },
   },
   {
@@ -96,6 +115,7 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
       titulo: 'Entra en la lista',
       entradilla: 'Te aviso antes de que abra el 17 de octubre, y entras con el precio de lanzamiento. No pido tarjeta.',
       etiqueta: 'Apuntarme a la lista',
+      origen: 'comunidad-asistente',
     },
   },
   {
@@ -107,6 +127,8 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
       titulo: 'Te mando los precios',
       entradilla: 'En cuanto se cierre la próxima convocatoria te escribo con el precio, las fechas y cómo reservar.',
       etiqueta: 'Que me avises',
+      // El precio que se pide aquí es el de las formaciones.
+      origen: 'formacion-precio',
     },
   },
   {
@@ -123,6 +145,8 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
       titulo: 'Te aviso cuando haya una cerca',
       entradilla: 'Déjame tu contacto y te escribo en cuanto se certifique una terapeuta en tu zona.',
       etiqueta: 'Dejar mi contacto',
+      // Busca terapeuta cerca: quiere que la traten.
+      origen: 'terapeutas',
     },
   },
   {

@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Técnica Divine</title>
+</head>
+
+<!--
+  Plantilla del correo de bienvenida. La rellena el Apps Script sustituyendo
+  los cinco marcadores: {{NOMBRE}}, {{SALUDO}}, {{CUERPO}}, {{ENLACE_WEB}} y
+  {{WHATSAPP}}.
+
+  Esto no es una página web y no se comporta como tal. Está maquetado con
+  tablas y con los estilos escritos en cada etiqueta porque Gmail recorta las
+  hojas de estilo y Outlook no entiende la maquetación moderna. Lo que aquí
+  parece anticuado es lo único que se ve igual en todas partes.
+
+  No hay ni una imagen ni una fuente traída de fuera: la mayoría de los
+  clientes de correo las bloquean por defecto y el correo llegaría roto.
+-->
+
+<body style="margin:0; padding:0; width:100%; background-color:#fbf9f6; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+
+<!-- Fondo. Una tabla exterior a todo el ancho, con la carta centrada dentro. -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; background-color:#fbf9f6;">
+  <tr>
+    <td align="center" style="padding:24px 16px 32px 16px;">
+
+      <!-- La carta. 600px como mucho; por debajo de eso se estira sola. -->
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px; border-collapse:collapse;">
+
+        <!-- Cabecera: solo texto. El nombre hace de logotipo. -->
+        <tr>
+          <td align="center" style="padding:8px 8px 22px 8px; font-family:Georgia,'Times New Roman',Times,serif; font-size:15px; line-height:1.4; letter-spacing:0.18em; text-transform:uppercase; color:#8a6a32;">
+            Técnica Divine
+          </td>
+        </tr>
+
+        <!-- Filo dorado. Separa la cabecera de la carta sin cargar el correo. -->
+        <tr>
+          <td style="font-size:0; line-height:0; height:2px; background-color:#8a6a32;">&nbsp;</td>
+        </tr>
+
+        <!-- Cuerpo de la carta. -->
+        <tr>
+          <td style="padding:32px 24px 28px 24px; background-color:#fbf9f6;">
+
+            <!--
+              El saludo. Si la persona no dejó su nombre, {{NOMBRE}} llega
+              vacío y aquí queda «Hola» a secas, que se lee bien igual.
+            -->
+            <p style="margin:0 0 20px 0; font-family:Georgia,'Times New Roman',Times,serif; font-size:22px; line-height:1.35; color:#141210;">Hola {{NOMBRE}}</p>
+
+            <!-- Primera línea. Cambia según quién sea: ver los textos del final. -->
+            <p style="margin:0 0 16px 0; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:1.65; color:#141210;">{{SALUDO}}</p>
+
+            <!-- Los párrafos del medio. Los mete el script ya envueltos en <p>. -->
+            {{CUERPO}}
+
+            <!-- Salida por WhatsApp. Un enlace de texto, no un botón. -->
+            <p style="margin:26px 0 0 0; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:1.65; color:#141210;">
+              Si te resulta más cómodo, <a href="{{WHATSAPP}}" style="color:#8a6a32; text-decoration:underline;">escríbeme por WhatsApp</a>.
+            </p>
+
+            <!-- La firma. -->
+            <p style="margin:26px 0 0 0; font-family:Georgia,'Times New Roman',Times,serif; font-size:17px; line-height:1.5; color:#141210;">
+              Sorela Caro<br>
+              <span style="font-family:Arial,Helvetica,sans-serif; font-size:14px; color:#6c645a;">Creadora de la Técnica Divine</span>
+            </p>
+
+          </td>
+        </tr>
+
+        <!-- Pie. Web, y la frase de baja, que es obligatoria. -->
+        <tr>
+          <td style="padding:20px 24px 0 24px; border-top:1px solid #e6ddcc;">
+            <p style="margin:0 0 10px 0; font-family:Arial,Helvetica,sans-serif; font-size:13px; line-height:1.6; color:#6c645a;">
+              <a href="{{ENLACE_WEB}}" style="color:#8a6a32; text-decoration:underline;">{{ENLACE_WEB}}</a>
+            </p>
+            <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:13px; line-height:1.6; color:#6c645a;">
+              Te escribo porque dejaste tus datos en mi web. Si no quieres recibir
+              más correos míos, respóndeme a este mismo y te doy de baja. No hace
+              falta que me expliques nada.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
+
+<!--
+===============================================================================
+  TEXTOS DE {{SALUDO}} Y {{CUERPO}}, CASO POR CASO
+
+  Para el otro agente: esto se copia al Apps Script. Son cuatro casos, y el
+  que toca sale del origen con el que entró la persona (lib/origenes.ts:
+  tipoDeOrigen devuelve 'clienta', 'alumna', 'comunidad' u 'otro').
+
+  CÓMO SE MONTAN LOS DOS MARCADORES
+  ---------------------------------
+  {{SALUDO}}  es texto suelto. Va dentro de un <p> que ya está en la plantilla,
+              así que se sustituye tal cual, sin etiquetas.
+
+  {{CUERPO}}  es HTML. Cada párrafo va envuelto en esta etiqueta exacta, que es
+              la misma que usa el resto de la carta:
+
+              <p style="margin:0 0 16px 0; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:1.65; color:#141210;">
+
+              Lo más limpio en el script es guardar los párrafos en un array y
+              unirlos con esa etiqueta al sustituir.
+
+  Y UN DETALLE DE {{NOMBRE}}
+  --------------------------
+  En la carta pone «Hola {{NOMBRE}}», sin coma detrás. Si la persona dejó su
+  nombre, pásalo con la coma ya puesta («Marta,») y quedará «Hola Marta,». Si
+  no lo dejó, pasa cadena vacía y quedará «Hola», que también se lee bien. Usa
+  solo el nombre de pila, no el apellido, y escápalo antes de meterlo.
+
+  LÍMITE LEGAL, QUE NO SE PUEDE TOCAR
+  -----------------------------------
+  Esto es estética, no sanidad. Los textos de abajo cuentan QUÉ es la técnica y
+  CÓMO se trabaja, nunca qué le hace al cuerpo por dentro. Si alguien los
+  reescribe, no pueden entrar ni las defensas, ni el sistema inmunológico, ni
+  las toxinas, ni la circulación, ni la celulitis, ni el metabolismo, ni el
+  dolor, ni adelgazar, ni ninguna patología.
+
+===============================================================================
+  CASO 1 · CLIENTA
+  Quiere que la traten. Entró por 'web', 'informacion', 'expo', 'cita-<ciudad>',
+  'terapeutas' o 'avisar-ciudad'.
+===============================================================================
+
+{{SALUDO}}
+
+Gracias por pedirme la información. Va adjunta a este correo, en PDF, para que
+la leas con calma.
+
+{{CUERPO}}
+
+Te cuento en corto qué es la Técnica Divine. Es un masaje manual. Mis manos,
+aceite y, en algunas zonas, herramientas de aluminio. Sin máquinas, sin
+aparatos y sin nada invasivo.
+
+Una sesión tiene un orden, y ese orden es la técnica. Se empieza despacio, con
+una apertura de unos diez minutos de pulsaciones lentas y rítmicas, mientras
+voy ajustando la presión a lo que me dice tu cara. Después se trabaja la zona
+por partes: si es el abdomen, primero la parte de abajo, luego la de arriba,
+luego los laterales y al final las dos juntas; si son las piernas, de abajo
+arriba. Se cierra con cinco minutos de reposo, tumbada y tranquila.
+
+Antes de empezar hablamos. Hay situaciones en las que esta técnica no se
+aplica, y eso lo miramos juntas antes de que te subas a la camilla. En el PDF
+tienes las fases completas, las zonas en las que se trabaja y las
+recomendaciones de antes y después.
+
+Si quieres una sesión, o te ha quedado alguna duda, respóndeme a este correo.
+Lo leo yo.
+
+===============================================================================
+  CASO 2 · ALUMNA
+  Quiere formarse. Entró por 'formacion*', 'curso*' o 'metodo'.
+===============================================================================
+
+{{SALUDO}}
+
+Gracias por interesarte por la formación. Te cuento cómo está montada, que es
+lo primero que hay que entender.
+
+{{CUERPO}}
+
+Son dos etapas y van en este orden, siempre. Primero online, y después
+presencial.
+
+En la parte online ves la base: las fases de cada protocolo una por una, las
+maniobras, la presión, el ritmo y la velocidad de cada una, y los casos en los
+que la técnica no se aplica. Puedes verla a tu ritmo.
+
+En la parte presencial te corrijo la mano. Trabajas sobre cuerpo real y yo
+estoy al lado diciéndote. Esa parte no se puede sustituir por un vídeo, y por
+eso el orden no se salta: lo online te prepara, lo presencial te deja lista.
+
+Las próximas fechas las estoy cerrando ahora mismo. En cuanto las tenga te las
+mando, sin que tengas que estar pendiente de nada.
+
+Te adjunto también la información de la técnica, para que veas sobre qué vas a
+trabajar. Si quieres preguntarme cualquier cosa mientras tanto, respóndeme a
+este correo.
+
+===============================================================================
+  CASO 3 · COMUNIDAD
+  Ya es terapeuta certificada y espera la membresía. Entró por 'comunidad' o
+  'lista-comunidad'.
+===============================================================================
+
+{{SALUDO}}
+
+Gracias por apuntarte a la lista. Como ya eres terapeuta, voy al grano.
+
+{{CUERPO}}
+
+La Comunidad Divine abre el sábado 17 de octubre a las 16:00, hora de España.
+
+Quien entra en el lanzamiento conserva el precio de fundadora mientras siga
+dentro. Es la única vez que ese precio va a estar disponible.
+
+A ti te aviso antes que a nadie. Estás en la lista, así que tendrás el enlace
+en tu correo antes de que se abra al resto.
+
+Si te surge cualquier duda hasta entonces, respóndeme a este correo.
+
+===============================================================================
+  CASO 4 · OTRO
+  No se sabe qué busca. Entró por 'contacto' o 'asistente'.
+===============================================================================
+
+{{SALUDO}}
+
+Gracias por escribirme.
+
+{{CUERPO}}
+
+Te contesto yo, en persona, en menos de 48 horas.
+
+Para no hacerte perder el tiempo, dime una cosa: ¿buscas una sesión para ti,
+quieres formarte en la técnica, o es otra cosa? Con saber eso te mando lo que
+te sirve y no lo que no.
+
+Mientras tanto te adjunto la información de la Técnica Divine, por si te
+resuelve algo antes de que hablemos.
+
+Respóndeme a este correo y lo leo yo.
+
+===============================================================================
+-->

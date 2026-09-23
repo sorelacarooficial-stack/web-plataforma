@@ -53,6 +53,13 @@ export const COMO_LLEGO: Record<string, string> = {
   asistente: 'Conversación con el asistente de la web',
   'avisar-ciudad': 'Pidió aviso cuando haya fecha en su ciudad',
   terapeutas: 'Buscador de terapeutas',
+  // Los que nacen de una conversación con el asistente. Se distinguen del
+  // resto porque ahí ya ha preguntado algo concreto, y eso vale al llamarla:
+  // se sabe por dónde empezar.
+  'cita-asistente': 'Preguntó al asistente por una cita',
+  'formacion-asistente': 'Preguntó al asistente por las fechas de formación',
+  'formacion-precio': 'Preguntó al asistente por el precio de la formación',
+  'comunidad-asistente': 'Preguntó al asistente por la comunidad',
 };
 
 /**
