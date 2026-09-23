@@ -56,6 +56,13 @@ export const COMO_LLEGO: Record<string, string> = {
   // Los que nacen de una conversación con el asistente. Se distinguen del
   // resto porque ahí ya ha preguntado algo concreto, y eso vale al llamarla:
   // se sabe por dónde empezar.
+  /* Los que nacen de «Añadir cliente». Sin estas cuatro líneas, «cita-a-mano»
+     caía en la regla de abajo que separa la ciudad del origen y la ficha decía
+     «Pidió cita en A mano», que no ha pasado: a esta persona la apuntó Sorela. */
+  'a-mano': 'La apuntaste tú',
+  'cita-a-mano': 'La apuntaste tú: quiere que la trates',
+  'formacion-a-mano': 'La apuntaste tú: quiere formarse',
+  'comunidad-a-mano': 'La apuntaste tú: ya es terapeuta',
   'cita-asistente': 'Preguntó al asistente por una cita',
   'formacion-asistente': 'Preguntó al asistente por las fechas de formación',
   'formacion-precio': 'Preguntó al asistente por el precio de la formación',
