@@ -9,10 +9,10 @@ export const INSTAGRAM_USUARIO = '@sorelacaro_';
  * si la captación falla, se le ofrece a la persona escribir por WhatsApp con
  * el mensaje ya redactado, y así el contacto no se pierde.
  *
- * PENDIENTE: mientras esté vacío, esa salida manda a Instagram, que funciona
- * pero convierte bastante peor. Rellenar antes de la exposición.
+ * Se escribe con espacios porque así se lee; al construir el enlace de
+ * WhatsApp se le quitan, que solo admite dígitos.
  */
-export const WHATSAPP_SORELA: string = '';
+export const WHATSAPP_SORELA: string = '+34 686 15 45 56';
 
 /*
  * Aquí estaba EN_LISTA = 128, «cuántas hay ya en la lista de espera». Era una
