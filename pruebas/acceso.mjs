@@ -14,6 +14,7 @@
 import { chromium } from 'playwright';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 import { mkdirSync } from 'node:fs';
 
 const OUT =
@@ -41,13 +42,29 @@ const app =
   });
 const auth = getAuth(app);
 
-/** Deja el proyecto como estaba, pase lo que pase. */
+/**
+ * Deja el proyecto como estaba, pase lo que pase.
+ *
+ * Hay que borrar DOS cosas, no una. Al entrar, el servidor le escribe a cada
+ * persona su ficha en usuarios/{uid} (ver asegurarRol), así que borrar solo la
+ * cuenta de Authentication deja esa ficha suelta, sin dueño y sin forma de
+ * saber de dónde salió. Pasó: apareció una «prueba-acceso@ejemplo.com» en la
+ * base de datos de producción semanas después, y hubo que ir a mano.
+ */
 async function limpiar() {
+  let uid = null;
   try {
-    const u = await auth.getUserByEmail(CORREO);
-    await auth.deleteUser(u.uid);
+    uid = (await auth.getUserByEmail(CORREO)).uid;
+    await auth.deleteUser(uid);
   } catch {
     /* no existía */
+  }
+  if (uid) {
+    try {
+      await getFirestore(app).collection('usuarios').doc(uid).delete();
+    } catch {
+      /* si no llegó a escribirse, mejor */
+    }
   }
 }
 
