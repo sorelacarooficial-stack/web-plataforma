@@ -809,6 +809,106 @@
 }
 
 /* ==========================================================================
+   Membresía Divine · el lanzamiento
+
+   Una sola idea, centrada y a pantalla ancha. Antes aquí había dos columnas
+   con el precio, tres párrafos y cinco tarjetas; se leía como una página de
+   producto de algo que todavía no se puede comprar. Lo único que se puede
+   hacer hoy es apuntarse, así que la sección entera empuja a eso.
+   ========================================================================== */
+.lanzamiento {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(80px, 12vw, 170px) 0;
+  background: var(--inverse-bg, #141210);
+  border-top: 1px solid var(--line-inverse);
+  border-bottom: 1px solid var(--line-inverse);
+}
+
+/* Un halo dorado detrás del titular. Va del centro hacia fuera y muere antes
+   de tocar los bordes, así que no se le ve el corte por ningún lado. */
+.lanzamiento::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(1100px, 150%);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(207, 167, 101, 0.16) 0%, transparent 62%);
+  pointer-events: none;
+}
+
+.lanzamientoCaja {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(18px, 2.4vw, 30px);
+  text-align: center;
+}
+
+.lanzamientoSello {
+  margin: 0;
+  padding: 8px 18px;
+  border: 1px solid var(--oro-line);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--oro-claro, #e0c28e);
+}
+
+/* El tamaño es el mensaje. Con 12vw ocupa la pantalla de lado a lado en
+   móvil y sigue siendo enorme en un monitor, sin pasarse de los 200px. */
+.lanzamientoTitulo {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(54px, 12vw, 190px);
+  line-height: 0.86;
+  letter-spacing: -0.03em;
+  color: var(--inverse-ink, #f7f2ea);
+}
+
+/* La segunda palabra en cursiva y en oro: separa la marca del sustantivo y
+   es lo que hace que el bloque se lea como un cartel y no como un titular. */
+.lanzamientoTituloEnfasis {
+  font-style: italic;
+  color: var(--oro-claro, #e0c28e);
+}
+
+.lanzamientoPie {
+  margin: 0;
+  font-size: clamp(14px, 1.5vw, 18px);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  color: var(--on-inverse-2, rgba(247, 242, 234, 0.72));
+}
+
+/* El botón, más grande de lo normal: es lo único que se puede hacer aquí.
+   Los colores se fijan con los tokens invertidos y no con .btn-claro, porque
+   ese usa el fondo del tema: en modo oscuro saldría negro sobre negro y el
+   botón desaparecería justo en la sección que existe para que se pulse. */
+.lanzamientoBoton {
+  margin-top: 6px;
+  padding: 19px 40px;
+  font-size: 12.5px;
+  background: var(--inverse-ink);
+  color: var(--inverse-bg);
+  border-color: transparent;
+}
+
+.lanzamientoBoton:hover {
+  background: var(--oro-claro, #e0c28e);
+  color: var(--inverse-bg);
+}
+
+/* ==========================================================================
    Móvil de las secciones nuevas
    ========================================================================== */
 @media (max-width: 860px) {

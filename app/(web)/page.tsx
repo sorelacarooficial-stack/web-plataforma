@@ -8,12 +8,10 @@ import LlamadaDivine from '@/components/LlamadaDivine';
 import BotonAsistente from '@/components/BotonAsistente';
 import BotonCaptacion from '@/components/BotonCaptacion';
 import {
-  COMUNIDAD,
   FAQS,
   INSTAGRAM,
   INSTAGRAM_USUARIO,
   PILARES,
-  PIEZAS_COMUNIDAD,
 } from '@/lib/contenido';
 import retrato from '@/fotos/sorela-retrato.webp';
 import lumbar from '@/fotos/trabajo-lumbar.webp';
@@ -230,33 +228,6 @@ export default function Home() {
               Quién está detrás
             </p>
             <h2 className="titulo-lg">Sorela Caro, creadora de la Técnica Divine.</h2>
-            <p className="texto max-500">
-              Empecé como todas: aplicando el protocolo que me habían enseñado. Ordené en un método
-              lo que hasta entonces llamaba intuición, y ese método es lo que enseño. Doy yo las
-              formaciones, corrijo yo en la camilla y respondo yo los correos. La comunidad la voy
-              a llevar igual.
-            </p>
-
-            {/* La primera cifra era «87 terapeutas formadas», heredada del
-                prototipo y sin confirmar. Se sustituye por los quince años de
-                cabina, que sí están en sus documentos. Vuelve el número real
-                en cuanto Sorela lo dé. */}
-            <div className={css.datos}>
-              <div className="dato" style={{ borderTop: '2px solid var(--arcilla)' }}>
-                <span className="dato-cifra" data-count="15">
-                  15
-                </span>
-                <span className="dato-pie">años de cabina antes del método</span>
-              </div>
-              <div className="dato" style={{ borderTop: '2px solid var(--salvia)' }}>
-                <span className="dato-cifra">2</span>
-                <span className="dato-pie">etapas: online y después presencial</span>
-              </div>
-              <div className="dato" style={{ borderTop: '2px solid var(--azul)' }}>
-                <span className="dato-cifra">0</span>
-                <span className="dato-pie">clases delegadas a terceros</span>
-              </div>
-            </div>
 
             <div className={css.acciones}>
               <Link href="/sobre" className="btn btn-md">
@@ -270,72 +241,34 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Comunidad Divine ---------- */}
-      <section id="comunidad" className={css.comunidad}>
+      {/* ---------- Comunidad Divine ----------
+           Una sola idea y un solo botón. Antes esta sección contaba lo que hay
+           dentro, ponía precio y desplegaba cinco piezas: mucha lectura para
+           algo que todavía no se puede comprar. Lo único que se puede hacer
+           hoy es apuntarse, así que es lo único que se pide. */}
+      <section id="comunidad" className={css.lanzamiento}>
         <div className="wrap">
-          <div className={css.comunidadCabeza}>
-            <div className={css.comunidadTexto}>
-              <p className="antetitulo">Lanzamiento · Comunidad Divine</p>
-              {/* Es su membresía y se está lanzando: eso es lo primero que hay
-                  que decir. Antes el titular hablaba de lo que le pasa a una
-                  alumna semanas después del curso, que es un argumento de
-                  venta, no una presentación. */}
-              <h2 className="titulo-lg max-560">
-                Sorela abre su membresía. Y abre una sola vez.
-              </h2>
-              <p className="texto max-520">
-                Es el sitio donde sigue enseñando después del curso: una clase en vivo al mes con
-                lo nuevo del método, tus casos mirados uno a uno y un canal privado donde
-                preguntar. Más la agenda con inteligencia artificial y tu ficha en el mapa.
-              </p>
-              <p className="texto max-520">
-                Quien entra en el lanzamiento se queda con el precio de fundadora. Después subirá.
-              </p>
+          <div className={css.lanzamientoCaja}>
+            <p className={css.lanzamientoSello}>Próximamente</p>
 
-              <div className={css.precio}>
-                <span className={css.precioCifra}>{COMUNIDAD.precio} €</span>
-                <span className={css.precioPeriodo}>{COMUNIDAD.periodo}</span>
-                <span className={css.precioSello}>{COMUNIDAD.condicion}</span>
-              </div>
-              <p className="nota" style={{ maxWidth: 440 }}>
-                Quien entra ahora conserva ese precio mientras siga dentro.
-              </p>
-            </div>
+            <h2 className={css.lanzamientoTitulo}>
+              Membresía
+              <em className={css.lanzamientoTituloEnfasis}>Divine</em>
+            </h2>
 
-            <div className={css.apertura}>
-              <p className="antetitulo" style={{ color: 'var(--oro)' }}>
-                Abre el {COMUNIDAD.apertura}
-              </p>
-              <Contador />
-              {/* Antes bajaba a una sección de lista que ya no existe. Ahora
-                  abre la misma ventana que el resto de la página: un único
-                  formulario, una única casilla de consentimiento. */}
-              <div className={css.aperturaAcciones}>
-                <BotonCaptacion
-                  className="btn btn-md"
-                  titulo="Entra en la lista"
-                  entradilla="Te aviso en cuanto abra la Comunidad Divine, y entras con el precio fundador. No pido tarjeta y puedes salirte con un correo."
-                  etiquetaVentana="Entrar en la lista de la Comunidad Divine"
-                >
-                  Entrar en la lista
-                </BotonCaptacion>
-                <Link href="/comunidad" className="enlace-fino">
-                  Qué hay dentro
-                </Link>
-              </div>
-            </div>
-          </div>
+            <p className={css.lanzamientoPie}>Lista de espera abierta</p>
 
-          <div className={css.piezas}>
-            {PIEZAS_COMUNIDAD.map((p) => (
-              <article key={p.titulo} className={css.pieza} style={{ borderTopColor: p.color }}>
-                <span className={css.piezaEstado}>{p.estado}</span>
-                <h3 className={css.piezaTitulo}>{p.titulo}</h3>
-                <p className="texto-fijo" style={{ fontSize: 16 }}>
-                  {p.texto}
-                </p>
-              </article>
-            ))}
+            <Contador />
+
+            <BotonCaptacion
+              className={`btn btn-md ${css.lanzamientoBoton}`}
+              titulo="Entra en la lista de espera"
+              entradilla="Te aviso en cuanto abra la Membresía Divine, y entras con el precio fundador. No pido tarjeta y puedes salirte con un correo."
+              etiquetaVentana="Entrar en la lista de espera de la Membresía Divine"
+              origen="comunidad"
+            >
+              Entrar en la lista de espera
+            </BotonCaptacion>
           </div>
         </div>
       </section>
