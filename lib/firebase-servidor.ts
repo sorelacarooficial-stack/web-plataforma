@@ -113,6 +113,8 @@ export function baseDeDatos(): Firestore {
 export const COLECCIONES = {
   /** Cada persona que deja su contacto en la web. */
   contactos: 'contactos',
+  /** La agenda de Sorela: citas, formaciones, reuniones y recados. */
+  agenda: 'agenda',
   /** Lista de espera de la Comunidad Divine. */
   comunidad: 'lista_comunidad',
   /**
