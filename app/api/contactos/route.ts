@@ -4,6 +4,7 @@ import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
 import { tipoDeOrigen } from '@/lib/origenes';
 import { PERFILES, normalizarTelefono, revisar as revisarComoLaWeb } from '@/lib/captacion';
+import { mandarInformacion } from '@/lib/enviar-informacion';
 
 /**
  * Los contactos, para verlos y trabajarlos desde la plataforma.
@@ -455,7 +456,38 @@ export async function POST(peticion: Request) {
     return NextResponse.json({ ok: false, motivo: 'guardar' }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true, id });
+  /*
+   * Y se le manda la información de la Técnica Divine, con su PDF.
+   *
+   * Es EXACTAMENTE el mismo correo que recibe quien deja sus datos en la
+   * portada: la misma función, el mismo texto, el mismo adjunto. Apuntar a
+   * alguien aquí y que le llegue otra cosa sería tener dos bienvenidas
+   * distintas según por dónde entró.
+   *
+   * Va DESPUÉS de guardar y no antes. Si el envío falla, el contacto ya está
+   * a salvo y Sorela puede escribirle ella; al revés, un fallo al guardar
+   * dejaría a alguien con un correo de bienvenida y a nadie con su dato.
+   *
+   * Sin correo no hay a dónde mandarlo —se puede apuntar a alguien solo con su
+   * móvil— y entonces `mandarInformacion` contesta que no salió, que es la
+   * verdad. La pantalla lo dice en vez de dar por hecho un envío que no ha
+   * ocurrido.
+   *
+   * Que el envío falle NO tumba el alta: se contesta ok con `correo: false` y
+   * la pantalla avisa de que hay que escribirle a mano.
+   */
+  const { correo: correoEnviado } = await mandarInformacion({
+    nombre: datos.nombre ?? '',
+    correo: datos.correo ?? '',
+    whatsapp: datos.whatsapp,
+    ciudad: datos.ciudad,
+    // El consentimiento lo da ella al apuntar a la persona: es quien ha
+    // hablado con ella y quien responde de haberle pedido el dato.
+    consentimiento: true,
+    origen,
+  });
+
+  return NextResponse.json({ ok: true, id, correo: correoEnviado });
 }
 
 /** Borrar un contacto. Se lleva con él el seguimiento: no hay papelera. */
