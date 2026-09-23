@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import FichaPersona, { type Persona } from './FichaPersona';
 import { ETIQUETA_TIPO, TIPOS, comoLlego, type Tipo } from '@/lib/origenes';
+import { PERFILES } from '@/lib/captacion';
 import css from './plataforma.module.css';
 
 /**
- * Los contactos que entran por la web, dentro de la plataforma.
+ * Los contactos de Sorela, dentro de la plataforma.
  *
  * Esto sustituye a la lista de leads de mentira que traía la maqueta —Elena,
  * Rocío, Nuria— con sus estados y sus notas inventadas. Lo que se ve aquí es
@@ -22,6 +23,12 @@ import css from './plataforma.module.css';
  * formaciones quiere aprender y quien lo deja en la comunidad ya es terapeuta:
  * son tres conversaciones distintas y llamarlas igual obliga a adivinar cuál
  * toca. De dónde vino lo decide `lib/origenes.ts`, en el servidor.
+ *
+ * Aquí no entra solo lo que llega por la web: Sorela puede apuntar a mano a
+ * quien conoce en una exposición o por teléfono, corregir un dato mal escrito
+ * y borrar a quien se apuntó por error. Esos tres van por la misma ruta que la
+ * lista, `app/api/contactos`, y siempre recargando después: una ficha nueva o
+ * corregida tiene que verse al momento o parece que no se ha guardado.
  */
 
 const ESTADOS = ['Nuevo', 'Contactado', 'En conversación', 'Cerrado', 'Descartado'] as const;
@@ -39,6 +46,44 @@ const CLASE: Record<Estado, string> = {
   Descartado: css.estadoApagado,
 };
 
+/**
+ * Qué origen se guarda según lo que la persona busque.
+ *
+ * El origen es «por dónde entró», y quien se apunta a mano no ha entrado por
+ * ningún sitio: no hay un valor verdadero que poner. Pero de él cuelga la
+ * clasificación entera —`lib/origenes.ts` decide con el origen si alguien es
+ * posible clienta, posible alumna o terapeuta certificada—, así que hay que
+ * elegir uno que caiga en el tipo que Sorela marque. Estos lo consiguen:
+ *
+ *   cita-a-mano       → empieza por «cita-»      → posible clienta
+ *   formacion-a-mano  → empieza por «formacion»  → posible alumna
+ *   comunidad-a-mano  → empieza por «comunidad-» → terapeuta certificada
+ *   a-mano            → no encaja en nada        → sin clasificar
+ *
+ * El sufijo «-a-mano» no es decorativo: mirando la colección en Firestore se
+ * ve de un golpe cuáles escribió ella. Y no se usa «cita-madrid», que es lo
+ * que manda components/Reserva.tsx y quedaría más bonito en la ficha, porque
+ * eso significa «pidió cita en Madrid» y sería mentira: esta persona no ha
+ * pedido nada, se la encontró en una feria.
+ */
+const ORIGEN_POR_TIPO: Record<Tipo, string> = {
+  clienta: 'cita-a-mano',
+  alumna: 'formacion-a-mano',
+  comunidad: 'comunidad-a-mano',
+  otro: 'a-mano',
+};
+
+/**
+ * Si esta ficha la escribió Sorela en vez de llegar por un formulario.
+ *
+ * `veces` cuenta las veces que esa persona ha dejado sus datos en la web, y a
+ * los apuntados a mano se les guarda un 0 porque no lo ha hecho ninguna. Está
+ * explicado entero en el POST de app/api/contactos: la marca viaja por ahí
+ * porque el GET manda ese número y no manda el campo `aMano`, que es el que
+ * de verdad lo dice.
+ */
+const apuntadoAMano = (c: Contacto) => c.veces === 0;
+
 /** «hace 3 h», «ayer», «12 oct». Una fecha completa no dice nada de un vistazo. */
 function cuando(iso: string | null): string {
   if (!iso) return '';
@@ -54,9 +99,420 @@ function cuando(iso: string | null): string {
   return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 }
 
+/* ==========================================================================
+   Apuntar y corregir un cliente
+   ========================================================================== */
+
+/** Lo que se está escribiendo en el formulario, antes de mandarlo. */
+type Borrador = {
+  nombre: string;
+  correo: string;
+  whatsapp: string;
+  ciudad: string;
+  perfil: string;
+  nota: string;
+  busca: Tipo;
+};
+
+const BORRADOR_VACIO: Borrador = {
+  nombre: '',
+  correo: '',
+  whatsapp: '',
+  ciudad: '',
+  perfil: '',
+  nota: '',
+  /* Nace «sin clasificar» a propósito, y no en «posible clienta»: si Sorela no
+     toca el selector, lo honrado es que quede el hueco y no una etiqueta que
+     nadie ha elegido. Es la misma idea que explica lib/origenes.ts. */
+  busca: 'otro',
+};
+
+/** Qué está haciendo el panel: apuntar a alguien nuevo o corregir a alguien. */
+type Modo = { que: 'nuevo' } | { que: 'editar'; contacto: Contacto };
+
+/** Lo que contesta el guardado, para que el panel sepa qué pintar. */
+type Resultado =
+  | { ok: true }
+  | { ok: false; errores: Record<string, string>; fallo?: string; duplicado?: string };
+
+/**
+ * El panel de apuntar o corregir.
+ *
+ * Va en un <dialog> con showModal() y no desplegado dentro de la pantalla, y
+ * por dos motivos. El primero es dónde cae: la lista puede tener cientos de
+ * filas con los filtros puestos, así que un formulario al final —como el de la
+ * agenda— quedaría a un scroll larguísimo justo cuando hace falta, que es con
+ * el móvil en la oreja y la persona al otro lado dictando su correo. El
+ * segundo es que apuntar a alguien no es repasar la lista: es una sola cosa,
+ * de principio a fin, y el modal trae hecho lo que eso pide —el foco dentro,
+ * el fondo inerte, Escape para salir— sin pelearse con los z-index del cajón
+ * de móvil del panel. Es el mismo trato que ya recibe la ficha de una persona
+ * en FichaPersona.tsx, y reutiliza sus estilos tal cual.
+ *
+ * El panel no habla con el servidor: monta el cuerpo y avisa hacia arriba.
+ * Quien tiene la lista es quien sabe recargarla.
+ */
+function PanelCliente({
+  modo,
+  onCerrar,
+  onGuardar,
+  onVerFicha,
+}: {
+  modo: Modo;
+  onCerrar: () => void;
+  onGuardar: (cuerpo: Record<string, unknown>) => Promise<Resultado>;
+  onVerFicha: (id: string) => void;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  /* Dónde empezó el gesto del ratón, para no confundir «soltar el botón sobre
+     el velo» con «pulsar el velo». Igual que en FichaPersona. */
+  const empezoEnVelo = useRef(false);
+
+  const editando = modo.que === 'editar';
+
+  const [borrador, setBorrador] = useState<Borrador>(() =>
+    modo.que === 'editar'
+      ? {
+          nombre: modo.contacto.nombre,
+          correo: modo.contacto.correo,
+          whatsapp: modo.contacto.whatsapp,
+          ciudad: modo.contacto.ciudad,
+          perfil: modo.contacto.perfil,
+          nota: modo.contacto.nota,
+          // No se edita: el origen es de dónde entró, un hecho que ya pasó.
+          busca: modo.contacto.tipo,
+        }
+      : BORRADOR_VACIO
+  );
+  /* Con qué empezó, para saber al cerrar si hay algo escrito que se perdería.
+     Se guarda en una ref y no en un estado porque no repinta nada. */
+  const inicial = useRef(borrador);
+
+  const [errores, setErrores] = useState<Record<string, string>>({});
+  const [fallo, setFallo] = useState<string | null>(null);
+  /* El id de quien ya ocupaba ese correo o ese móvil, para poder abrir su
+     ficha desde el propio error en vez de mandar a buscarla a mano. */
+  const [duplicado, setDuplicado] = useState<string | null>(null);
+  const [guardando, setGuardando] = useState(false);
+
+  /* Este panel se monta y se desmuestra entero con cada apertura —la lista lo
+     pinta solo cuando hay modo, y con una `key` distinta por contacto—, así
+     que los efectos son de montaje y no hace falta seguir a ninguna prop. */
+  useEffect(() => {
+    const dialogo = ref.current;
+    if (!dialogo) return;
+    if (!dialogo.open) dialogo.showModal();
+    // Al desmontarse se cierra antes, para dejar limpia la capa superior del
+    // navegador en vez de fiarlo todo a que el nodo desaparezca.
+    return () => {
+      if (dialogo.open) dialogo.close();
+    };
+  }, []);
+
+  /* La lista de detrás no debe poder moverse mientras esto está abierto: en
+     móvil, al arrastrar dentro del formulario se desplazaría y se perdería el
+     sitio donde estabas. */
+  useEffect(() => {
+    const previo = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previo;
+    };
+  }, []);
+
+  /* Solo para los campos de texto. «Qué busca» se queda fuera a propósito: es
+     de un tipo cerrado y colarle una cadena cualquiera por aquí se escaparía
+     sin que TypeScript dijera nada. */
+  const cambiar = (campo: Exclude<keyof Borrador, 'busca'>, valor: string) =>
+    setBorrador((b) => ({ ...b, [campo]: valor }));
+
+  /**
+   * Cerrar, pero no a traición.
+   *
+   * Lo escrito aquí no existe en ningún otro sitio: al cerrar se desmonta con
+   * el panel. Se compara con lo que había al abrir en vez de mirar si los
+   * campos están vacíos, porque al corregir vienen llenos desde el principio y
+   * si no, preguntaría siempre. Se pregunta igual que al cerrar una ficha con
+   * una nota a medias.
+   */
+  function intentarCerrar() {
+    const tocado = (Object.keys(borrador) as (keyof Borrador)[]).some(
+      (k) => borrador[k] !== inicial.current[k]
+    );
+    if (tocado && !window.confirm('Tienes cambios sin guardar. Si cierras se pierden. ¿Cierro?')) {
+      return;
+    }
+    onCerrar();
+  }
+
+  async function enviar(e: FormEvent) {
+    e.preventDefault();
+    if (guardando) return;
+    setGuardando(true);
+    setErrores({});
+    setFallo(null);
+    setDuplicado(null);
+
+    /* Al corregir no viajan ni el correo ni el origen: el correo es el
+       identificador del documento y cambiarlo dejaría atrás el seguimiento
+       entero, y el origen es de dónde entró, que no cambia. Lo explica el
+       PATCH de app/api/contactos. */
+    const cuerpo: Record<string, unknown> = {
+      nombre: borrador.nombre,
+      whatsapp: borrador.whatsapp,
+      ciudad: borrador.ciudad,
+      perfil: borrador.perfil,
+      nota: borrador.nota,
+      ...(editando ? {} : { correo: borrador.correo, origen: ORIGEN_POR_TIPO[borrador.busca] }),
+    };
+
+    const res = await onGuardar(cuerpo);
+    // Si ha ido bien, la lista cierra el panel y lo desmonta: no hay nada que
+    // repintar aquí, y tocar el estado de lo que ya no está no sirve de nada.
+    if (res.ok) return;
+
+    setErrores(res.errores);
+    setFallo(res.fallo ?? null);
+    setDuplicado(res.duplicado ?? null);
+    setGuardando(false);
+  }
+
+  /** El fallo de un campo, debajo de él y con su nombre. */
+  function error(campo: string) {
+    if (!errores[campo]) return null;
+    return (
+      <span className={css.errorCampo} role="alert">
+        {errores[campo]}
+      </span>
+    );
+  }
+
+  return (
+    <dialog
+      ref={ref}
+      className={css.fichaPanel}
+      aria-label={editando ? 'Corregir los datos del cliente' : 'Apuntar un cliente nuevo'}
+      // Escape cierra por su cuenta sin pasar por React. Se corta siempre y se
+      // decide aquí: si hay algo escrito, intentarCerrar() pregunta, y al
+      // decir que no el preventDefault es lo que lo deja abierto.
+      onCancel={(e) => {
+        e.preventDefault();
+        intentarCerrar();
+      }}
+      onPointerDown={(e) => {
+        empezoEnVelo.current = e.target === ref.current;
+      }}
+      // Se exige que el gesto empezara Y acabara fuera: al arrastrar para
+      // seleccionar el texto de un campo, el «click» cae sobre el velo y sin
+      // esta comprobación se cerraría el formulario a medio escribir.
+      onClick={(e) => {
+        if (e.target === ref.current && empezoEnVelo.current) intentarCerrar();
+      }}
+    >
+      <div className={css.fichaCaja}>
+        <button
+          type="button"
+          className={css.fichaCerrar}
+          onClick={intentarCerrar}
+          aria-label="Cerrar el formulario"
+        >
+          <svg width="14" height="14" viewBox="0 0 15 15" aria-hidden="true">
+            <path
+              d="M1 1l13 13M14 1L1 14"
+              stroke="currentColor"
+              strokeWidth="1.3"
+              fill="none"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+
+        <form onSubmit={enviar} className={css.columna} style={{ gap: 16 }}>
+          <header style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <p className={css.rotuloSeccion}>{editando ? 'Corregir' : 'Apuntar a mano'}</p>
+            <h2 className={css.h3}>
+              {editando ? modo.contacto.nombre || 'Sin nombre' : 'Un cliente nuevo'}
+            </h2>
+            <p className={css.parrafo}>
+              {editando
+                ? 'Lo que corrijas aquí se queda en su ficha. Lo que tengas apuntado de sus conversaciones no se toca.'
+                : 'Para quien conozcas fuera de la web: en una exposición, por teléfono o porque te lo han presentado. Entra en la misma lista que los demás.'}
+            </p>
+          </header>
+
+          {fallo && (
+            <p className={css.avisoFallo} role="alert">
+              {fallo}
+            </p>
+          )}
+
+          {/* La salida cuando ese correo o ese móvil ya eran de alguien: se le
+              abre su ficha en vez de dejarla buscándola a mano por la lista. El
+              botón va aquí y no pegado al campo que ha chocado porque un botón
+              dentro de un <label> activa además el campo al pulsarlo. */}
+          {duplicado && (
+            <p className={css.avisoFallo}>
+              Esa persona ya estaba apuntada.{' '}
+              <button type="button" className={css.btnLinea} onClick={() => onVerFicha(duplicado)}>
+                Abrir su ficha
+              </button>
+            </p>
+          )}
+
+          <label className={css.etiquetaCampo}>
+            Nombre
+            <input
+              value={borrador.nombre}
+              onChange={(e) => cambiar('nombre', e.target.value)}
+              className={css.campoCaja}
+              autoComplete="off"
+              /* El ejemplo no lleva nombre propio a posta: un nombre de muestra
+                 en un panel donde todavía no hay nadie se lee como una persona
+                 que existe. */
+              placeholder="Nombre y apellidos"
+            />
+            {error('nombre')}
+          </label>
+
+          <div className={css.formRejilla}>
+            {editando ? (
+              /* El correo no se puede corregir porque ES el identificador del
+                 documento en Firestore. Se enseña igual, apagado, para que no
+                 parezca que se ha perdido, y se dice qué hacer si está mal. */
+              <div className={css.etiquetaCampo}>
+                Correo
+                <span className={css.fichaValor}>{modo.contacto.correo || 'No consta'}</span>
+                <span className={css.errorCampo}>
+                  El correo no se cambia: es con lo que se guarda su ficha. Si está mal, bórrala y
+                  apúntala otra vez.
+                </span>
+              </div>
+            ) : (
+              <label className={css.etiquetaCampo}>
+                Correo
+                <input
+                  type="email"
+                  value={borrador.correo}
+                  onChange={(e) => cambiar('correo', e.target.value)}
+                  className={css.campoCaja}
+                  autoComplete="off"
+                  placeholder="nombre@correo.com"
+                />
+                {error('correo')}
+              </label>
+            )}
+
+            <label className={css.etiquetaCampo}>
+              WhatsApp
+              <input
+                type="tel"
+                value={borrador.whatsapp}
+                onChange={(e) => cambiar('whatsapp', e.target.value)}
+                className={css.campoCaja}
+                autoComplete="off"
+                placeholder="+34 600 00 00 00"
+              />
+              {error('whatsapp')}
+            </label>
+
+            <label className={css.etiquetaCampo}>
+              Ciudad
+              <input
+                value={borrador.ciudad}
+                onChange={(e) => cambiar('ciudad', e.target.value)}
+                className={css.campoCaja}
+                autoComplete="off"
+                placeholder="Dónde vive"
+              />
+              {error('ciudad')}
+            </label>
+
+            <label className={css.etiquetaCampo}>
+              A qué se dedica
+              <select
+                value={borrador.perfil}
+                onChange={(e) => cambiar('perfil', e.target.value)}
+                className={css.campoCaja}
+              >
+                {/* Las mismas opciones que el formulario de la web, para que
+                    los dos caminos guarden lo mismo y la lista no acabe con
+                    dos maneras de decir lo mismo. */}
+                <option value="">No lo sé todavía</option>
+                {PERFILES.map((p) => (
+                  <option key={p}>{p}</option>
+                ))}
+              </select>
+              {error('perfil')}
+            </label>
+
+            {!editando && (
+              <label className={css.etiquetaCampo}>
+                Qué busca
+                <select
+                  value={borrador.busca}
+                  onChange={(e) => setBorrador((b) => ({ ...b, busca: e.target.value as Tipo }))}
+                  className={css.campoCaja}
+                >
+                  {TIPOS.map((t) => (
+                    <option key={t} value={t}>
+                      {ETIQUETA_TIPO[t]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
+
+          {!editando && (
+            <p className={css.apunte}>
+              Esto es lo que separa la lista en tres: a quien quiere una sesión no se le escribe
+              igual que a quien quiere formarse. Si no lo sabes, déjalo sin clasificar y
+              pregúntaselo.
+            </p>
+          )}
+
+          <label className={css.etiquetaCampo}>
+            Nota
+            <textarea
+              rows={3}
+              value={borrador.nota}
+              onChange={(e) => cambiar('nota', e.target.value)}
+              className={css.campoCaja}
+              style={{ resize: 'vertical' }}
+              placeholder="Dónde la conociste, qué te pidió…"
+            />
+            {error('nota')}
+          </label>
+
+          <div className={css.acciones}>
+            <button type="submit" className={css.btn} disabled={guardando}>
+              {guardando ? 'Guardando…' : editando ? 'Guardar los cambios' : 'Apuntar en la lista'}
+            </button>
+            <button type="button" className={css.btnLinea} onClick={intentarCerrar}>
+              Cancelar
+            </button>
+          </div>
+
+          {!editando && (
+            <p className={css.apunte}>
+              Hace falta el nombre y, por lo menos, el correo o el WhatsApp. Si solo te ha dado el
+              móvil, con eso vale.
+            </p>
+          )}
+        </form>
+      </div>
+    </dialog>
+  );
+}
+
+/* ==========================================================================
+   La lista
+   ========================================================================== */
+
 export default function Contactos() {
   const [lista, setLista] = useState<Contacto[] | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [filtro, setFiltro] = useState<'Todos' | Estado>('Todos');
   const [tipo, setTipo] = useState<'Todos' | Tipo>('Todos');
   const [busca, setBusca] = useState('');
@@ -64,6 +520,8 @@ export default function Contactos() {
   // al cambiarle el estado o apuntarle algo, la ficha se repinte con lo nuevo
   // en vez de quedarse con la copia de cuando se abrió.
   const [abierta, setAbierta] = useState<string | null>(null);
+  // Si el formulario está abierto y para qué. Null es que no lo está.
+  const [modo, setModo] = useState<Modo | null>(null);
 
   const cargar = useCallback(async () => {
     setFallo(null);
@@ -121,6 +579,85 @@ export default function Contactos() {
       throw new Error('No se ha podido guardar la nota.');
     }
     await cargar();
+  }
+
+  /**
+   * Guarda lo que venga del panel: un contacto nuevo o la corrección de uno.
+   *
+   * Los dos casos acaban en la misma ruta y se diferencian en el método, así
+   * que se resuelven aquí juntos. Los errores de campo vuelven al panel para
+   * que los pinte al lado de lo que falla; los demás, como un texto suelto.
+   */
+  async function guardar(cuerpo: Record<string, unknown>): Promise<Resultado> {
+    if (!modo) return { ok: false, errores: {} };
+    const corrigiendo = modo.que === 'editar';
+
+    try {
+      const r = await fetch('/api/contactos', {
+        method: corrigiendo ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Al corregir, lo que cambia va envuelto en `datos`: suelto en la raíz
+        // chocaría con `nota`, que ahí significa «apunta esta nota de
+        // seguimiento» y no «este es el texto de su ficha».
+        body: JSON.stringify(corrigiendo ? { id: modo.contacto.id, datos: cuerpo } : cuerpo),
+      });
+      const c = await r.json().catch(() => ({ ok: false }));
+
+      if (!c.ok) {
+        const errores: Record<string, string> = c.errores ?? {};
+        return {
+          ok: false,
+          errores,
+          duplicado: c.motivo === 'ya-existe' ? c.id : undefined,
+          // Si el servidor no dice qué campo falla, es que el problema no está
+          // en lo escrito y hay que contarlo con palabras.
+          fallo: Object.keys(errores).length ? undefined : motivoEnPalabras(c.motivo),
+        };
+      }
+
+      setModo(null);
+      setAviso(
+        corrigiendo ? 'Ficha corregida.' : 'Apuntado. Ya está en la lista, sin atender todavía.'
+      );
+      await cargar();
+      return { ok: true };
+    } catch {
+      return { ok: false, errores: {}, fallo: 'No hay conexión con el servidor.' };
+    }
+  }
+
+  /**
+   * Borrar a alguien de la lista.
+   *
+   * El botón está en la fila y no dentro de la ficha, que es donde pedía estar:
+   * FichaPersona no recibe ningún aviso de borrado y añadírselo significaba
+   * tocar un fichero que ahora mismo lleva otra mano. Queda anotado.
+   *
+   * Se pregunta antes, y la pregunta dice lo que de verdad se pierde: el
+   * contacto se borra con todo su seguimiento, que es lo más caro que hay aquí.
+   */
+  async function borrar(c: Contacto) {
+    const quien = c.nombre || 'este contacto';
+    if (
+      !window.confirm(
+        `¿Borrar a ${quien}? Se va con él todo lo que tengas apuntado de vuestras conversaciones. No se puede deshacer.`
+      )
+    ) {
+      return;
+    }
+
+    const antes = lista;
+    setAviso(null);
+    setLista((l) => l?.filter((x) => x.id !== c.id) ?? l);
+    try {
+      const r = await fetch(`/api/contactos?id=${encodeURIComponent(c.id)}`, { method: 'DELETE' });
+      if (!(await r.json().catch(() => ({ ok: false }))).ok) throw new Error();
+      setFallo(null);
+      setAviso(`${quien} ya no está en la lista.`);
+    } catch {
+      setLista(antes ?? null);
+      setFallo('No se ha podido borrar. Vuelve a intentarlo.');
+    }
   }
 
   /** Descarga la lista tal como se ve, para abrirla en una hoja de cálculo. */
@@ -201,6 +738,12 @@ export default function Contactos() {
         </p>
       )}
 
+      {aviso && (
+        <p className={css.avisoBien} role="status">
+          {aviso}
+        </p>
+      )}
+
       {/* Primero se separa por lo que busca cada uno, y solo después por en
           qué punto está. Son dos cortes distintos y mezclarlos en una sola
           fila de botones hace que nadie entienda cuál está aplicado. */}
@@ -253,16 +796,31 @@ export default function Contactos() {
             </button>
           ))}
         </div>
-        <button type="button" className={css.btn} onClick={exportar} disabled={!visibles.length}>
-          Descargar en Excel
-        </button>
+        <div className={css.acciones}>
+          {/* Arriba y no al final de la lista: con los filtros puestos la
+              lista puede ser larguísima, y apuntar a alguien suele pasar con
+              el móvil en la oreja. */}
+          <button
+            type="button"
+            className={css.btn}
+            onClick={() => {
+              setAviso(null);
+              setModo({ que: 'nuevo' });
+            }}
+          >
+            Añadir cliente
+          </button>
+          <button type="button" className={css.btnLinea} onClick={exportar} disabled={!visibles.length}>
+            Descargar en Excel
+          </button>
+        </div>
       </div>
 
       <section className={css.tarjeta}>
         {visibles.length === 0 ? (
           <p className={css.vacioTexto}>
             {lista.length === 0
-              ? 'Todavía no se ha apuntado nadie. En cuanto alguien deje su contacto en la web, aparecerá aquí.'
+              ? 'Todavía no hay nadie. En cuanto alguien deje su contacto en la web aparecerá aquí, y mientras tanto puedes apuntar tú a quien conozcas con «Añadir cliente».'
               : 'Ningún contacto con ese filtro.'}
           </p>
         ) : (
@@ -306,9 +864,17 @@ export default function Contactos() {
                   </span>
                 )}
                 <span style={{ fontSize: 11.5, fontWeight: 300, color: 'var(--faint)' }}>
-                  {/* El origen en crudo —«cita-madrid»— no se le enseña a
-                      nadie: se traduce a lo que significa. */}
-                  {comoLlego(c.origen)} · {cuando(c.creado)}
+                  {/* A los apuntados a mano no se les pregunta de dónde vienen:
+                      no vienen de ningún sitio, los escribió ella. A los demás
+                      se les traduce el origen, porque «cita-madrid» en crudo no
+                      se le enseña a nadie. */}
+                  {apuntadoAMano(c) ? (
+                    <span className={css.marcaMano}>Lo apuntaste tú, no vino de la web</span>
+                  ) : (
+                    comoLlego(c.origen)
+                  )}
+                  {' · '}
+                  {cuando(c.creado)}
                   {c.veces > 1 && ` · ${c.veces} veces`}
                 </span>
               </span>
@@ -337,6 +903,19 @@ export default function Contactos() {
                     <option key={e}>{e}</option>
                   ))}
                 </select>
+                <button
+                  type="button"
+                  className={css.enlaceAccion}
+                  onClick={() => {
+                    setAviso(null);
+                    setModo({ que: 'editar', contacto: c });
+                  }}
+                >
+                  Editar
+                </button>
+                <button type="button" className={css.enlaceAccion} onClick={() => borrar(c)}>
+                  Borrar
+                </button>
               </span>
             </article>
           ))
@@ -352,6 +931,32 @@ export default function Contactos() {
         onCambiarEstado={(id, estado) => cambiarEstado(id, estado as Estado)}
         onApuntar={apuntar}
       />
+
+      {/* La `key` hace que al pasar de apuntar a corregir —o de una persona a
+          otra— el panel se monte de nuevo con su borrador recién puesto, en vez
+          de quedarse con lo que hubiera escrito antes. */}
+      {modo && (
+        <PanelCliente
+          key={modo.que === 'editar' ? `editar-${modo.contacto.id}` : 'nuevo'}
+          modo={modo}
+          onCerrar={() => setModo(null)}
+          onGuardar={guardar}
+          onVerFicha={(id) => {
+            setModo(null);
+            setAbierta(id);
+          }}
+        />
+      )}
     </div>
   );
+}
+
+/** Lo que contesta el servidor cuando el fallo no es de ningún campo. */
+function motivoEnPalabras(motivo: unknown): string {
+  if (motivo === 'sin-configurar') return 'Falta la configuración de Firebase en el servidor.';
+  if (motivo === 'sin-permiso') return 'Esto solo lo puede hacer Sorela.';
+  if (motivo === 'sin-sesion') return 'Se ha cerrado la sesión. Vuelve a entrar.';
+  if (motivo === 'sin-cambios') return 'No has cambiado nada.';
+  if (motivo === 'no-existe') return 'Esa ficha ya no está: la han borrado mientras la corregías.';
+  return 'No he podido guardarlo. Vuelve a intentarlo.';
 }
