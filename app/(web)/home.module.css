@@ -498,33 +498,32 @@
    Móvil: la cara sube y el texto entra debajo a todo el ancho.
    ========================================================================== */
 @media (max-width: 860px) {
-  /* En vertical la foto se va del hero. No es un capricho de diseño, son
-     números: la cabecera va fija encima, así que de la franja superior solo
-     quedan unos 114 px a la vista, y en 114 px de un retrato vertical no
-     entra una cara —asoma el pelo y parece un recorte mal hecho—. Para que
-     entrase habría que robarle ochenta píxeles al formulario, y entonces el
-     botón de enviar se sale de la pantalla.
-     Se queda el botón. Sorela da la cara en la sección siguiente, con una
-     foto compuesta para ese sitio. */
-  .heroFoto,
-  .heroVelo,
-  .heroMotas {
+  /* La foto vuelve al hero en vertical.
+     Se había quitado por una razón que ya no existe: entonces el hero llevaba
+     dentro el formulario de captación entero, y la foto le robaba al botón de
+     enviar los píxeles que necesitaba para no salirse de la pantalla. Ahora
+     ahí solo hay dos botones, así que cabe.
+     Se pone como una franja alta con la cara arriba, y el texto debajo sobre
+     fondo opaco: encima de la foto no se leería sin un velo que la ensuciara. */
+  /* El velo se va en vertical: aquí la foto y el texto no se solapan, así que
+     no hay nada que velar, y el degradado solo ensuciaría el corte. */
+  .heroMotas,
+  .heroVelo {
     display: none;
   }
 
-  /* El velo de escritorio va de izquierda a derecha, que es como se reparte
-     ahí el hero. En vertical el texto cae debajo de la foto, así que el velo
-     tiene que bajar también: si no, la firma se lee a duras penas. */
-  .heroVelo {
-    background: linear-gradient(
-      180deg,
-      transparent 0%,
-      var(--scrim-4) 22%,
-      var(--scrim-3) 38%,
-      var(--scrim-2) 52%,
-      var(--scrim-1) 66%,
-      var(--scrim-1) 100%
-    );
+  .heroFoto {
+    position: relative;
+    width: 100%;
+    height: 46svh;
+    min-height: 260px;
+    max-height: 420px;
+    /* La foto es un retrato de 1385×3000: la cara queda en el tercio de
+       arriba. Sin el empujón de escritorio, que la corre a la derecha para
+       dejar sitio al texto. */
+    object-position: 50% 20%;
+    transform: none;
+    animation: none;
   }
 
   /* Con el formulario dentro del hero, el alto es un recurso escaso: todo lo
@@ -538,17 +537,24 @@
      y empieza arriba. */
   .hero {
     min-height: 0;
-    align-items: flex-start;
-    /* Sin foto detrás, el fondo de la foto asomaba como una franja gris
-       suelta entre la cabecera y el filete dorado. */
+    /* En columna: en escritorio el texto va ENCIMA de la foto, aquí va DEBAJO.
+       Sin esto, al devolver la foto al flujo, las dos cosas se ponían una al
+       lado de la otra y el titular quedaba partido en la mitad derecha.
+       El hueco de arriba es la cabecera, que va fija: sin él, la foto empieza
+       por debajo del logotipo y la cara queda medio tapada. */
+    flex-direction: column;
+    align-items: stretch;
+    padding-top: var(--cabecera);
     background: var(--bg);
   }
 
   /* El hueco es exactamente la cabecera, que va fija por encima: así el filete
      dorado arranca pegado a ella y el aire se mete dentro del bloque. Sin este
      hueco, la cabecera se come la primera línea del titular. */
+  /* Sin hueco arriba: la foto empieza pegada a la cabecera y se ve por debajo
+     de ella. El aire que hacía falta antes lo pone ahora la propia foto. */
   .heroCaja {
-    padding: var(--cabecera) 0 0;
+    padding: 0;
   }
 
   /* El bloque de captación va sobre superficie opaca y a todo el ancho: sin
