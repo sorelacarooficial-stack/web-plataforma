@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
-import { aplicacion, diagnostico, hayFirebase } from '@/lib/firebase-servidor';
+
+/*
+ * Aquí NO se importa firebase-admin arriba, a propósito, y es la única ruta
+ * del proyecto donde eso se hace así.
+ *
+ * Un import de los de arriba se resuelve al cargar el módulo, antes de que
+ * corra una sola línea del handler. Si la librería no cargara en el servidor,
+ * el fallo ocurriría fuera de cualquier try y esta página devolvería el error
+ * genérico del servidor —justo lo que está aquí para evitar—. Cargándola
+ * dentro del try, ese fallo también se puede contar.
+ */
 
 /**
  * Si el servidor tiene Firebase bien montado o no.
@@ -10,58 +19,107 @@ import { aplicacion, diagnostico, hayFirebase } from '@/lib/firebase-servidor';
  * una variable como si la clave está mal pegada. Desde fuera no hay forma de
  * distinguirlo, y se acaba probando a ciegas.
  *
- * Aquí se responde con la verdad y sin enseñar nada: solo síes y noes, y el
- * identificador del proyecto, que ya es público porque viaja en el navegador.
- * Ningún valor de ninguna variable sale de aquí.
+ * Dos reglas que esta ruta no puede romper:
+ *
+ *   1. NUNCA falla. Una página de diagnóstico que devuelve error 500 no
+ *      diagnostica nada: deja a quien la abre con menos información que
+ *      antes. Todo va dentro de un try, y lo que salga mal se cuenta.
+ *   2. NUNCA enseña un secreto. Solo síes y noes, y el identificador del
+ *      proyecto, que ya es público porque viaja en el navegador.
  */
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/** Ocho segundos. Si Firebase no contesta en ese rato, eso ya es la respuesta. */
+const ESPERA_MS = 8000;
+
+/**
+ * Quita del texto de un error cualquier cosa que se parezca a un secreto.
+ *
+ * Los errores de Google a veces llevan dentro trozos de lo que se les mandó.
+ * Antes de enseñar un mensaje por una página pública hay que limpiarlo, no
+ * confiar en que no traiga nada.
+ */
+function limpiar(texto: string): string {
+  return texto
+    .replace(/-----BEGIN[\s\S]*?-----END[^-]*-----/g, '«clave»')
+    .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '«correo»')
+    .replace(/[A-Za-z0-9_-]{30,}/g, '«texto largo»')
+    .slice(0, 200);
+}
+
 export async function GET() {
-  const d = diagnostico();
+  try {
+    const { aplicacion, diagnostico, hayFirebase } = await import('@/lib/firebase-servidor');
+    const { getAuth } = await import('firebase-admin/auth');
 
-  // Lo que de verdad importa: no si las variables existen, sino si con ellas
-  // se puede hablar con Firebase. Se pide algo mínimo —una página de un solo
-  // usuario— porque si la firma no vale, falla ahí mismo.
-  let hablaConFirebase = false;
-  let porQueNo: string | null = null;
+    const d = diagnostico();
 
-  if (hayFirebase()) {
-    try {
-      await getAuth(aplicacion()).listUsers(1);
-      hablaConFirebase = true;
-    } catch (e) {
-      const codigo = (e as { errorInfo?: { code?: string }; code?: string })?.errorInfo?.code;
-      const texto = String((e as Error)?.message || e);
-      // Se traduce a una causa, no se devuelve el error tal cual: un error de
-      // Google puede llevar dentro trozos de la petición.
-      porQueNo = /DECODER|PEM|private key|Invalid PEM/i.test(texto)
-        ? 'la clave privada está mal pegada'
-        : /invalid_grant|Invalid JWT|signature/i.test(texto)
-          ? 'la clave no vale para esta cuenta de servicio'
-          : /not found|404/i.test(texto)
-            ? 'el proyecto no existe o Authentication no está activado'
-            : codigo || 'no he podido hablar con Firebase';
+    let hablaConFirebase = false;
+    let porQueNo: string | null = null;
+
+    if (!hayFirebase()) {
+      porQueNo = 'faltan variables de entorno en el servidor';
+    } else if (!d.claveConForma) {
+      // Si ya se ve que la clave está rota, no hace falta salir a internet
+      // para confirmarlo: se ahorra la espera y se responde al momento.
+      porQueNo = 'la clave privada está mal pegada';
+    } else {
+      try {
+        // Lo que de verdad importa: no si las variables existen, sino si con
+        // ellas se puede hablar con Firebase. Con tope de tiempo, porque una
+        // llamada que se cuelga tumba la función entera y entonces esta
+        // página devolvería un error en vez de un diagnóstico.
+        await Promise.race([
+          getAuth(aplicacion()).listUsers(1),
+          new Promise((_, no) => setTimeout(() => no(new Error('TIEMPO_AGOTADO')), ESPERA_MS)),
+        ]);
+        hablaConFirebase = true;
+      } catch (e) {
+        const texto = String((e as Error)?.message || e);
+        porQueNo = /TIEMPO_AGOTADO/.test(texto)
+          ? 'Firebase no contesta desde este servidor'
+          : /DECODER|PEM|private key|Invalid PEM/i.test(texto)
+            ? 'la clave privada está mal pegada'
+            : /invalid_grant|Invalid JWT|signature/i.test(texto)
+              ? 'la clave no vale para esta cuenta de servicio'
+              : /not found|404/i.test(texto)
+                ? 'el proyecto no existe o Authentication no está activado'
+                : limpiar(texto);
+      }
     }
-  }
 
-  const listo = hablaConFirebase && d.hayAdministradoras;
-
-  return NextResponse.json(
-    {
-      listo,
-      proyecto: d.proyecto,
-      comprobaciones: {
-        'variable del proyecto': d.tieneProyecto,
-        'correo de la cuenta de servicio': d.tieneCorreoDeServicio,
-        'clave privada presente': d.tieneClave,
-        'clave privada con forma de clave': d.claveConForma,
-        'lista de administradoras': d.hayAdministradoras,
-        'habla con Firebase': hablaConFirebase,
+    return NextResponse.json(
+      {
+        listo: hablaConFirebase && d.hayAdministradoras,
+        proyecto: d.proyecto,
+        comprobaciones: {
+          'variable del proyecto': d.tieneProyecto,
+          'correo de la cuenta de servicio': d.tieneCorreoDeServicio,
+          'clave privada presente': d.tieneClave,
+          'clave privada con forma de clave': d.claveConForma,
+          'lista de administradoras': d.hayAdministradoras,
+          'habla con Firebase': hablaConFirebase,
+        },
+        ...(porQueNo ? { porQueNo } : {}),
       },
-      ...(porQueNo ? { porQueNo } : {}),
-    },
-    { headers: { 'Cache-Control': 'no-store' } }
-  );
+      { headers: { 'Cache-Control': 'no-store' } }
+    );
+  } catch (e) {
+    // La red de seguridad. Si algo se rompe aquí arriba —un módulo que no
+    // carga, una variable con forma imposible—, se dice qué se rompió en vez
+    // de devolver la pantalla de error del servidor, que no explica nada.
+    return NextResponse.json(
+      {
+        listo: false,
+        porQueNo: 'la comprobación se rompió antes de terminar',
+        seRompioCon: {
+          tipo: (e as Error)?.name ?? 'desconocido',
+          mensaje: limpiar(String((e as Error)?.message || e)),
+        },
+      },
+      { headers: { 'Cache-Control': 'no-store' } }
+    );
+  }
 }
