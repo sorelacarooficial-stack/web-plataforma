@@ -42,20 +42,26 @@
  *        RESPONDER_A  (opcional) A dónde contesta la gente cuando responde al
  *                     correo. Si no se pone, se usa el de AVISO_A.
  *
- *  5. Guarda. Arriba, selecciona la función «probar» y pulsa «Ejecutar».
+ *  5. La carta con el diseño va en un archivo aparte. En el editor, botón «+»
+ *     al lado de «Archivos» → «HTML». Google crea uno nuevo y pide un nombre:
+ *     escribe `correo`, sin el .html, que lo añade él solo. Borra lo que traiga
+ *     dentro y pega entero el archivo `apps-script/correo.html`.
+ *     Si se salta este paso el correo sale igual, pero con un diseño mínimo.
+ *
+ *  6. Guarda. Arriba, selecciona la función «probar» y pulsa «Ejecutar».
  *     Google pedirá permisos la primera vez: hay que decir que sí a todo.
  *     Cuando salga la pantalla gris de «Google no ha verificado esta
  *     aplicación», pulsa «Configuración avanzada» y luego «Ir a Captación
  *     Divine (no seguro)». Es tu propio script: ese aviso sale siempre.
  *
- *  6. Botón azul «Implementar» → «Nueva implementación» → rueda dentada →
+ *  7. Botón azul «Implementar» → «Nueva implementación» → rueda dentada →
  *     «Aplicación web».
  *        · Ejecutar como:        Yo
  *        · Quién puede acceder:  CUALQUIER PERSONA   ← importante
  *     Pulsa «Implementar» y copia la dirección larga que acaba en /exec.
  *     Ésa es la que va en Vercel, en la variable APPS_SCRIPT_URL.
  *
- *  7. Para comprobar que está vivo, pega esa misma dirección en el navegador.
+ *  8. Para comprobar que está vivo, pega esa misma dirección en el navegador.
  *     Tiene que contestar algo parecido a {"ok":true,"listo":true}.
  *
  *  ---------------------------------------------------------------------------
@@ -91,11 +97,21 @@ var REMITENTE = 'Sorela Caro · Técnica Divine';
 /** La web, para los enlaces de dentro de los correos. */
 var WEB = 'https://sorelacarodivine.com';
 
+/**
+ * El móvil de Sorela, solo dígitos y con el prefijo del país, que es como lo
+ * quiere WhatsApp. Es el mismo que hay en lib/contenido.ts: si cambia ahí,
+ * cambia aquí.
+ */
+var WHATSAPP_SORELA = '34686154556';
+
 /** Nombre de la pestaña dentro de la hoja de cálculo. */
 var PESTANA = 'Contactos';
 
 /** Nombre con el que llega el PDF adjunto al buzón de la persona. */
-var NOMBRE_PDF = 'Tecnica-Divine.pdf';
+var NOMBRE_PDF = 'TECNICA-DIVINE.pdf';
+
+/* Y el de la hoja de respaldo, por si tampoco se pone su identificador. */
+var NOMBRE_HOJA = 'Respaldo';
 
 /** Las columnas de la hoja, en este orden. */
 var COLUMNAS = [
@@ -387,155 +403,195 @@ function asunto(tipo, n) {
 }
 
 /**
- * EL TEXTO DE ESTOS CORREOS ES PROVISIONAL.
+ * LOS TEXTOS DE LOS CORREOS
  *
- * El bueno lo escribe Sorela y vive en el archivo `correo.html` (ver más
- * abajo, en `plantilla`). Lo de aquí es lo mínimo para que, mientras tanto,
- * nadie reciba un correo vacío, y es también lo que ven los clientes de correo
- * que no pintan HTML.
+ * Son de Sorela. Están también, explicados y con sus cuatro casos, al final
+ * del archivo `correo.html`, que es la carta con su diseño. Si se cambian
+ * aquí, hay que cambiarlos allí: si no, acaban diciendo cosas distintas.
  *
- * Cuidado al tocarlo: aquí no se puede prometer nada sobre la salud. Se cuenta
- * qué es, cómo se trabaja y para quién es. Nada más.
+ * `saludo` es la primera línea, suelta. `parrafos` son los del medio. La firma
+ * y el pie no se escriben aquí: ya van en la carta.
+ *
+ * CUIDADO AL TOCARLOS. Esto es estética, no sanidad. Se cuenta qué es la
+ * técnica y cómo se trabaja, nunca qué le hace al cuerpo por dentro. No pueden
+ * entrar ni las defensas, ni el sistema inmunológico, ni las toxinas, ni la
+ * circulación, ni la celulitis, ni el metabolismo, ni el dolor, ni adelgazar,
+ * ni ninguna enfermedad.
  */
-function textoPlano(tipo, n, hayPdf) {
-  var saludo = n ? 'Hola ' + n + ',' : 'Hola,';
+var TEXTOS = {
+  // Quiere que la traten.
+  clienta: {
+    saludo: 'Gracias por pedirme la información. Va adjunta a este correo, en PDF.',
+    parrafos: [
+      'La Técnica Divine es drenaje linfático manual llevado más lejos: mis manos, aceite y, en algunas zonas, herramientas de aluminio. Sin máquinas.',
+      'Lo que manda es el orden: primero se abre, después se drena y solo al final se moldea. En el PDF lo tienes entero, con las fases y las zonas en las que se trabaja.',
+      'Si quieres una sesión o te queda alguna duda, respóndeme a este correo. Lo leo yo.',
+    ],
+  },
 
-  // Si el PDF no ha podido adjuntarse, no se puede decir «te lo adjunto»: se
-  // manda a la web, que es donde también está.
-  var donde = hayPdf
-    ? 'Te lo dejo adjunto en este correo, para que lo leas con calma.'
-    : 'Lo tienes aquí: ' + WEB;
+  // Quiere aprender la técnica.
+  alumna: {
+    saludo: 'Gracias por interesarte por la formación. Te adjunto la información de la técnica en PDF.',
+    parrafos: [
+      'La formación son dos etapas y van siempre en este orden: primero online y después presencial. Lo online te prepara; en lo presencial te corrijo la mano sobre cuerpo real.',
+      'Las próximas fechas las estoy cerrando ahora mismo. En cuanto las tenga te las mando, sin que tengas que estar pendiente.',
+      'Cualquier duda mientras tanto, respóndeme a este correo.',
+    ],
+  },
 
-  var cuerpo;
-  if (tipo === 'alumna') {
-    cuerpo =
-      'Soy Sorela. Te mando la información de la formación en Técnica Divine: cómo está organizada, qué se aprende en cada etapa y cuánto dura.\n\n' +
-      donde +
-      '\n\nLa formación tiene dos etapas y hay que hacer las dos, en este orden: primero la online, con la anatomía y el protocolo, y después la presencial. Las manos no se corrigen por videollamada.';
-  } else if (tipo === 'comunidad') {
-    cuerpo =
-      'Soy Sorela. Te mando la información de la Comunidad Divine: qué hay dentro y cómo funciona.\n\n' +
-      donde +
-      '\n\nCuando abra te aviso a ti antes que a nadie.';
-  } else if (tipo === 'otro') {
-    cuerpo =
-      'Soy Sorela. He recibido tu mensaje y te contesto yo en cuanto pueda.\n\n' +
-      'Mientras tanto te mando la información de la Técnica Divine: qué es y cómo se trabaja.\n\n' +
-      donde;
-  } else {
-    cuerpo =
-      'Soy Sorela. Te mando la información de la Técnica Divine: qué es, cómo se trabaja y para quién.\n\n' +
-      donde;
+  // Ya es terapeuta certificada y espera la comunidad.
+  comunidad: {
+    saludo: 'Gracias por apuntarte a la lista. Como ya eres terapeuta, voy al grano.',
+    parrafos: [
+      'La Comunidad Divine abre el sábado 17 de octubre a las 16:00, hora de España. Quien entra en el lanzamiento conserva el precio de fundadora mientras siga dentro.',
+      'A ti te aviso antes que a nadie. Te adjunto la información de la técnica por si quieres repasarla.',
+      'Cualquier duda hasta entonces, respóndeme a este correo.',
+    ],
+  },
+
+  // No se sabe qué busca: hay que preguntárselo.
+  otro: {
+    saludo: 'Gracias por escribirme.',
+    parrafos: [
+      'Te contesto yo en menos de 48 horas. Mientras tanto te adjunto la información de la Técnica Divine.',
+      'Para no hacerte perder el tiempo: ¿buscas una sesión para ti, quieres formarte en la técnica, o es otra cosa? Con saber eso te mando lo que te sirve.',
+    ],
+  },
+};
+
+/**
+ * Los párrafos que le tocan a esta persona.
+ *
+ * Los cuatro textos dan por hecho que el PDF va adjunto, porque es lo normal.
+ * El día que no pueda ir —se ha borrado de Drive, o se ha cambiado el
+ * PDF_ID—, se añade una última línea que lo dice. Es preferible una frase
+ * incómoda a que alguien busque un archivo que no está.
+ */
+function parrafosDe(tipo, hayPdf) {
+  var texto = TEXTOS[tipo] || TEXTOS.otro;
+  var parrafos = texto.parrafos.slice();
+  if (!hayPdf) {
+    parrafos.push(
+      'Una cosa: se me ha quedado fuera el archivo adjunto. Respóndeme a este correo y te lo mando ahora mismo.'
+    );
   }
-
-  return (
-    saludo +
-    '\n\n' +
-    cuerpo +
-    '\n\nSi te queda alguna duda, respóndeme a este correo. Lo leo yo.\n\n' +
-    'Sorela Caro\n' +
-    'Técnica Divine\n' +
-    WEB
-  );
+  return parrafos;
 }
 
 /**
- * Monta la versión en HTML del correo.
+ * La versión en texto plano.
  *
- * DE DÓNDE SALE EL DISEÑO Y EL TEXTO BUENO: de un archivo aparte llamado
- * `correo.html`, que se pega en este mismo proyecto de Apps Script (botón «+»
- * al lado de «Archivos» → HTML → se le pone de nombre `correo`, sin el .html,
- * que Google lo añade solo).
+ * No es un resto de los años noventa: hay clientes de correo que solo enseñan
+ * esta versión, y un correo que llega en blanco parece una estafa. Dice
+ * exactamente lo mismo que la carta con diseño; lo único que cambia es que
+ * aquí la firma y el pie hay que escribirlos, porque no hay plantilla.
+ */
+function textoPlano(tipo, n, hayPdf) {
+  var texto = TEXTOS[tipo] || TEXTOS.otro;
+
+  return [
+    n ? 'Hola ' + n + ',' : 'Hola,',
+    '',
+    texto.saludo,
+    '',
+    parrafosDe(tipo, hayPdf).join('\n\n'),
+    '',
+    'Si te resulta más cómodo, escríbeme por WhatsApp: ' + enlaceWhatsapp(),
+    '',
+    'Sorela Caro',
+    'Creadora de la Técnica Divine',
+    WEB,
+    '',
+    'Te escribo porque dejaste tus datos en mi web. Si no quieres recibir más',
+    'correos míos, respóndeme a este mismo y te doy de baja. No hace falta que',
+    'me expliques nada.',
+  ].join('\n');
+}
+
+/**
+ * Monta la versión con diseño, la que ve casi todo el mundo.
  *
- * Ese archivo puede usar estos marcadores, que aquí se sustituyen:
+ * EL DISEÑO NO ESTÁ AQUÍ: está en el archivo `correo.html`, que se pega en
+ * este mismo proyecto de Apps Script (botón «+» junto a «Archivos» → HTML →
+ * se le pone de nombre `correo`, sin el .html, que Google lo añade solo).
  *
- *     {{NOMBRE}}   el nombre de pila de la persona («Marta»); si no lo ha
- *                  dejado, se queda en blanco
- *     {{SALUDO}}   «Hola Marta,» o «Hola,» si no hay nombre
- *     {{WEB}}      la dirección de la web
- *     {{ANIO}}     el año actual, para el pie
- *     {{PDF}}      la frase que toque sobre el PDF (adjunto o enlace), porque
- *                  hay días en que el adjunto no puede salir
+ * Esa carta trae cinco huecos entre llaves dobles y aquí se rellenan:
  *
- * Y puede llevar un trozo distinto para cada tipo de persona, marcado así:
+ *     {{NOMBRE}}       el nombre de pila con la coma puesta («Marta,»), porque
+ *                      en la carta pone «Hola » y luego el hueco. Si no dejó
+ *                      nombre va vacío y queda «Hola», que se lee bien igual
+ *     {{SALUDO}}       la primera línea, texto suelto
+ *     {{CUERPO}}       los párrafos del medio, ya envueltos en su etiqueta
+ *     {{ENLACE_WEB}}   la dirección de la web
+ *     {{WHATSAPP}}     el enlace de WhatsApp de Sorela
  *
- *     <!-- INICIO clienta -->  ...lo que ve una posible clienta...  <!-- FIN clienta -->
- *     <!-- INICIO alumna -->   ...lo que ve una posible alumna...   <!-- FIN alumna -->
- *     <!-- INICIO comunidad --> ...                                 <!-- FIN comunidad -->
- *     <!-- INICIO otro -->      ...                                 <!-- FIN otro -->
+ * Y trae al final un bloque de notas internas que NO se manda: la carta se
+ * corta por la marca CORTAR-AQUI antes de rellenar nada. Si no se cortara,
+ * cualquiera que abriera «ver original» leería esas notas.
  *
- * De esos cuatro trozos se deja solo el que toca y se borran los otros tres.
- * Todo lo que esté fuera de las marcas (cabecera, firma, pie) sale siempre.
- *
- * Mientras ese archivo no exista, se monta un HTML sencillo con el texto
- * plano de arriba, para que el correo salga igual.
+ * Si el archivo todavía no está pegado en el proyecto, no se deja de mandar
+ * el correo: se monta un marco sencillo con los mismos textos.
  */
 function plantilla(tipo, n, hayPdf) {
-  var saludo = n ? 'Hola ' + n + ',' : 'Hola,';
-  var fraseDelPdf = hayPdf
-    ? 'Te lo dejo adjunto en este correo, para que lo leas con calma.'
-    : 'Lo tienes en <a href="' + WEB + '">la web</a>.';
-
-  var html = null;
+  var carta = null;
   try {
-    html = HtmlService.createHtmlOutputFromFile('correo').getContent();
+    carta = HtmlService.createHtmlOutputFromFile('correo').getContent();
   } catch (noHayArchivo) {
-    // Todavía no se ha pegado correo.html en el proyecto. No es un error.
-    html = null;
+    carta = null;
   }
 
-  if (html) {
-    html = soloSuBloque(html, tipo);
-    html = html
-      .replace(/\{\{NOMBRE\}\}/g, escapar(n))
-      .replace(/\{\{SALUDO\}\}/g, escapar(saludo))
-      .replace(/\{\{WEB\}\}/g, WEB)
-      .replace(/\{\{ANIO\}\}/g, String(new Date().getFullYear()))
-      .replace(/\{\{PDF\}\}/g, fraseDelPdf);
-    return html;
-  }
+  // El cuerpo se envuelve con esta etiqueta exacta, que es la que usa el resto
+  // de la carta. Los clientes de correo no entienden hojas de estilo: el
+  // estilo va escrito en cada etiqueta, una por una.
+  var ETIQUETA_P =
+    '<p style="margin:0 0 16px 0; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:1.65; color:#141210;">';
 
-  // Provisional: el mismo texto de siempre, con un marco mínimo. Estilos
-  // escritos dentro de cada etiqueta porque los clientes de correo no
-  // entienden hojas de estilo: lo que parece anticuado es lo único que se ve
-  // igual en Gmail y en Outlook.
-  var parrafos = textoPlano(tipo, n, hayPdf)
-    .split('\n\n')
+  var texto = TEXTOS[tipo] || TEXTOS.otro;
+  var cuerpo = parrafosDe(tipo, hayPdf)
     .map(function (p) {
-      return '<p style="margin:0 0 18px">' + escapar(p).replace(/\n/g, '<br>') + '</p>';
+      return ETIQUETA_P + escapar(p) + '</p>';
     })
-    .join('');
+    .join('\n');
 
+  if (carta) {
+    // Fuera las notas internas del final.
+    carta = carta.split('<!-- CORTAR-AQUI')[0];
+
+    return carta
+      .replace(/\{\{NOMBRE\}\}/g, n ? escapar(n) + ',' : '')
+      .replace(/\{\{SALUDO\}\}/g, escapar(texto.saludo))
+      .replace(/\{\{ENLACE_WEB\}\}/g, WEB)
+      .replace(/\{\{WHATSAPP\}\}/g, enlaceWhatsapp())
+      // El cuerpo se sustituye el último, y a propósito: es el único trozo que
+      // ya viene con etiquetas, y así no se le vuelve a pasar el buscar y
+      // sustituir por encima.
+      .replace(/\{\{CUERPO\}\}/g, cuerpo);
+  }
+
+  // Marco de emergencia, por si falta correo.html.
   return (
-    '<!doctype html><html lang="es"><body style="margin:0;padding:0;background:#f2eee9">' +
-    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2eee9;padding:32px 16px">' +
+    '<!doctype html><html lang="es"><body style="margin:0;padding:0;background:#fbf9f6">' +
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fbf9f6;padding:32px 16px">' +
     '<tr><td align="center">' +
-    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#faf8f5;border-top:3px solid #8a6a32">' +
-    '<tr><td style="padding:38px 36px;font-family:Georgia,\'Times New Roman\',serif;font-size:16px;line-height:1.65;color:#3a352e">' +
-    parrafos +
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fbf9f6;border-top:2px solid #8a6a32">' +
+    '<tr><td style="padding:32px 24px">' +
+    '<p style="margin:0 0 20px 0;font-family:Georgia,\'Times New Roman\',serif;font-size:22px;line-height:1.35;color:#141210">Hola ' +
+    (n ? escapar(n) + ',' : '') +
+    '</p>' +
+    ETIQUETA_P +
+    escapar(texto.saludo) +
+    '</p>' +
+    cuerpo +
+    ETIQUETA_P +
+    'Sorela Caro · Creadora de la Técnica Divine<br>' +
+    '<a href="' + WEB + '" style="color:#8a6a32">' + WEB + '</a></p>' +
     '</td></tr></table></td></tr></table></body></html>'
   );
 }
 
-/** Deja solo el trozo del tipo que toca y borra los otros tres. */
-function soloSuBloque(html, tipo) {
-  var tipos = ['clienta', 'alumna', 'comunidad', 'otro'];
-  for (var i = 0; i < tipos.length; i++) {
-    var t = tipos[i];
-    var marcas = new RegExp('<!--\\s*(INICIO|FIN)\\s+' + t + '\\s*-->', 'g');
-    if (t === tipo) {
-      // El que toca: se quitan solo las marcas y se queda el contenido.
-      html = html.replace(marcas, '');
-    } else {
-      // Los demás: fuera marcas y contenido.
-      var bloque = new RegExp(
-        '<!--\\s*INICIO\\s+' + t + '\\s*-->[\\s\\S]*?<!--\\s*FIN\\s+' + t + '\\s*-->',
-        'g'
-      );
-      html = html.replace(bloque, '');
-    }
-  }
-  return html;
+/** El enlace para escribirle a Sorela por WhatsApp. */
+function enlaceWhatsapp() {
+  return 'https://wa.me/' + WHATSAPP_SORELA;
 }
 
 /**
@@ -543,17 +599,43 @@ function soloSuBloque(html, tipo) {
  * le ha cambiado el permiso, devuelve null y el correo sale sin adjunto.
  * Quedarse sin mandar el correo por esto sería mucho peor.
  */
+/**
+ * El PDF que va adjunto.
+ *
+ * Se busca de dos maneras, y en este orden: por su identificador si está
+ * puesto en PDF_ID, y si no, por su nombre en Drive. La segunda existe porque
+ * copiar un identificador de una dirección de Drive es donde más se falla:
+ * son treinta y tantos caracteres y no se ve si te has dejado uno. Teniendo el
+ * archivo con su nombre en Drive, no hace falta copiar nada.
+ *
+ * Si hay varios archivos con ese nombre se coge el primero, que en Drive es el
+ * más reciente. Sorela solo tiene uno.
+ */
 function buscarPdf() {
   var id = propiedad('PDF_ID');
-  if (!id) return null;
-  try {
-    var blob = DriveApp.getFileById(id).getBlob();
-    blob.setName(NOMBRE_PDF);
-    return blob;
-  } catch (fallo) {
-    console.error('No se pudo abrir el PDF (' + id + '): ' + fallo);
-    return null;
+  if (id) {
+    try {
+      var blob = DriveApp.getFileById(id).getBlob();
+      blob.setName(NOMBRE_PDF);
+      return blob;
+    } catch (fallo) {
+      console.error('No se pudo abrir el PDF por su identificador: ' + fallo);
+      // No se devuelve null todavía: aún queda buscarlo por el nombre.
+    }
   }
+
+  try {
+    var encontrados = DriveApp.getFilesByName(NOMBRE_PDF);
+    if (encontrados.hasNext()) {
+      var blob2 = encontrados.next().getBlob();
+      blob2.setName(NOMBRE_PDF);
+      return blob2;
+    }
+    console.error('No hay ningún archivo llamado ' + NOMBRE_PDF + ' en Drive.');
+  } catch (fallo2) {
+    console.error('No se pudo buscar el PDF en Drive: ' + fallo2);
+  }
+  return null;
 }
 
 /* ==========================================================================
@@ -610,10 +692,25 @@ function avisarASorela(datos, nombre, correo, origen, tipo, correoEnviado, repet
   });
 }
 
-/** Cuando se agota la cuota de Gmail, Sorela tiene que enterarse. */
+/**
+ * Cuando se agota la cuota de Gmail, Sorela tiene que enterarse.
+ *
+ * Solo una vez al día: si entraran treinta personas con la cuota agotada,
+ * recibiría treinta avisos iguales y cada uno gastaría uno de los pocos
+ * correos que quedan.
+ */
 function avisarSinCuota() {
   var destino = propiedad('AVISO_A');
   if (!destino) return;
+
+  var clave = 'aviso-cuota:' + Utilities.formatDate(new Date(), 'Europe/Madrid', 'yyyy-MM-dd');
+  try {
+    if (CacheService.getScriptCache().get(clave)) return;
+    CacheService.getScriptCache().put(clave, '1', 21600);
+  } catch (sinMemoria) {
+    // Si la memoria no responde se avisa igual: un aviso de más no hace daño.
+  }
+
   try {
     MailApp.sendEmail({
       to: destino,
@@ -636,11 +733,33 @@ function avisarSinCuota() {
    ========================================================================== */
 
 /** Devuelve la pestaña donde se escribe, con su cabecera puesta. */
+/**
+ * La hoja de respaldo. Igual que el PDF: por identificador si lo hay, y si no
+ * por su nombre, para no tener que copiar nada de la barra de direcciones.
+ */
 function hoja() {
   var id = propiedad('HOJA_ID');
-  if (!id) throw new Error('Falta la propiedad HOJA_ID.');
+  var libro = null;
 
-  var libro = SpreadsheetApp.openById(id);
+  if (id) {
+    try {
+      libro = SpreadsheetApp.openById(id);
+    } catch (fallo) {
+      console.error('No se pudo abrir la hoja por su identificador: ' + fallo);
+    }
+  }
+
+  if (!libro) {
+    var encontradas = DriveApp.getFilesByName(NOMBRE_HOJA);
+    if (!encontradas.hasNext()) {
+      throw new Error(
+        'No encuentro la hoja. Pon su identificador en HOJA_ID, o llama «' +
+          NOMBRE_HOJA +
+          '» a una hoja de cálculo de tu Drive.'
+      );
+    }
+    libro = SpreadsheetApp.openById(encontradas.next().getId());
+  }
   var pestana = libro.getSheetByName(PESTANA) || libro.insertSheet(PESTANA);
 
   if (pestana.getLastRow() === 0) {
