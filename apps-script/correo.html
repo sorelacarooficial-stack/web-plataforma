@@ -9,8 +9,9 @@
 
 <!--
   Plantilla del correo de bienvenida. La rellena el Apps Script sustituyendo
-  los cinco marcadores: {{NOMBRE}}, {{SALUDO}}, {{CUERPO}}, {{ENLACE_WEB}} y
-  {{WHATSAPP}}.
+  cinco marcadores: NOMBRE, SALUDO, CUERPO, ENLACE_WEB y WHATSAPP. En la carta
+  van escritos entre llaves dobles; aquí arriba los nombro sin llaves a
+  propósito, para que el buscar y sustituir del script no los toque.
 
   Esto no es una página web y no se comporta como tal. Está maquetado con
   tablas y con los estilos escritos en cada etiqueta porque Gmail recorta las
@@ -19,6 +20,10 @@
 
   No hay ni una imagen ni una fuente traída de fuera: la mayoría de los
   clientes de correo las bloquean por defecto y el correo llegaría roto.
+
+  Al final del fichero, dentro de un comentario, están los textos de SALUDO y
+  CUERPO para los cuatro casos. Ese bloque NO se manda: el script corta la
+  plantilla antes de sustituir nada. Está explicado allí mismo.
 -->
 
 <body style="margin:0; padding:0; width:100%; background-color:#fbf9f6; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
@@ -48,7 +53,7 @@
           <td style="padding:32px 24px 28px 24px; background-color:#fbf9f6;">
 
             <!--
-              El saludo. Si la persona no dejó su nombre, {{NOMBRE}} llega
+              El saludo. Si la persona no dejó su nombre, el marcador llega
               vacío y aquí queda «Hola» a secas, que se lee bien igual.
             -->
             <p style="margin:0 0 20px 0; font-family:Georgia,'Times New Roman',Times,serif; font-size:22px; line-height:1.35; color:#141210;">Hola {{NOMBRE}}</p>
@@ -96,33 +101,46 @@
 </body>
 </html>
 
-<!--
+<!-- CORTAR-AQUI
 ===============================================================================
-  TEXTOS DE {{SALUDO}} Y {{CUERPO}}, CASO POR CASO
+  TEXTOS DE SALUDO Y CUERPO, CASO POR CASO
 
-  Para el otro agente: esto se copia al Apps Script. Son cuatro casos, y el
-  que toca sale del origen con el que entró la persona (lib/origenes.ts:
-  tipoDeOrigen devuelve 'clienta', 'alumna', 'comunidad' u 'otro').
+  PARA EL OTRO AGENTE: ESTE BLOQUE NO SE MANDA
+  --------------------------------------------
+  Es documentación, no plantilla. Antes de sustituir nada, corta el fichero por
+  la marca de arriba. En el script:
+
+      var plantilla = HtmlService.createHtmlOutputFromFile('correo').getContent();
+      plantilla = plantilla.split('<!-- CORTAR-AQUI')[0];
+
+  Si no lo cortas, cada correo se va con todas estas notas internas dentro, y
+  cualquiera que abra «ver original» las lee.
+
+  Son cuatro casos, y el que toca sale del origen con el que entró la persona.
+  Eso ya está resuelto en lib/origenes.ts: tipoDeOrigen devuelve 'clienta',
+  'alumna', 'comunidad' u 'otro'. No lo vuelvas a calcular a mano, cópialo.
 
   CÓMO SE MONTAN LOS DOS MARCADORES
   ---------------------------------
-  {{SALUDO}}  es texto suelto. Va dentro de un <p> que ya está en la plantilla,
-              así que se sustituye tal cual, sin etiquetas.
+  SALUDO   es texto suelto. Va dentro de un <p> que ya está en la carta, así
+           que se sustituye tal cual, sin etiquetas.
 
-  {{CUERPO}}  es HTML. Cada párrafo va envuelto en esta etiqueta exacta, que es
-              la misma que usa el resto de la carta:
+  CUERPO   es HTML. Cada párrafo va envuelto en esta etiqueta exacta, que es la
+           misma que usa el resto de la carta:
 
-              <p style="margin:0 0 16px 0; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:1.65; color:#141210;">
+           <p style="margin:0 0 16px 0; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:1.65; color:#141210;">
 
-              Lo más limpio en el script es guardar los párrafos en un array y
-              unirlos con esa etiqueta al sustituir.
+           Lo más limpio es guardar los párrafos de cada caso en un array y
+           unirlos con esa etiqueta al sustituir.
 
-  Y UN DETALLE DE {{NOMBRE}}
-  --------------------------
-  En la carta pone «Hola {{NOMBRE}}», sin coma detrás. Si la persona dejó su
-  nombre, pásalo con la coma ya puesta («Marta,») y quedará «Hola Marta,». Si
-  no lo dejó, pasa cadena vacía y quedará «Hola», que también se lee bien. Usa
-  solo el nombre de pila, no el apellido, y escápalo antes de meterlo.
+  UN DETALLE DEL NOMBRE
+  ---------------------
+  En la carta pone «Hola» y luego el marcador, sin coma detrás. Si la persona
+  dejó su nombre, pásalo con la coma ya puesta («Marta,») y quedará «Hola
+  Marta,». Si no lo dejó, pasa cadena vacía y quedará «Hola», que también se
+  lee bien. Usa solo el nombre de pila, no el apellido, y escapa el texto antes
+  de meterlo: alguien puede escribir un ángulo en el formulario y romper la
+  carta.
 
   LÍMITE LEGAL, QUE NO SE PUEDE TOCAR
   -----------------------------------
@@ -138,12 +156,12 @@
   'terapeutas' o 'avisar-ciudad'.
 ===============================================================================
 
-{{SALUDO}}
+  SALUDO:
 
 Gracias por pedirme la información. Va adjunta a este correo, en PDF, para que
 la leas con calma.
 
-{{CUERPO}}
+  CUERPO:
 
 Te cuento en corto qué es la Técnica Divine. Es un masaje manual. Mis manos,
 aceite y, en algunas zonas, herramientas de aluminio. Sin máquinas, sin
@@ -166,15 +184,16 @@ Lo leo yo.
 
 ===============================================================================
   CASO 2 · ALUMNA
-  Quiere formarse. Entró por 'formacion*', 'curso*' o 'metodo'.
+  Quiere formarse. Entró por 'formacion', 'formacion-base', 'formacion-avanzado',
+  'curso' o 'metodo'.
 ===============================================================================
 
-{{SALUDO}}
+  SALUDO:
 
 Gracias por interesarte por la formación. Te cuento cómo está montada, que es
 lo primero que hay que entender.
 
-{{CUERPO}}
+  CUERPO:
 
 Son dos etapas y van en este orden, siempre. Primero online, y después
 presencial.
@@ -200,11 +219,11 @@ este correo.
   'lista-comunidad'.
 ===============================================================================
 
-{{SALUDO}}
+  SALUDO:
 
 Gracias por apuntarte a la lista. Como ya eres terapeuta, voy al grano.
 
-{{CUERPO}}
+  CUERPO:
 
 La Comunidad Divine abre el sábado 17 de octubre a las 16:00, hora de España.
 
@@ -221,11 +240,11 @@ Si te surge cualquier duda hasta entonces, respóndeme a este correo.
   No se sabe qué busca. Entró por 'contacto' o 'asistente'.
 ===============================================================================
 
-{{SALUDO}}
+  SALUDO:
 
 Gracias por escribirme.
 
-{{CUERPO}}
+  CUERPO:
 
 Te contesto yo, en persona, en menos de 48 horas.
 
