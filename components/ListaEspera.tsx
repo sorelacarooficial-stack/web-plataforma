@@ -8,8 +8,11 @@ import css from './Formularios.module.css';
 type Estado = 'quieto' | 'enviando' | 'hecho' | 'fallo';
 type Errores = Partial<Record<keyof Contacto, string>>;
 
+/* Lo marca quien se apunta, hablando de sí misma, y por eso tutea a Sorela:
+   en esta web habla ella, así que «con Sorela» sonaría a que la está nombrando
+   un tercero. */
 const PUNTOS = [
-  'Ya me formé con Sorela',
+  'Ya me formé contigo',
   'Tengo plaza en una formación',
   'Todavía no me he formado',
 ] as const;

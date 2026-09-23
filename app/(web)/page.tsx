@@ -98,8 +98,8 @@ export default function Home() {
               Un método manual con un orden: primero estimular, después drenar, después moldear.
             </h2>
             <p className="texto max-480">
-              Divine es drenaje linfático manual avanzado. Lo creó Sorela Caro sobre la base del
-              drenaje clásico, después de quince años de cabina. Se trabaja con las manos y aceite,
+              Divine es drenaje linfático manual avanzado. Lo creé yo sobre la base del drenaje
+              clásico, después de casi treinta años de cabina. Se trabaja con las manos y aceite,
               por zonas: abdomen, piernas y glúteos, brazos, cintura, espalda, y el rostro en su
               versión facial.
             </p>
@@ -169,7 +169,7 @@ export default function Home() {
             <h2 className="titulo-lg max-640">Para ser terapeuta Divine hay un orden.</h2>
             <p className="texto max-560">
               Para formarte como terapeuta Divine el orden no cambia: primero la formación online,
-              después la presencial. Así llegas con la teoría resuelta y los dos días con Sorela se
+              después la presencial. Así llegas con la teoría resuelta y los dos días conmigo se
               dedican enteros a tus manos.
             </p>
           </div>
@@ -195,7 +195,7 @@ export default function Home() {
               <span className={css.etapaOrden}>Segunda etapa</span>
               <h3 className={css.etapaTitulo}>Formación presencial</h3>
               <p className="texto-fijo">
-                Dos jornadas con Sorela. El primer día, lipodrenaje: protocolo completo y
+                Dos jornadas conmigo. El primer día, lipodrenaje: protocolo completo y
                 aplicación. El segundo, moldeo y tonificación. Se practica sobre modelos reales,
                 con corrección directa sobre tus manos.
               </p>
@@ -203,7 +203,7 @@ export default function Home() {
                 <li>Día 1 · Lipodrenaje, protocolo completo y aplicación</li>
                 <li>Día 2 · Moldeo y tonificación de silueta</li>
                 <li>Práctica sobre modelos reales, no solo demostración</li>
-                <li>Corrección de Sorela sobre tus manos</li>
+                <li>Te corrijo yo, sobre tus manos</li>
               </ul>
             </article>
           </div>
@@ -245,11 +245,11 @@ export default function Home() {
             <p className="antetitulo" style={{ color: 'var(--oro)' }}>
               Quién está detrás
             </p>
-            <h2 className="titulo-lg">Sorela Caro, creadora de la Técnica Divine.</h2>
+            <h2 className="titulo-lg">Soy Sorela Caro y la Técnica Divine la creé yo.</h2>
 
             <div className={css.acciones}>
               <Link href="/sobre" className="btn btn-md">
-                Conocer a Sorela
+                Conóceme
               </Link>
               <a href={INSTAGRAM} className="enlace-fino" target="_blank" rel="noopener">
                 {INSTAGRAM_USUARIO}

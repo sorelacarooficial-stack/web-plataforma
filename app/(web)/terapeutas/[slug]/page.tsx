@@ -91,7 +91,7 @@ export default async function FichaTerapeuta({
               Certificación
             </h2>
             <p className={css.fichaTexto}>
-              Formada en la Técnica Divine con Sorela Caro en {t.anio}.
+              Formada conmigo en la Técnica Divine, en {t.anio}.
             </p>
           </div>
         </div>
