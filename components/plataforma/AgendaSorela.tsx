@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import css from './plataforma.module.css';
+import CalendarioMes, { claveDia, inicioDeMes, primerDiaVisible } from './CalendarioMes';
+/* Del calendario se usan aquí solo las tres clases que reparten el sitio entre
+   él y la lista: la mitad del acuerdo la pone cada lado. */
+import cal from './calendario.module.css';
 
 /**
  * La agenda de Sorela dentro de la plataforma.
@@ -61,13 +65,10 @@ const DIA_CON_ANIO = new Intl.DateTimeFormat('es-ES', {
   year: 'numeric',
 });
 
-/** El día natural de una fecha, en hora local. Sirve de clave para agrupar y
- *  además es justo lo que quiere un <input type="date">. */
-function claveDia(d: Date): string {
-  const mes = String(d.getMonth() + 1).padStart(2, '0');
-  const dia = String(d.getDate()).padStart(2, '0');
-  return `${d.getFullYear()}-${mes}-${dia}`;
-}
+/* `claveDia` —el día natural en hora local, «2026-09-25»— vive en el calendario
+   y se importa de allí: es la misma clave con la que se agrupan los días, con la
+   que se marca uno en la cuadrícula y la que quiere un <input type="date">.
+   Teniendo dos copias, bastaría con que cambiara una. */
 
 /** Cuántos días hay de hoy a esa fecha: 0 hoy, 1 mañana, -1 ayer. */
 function distanciaEnDias(d: Date): number {
@@ -94,6 +95,17 @@ function etiquetaDia(d: Date): string {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
+/**
+ * La etiqueta de un día, metida dentro de una frase.
+ *
+ * «Hoy» y «Mañana» ya son complementos de tiempo y no llevan artículo; un día
+ * con nombre, sí. Sin esto saldría «no tienes nada apuntado el hoy».
+ */
+function enFrase(etiqueta: string): string {
+  const suelta = etiqueta === 'Hoy' || etiqueta === 'Mañana' || etiqueta === 'Ayer';
+  return suelta ? etiqueta.toLowerCase() : `el ${etiqueta.toLowerCase()}`;
+}
+
 /** «10:00 – 11:00». La hora de fin sale de la duración, no se guarda aparte. */
 function franja(inicio: Date, duracionMin: number): string {
   const fin = new Date(inicio.getTime() + duracionMin * 60000);
@@ -114,6 +126,13 @@ export default function AgendaSorela() {
   const [lista, setLista] = useState<Evento[] | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
   const [verPasado, setVerPasado] = useState(false);
+
+  /* El calendario: qué mes se está viendo y qué día está marcado. Viven aquí y
+     no dentro del calendario porque los usan los dos: el mes decide hasta dónde
+     hacia atrás se piden los eventos, y el día marcado decide qué enseña la
+     lista de abajo y qué fecha lleva puesta el formulario. */
+  const [mes, setMes] = useState(() => inicioDeMes(new Date()));
+  const [seleccion, setSeleccion] = useState<string | null>(null);
 
   /* El formulario de crear. Cada campo por separado en vez de un objeto: son
      cuatro líneas más, pero se lee de un vistazo cuál se está tocando. */
@@ -136,11 +155,30 @@ export default function AgendaSorela() {
      hace caso a la respuesta del último turno pedido. */
   const turno = useRef(0);
 
+  /**
+   * Desde qué día hay que pedirle los eventos al servidor.
+   *
+   * Por defecto devuelve de hoy en adelante, y eso deja al calendario
+   * mintiendo: los días ya pasados del mes saldrían siempre vacíos aunque
+   * hubiera habido tres sesiones. Cuando el mes que se está viendo empieza
+   * antes de hoy, se le pide que retroceda hasta ahí.
+   *
+   * Se guarda como texto «2026-08-31» y no como Date a propósito: un Date nuevo
+   * en cada pintada cambiaría de identidad, y con él `cargar`, así que el efecto
+   * que depende de ella volvería a pedir la agenda sin parar. El texto solo
+   * cambia cuando cambia el mes de verdad.
+   */
+  const desde = useMemo(() => {
+    const primero = primerDiaVisible(mes);
+    return distanciaEnDias(primero) < 0 ? claveDia(primero) : null;
+  }, [mes]);
+
   const cargar = useCallback(async () => {
     const mio = ++turno.current;
     setFallo(null);
     try {
-      const r = await fetch(`/api/agenda${verPasado ? '?todos=1' : ''}`);
+      const consulta = verPasado ? '?todos=1' : desde ? `?desde=${desde}` : '';
+      const r = await fetch(`/api/agenda${consulta}`);
       const c = await r.json().catch(() => ({ ok: false }));
       if (mio !== turno.current) return;
       if (!c.ok) {
@@ -160,7 +198,7 @@ export default function AgendaSorela() {
       setFallo('No hay conexión con el servidor.');
       setLista([]);
     }
-  }, [verPasado]);
+  }, [verPasado, desde]);
 
   useEffect(() => {
     cargar();
@@ -216,12 +254,20 @@ export default function AgendaSorela() {
       setLugar('');
       setNota('');
 
-      /* Apuntar algo de ayer —una sesión que se olvidó meter— se guarda bien,
-         pero la lista empieza en hoy: el evento no saldría por ningún lado y
-         parecería que no se ha guardado. Se enciende el filtro de lo pasado, y
-         eso ya recarga solo porque `cargar` depende de él. */
-      if (local && distanciaEnDias(local) < 0 && !verPasado) setVerPasado(true);
-      else await cargar();
+      /* El calendario se va al día que se acaba de apuntar y lo marca. Apuntar
+         algo de ayer —una sesión que se olvidó meter— se guarda bien, pero la
+         lista empieza en hoy: sin esto el evento no saldría por ningún lado y
+         parecería que no se ha guardado.
+
+         Si el salto cambia el mes hacia atrás, `desde` cambia y el efecto
+         lanzará su propia carga además de esta. Son dos peticiones en vez de
+         una, pero cada carga lleva número de turno y solo se pinta la del
+         último: no hay forma de que gane la equivocada. */
+      if (local && !Number.isNaN(local.getTime())) {
+        setSeleccion(claveDia(local));
+        setMes(inicioDeMes(local));
+      }
+      await cargar();
     } catch {
       setFallo('No hay conexión con el servidor.');
     } finally {
@@ -289,6 +335,36 @@ export default function AgendaSorela() {
     return [...grupos.values()];
   }, [lista]);
 
+  /**
+   * Los días que se enseñan al lado del calendario.
+   *
+   * Si hay un día marcado, solo ese: es lo que se ha pedido al pulsarlo. Si no,
+   * de hoy en adelante, que es para lo que sirve una agenda; lo de antes solo
+   * si se pide expresamente.
+   *
+   * El filtro se hace aquí y no en el servidor porque el calendario necesita
+   * los días pasados del mes para pintar sus puntos aunque la lista no los
+   * enseñe. Una sola petición sirve a los dos.
+   */
+  const diasVisibles = useMemo(() => {
+    if (seleccion) return dias.filter((d) => claveDia(d.fecha) === seleccion);
+    if (verPasado) return dias;
+    return dias.filter((d) => distanciaEnDias(d.fecha) >= 0);
+  }, [dias, seleccion, verPasado]);
+
+  /* La fecha marcada se lee con la hora puesta —«2026-09-25T12:00»— para que
+     JavaScript la entienda en hora local. Con la fecha sola la leería como UTC
+     y en España saldría el día anterior. */
+  const diaMarcado = seleccion ? etiquetaDia(new Date(`${seleccion}T12:00`)) : null;
+
+  /** Marcar un día en el calendario, o quitarle la marca. */
+  function elegirDia(clave: string | null) {
+    setSeleccion(clave);
+    // El formulario de abajo se queda apuntando a ese mismo día: pulsar el 12 y
+    // escribir ya guarda en el 12, sin volver a tocar la fecha.
+    if (clave) setDia(clave);
+  }
+
   const resumen = useMemo(() => {
     const ahora = Date.now();
     // flatMap en vez de filter: así el tipo de `t` ya es un número y no hay
@@ -341,104 +417,136 @@ export default function AgendaSorela() {
         </p>
       )}
 
-      <div className={css.chips}>
-        <button
-          type="button"
-          onClick={() => setVerPasado((v) => !v)}
-          aria-pressed={verPasado}
-          className={`${css.chip} ${verPasado ? css.chipActivo : ''}`}
-        >
-          Ver también lo pasado
-        </button>
-      </div>
+      <div className={cal.doble}>
+        <div className={cal.lado}>
+          <CalendarioMes
+            eventos={lista}
+            seleccion={seleccion}
+            onSeleccionar={elegirDia}
+            mes={mes}
+            onCambiarMes={setMes}
+          />
+        </div>
 
-      {dias.length === 0 ? (
-        <section className={css.tarjeta}>
-          <p className={css.vacioTexto}>
-            No tienes nada apuntado. Lo que crees aquí y las citas que te pidan desde la web
-            aparecerán en esta lista.
-            {/* Por defecto la lista empieza en hoy, así que «no hay nada» podría
-                querer decir «no hay nada de hoy en adelante». Se dice dónde
-                mirar en vez de dejar creer que la agenda está vacía del todo. */}
-            {!verPasado && ' Si buscas algo de antes, pulsa «Ver también lo pasado».'}
-          </p>
-        </section>
-      ) : (
-        dias.map((d) => (
-          <section key={claveDia(d.fecha)} className={css.tarjeta}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
-              <h2 className={css.h3}>{etiquetaDia(d.fecha)}</h2>
-              <span className={css.apunte}>
-                {d.eventos.length === 1 ? '1 cosa apuntada' : `${d.eventos.length} cosas apuntadas`}
-              </span>
-            </div>
+        <div className={cal.listaLado}>
+          <div className={css.chips}>
+            {diaMarcado ? (
+              <>
+                {/* El día marcado se dice con palabras y no solo con el recuadro
+                    del calendario: la lista de al lado está filtrada por él, y
+                    conviene verlo sin tener que mirar arriba. */}
+                <button
+                  type="button"
+                  onClick={() => elegirDia(null)}
+                  className={`${css.chip} ${css.chipActivo}`}
+                >
+                  {diaMarcado} ✕
+                </button>
+                <span className={css.apunte}>Pulsa para volver a verlo todo.</span>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setVerPasado((v) => !v)}
+                aria-pressed={verPasado}
+                className={`${css.chip} ${verPasado ? css.chipActivo : ''}`}
+              >
+                Ver también lo pasado
+              </button>
+            )}
+          </div>
 
-            {d.eventos.map((ev) => {
-              const inicio = new Date(ev.cuando as string);
-              const hecho = ev.estado === 'Hecho';
-              return (
-                <article key={ev.id} className={css.fila} style={{ padding: '16px 0', gap: 14 }}>
-                  <span style={{ flex: '1 1 220px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    <span className={css.citaHora}>{franja(inicio, ev.duracionMin)}</span>
-                    <span
-                      style={{
-                        fontSize: 15.5,
-                        color: 'var(--ink)',
-                        // Tachado cuando ya está hecho: de un vistazo se ve
-                        // qué queda por delante sin tener que leer la etiqueta.
-                        textDecoration: hecho ? 'line-through' : 'none',
-                      }}
-                    >
-                      {ev.titulo}
-                    </span>
-                    {(ev.conQuien || ev.lugar) && (
-                      <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
-                        {[ev.conQuien, ev.lugar].filter(Boolean).join(' · ')}
+          {diasVisibles.length === 0 ? (
+            <section className={css.tarjeta}>
+              <p className={css.vacioTexto}>
+                {diaMarcado
+                  ? `No tienes nada apuntado ${enFrase(diaMarcado)}. Puedes apuntarlo aquí abajo: la fecha ya está puesta.`
+                  : /* Por defecto la lista empieza en hoy, así que «no hay nada»
+                       podría querer decir «no hay nada de hoy en adelante». Se
+                       dice dónde mirar en vez de dejar creer que está vacía. */
+                    `No tienes nada apuntado. Lo que crees aquí y las citas que te pidan desde la web aparecerán en esta lista.${
+                      verPasado ? '' : ' Si buscas algo de antes, pulsa «Ver también lo pasado».'
+                    }`}
+              </p>
+            </section>
+          ) : (
+            diasVisibles.map((d) => (
+              <section key={claveDia(d.fecha)} className={css.tarjeta}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
+                  <h2 className={css.h3}>{etiquetaDia(d.fecha)}</h2>
+                  <span className={css.apunte}>
+                    {d.eventos.length === 1 ? '1 cosa apuntada' : `${d.eventos.length} cosas apuntadas`}
+                  </span>
+                </div>
+
+                {d.eventos.map((ev) => {
+                  const inicio = new Date(ev.cuando as string);
+                  const hecho = ev.estado === 'Hecho';
+                  return (
+                    <article key={ev.id} className={css.fila} style={{ padding: '16px 0', gap: 14 }}>
+                      <span style={{ flex: '1 1 220px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                        <span className={css.citaHora}>{franja(inicio, ev.duracionMin)}</span>
+                        <span
+                          style={{
+                            fontSize: 15.5,
+                            color: 'var(--ink)',
+                            // Tachado cuando ya está hecho: de un vistazo se ve
+                            // qué queda por delante sin tener que leer la etiqueta.
+                            textDecoration: hecho ? 'line-through' : 'none',
+                          }}
+                        >
+                          {ev.titulo}
+                        </span>
+                        {(ev.conQuien || ev.lugar) && (
+                          <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
+                            {[ev.conQuien, ev.lugar].filter(Boolean).join(' · ')}
+                          </span>
+                        )}
+                        {ev.nota && (
+                          <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--ink-3)' }}>«{ev.nota}»</span>
+                        )}
                       </span>
-                    )}
-                    {ev.nota && (
-                      <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--ink-3)' }}>«{ev.nota}»</span>
-                    )}
-                  </span>
 
-                  <span style={{ flex: '0 1 150px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--ink-3)' }}>{ev.tipo}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 300, color: 'var(--faint)' }}>
-                      {duracionEnPalabras(ev.duracionMin)}
-                      {ev.telefono && ` · ${ev.telefono}`}
-                    </span>
-                  </span>
+                      <span style={{ flex: '0 1 150px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                        <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--ink-3)' }}>{ev.tipo}</span>
+                        <span style={{ fontSize: 11.5, fontWeight: 300, color: 'var(--faint)' }}>
+                          {duracionEnPalabras(ev.duracionMin)}
+                          {ev.telefono && ` · ${ev.telefono}`}
+                        </span>
+                      </span>
 
-                  <span className={`${css.estado} ${CLASE_ESTADO[ev.estado]}`}>{ev.estado}</span>
+                      <span className={`${css.estado} ${CLASE_ESTADO[ev.estado]}`}>{ev.estado}</span>
 
-                  <span className={css.acciones}>
-                    {ev.telefono && (
-                      <a
-                        className={`${css.btn} ${css.btnSm}`}
-                        href={`https://wa.me/${ev.telefono.replace(/\D/g, '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        WhatsApp
-                      </a>
-                    )}
-                    <button
-                      type="button"
-                      className={css.btnLinea}
-                      onClick={() => marcar(ev.id, hecho ? 'Pendiente' : 'Hecho')}
-                    >
-                      {hecho ? 'Volver a pendiente' : 'Marcar hecho'}
-                    </button>
-                    <button type="button" className={css.enlaceAccion} onClick={() => borrar(ev)}>
-                      Borrar
-                    </button>
-                  </span>
-                </article>
-              );
-            })}
-          </section>
-        ))
-      )}
+                      <span className={css.acciones}>
+                        {ev.telefono && (
+                          <a
+                            className={`${css.btn} ${css.btnSm}`}
+                            href={`https://wa.me/${ev.telefono.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            WhatsApp
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          className={css.btnLinea}
+                          onClick={() => marcar(ev.id, hecho ? 'Pendiente' : 'Hecho')}
+                        >
+                          {hecho ? 'Volver a pendiente' : 'Marcar hecho'}
+                        </button>
+                        <button type="button" className={css.enlaceAccion} onClick={() => borrar(ev)}>
+                          Borrar
+                        </button>
+                      </span>
+                    </article>
+                  );
+                })}
+                  </section>
+            ))
+          )}
+        </div>
+      </div>
 
       <section className={css.punteada}>
         <form onSubmit={crear} className={css.columna} style={{ gap: 16 }}>

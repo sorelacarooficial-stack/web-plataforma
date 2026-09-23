@@ -7,26 +7,38 @@
 .ventana {
   position: relative;
   padding: clamp(16px, 2.2vw, 24px) 0;
+  /* Las dos puntas se desvanecen: así el texto no aparece ni desaparece de
+     golpe contra el borde de la pantalla. */
   mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    #000 8%,
-    #000 92%,
-    transparent 100%
-  );
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
 }
 
 .tira {
   display: flex;
   width: max-content;
+  /*
+   * 30 segundos por vuelta. A 38 el movimiento era tan lento que parecía que la
+   * barra estaba parada y el último trozo simplemente cortado; a menos de 25
+   * cansa leerlo. Aquí no puede ir ningún relleno ni ningún margen: el ancho de
+   * esta caja es lo que se divide entre dos para desplazar, y todo lo que se le
+   * añada desalinea las dos copias.
+   */
+  animation: divineMarquee 30s linear infinite;
+}
+
+/* Al pasar el ratón se para, para poder leer lo que iba a escaparse. */
+.barra:hover .tira {
+  animation-play-state: paused;
+}
+
+.grupo {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
   gap: clamp(28px, 4vw, 64px);
-  /* Arranca en la misma línea vertical que el resto de la página. */
-  padding-left: max(
-    calc((100vw - 1240px) / 2 + clamp(20px, 4vw, 40px)),
-    clamp(22px, 4vw, 40px)
-  );
-  animation: divineMarquee 38s linear infinite;
+  /* La misma separación entre el último trozo de una copia y el primero de la
+     siguiente, para que el ritmo no se rompa justo en la costura. */
+  padding-right: clamp(28px, 4vw, 64px);
 }
 
 .item {
@@ -38,9 +50,11 @@
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--muted-2);
+  white-space: nowrap;
 }
 
 .punto {
+  flex: 0 0 auto;
   width: 6px;
   height: 6px;
   border-radius: 999px;
@@ -53,5 +67,23 @@
   }
   .tira {
     animation: none;
+  }
+}
+
+/*
+ * Este fotograma vive aquí y no en globals.css, aunque se repita en otros
+ * módulos, y la razón no es de estilo: los CSS Modules le cambian el nombre a
+ * la animación —«divineUp» se convierte en «Fichero-module__hash__divineUp»—,
+ * y ese nombre no existe entre los globales. La animación se queda en nada, sin
+ * error ni aviso: simplemente no se mueve. Así estaba la barra de la portada,
+ * parada desde el principio. Definiéndolo en el mismo fichero que lo usa, el
+ * nombre se cambia en los dos sitios y vuelven a coincidir.
+ */
+@keyframes divineMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }

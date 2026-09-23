@@ -1,0 +1,382 @@
+/*
+ * El calendario del mes.
+ *
+ * Vive en su propio fichero y no en plataforma.module.css porque es una pieza
+ * cerrada: nada de aquí lo usa nadie más, y así se puede quitar entera.
+ *
+ * Todo el color sale de las variables del tema. Ninguna tinta escrita a mano:
+ * la plataforma tiene modo oscuro y un #fff suelto lo rompería.
+ */
+
+.marco {
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  padding: clamp(16px, 2vw, 22px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ==========================================================================
+   Cabecera: el mes y los mandos
+   ========================================================================== */
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  min-width: 0;
+}
+
+.mes {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(24px, 2.8vw, 32px);
+  line-height: 1;
+  color: var(--ink);
+}
+
+.anio {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--oro);
+}
+
+.mandos {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  /* Cuando el nombre del mes no deja sitio y los botones bajan a su propia
+     línea, se quedan pegados a la derecha en vez de empezar la línea solos,
+     que es donde nadie los busca. */
+  margin-left: auto;
+}
+
+.flecha {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  /* Las comillas angulares se dibujan pequeñas y altas: se agrandan y se
+     suben un pelo para que queden centradas en el círculo. */
+  font-size: 18px;
+  line-height: 1;
+  padding-bottom: 3px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background 0.2s;
+}
+
+.flecha:hover {
+  border-color: var(--oro-line);
+  color: var(--oro);
+  background: var(--oro-tint);
+}
+
+.hoyBoton {
+  padding: 7px 14px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 300;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background 0.2s;
+}
+
+.hoyBoton:hover:not(:disabled) {
+  border-color: var(--oro-line);
+  color: var(--oro);
+  background: var(--oro-tint);
+}
+
+.hoyBoton:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ==========================================================================
+   La cuadrícula
+   ========================================================================== */
+
+.semana,
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.semana {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.inicial {
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* Al pasar de mes la cuadrícula entra con un desplazamiento mínimo. Es lo que
+   hace que se note que has cambiado de página sin que parpadee nada. */
+.rejilla {
+  animation: entrar 0.24s ease-out;
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Las celdas se tocan —sin hueco entre ellas— y se separan con una línea finísima
+ * por semana. Con hueco, los números quedan flotando y aquello deja de leerse
+ * como un calendario; con la cuadrícula entera dibujada, pesa demasiado para
+ * lo poco que hay dentro. Una raya por semana es el punto medio.
+ */
+.celda {
+  position: relative;
+  /* Alto fijo y contenido, no aspect-ratio: en una caja ancha el cuadrado
+     perfecto da celdas de cien píxeles y el mes ocupa toda la pantalla. */
+  height: clamp(46px, 5.4vw, 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line-1);
+  cursor: pointer;
+}
+
+/* La primera semana ya va separada por la línea de las iniciales. */
+.celda:nth-child(-n + 7) {
+  border-top: 0;
+}
+
+.celda:focus-visible {
+  outline: 2px solid var(--oro);
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+
+/*
+ * El número vive dentro de un disco. Así lo que se enciende al pasar por encima
+ * o al marcar un día es un círculo del tamaño del número, y no el rectángulo
+ * entero de la celda, que a este ancho es una mancha.
+ */
+.disco {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    color 0.18s;
+}
+
+.celda:hover .disco {
+  background: var(--surface-2);
+}
+
+.numero {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 16.5px;
+  line-height: 1;
+  color: var(--ink-3);
+}
+
+/* Sábado y domingo, un punto más apagados: sin pintarlos de otro color, la
+   semana laboral se distingue sola. */
+.finde .numero {
+  color: var(--muted);
+}
+
+/* Los días del mes anterior y del siguiente se dejan puestos —si no, la
+   semana se vería partida— pero retirados, para que no compitan. */
+.fuera .numero {
+  color: var(--faint);
+  opacity: 0.55;
+}
+
+.fuera .punto,
+.fuera .puntoHecho {
+  opacity: 0.4;
+}
+
+/* Hoy: número en oro y un anillo finísimo. Ni relleno ni negrita, que ese
+   sitio lo ocupa el día marcado. */
+.hoy .disco {
+  border-color: var(--oro-line);
+}
+
+.hoy .numero {
+  color: var(--oro);
+}
+
+/* El día marcado. Es el único elemento sólido de la cuadrícula: con dos
+   destacados fuertes ya no se sabe cuál mira quien entra. */
+.marcado .disco {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.marcado .numero {
+  color: var(--bg);
+  opacity: 1;
+}
+
+.marcado .punto {
+  background: var(--oro-claro);
+  opacity: 1;
+}
+
+.marcado .puntoHecho {
+  border-color: var(--faint);
+  opacity: 1;
+}
+
+/* ==========================================================================
+   Los puntos: qué hay ese día
+   ========================================================================== */
+
+.puntos {
+  height: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+/* Pendiente: relleno. Es lo que queda por hacer, y por eso pesa más. */
+.punto {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--oro);
+}
+
+/* Hecho: hueco. Mismo tamaño, menos tinta. */
+.puntoHecho {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--faint);
+}
+
+.mas {
+  margin-left: 1px;
+  font-size: 8.5px;
+  line-height: 1;
+  color: var(--faint);
+}
+
+/* ==========================================================================
+   Pie
+   ========================================================================== */
+
+.leyenda {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-1);
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--faint);
+}
+
+/*
+ * La frase de ayuda siempre en su propia línea. Se probó a llevarla a la
+ * derecha de la leyenda y a bajarla solo en pantallas estrechas, pero el ancho
+ * que importa aquí no es el de la pantalla sino el de la columna: en un
+ * ordenador grande, con el calendario en una columna de 370 píxeles, el media
+ * query no salta y la frase se pega a «hecho» como si fuera parte de ella.
+ */
+.leyendaNota {
+  flex-basis: 100%;
+  margin-top: 3px;
+}
+
+/* ==========================================================================
+   Cómo se reparte el sitio con la lista de al lado
+   ==========================================================================
+   El calendario es estrecho por naturaleza y la lista de eventos es ancha:
+   puestos uno encima de otro, el calendario se estira hasta que sus días son
+   rectángulos y hay que bajar media pantalla para leer lo que hay ese día.
+   A partir de pantalla de ordenador van al lado, y el calendario se queda
+   pegado arriba mientras se recorre la lista. */
+
+.doble {
+  display: grid;
+  gap: 18px;
+}
+
+@media (min-width: 1040px) {
+  .doble {
+    grid-template-columns: minmax(300px, 370px) 1fr;
+    align-items: start;
+  }
+
+  .lado {
+    position: sticky;
+    /* Por debajo de la cabecera de la plataforma, que va fija. */
+    top: calc(var(--cabecera) + 16px);
+  }
+}
+
+.listaLado {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Quien tenga pedido que no se mueva nada, que no se le mueva nada. */
+@media (prefers-reduced-motion: reduce) {
+  .rejilla {
+    animation: none;
+  }
+
+  .disco,
+  .flecha,
+  .hoyBoton {
+    transition: none;
+  }
+}
