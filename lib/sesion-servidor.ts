@@ -2,7 +2,15 @@ import { cookies } from 'next/headers';
 import { getAuth } from 'firebase-admin/auth';
 import { FieldValue } from 'firebase-admin/firestore';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from './firebase-servidor';
-import { correoEsAdmin, esRol, ROL_POR_DEFECTO, type Rol } from './roles';
+import { correoEsAdmin, esRol, PLATAFORMA_ABIERTA, ROL_POR_DEFECTO, type Rol } from './roles';
+
+/** Se lanza cuando alguien con cuenta válida intenta entrar y no le toca. */
+export class PlataformaCerrada extends Error {
+  constructor() {
+    super('La plataforma todavía no está abierta.');
+    this.name = 'PlataformaCerrada';
+  }
+}
 
 /**
  * La sesión, vista desde el servidor.
@@ -41,6 +49,24 @@ export async function crearSesion(tokenId: string): Promise<Sesion> {
   // checkRevoked: si Sorela expulsa a alguien desde la consola de Firebase,
   // su token deja de valer al instante en vez de seguir vivo hasta que caduque.
   const datos = await auth.verifyIdToken(tokenId, true);
+
+  /*
+   * La puerta, y va ANTES de asegurarRol a propósito.
+   *
+   * Sin esto, cualquiera con un token válido de Firebase entraba: el servidor
+   * le asignaba el rol de alumna, le escribía su ficha en Firestore y le daba
+   * la cookie. No llegaba a ver datos de nadie —las rutas comprueban el rol y
+   * la plataforma le enseña «en preparación»—, pero se daba de alta solo, y
+   * conseguir ese token no requiere pasar por esta web: la clave del navegador
+   * es pública y con ella se crea una cuenta llamando a Firebase directamente.
+   *
+   * Mientras la plataforma esté cerrada, aquí solo entra quien esté en
+   * ADMIN_CORREOS. Ver PLATAFORMA_ABIERTA en lib/roles.ts.
+   */
+  if (!PLATAFORMA_ABIERTA && !correoEsAdmin(datos.email ?? null)) {
+    throw new PlataformaCerrada();
+  }
+
   const rol = await asegurarRol(datos.uid, datos.email ?? null, datos.role);
 
   const cookie = await auth.createSessionCookie(tokenId, { expiresIn: DURACION_MS });

@@ -123,4 +123,17 @@ export const COLECCIONES = {
    * con la claim del token, no con esto.
    */
   usuarios: 'usuarios',
+  /**
+   * Las facturas emitidas. Una factura que ya tiene número no se borra ni se
+   * edita: si está mal, se rectifica con otra. Por eso `app/api/facturas` no
+   * expone DELETE.
+   */
+  facturas: 'facturas',
+  /**
+   * Ajustes de la plataforma, un documento por tema. Ahora mismo dos:
+   * 'fiscales' con los datos de Sorela como emisora, y 'contador' con la
+   * numeración de las facturas, que se reparte con una transacción para que no
+   * salgan dos con el mismo número.
+   */
+  ajustes: 'ajustes',
 } as const;
