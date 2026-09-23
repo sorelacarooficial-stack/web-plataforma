@@ -332,9 +332,12 @@ export default function AgendaSorela() {
       {dias.length === 0 ? (
         <section className={css.tarjeta}>
           <p className={css.vacioTexto}>
-            {verPasado
-              ? 'No tienes nada apuntado. Lo que crees aquí y las citas que te pidan desde la web aparecerán en esta lista.'
-              : 'No tienes nada apuntado de hoy en adelante. Lo que crees aquí y las citas que te pidan desde la web aparecerán en esta lista.'}
+            No tienes nada apuntado. Lo que crees aquí y las citas que te pidan desde la web
+            aparecerán en esta lista.
+            {/* Por defecto la lista empieza en hoy, así que «no hay nada» podría
+                querer decir «no hay nada de hoy en adelante». Se dice dónde
+                mirar en vez de dejar creer que la agenda está vacía del todo. */}
+            {!verPasado && ' Si buscas algo de antes, pulsa «Ver también lo pasado».'}
           </p>
         </section>
       ) : (

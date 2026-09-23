@@ -22,9 +22,11 @@ import {
  * en `Vistas.tsx` y se volverán a enchufar aquí cuando haya algo real que
  * enseñar dentro. Hasta entonces, esos roles ven `Proximamente`.
  */
-import { Comunidad, Contenido, FacturacionAdmin, FormacionesAdmin, PanelSorela } from './Vistas';
+import { Comunidad, Contenido, FormacionesAdmin, PanelSorela } from './Vistas';
 import Contactos from './Contactos';
 import Proximamente from './Proximamente';
+import AgendaSorela from './AgendaSorela';
+import FacturacionSorela from './FacturacionSorela';
 import css from './plataforma.module.css';
 
 /**
@@ -241,7 +243,8 @@ export default function Plataforma({ sesion }: { sesion: Sesion }) {
           {esAdmin && actual === 'leads' && <Contactos />}
           {esAdmin && actual === 'formaciones' && <FormacionesAdmin />}
           {esAdmin && actual === 'contenido' && <Contenido />}
-          {esAdmin && actual === 'facturacion' && <FacturacionAdmin />}
+          {esAdmin && actual === 'agenda' && <AgendaSorela />}
+          {esAdmin && actual === 'facturacion' && <FacturacionSorela />}
           {esAdmin && actual === 'comunidad' && <Comunidad rol={rol} ir={ir} iniciales={iniciales} />}
         </main>
       </div>

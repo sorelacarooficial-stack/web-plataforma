@@ -47,10 +47,13 @@ export function navDe(rol: Rol): { id: Vista; label: string }[] {
   if (rol === 'sorela')
     return [
       { id: 'inicio', label: 'Panel' },
-      { id: 'leads', label: 'Contactos' },
+      // El orden es el del día a día: primero a quién hay que llamar, después
+      // qué hay en el calendario, y luego lo que se cobra.
+      { id: 'leads', label: 'Clientes' },
+      { id: 'agenda', label: 'Agenda' },
+      { id: 'facturacion', label: 'Facturación' },
       { id: 'formaciones', label: 'Formaciones' },
       { id: 'contenido', label: 'Subir contenido' },
-      { id: 'facturacion', label: 'Facturación' },
       { id: 'comunidad', label: 'Comunidad' },
     ];
   return [{ id: 'inicio', label: 'Inicio' }];
@@ -71,13 +74,13 @@ export function tituloDe(vista: Vista, rol: Rol) {
     comunidad: 'Comunidad Divine',
     clases: 'Clases y material',
     clientas: 'Mis clientas',
-    leads: 'Quién ha levantado la mano',
+    leads: 'Tus clientes',
     formaciones: 'Formaciones y plazas',
     pagos: 'Tus pagos',
     contenido: 'Qué publicas en el aula',
     facturacion: admin ? 'Ingresos y facturas' : 'Facturación',
     perfil: 'Tu ficha en el buscador',
-    agenda: admin ? 'Reservas' : 'Tu agenda',
+    agenda: 'Tu agenda',
     suscripcion: admin ? 'Cobros' : 'Comunidad de Terapeutas Divine',
   };
   return titulos[vista];
@@ -93,11 +96,11 @@ export function seccionDe(vista: Vista, rol: Rol) {
     clientas: 'Tu cartera',
     facturacion: admin ? 'Administración' : 'Tu negocio',
     perfil: 'Localiza tu terapeuta',
-    leads: 'Captación',
+    leads: 'Quién ha levantado la mano',
     formaciones: 'Convocatorias',
     pagos: 'Tu formación',
     contenido: 'Aula · autoría',
-    agenda: 'Reservas recibidas',
+    agenda: 'Lo que tienes por delante',
     suscripcion: 'Comunidad en beta',
   };
   return secciones[vista];
