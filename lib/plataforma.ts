@@ -210,7 +210,7 @@ export const ACCESOS: { etiqueta: string; titulo: string; texto: string; ir: Vis
   {
     etiqueta: 'Negocio',
     titulo: 'Formación de negocio',
-    texto: 'Cómo conseguir clientas y usar IA en tu consulta.',
+    texto: 'Cómo conseguir clientas y llevar tu consulta.',
     ir: 'clases',
   },
   {

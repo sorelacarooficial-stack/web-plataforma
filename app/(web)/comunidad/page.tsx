@@ -23,8 +23,8 @@ export default function Comunidad() {
             <h1 className={css.titulo}>La membresía de Sorela.</h1>
             <p className="lede max-540" style={{ lineHeight: 1.62 }}>
               Donde sigue enseñando después del curso. Una clase en vivo al mes con lo nuevo del
-              método, tus casos mirados uno a uno, un canal privado donde preguntar, la agenda con
-              inteligencia artificial y tu ficha en el mapa.
+              método, tus casos mirados uno a uno, un canal privado donde preguntar y tu ficha en
+              el mapa.
             </p>
             <p className="texto max-540">
               Abre una sola vez, y quien entre en el lanzamiento se queda con el precio de
