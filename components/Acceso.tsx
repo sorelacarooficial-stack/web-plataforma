@@ -60,6 +60,15 @@ function mensaje(codigo: string): string {
     'auth/popup-blocked': 'El navegador ha bloqueado la ventana de Google. Permítela y vuelve a intentarlo.',
     'auth/network-request-failed': 'No hay conexión. Revisa la red y vuelve a intentarlo.',
     'auth/operation-not-allowed': 'Ese método de acceso no está activado en Firebase.',
+    // Este sale cuando el dominio desde el que se entra no está en la lista de
+    // dominios autorizados de Firebase. Sin un mensaje propio caía en el
+    // genérico —«vuelve a intentarlo»— y quien lo viera volvería a intentarlo
+    // cien veces, porque reintentar no lo arregla nunca.
+    'auth/unauthorized-domain':
+      'Este dominio no está autorizado en Firebase. Hay que añadirlo en Authentication → Settings → Authorized domains.',
+    'auth/invalid-api-key': 'La clave de Firebase del navegador no es válida.',
+    'auth/account-exists-with-different-credential':
+      'Ya hay una cuenta con ese correo, creada de otra forma. Entra como la creaste la primera vez.',
   };
   return mapa[codigo] || 'No he podido entrar. Vuelve a intentarlo en un momento.';
 }
