@@ -8,7 +8,7 @@ var PESTANA = 'Contactos';
 
 var NOMBRE_PDF = 'TECNICA-DIVINE.pdf';
 
-var NOMBRE_HOJA = 'Captación Divine';
+var NOMBRE_HOJA = 'Respaldo';
 
 var COLUMNAS = [
   'Fecha',
