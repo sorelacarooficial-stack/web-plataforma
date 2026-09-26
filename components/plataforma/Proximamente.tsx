@@ -1,3 +1,4 @@
+import { cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
 import css from './proximamente.module.css';
 
 /**
@@ -58,14 +59,36 @@ const MIEMBRO: Pieza[] = [
 ];
 
 export default function Proximamente({
-  rol,
+  accesos,
   nombre,
 }: {
-  rol: 'alumna' | 'miembro';
+  /** Lo que ha contratado. De aquí sale qué se le enseña. */
+  accesos: Acceso[];
   nombre?: string;
 }) {
-  const esAlumna = rol === 'alumna';
-  const piezas = esAlumna ? ALUMNA : MIEMBRO;
+  /*
+   * Qué se le enseña sale de lo que ha contratado, no de «qué es».
+   *
+   * Antes esto dependía de un rol —alumna o miembro— y con eso no se podía
+   * representar a quien tiene las dos cosas: al marcarla de una manera perdía
+   * la otra, y veía media plataforma. Ahora se suman: si hizo un curso ve lo
+   * del aula, si paga la comunidad ve lo de la comunidad, y si tiene las dos
+   * ve las dos, sin repetir la línea de la comunidad que ya trae el aula.
+   */
+  const conCurso = cursosDe(accesos).length > 0;
+  const conComunidad = tieneMembresia(accesos);
+
+  const piezas: Pieza[] = conCurso && conComunidad
+    ? // La última de ALUMNA es «la comunidad de terapeutas, entras al
+      // terminar», y a quien ya está dentro no se le anuncia como futura.
+      [...ALUMNA.slice(0, -1), ...MIEMBRO]
+    : conComunidad
+      ? MIEMBRO
+      : ALUMNA;
+
+  // Quien todavía no tiene nada contratado ve el texto del aula, que es por
+  // donde entra todo el mundo. No se le promete la comunidad, que no ha pagado.
+  const esAlumna = !conComunidad;
   const pila = (nombre || '').trim().split(/\s+/)[0];
 
   return (

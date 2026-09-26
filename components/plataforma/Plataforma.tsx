@@ -8,6 +8,7 @@ import Motas from '@/components/Motas';
 import logo from '@/fotos/logo-sorela.png';
 import type { Sesion } from '@/lib/sesion-servidor';
 import { ETIQUETA_ROL } from '@/lib/roles';
+import { tieneMembresia, type Acceso } from '@/lib/accesos';
 import {
   ROLES,
   navDe,
@@ -45,7 +46,14 @@ import css from './plataforma.module.css';
  * —los contactos salen de Firestore—, y alumnas y miembros ven una pantalla
  * que dice con claridad que su espacio está en preparación.
  */
-export default function Plataforma({ sesion }: { sesion: Sesion }) {
+export default function Plataforma({
+  sesion,
+  accesos,
+}: {
+  sesion: Sesion;
+  /** Qué tiene contratado: lo lee el servidor y llega ya resuelto. */
+  accesos: Acceso[];
+}) {
   const router = useRouter();
   // Dos cosas distintas que conviene no confundir: `puedeVerComo` es el rol
   // REAL de quien ha entrado, y decide permisos; `esAdmin`, más abajo, es el
@@ -75,7 +83,6 @@ export default function Plataforma({ sesion }: { sesion: Sesion }) {
   const actual = menu.some((n) => n.id === vista) ? vista : 'inicio';
 
   const esAdmin = rol === 'sorela';
-  const esAlumna = rol === 'alumna';
   // El nombre sale de la cuenta con la que se ha entrado, no de la maqueta.
   // Si alguien entró con Google sin nombre configurado, se usa la parte del
   // correo anterior a la arroba antes que dejarlo en blanco.
@@ -236,7 +243,12 @@ export default function Plataforma({ sesion }: { sesion: Sesion }) {
             </span>
           </header>
 
-          {!esAdmin && <Proximamente rol={esAlumna ? 'alumna' : 'miembro'} nombre={usuario} />}
+          {/* Qué ve quien no es Sorela ya no depende de «ser alumna» o «ser
+              miembro» —eso ya no existe— sino de lo que tenga contratado. Al
+              mirar «Ver como» desde el panel de Sorela no hay accesos que
+              enseñar, así que se pasa la lista vacía: se ve el espacio de
+              alguien recién dado de alta, que es lo que se quiere comprobar. */}
+          {!esAdmin && <Proximamente accesos={puedeVerComo ? [] : accesos} nombre={usuario} />}
 
           {esAdmin && actual === 'inicio' && <PanelSorela ir={ir} />}
           {/* Contactos de verdad, leídos de Firestore. Antes aquí había una lista
@@ -247,7 +259,7 @@ export default function Plataforma({ sesion }: { sesion: Sesion }) {
           {esAdmin && actual === 'agenda' && <AgendaSorela />}
           {esAdmin && actual === 'facturacion' && <FacturacionSorela />}
           {esAdmin && actual === 'cuentas' && <Cuentas />}
-          {esAdmin && actual === 'comunidad' && <Comunidad rol={rol} ir={ir} iniciales={iniciales} />}
+          {esAdmin && actual === 'comunidad' && <Comunidad rol={rol} ir={ir} iniciales={iniciales} conComunidad={tieneMembresia(accesos)} />}
         </main>
       </div>
     </div>

@@ -71,7 +71,11 @@ type ContactoBreve = {
 
 /* La comunidad necesita además las iniciales de quien escribe, para el avatar
    del compositor. Antes ponía «MI» a todo el mundo. */
-type PropsFeed = Props & { iniciales?: string };
+type PropsFeed = Props & {
+  iniciales?: string;
+  /** Si tiene contratada la comunidad. Decide si escribe o solo lee. */
+  conComunidad?: boolean;
+};
 
 /* ==========================================================================
    Piezas compartidas
@@ -339,20 +343,26 @@ export function InicioMiembro({ ir }: Props) {
 /* ==========================================================================
    Comunidad
    ========================================================================== */
-export function Comunidad({ rol, ir, iniciales = 'D' }: PropsFeed) {
+export function Comunidad({ rol, ir, iniciales = 'D', conComunidad = false }: PropsFeed) {
   const [filtro, setFiltro] = useState('Todo');
   const [likes, setLikes] = useState<Record<string, boolean>>({});
 
+  /*
+   * Quién puede escribir aquí ya no lo decide «ser alumna» o «ser miembro»
+   * —eso ya no existe— sino tener contratada la comunidad, que es lo que se
+   * paga cada mes. Quien no la tiene entra de visita y lee, que es justo lo
+   * que decía esta pantalla antes con otras palabras.
+   */
   const esAdmin = rol === 'sorela';
-  const esAlumna = rol === 'alumna';
-  const esMiembro = !esAdmin && !esAlumna;
+  const esMiembro = !esAdmin && conComunidad;
+  const deVisita = !esAdmin && !conComunidad;
 
   const posts = POSTS.filter((p) => filtro === 'Todo' || p.etiqueta === filtro);
 
   return (
     <div className={css.feed}>
       <div className={css.feedCentro}>
-        {!esAlumna && (
+        {!deVisita && (
           <section className={css.compositor}>
             <span className={css.avatar}>{iniciales}</span>
             <div style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -375,11 +385,11 @@ export function Comunidad({ rol, ir, iniciales = 'D' }: PropsFeed) {
           </section>
         )}
 
-        {esAlumna && (
+        {deVisita && (
           <section className={css.aviso}>
             <span style={{ fontSize: 14.5, fontWeight: 300, lineHeight: 1.55, color: 'var(--muted-2)', maxWidth: 520 }}>
-              Puedes leer todo lo que se publica. Para escribir en la comunidad necesitas terminar la
-              formación.
+              Puedes leer todo lo que se publica. Para escribir en la comunidad hace falta tenerla
+              contratada.
             </span>
             <button type="button" className={css.btnLinea} onClick={() => ir('aula')}>
               Ir a mi formación
@@ -460,7 +470,7 @@ export function Comunidad({ rol, ir, iniciales = 'D' }: PropsFeed) {
           </section>
         )}
 
-        {esAlumna && (
+        {deVisita && (
           <section className={css.tarjetaOro}>
             <p className={css.rotulo}>Tu acceso</p>
             <p className={css.h3} style={{ fontSize: 'clamp(22px,2.3vw,28px)' }}>

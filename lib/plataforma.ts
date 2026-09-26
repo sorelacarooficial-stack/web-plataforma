@@ -9,13 +9,16 @@
  * de enseñar nombres y cifras que no existen.
  */
 
-export type Rol = 'alumna' | 'miembro' | 'sorela';
+/*
+ * El rol se importa de lib/roles.ts en vez de volver a escribirlo aquí.
+ * Estaban los dos, con los mismos valores, y eso solo aguanta hasta que uno
+ * cambia: al quitar «alumna» de roles.ts, esta copia habría seguido
+ * admitiéndola y TypeScript no habría dicho nada.
+ */
+import { ROLES_LISTA, type Rol } from './roles';
 
-export const ROLES: { id: Rol; label: string }[] = [
-  { id: 'alumna', label: 'Alumna' },
-  { id: 'miembro', label: 'Miembro certificada' },
-  { id: 'sorela', label: 'Sorela (admin)' },
-];
+export type { Rol };
+export { ROLES_LISTA as ROLES };
 
 export type Vista =
   | 'inicio'
