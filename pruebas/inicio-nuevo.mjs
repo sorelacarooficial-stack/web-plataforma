@@ -38,15 +38,21 @@ const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' 
 
   const texto = await p.locator('main').innerText();
   check('está la frase nueva de Sorela', /frecuencia diferente/i.test(texto));
-  check('explica qué es la Técnica Divine', /primero abrir, despu[ée]s drenar/i.test(texto));
+  /* «Primero abrir, después drenar» se cambió por «primero estimular»: un
+     ganglio no se abre, y una web que enseña a profesionales no puede decir
+     que sí. Comprobar la frase vieja era proteger justo lo que se quitó. */
+  check('explica el orden del método', /primero estimular, despu[ée]s drenar/i.test(texto));
   check('están los tres pilares', /observar antes de tocar/i.test(texto));
   check('está la formación online', /formaci[óo]n online/i.test(texto));
   check('está la formación presencial', /formaci[óo]n presencial/i.test(texto));
   check('dice el orden online primero', /primero la formaci[óo]n online/i.test(texto));
   check('anuncia fechas en Sudamérica', /sudam[ée]rica/i.test(texto));
-  check('la comunidad cuesta 47 €', /47\s*€/.test(texto));
-  check('dice precio fundador', /fundador/i.test(texto));
-  check('dice la fecha de apertura', /17 de octubre/i.test(texto));
+  /* El precio, la condición de fundadora y la fecha se quitaron del inicio: la
+     membresía todavía no se cobra ni se ha abierto, y lo que queda es la lista
+     de espera con su cuenta atrás. Poner precio a algo que aún no existe es
+     venderlo antes de tenerlo. */
+  check('la comunidad se anuncia con su lista de espera', /Lista de espera abierta/i.test(texto));
+  check('la comunidad NO lleva precio todavía', !/\d+\s*€/.test(texto));
 
   /* Nada de reclamos sanitarios: el filtro que evita una sanción. */
   const PROHIBIDO = [

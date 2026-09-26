@@ -1,4 +1,6 @@
 import { chromium } from 'playwright';
+import { cert, getApps, initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 import { mkdirSync } from 'node:fs';
 
 const OUT = '/tmp/claude-0/-home-claude-repo/6dc5003f-e043-5a97-b6a7-877642377e91/scratchpad/caps';
@@ -7,6 +9,39 @@ const B = process.env.BASE || 'http://localhost:3000';
 const ok = [];
 const mal = [];
 const check = (n, c) => (c ? ok : mal).push(n);
+
+/*
+ * Los tres formularios de esta prueba se envían de verdad, así que dejan tres
+ * contactos en la base de datos. No es un detalle: estaban ahí desde hace
+ * semanas —Ana Ruiz, Marta, Lucía— mezclados con los contactos de verdad en la
+ * lista de Sorela, que es justo lo que esta plataforma lleva todo el proyecto
+ * evitando. Se borran al empezar y al terminar.
+ *
+ * Sin Firebase configurado no se puede borrar nada, y tampoco hace falta: sin
+ * él los formularios no llegan a guardar.
+ */
+const SEMBRADOS = ['ana@ejemplo.com', 'marta@ejemplo.com', 'l@ejemplo.com'];
+
+const db = process.env.FIREBASE_PROYECTO_ID
+  ? getFirestore(
+      getApps()[0] ??
+        initializeApp({
+          credential: cert({
+            projectId: process.env.FIREBASE_PROYECTO_ID,
+            clientEmail: (process.env.FIREBASE_CLIENTE_CORREO || '').trim(),
+            privateKey: (process.env.FIREBASE_CLAVE_PRIVADA || '').replace(/\\n/g, '\n'),
+          }),
+          projectId: process.env.FIREBASE_PROYECTO_ID,
+        })
+    )
+  : null;
+
+async function limpiar() {
+  if (!db) return;
+  for (const id of SEMBRADOS) await db.collection('contactos').doc(id).delete().catch(() => {});
+}
+
+await limpiar();
 
 const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 const ctx = await nav.newContext({ viewport: { width: 1440, height: 900 }, locale: 'es-ES' });
@@ -63,10 +98,10 @@ check('formulario: exige el consentimiento', await p.getByText('Necesito que lo 
 
 await ventana.getByRole('checkbox').check();
 await ventana.getByRole('button', { name: 'Enviarme la información' }).click();
-await p.waitForTimeout(1500);
+await p.waitForTimeout(4000);
 check(
   'formulario: al enviar contesta algo (no se queda mudo)',
-  (await p.getByText('Ya estás dentro').count()) > 0 ||
+  (await p.getByText('Gracias por contar conmigo').count()) > 0 ||
     (await p.getByText('No he podido guardarlo').count()) > 0
 );
 await p.screenshot({ path: `${OUT}/int-reserva.png` });
@@ -125,7 +160,7 @@ await p.waitForTimeout(1500);
 // una cosa o la otra, nunca que se quede mudo.
 check(
   'lista de espera: contesta al enviar',
-  (await p.getByText('Estás dentro.').count()) > 0 ||
+  (await p.getByText('Tu sitio está guardado').count()) > 0 ||
     (await p.getByText('No he podido guardarlo.').count()) > 0
 );
 
@@ -141,10 +176,10 @@ check('contacto: exige el consentimiento', await p.getByText('Necesito que lo ac
 
 await p.locator('form input[type="checkbox"]').check();
 await p.getByRole('button', { name: 'Enviar', exact: true }).click();
-await p.waitForTimeout(1500);
+await p.waitForTimeout(4000);
 check(
   'contacto: contesta al enviar',
-  (await p.getByText('Recibido.').count()) > 0 ||
+  (await p.getByText('Gracias por escribirme').count()) > 0 ||
     (await p.getByText('No he podido enviarlo.').count()) > 0
 );
 
@@ -153,6 +188,7 @@ await p.goto(B + '/no-existe-esta-pagina', { waitUntil: 'networkidle' });
 check('404: página propia', await p.getByText('Esta página no existe.').isVisible());
 
 await nav.close();
+await limpiar();
 
 console.log('OK (' + ok.length + '):');
 ok.forEach((n) => console.log('  ✓ ' + n));
@@ -160,6 +196,9 @@ if (mal.length) {
   console.log('\nFALLOS (' + mal.length + '):');
   mal.forEach((n) => console.log('  ✗ ' + n));
 }
-const e = [...new Set(errores)];
+/* El 404 del navegador al pedir la página que no existe lo provoca la propia
+   prueba dos líneas más arriba: contarlo como error de consola sería teñir de
+   rojo justo lo que se está comprobando que funciona. */
+const e = [...new Set(errores)].filter((m) => !/status of 404/.test(m));
 console.log(e.length ? '\nERRORES DE CONSOLA:\n' + e.join('\n') : '\nsin errores de consola');
 process.exit(mal.length ? 1 : 0);

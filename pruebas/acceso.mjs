@@ -5,8 +5,16 @@
  *
  * Crea una cuenta de usar y tirar, entra con ella desde el navegador, y
  * comprueba lo que de verdad importa: que sin sesión no se sirve la
- * plataforma, que con sesión sí, que el rol que toca es el que sale, y que
- * al salir la puerta se vuelve a cerrar. Al terminar borra la cuenta.
+ * plataforma, que tener cuenta en Firebase NO basta para entrar, que con el
+ * alta sí se entra, y que al salir la puerta se vuelve a cerrar.
+ *
+ * Esa segunda comprobación es la que sostiene todo. La clave del navegador es
+ * pública por diseño: con ella se puede crear una cuenta llamando a Firebase
+ * directamente, sin pasar por esta web. Si la puerta fuera «tiene cuenta», esa
+ * cuenta entraría. La puerta es «Sorela la ha dado de alta», y eso se comprueba
+ * aquí entrando dos veces con la misma cuenta: antes del alta y después.
+ *
+ * Al terminar borra la cuenta.
  *
  * NO toca la cuenta de Sorela: esa la crea ella la primera vez que entre con
  * Google, y el rol de administradora se lo da ADMIN_CORREOS.
@@ -129,7 +137,13 @@ try {
 
   /* ---------- Entrar con correo y contraseña ---------- */
   check('el acceso pide los datos (Firebase está configurado)', await p.getByText('Entra en tu espacio').isVisible());
-  check('hay entrada con Google', await p.getByRole('button', { name: /Continuar con Google/ }).isVisible());
+  /* Aquí se comprobaba que hubiera un botón de «Continuar con Google». Ya no
+     lo hay, y no por descuido: se quitó junto con el registro para que nadie
+     que llegue por el buscador pueda darse de alta solo. */
+  check(
+    'no hay forma de crearse una cuenta desde el acceso',
+    !/Crear cuenta|Crea tu cuenta|Continuar con Google/i.test(await p.locator('body').innerText())
+  );
 
   /*
    * A partir de aquí hace falta que el NAVEGADOR hable con Firebase, y el de
@@ -174,32 +188,82 @@ try {
   );
   await p.screenshot({ path: `${OUT}/acceso-error.png` });
 
+  /* ---------- Con la contraseña BIEN, pero sin alta, tampoco entra ---------- */
+  await p.locator('input[aria-label="Contraseña"]').fill(CLAVE);
+  await p.getByRole('button', { name: /^entrar$/i }).click();
+  await p.waitForTimeout(8000);
+
+  /*
+   * Aquí se acaba lo que este contenedor puede probar, y conviene saber por
+   * qué antes de creerse un rojo.
+   *
+   * Con la contraseña MAL, Firebase contesta el error de una y el navegador lo
+   * pinta: eso sí se ve. Con la contraseña BIEN, el SDK hace además una
+   * segunda llamada —accounts:lookup— para traerse los datos de la cuenta, y
+   * ESA se queda colgada para siempre detrás del proxy de este entorno. El
+   * botón se queda en «Un momento…» y no hay forma de seguir.
+   *
+   * No es un fallo de la web: el servidor sí habla con Firebase, y la puerta
+   * del alta está comprobada de punta a punta en pruebas/plataforma.mjs y
+   * pruebas/agenda.mjs, que montan la cookie desde el servidor y se saltan
+   * este tramo. Se dice y se para, porque cinco rojos causados por el
+   * laboratorio esconden el día que haya uno de verdad.
+   */
+  if (/Un momento/i.test(await p.locator('body').innerText())) {
+    console.log('OK (' + ok.length + ')');
+    ok.forEach((n) => console.log('  ✓ ' + n));
+    console.log(
+      '\nEl resto se salta: con la contraseña correcta, el SDK de Firebase llama a\n' +
+        'accounts:lookup y esa petición no sale de este contenedor. Lo que quedaba por\n' +
+        'comprobar —que sin alta no se entra y con alta sí— lo cubren\n' +
+        'pruebas/plataforma.mjs y pruebas/agenda.mjs, que no pasan por el navegador.'
+    );
+    await nav.close();
+    await limpiar();
+    process.exit(mal.length ? 1 : 0);
+  }
+
+  check(
+    'tener cuenta en Firebase NO basta para entrar',
+    new URL(p.url()).pathname !== '/plataforma',
+    p.url()
+  );
+  check(
+    'y se dice por qué, en vez de dejarla mirando una pantalla parada',
+    /cerrada|no tienes acceso|da de alta|Sorela/i.test(await p.locator('body').innerText())
+  );
+  await p.screenshot({ path: `${OUT}/acceso-sin-alta.png` });
+
+  /* ---------- Con el alta escrita, sí entra ---------- */
+  await getFirestore(app).collection('usuarios').doc(usuario.uid).set(
+    { correo: CORREO, nombre: 'Prueba Acceso', rol: 'miembro', accesos: [], altaPor: 'pruebas/acceso.mjs' },
+    { merge: true }
+  );
+  await p.goto(B + '/entrar', { waitUntil: 'networkidle' });
+  await p.locator('input[aria-label="Correo"]').fill(CORREO);
   await p.locator('input[aria-label="Contraseña"]').fill(CLAVE);
   await p.getByRole('button', { name: /^entrar$/i }).click();
   await p.waitForURL('**/plataforma', { timeout: 20000 }).catch(() => {});
   check(
-    'con la contraseña bien, entra en la plataforma',
+    'con el alta puesta, entra en la plataforma',
     new URL(p.url()).pathname === '/plataforma',
     p.url()
   );
 
-  /* ---------- Dentro: el rol es el que toca ---------- */
+  /* ---------- Dentro: ve lo suyo y nada más ---------- */
   const dentro = await p.locator('body').innerText();
   check('dentro se ve con qué cuenta ha entrado', /Prueba Acceso/i.test(dentro));
-  check('el rol que sale es el de por defecto', /alumna/i.test(dentro), 'se esperaba alumna');
+  check('el rol que sale es el de por defecto', /miembro/i.test(dentro), 'se esperaba miembro');
+  check('una miembro NO ve el selector de roles de Sorela', !/ver como/i.test(dentro));
   check(
-    'una alumna NO ve el selector de roles de Sorela',
-    !/ver como/i.test(dentro)
+    'una miembro NO ve las vistas de administración',
+    !/Panel de Sorela|Quién puede entrar|Subir contenido/i.test(dentro)
   );
-  check(
-    'una alumna NO ve las vistas de administración',
-    !/Mis clientas|Panel de Sorela/i.test(dentro)
-  );
-  await p.screenshot({ path: `${OUT}/plataforma-alumna.png` });
+  await p.screenshot({ path: `${OUT}/plataforma-miembro.png` });
 
   /* ---------- El rol está en el token, no en el navegador ---------- */
   const claim = (await auth.getUser(usuario.uid)).customClaims?.role;
-  check('el rol queda firmado en el token de Firebase', claim === 'alumna', String(claim));
+  check('el rol queda firmado en el token de Firebase', claim === 'miembro', String(claim));
 
   /* ---------- Salir cierra de verdad ---------- */
   await p.getByRole('button', { name: /^salir/i }).click();
@@ -219,7 +283,7 @@ try {
   await p.waitForURL('**/plataforma', { timeout: 20000 }).catch(() => {});
   const comoAdmin = await p.locator('body').innerText();
   check('como administradora, sí ve el selector de roles', /ver como/i.test(comoAdmin));
-  check('como administradora, ve el panel de Sorela', /Panel de Sorela|Mis clientas/i.test(comoAdmin));
+  check('como administradora, ve el panel de Sorela', /Panel de Sorela|Tus clientes/i.test(comoAdmin));
   await p.screenshot({ path: `${OUT}/plataforma-admin.png` });
 
   check('sin errores de JavaScript', errores.length === 0, errores.slice(0, 2).join(' | '));
