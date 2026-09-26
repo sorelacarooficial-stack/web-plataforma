@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
@@ -9,10 +8,8 @@ import {
   signInWithEmailAndPassword,
   type UserCredential,
 } from 'firebase/auth';
-import CambiarTema from './CambiarTema';
+import Marco from './MarcoAcceso';
 import { auth, hayAuth } from '@/lib/firebase-navegador';
-import logo from '@/fotos/logo-sorela.png';
-import consulta from '@/fotos/acceso-consulta.webp';
 import css from './Acceso.module.css';
 
 /**
@@ -215,10 +212,19 @@ function Formulario() {
       </div>
 
       {/* Quien llegue aquí sin cuenta tiene que salir con algo, no con una
-          puerta cerrada y nada más. */}
+          puerta cerrada y nada más. Antes esto decía «las cuentas las doy yo»,
+          que era verdad hasta que existió el registro: ahora se la puede hacer
+          ella, aunque el acceso a lo de dentro lo siga dando Sorela. */}
+      <p className={css.cambio}>
+        ¿Todavía no tienes cuenta?
+        <Link href="/registro" className={css.enlaceFino}>
+          Crear la mía
+        </Link>
+      </p>
+
       <p className={css.letraPequena}>
-        Este acceso es para alumnas y terapeutas certificadas. Las cuentas las doy yo cuando te
-        matriculas.{' '}
+        Este espacio es para alumnas y terapeutas certificadas. Crear la cuenta es gratis y no da
+        acceso por sí solo: lo abro yo cuando confirmo tu plaza.{' '}
         <Link href="/formaciones" className={css.enlaceFino}>
           Ver las formaciones
         </Link>
@@ -228,35 +234,6 @@ function Formulario() {
   );
 }
 
-/** El decorado: foto, logotipo y pie. Igual haya sesión o no. */
-function Marco({ children }: { children: React.ReactNode }) {
-  return (
-    <div className={css.pantalla}>
-      <div className={css.foto}>
-        <Image
-          src={consulta}
-          alt="Sesión de trabajo corporal en consulta"
-          priority
-          placeholder="blur"
-          sizes="(max-width: 860px) 100vw, 50vw"
-          style={{ objectPosition: '50% 40%' }}
-        />
-      </div>
-
-      <div className={css.panel}>
-        <Link href="/" className={css.logo} aria-label="Sorela Caro · Técnica Divine, ir a la web">
-          <Image src={logo} alt="Sorela Caro · Técnica Divine" sizes="200px" />
-        </Link>
-
-        {children}
-
-        <div className={css.pie}>
-          <Link href="/" className={css.volver}>
-            ← Volver a la web
-          </Link>
-          <CambiarTema />
-        </div>
-      </div>
-    </div>
-  );
-}
+/* El marco —foto, logotipo y pie— se fue a components/MarcoAcceso.tsx al
+   nacer la pantalla de registro: las dos son la misma puerta vista desde dos
+   lados, y teniéndolo dos veces acabarían pareciendo dos sitios distintos. */

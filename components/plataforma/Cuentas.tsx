@@ -47,6 +47,10 @@ type Cuenta = {
    * persona y no había forma de borrarlas desde aquí.
    */
   sinFicha: boolean;
+  /** Se creó la cuenta ella desde la web, no se la diste tú. */
+  seRegistro: boolean;
+  /** A qué dijo que venía al registrarse. Null si la diste de alta tú. */
+  pide: 'comunidad' | 'curso' | null;
 };
 
 /** Lo que devuelve el alta y hay que enseñar hasta que se dé por leído. */
@@ -582,6 +586,21 @@ export default function Cuentas() {
                   <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
                     {c.correo || 'sin correo'}
                   </span>
+                  {/* Quien se ha registrado sola todavía no ha pagado —o no
+                      lo has comprobado—, así que se dice en su línea y se dice
+                      a qué viene. Es la diferencia entre «esta ya está dentro»
+                      y «esta está esperando a que le abras». */}
+                  {c.seRegistro && c.accesos.length === 0 && (
+                    <span className={css.esperando}>
+                      Se registró ella
+                      {c.pide === 'comunidad'
+                        ? ' · pide la Comunidad Divine'
+                        : c.pide === 'curso'
+                          ? ' · pide la formación'
+                          : ''}
+                      . Todavía no tiene acceso a nada.
+                    </span>
+                  )}
                   {c.sinFicha && (
                     <span style={{ fontSize: 12, fontWeight: 300, color: 'var(--arcilla)' }}>
                       Puede entrar, pero no tiene ficha: no sé qué ha contratado. Si no sabes de

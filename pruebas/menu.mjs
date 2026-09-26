@@ -190,10 +190,31 @@ if (cookieDeSorela) {
   await p.waitForTimeout(500);
   const cuerpo = await p.locator('body').innerText();
   check('login · pide correo y contraseña', await p.locator('input[aria-label="Correo"]').isVisible());
-  check('login · no se puede crear una cuenta desde aquí', !/Crear cuenta|Crea tu cuenta|Reg[íi]strate/i.test(cuerpo), cuerpo.slice(0, 120).replace(/\n+/g, ' | '));
   check('login · no hay entrada con Google', !/Continuar con Google/i.test(cuerpo));
   check('login · sin cartel de maqueta', !/Maqueta para revisi[óo]n/i.test(cuerpo));
+  /* Desde que existe el registro, esta pantalla SÍ lleva a crearse una cuenta.
+     Lo que hay que comprobar es que diga lo único que importa: que la cuenta
+     no abre nada por sí sola. */
+  check('login · lleva a crearse una cuenta', await p.getByRole('link', { name: /Crear la mía/i }).isVisible());
+  check(
+    'login · y avisa de que la cuenta no da acceso por sí sola',
+    /no da acceso por s[íi] solo/i.test(cuerpo),
+    cuerpo.slice(0, 160).replace(/\n+/g, ' | ')
+  );
   await p.screenshot({ path: `${OUT}/login.png` });
+
+  await p.getByRole('link', { name: /Crear la mía/i }).click();
+  await p.waitForURL('**/registro', { timeout: 8000 }).catch(() => {});
+  const registro = await p.locator('body').innerText();
+  check('registro · se llega desde el acceso', new URL(p.url()).pathname === '/registro', p.url());
+  check('registro · pregunta a qué viene', /A qu[ée] vienes/i.test(registro));
+  check('registro · pide aceptar la privacidad', (await p.locator('input[type=checkbox]').count()) > 0);
+  check(
+    'registro · dice que crear la cuenta no da acceso',
+    /no te da acceso todav[íi]a/i.test(registro),
+    registro.slice(0, 160).replace(/\n+/g, ' | ')
+  );
+  await p.screenshot({ path: `${OUT}/registro.png` });
   await ctx.close();
 }
 

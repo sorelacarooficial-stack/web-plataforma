@@ -61,58 +61,9 @@
   gap: 18px;
 }
 
-/* ---------- Google ---------- */
-.google {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 15px 24px;
-  background: var(--surface);
-  color: var(--ink);
-  border: 1px solid var(--line-5);
-  border-radius: 999px;
-  font-size: 14.5px;
-  font-weight: 400;
-  cursor: pointer;
-  transition:
-    border-color 0.25s,
-    background 0.25s;
-}
-
-.google:hover {
-  border-color: var(--ink);
-}
-
-/* El logotipo va sin fondo ni borde propios: Google no permite encerrarlo en
-   una pastilla de color ni recolorearlo. */
-.googleMarca {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ---------- Separador ---------- */
-.separador {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.raya {
-  flex: 1 1 auto;
-  height: 1px;
-  background: var(--line-3);
-}
-
-.separadorTexto {
-  flex: 0 0 auto;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--faint);
-}
+/* Aquí vivían el botón de Google y el separador de «o». Se fueron con el
+   registro abierto, y las reglas se quedaron: cinco clases que no pintaban
+   nada y que al leer el fichero hacían pensar que ese botón seguía ahí. */
 
 /* ---------- Formulario ---------- */
 .formulario {
@@ -132,6 +83,70 @@
 
 .campo::placeholder {
   color: var(--faint);
+}
+
+/* ---------- A qué viene (solo en el registro) ----------
+   Dos tarjetas que se eligen, no un desplegable: son dos caminos distintos
+   —formarse o entrar en la comunidad— y cada uno necesita una frase que lo
+   explique. En un <select> esa frase no cabe, y quien no conoce la casa no
+   sabe cuál de los dos le toca. */
+.opciones {
+  margin: 0 0 4px;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.opcionesTitulo {
+  padding: 0 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.opcion {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line-4);
+  cursor: pointer;
+  transition:
+    border-color 0.25s,
+    background 0.25s;
+}
+
+.opcion:hover {
+  border-color: var(--oro-line);
+}
+
+.opcionElegida {
+  border-color: var(--oro);
+  background: var(--oro-tint);
+}
+
+.opcionCuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.opcionTitulo {
+  font-size: 14.5px;
+  color: var(--ink);
+}
+
+.opcionTexto {
+  font-size: 12.5px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--muted-2);
+  text-wrap: pretty;
 }
 
 .condiciones {

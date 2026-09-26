@@ -39,7 +39,7 @@ for (const [w, h] of [[640, 360], [740, 360]]) {
 }
 
 /* === 4) /metodo desbordaba a 320 px (único scroll horizontal de la web) === */
-for (const ruta of ['/', '/metodo', '/formaciones', '/comunidad', '/terapeutas', '/sobre', '/contacto', '/entrar', '/plataforma']) {
+for (const ruta of ['/', '/metodo', '/formaciones', '/comunidad', '/terapeutas', '/sobre', '/contacto', '/entrar', '/registro', '/plataforma']) {
   const ctx = await nav.newContext({ viewport: { width: 320, height: 568 }, locale: 'es-ES' });
   const p = await ctx.newPage();
   await p.goto(B + ruta, { waitUntil: 'networkidle' });
