@@ -4,15 +4,25 @@ import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
 
 /**
- * La agenda de Sorela: todo lo que tiene apuntado, en un solo sitio.
+ * La agenda de cada persona: todo lo que tiene apuntado, en un solo sitio.
  *
  *   GET    → lo que viene por delante, de lo más cercano a lo más lejano
  *   POST   → apuntar algo nuevo
  *   PATCH  → cambiar un evento, o darlo por hecho o por cancelado
  *   DELETE → borrarlo
  *
- * Solo para Sorela, igual que los contactos: la comprobación se hace aquí con
- * el rol que viaja firmado en la cookie, nunca con lo que diga el navegador.
+ * Cada una ve la suya y solo la suya, Sorela incluida. Eso no se consigue
+ * filtrando por un campo `de` sino guardando cada agenda en su sitio:
+ * `usuarios/{uid}/agenda`. La diferencia importa. Con un campo hay que
+ * acordarse de filtrar en las cuatro operaciones, y el día que a una se le
+ * olvide, una terapeuta ve las clientas de otra. Colgándola de la persona, el
+ * aislamiento no depende de acordarse: a la agenda de otra no se llega porque
+ * no se puede escribir su ruta sin tener su identificador, que no sale de la
+ * cookie de nadie más.
+ *
+ * De paso evita un índice compuesto —filtrar por dueña Y ordenar por fecha lo
+ * habría pedido— que habría que crear a mano en la consola de Google, y hasta
+ * entonces la agenda contestaría con un error que nadie sabría interpretar.
  *
  * El campo `cuando` se guarda como Timestamp de Firestore y NO como texto. Con
  * texto ISO el orden alfabético coincidiría con el cronológico solo mientras
@@ -46,13 +56,25 @@ type Errores = Partial<Record<Campo, string>>;
 const DURACION_MAX = 12 * 60;
 const DURACION_POR_DEFECTO = 60;
 
-async function exigirAdmin() {
+/**
+ * Quién pregunta, y su agenda.
+ *
+ * Ya no se exige ser Sorela: la agenda la tiene cada persona. Lo que sí se
+ * exige es tener sesión, y de esa sesión —de la cookie firmada, no de nada que
+ * mande el navegador— sale el identificador con el que se construye la ruta.
+ */
+async function agendaDeQuienPregunta() {
   const sesion = await sesionActual();
-  if (!sesion) return { error: NextResponse.json({ ok: false, motivo: 'sin-sesion' }, { status: 401 }) };
-  if (sesion.rol !== 'sorela') {
-    return { error: NextResponse.json({ ok: false, motivo: 'sin-permiso' }, { status: 403 }) };
+  if (!sesion) {
+    return { error: NextResponse.json({ ok: false, motivo: 'sin-sesion' }, { status: 401 }) };
   }
-  return { sesion };
+  return {
+    sesion,
+    agenda: baseDeDatos()
+      .collection(COLECCIONES.usuarios)
+      .doc(sesion.uid)
+      .collection(COLECCIONES.agenda),
+  };
 }
 
 const recortar = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
@@ -247,7 +269,7 @@ export async function GET(peticion: Request) {
   if (!hayFirebase()) {
     return NextResponse.json({ ok: false, motivo: 'sin-configurar' }, { status: 503 });
   }
-  const guardia = await exigirAdmin();
+  const guardia = await agendaDeQuienPregunta();
   if (guardia.error) return guardia.error;
 
   const parametros = new URL(peticion.url).searchParams;
@@ -262,7 +284,7 @@ export async function GET(peticion: Request) {
   const pedido = desdeCuando(parametros.get('desde'));
   const corte = pedido && pedido.getTime() < hoy.getTime() ? pedido : hoy;
 
-  let consulta: Query = baseDeDatos().collection(COLECCIONES.agenda);
+  let consulta: Query = guardia.agenda;
   if (!todos) {
     // El filtro y la ordenación caen sobre el MISMO campo, así que a Firestore
     // le basta con su índice automático: esto no pide crear ningún índice
@@ -298,7 +320,7 @@ export async function POST(peticion: Request) {
   if (!hayFirebase()) {
     return NextResponse.json({ ok: false, motivo: 'sin-configurar' }, { status: 503 });
   }
-  const guardia = await exigirAdmin();
+  const guardia = await agendaDeQuienPregunta();
   if (guardia.error) return guardia.error;
 
   let cuerpo: Record<string, unknown>;
@@ -313,12 +335,11 @@ export async function POST(peticion: Request) {
     return NextResponse.json({ ok: false, motivo: 'datos', errores: revision.errores }, { status: 400 });
   }
 
-  const ref = await baseDeDatos()
-    .collection(COLECCIONES.agenda)
+  const ref = await guardia.agenda
     .add({
       ...revision.datos,
       // La hora de creación la pone el servidor de Google. `cuando` no: esa es
-      // la que Sorela ha elegido y viene del navegador.
+      // la que ha elegido quien apunta, y viene de su navegador.
       creado: FieldValue.serverTimestamp(),
     });
 
@@ -329,7 +350,7 @@ export async function PATCH(peticion: Request) {
   if (!hayFirebase()) {
     return NextResponse.json({ ok: false, motivo: 'sin-configurar' }, { status: 503 });
   }
-  const guardia = await exigirAdmin();
+  const guardia = await agendaDeQuienPregunta();
   if (guardia.error) return guardia.error;
 
   let cuerpo: Record<string, unknown>;
@@ -356,10 +377,7 @@ export async function PATCH(peticion: Request) {
     // update() y no set(..., { merge: true }): si el evento ya no existe
     // —porque se acaba de borrar en otra pestaña—, esto falla en vez de
     // resucitarlo como un documento a medias sin título ni fecha.
-    await baseDeDatos()
-      .collection(COLECCIONES.agenda)
-      .doc(id)
-      .update({ ...revision.datos, actualizado: FieldValue.serverTimestamp() });
+    await guardia.agenda.doc(id).update({ ...revision.datos, actualizado: FieldValue.serverTimestamp() });
   } catch {
     return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
   }
@@ -371,7 +389,7 @@ export async function DELETE(peticion: Request) {
   if (!hayFirebase()) {
     return NextResponse.json({ ok: false, motivo: 'sin-configurar' }, { status: 503 });
   }
-  const guardia = await exigirAdmin();
+  const guardia = await agendaDeQuienPregunta();
   if (guardia.error) return guardia.error;
 
   const id = recortar(new URL(peticion.url).searchParams.get('id'), 200);
@@ -379,7 +397,7 @@ export async function DELETE(peticion: Request) {
 
   // Borrar algo que ya no está no es un error para Firestore, y aquí tampoco:
   // si se pulsa dos veces seguidas, el resultado es el mismo y no hay susto.
-  await baseDeDatos().collection(COLECCIONES.agenda).doc(id).delete();
+  await guardia.agenda.doc(id).delete();
 
   return NextResponse.json({ ok: true, id });
 }

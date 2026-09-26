@@ -17,6 +17,7 @@
     "capturas": "node pruebas/capturas.mjs",
     "pruebas": "node pruebas/interacciones.mjs",
     "pruebas:plataforma": "node pruebas/plataforma.mjs",
+    "pruebas:agenda": "node --env-file=.env.local pruebas/agenda.mjs",
     "pruebas:asistente": "node pruebas/asistente.mjs",
     "pruebas:menu": "node pruebas/menu.mjs",
     "pruebas:auditoria": "node pruebas/auditoria.mjs",

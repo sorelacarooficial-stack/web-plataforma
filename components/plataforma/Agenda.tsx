@@ -8,11 +8,18 @@ import CalendarioMes, { claveDia, inicioDeMes, primerDiaVisible } from './Calend
 import cal from './calendario.module.css';
 
 /**
- * La agenda de Sorela dentro de la plataforma.
+ * La agenda, la misma pantalla para todo el mundo.
  *
- * Aquí va todo lo que tiene apuntado: sesiones, formaciones, llamadas y
- * reuniones. Puede crear eventos ella misma y, cuando la web empiece a pedir
- * citas, caerán en la misma lista sin tener que mirar en dos sitios.
+ * Aquí va lo que cada una tiene apuntado: sesiones con clientas, formaciones,
+ * llamadas y reuniones. La usa Sorela y la usa cualquier terapeuta con acceso,
+ * y es la misma pantalla a propósito: lo que necesita quien lleva una cabina es
+ * exactamente lo que necesita Sorela, así que hacer dos habría sido mantener
+ * dos.
+ *
+ * Que cada una vea solo la suya NO se decide aquí. Se decide en
+ * `app/api/agenda`, que cuelga cada agenda de su persona —`usuarios/{uid}/
+ * agenda`— y saca el identificador de la cookie firmada. Esta pantalla pide
+ * «mi agenda» sin decir de quién, porque no tiene forma de pedir otra.
  *
  * No hay nada inventado. Si la lista sale vacía es que no hay nada apuntado,
  * y eso se dice con palabras en vez de enseñar una semana de mentira.
@@ -122,7 +129,22 @@ function duracionEnPalabras(min: number): string {
 
 const ESTILO_ERROR = { fontSize: 12, fontWeight: 300, color: 'var(--arcilla)', textTransform: 'none' as const, letterSpacing: 0 };
 
-export default function AgendaSorela() {
+export default function Agenda({
+  /**
+   * Si quien mira es Sorela.
+   *
+   * Cambia una sola frase, la de la lista vacía, y por eso existe: las citas
+   * que se piden desde la web caen en SU agenda, no en la de una terapeuta.
+   * Prometerle a una terapeuta que la web le va a traer citas sería venderle
+   * algo que esta plataforma no hace.
+   *
+   * No decide nada más. Los permisos los decide el servidor con la cookie, así
+   * que cambiar esto desde el navegador solo cambia una frase.
+   */
+  esSorela = false,
+}: {
+  esSorela?: boolean;
+}) {
   const [lista, setLista] = useState<Evento[] | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
   const [verPasado, setVerPasado] = useState(false);
@@ -185,8 +207,11 @@ export default function AgendaSorela() {
         setFallo(
           c.motivo === 'sin-configurar'
             ? 'Falta la configuración de Firebase en el servidor.'
-            : c.motivo === 'sin-permiso'
-              ? 'Esta agenda solo la ve Sorela.'
+            : /* La sesión dura cinco días: quien deja la pestaña abierta más
+                 tiempo se encuentra esto, y «no he podido cargar» le haría
+                 recargar en vano. Se le dice lo único que arregla el problema. */
+              c.motivo === 'sin-sesion'
+              ? 'Se ha cerrado la sesión. Vuelve a entrar para ver tu agenda.'
               : 'No he podido cargar la agenda.'
         );
         setLista([]);
@@ -464,9 +489,11 @@ export default function AgendaSorela() {
                   : /* Por defecto la lista empieza en hoy, así que «no hay nada»
                        podría querer decir «no hay nada de hoy en adelante». Se
                        dice dónde mirar en vez de dejar creer que está vacía. */
-                    `No tienes nada apuntado. Lo que crees aquí y las citas que te pidan desde la web aparecerán en esta lista.${
-                      verPasado ? '' : ' Si buscas algo de antes, pulsa «Ver también lo pasado».'
-                    }`}
+                    `No tienes nada apuntado. ${
+                      esSorela
+                        ? 'Lo que crees aquí y las citas que te pidan desde la web aparecerán en esta lista.'
+                        : 'Lo que apuntes aquí abajo aparecerá en esta lista.'
+                    }${verPasado ? '' : ' Si buscas algo de antes, pulsa «Ver también lo pasado».'}`}
               </p>
             </section>
           ) : (

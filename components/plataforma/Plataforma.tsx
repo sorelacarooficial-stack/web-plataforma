@@ -28,7 +28,7 @@ import Contactos from './Contactos';
 import Proximamente from './Proximamente';
 import Aula from './Aula';
 import SubirClases from './SubirClases';
-import AgendaSorela from './AgendaSorela';
+import Agenda from './Agenda';
 import Cuentas from './Cuentas';
 import FacturacionSorela from './FacturacionSorela';
 import css from './plataforma.module.css';
@@ -257,6 +257,11 @@ export default function Plataforma({
             <Proximamente accesos={puedeVerComo ? [] : accesos} nombre={usuario} />
           )}
           {!esAdmin && actual === 'aula' && <Aula />}
+          {/* La misma pantalla que la de Sorela, y a propósito: la agenda de
+              una terapeuta y la de Sorela son la misma cosa. Cada una ve solo
+              la suya porque el servidor cuelga cada agenda de su persona, no
+              porque aquí se pinte distinto. */}
+          {!esAdmin && actual === 'agenda' && <Agenda />}
 
           {esAdmin && actual === 'inicio' && <PanelSorela ir={ir} />}
           {/* Contactos de verdad, leídos de Firestore. Antes aquí había una lista
@@ -264,7 +269,7 @@ export default function Plataforma({
           {esAdmin && actual === 'leads' && <Contactos />}
           {esAdmin && actual === 'formaciones' && <FormacionesAdmin />}
           {esAdmin && actual === 'contenido' && <SubirClases />}
-          {esAdmin && actual === 'agenda' && <AgendaSorela />}
+          {esAdmin && actual === 'agenda' && <Agenda esSorela />}
           {esAdmin && actual === 'facturacion' && <FacturacionSorela />}
           {esAdmin && actual === 'cuentas' && <Cuentas />}
           {esAdmin && actual === 'comunidad' && <Comunidad rol={rol} ir={ir} iniciales={iniciales} conComunidad={tieneMembresia(accesos)} />}

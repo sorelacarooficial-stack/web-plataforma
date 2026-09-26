@@ -64,13 +64,21 @@ export function navDe(rol: Rol, conAcceso = false): { id: Vista; label: string }
       { id: 'cuentas', label: 'Cuentas' },
     ];
   /* Quien no ha contratado nada ve una sola puerta, y detrás la pantalla de
-     «en preparación». En cuanto tiene algo —un curso, la comunidad— aparece su
-     aula, que es a lo que viene. Un menú con un aula vacía sería peor que no
-     tenerla: prometería algo que al abrirlo no está. */
+     «en preparación». En cuanto tiene algo —un curso, la comunidad— aparecen
+     sus clases, que es a lo que viene, y su agenda, que es la herramienta con
+     la que va a trabajar al salir de la formación. Un menú con un aula vacía
+     sería peor que no tenerla: prometería algo que al abrirlo no está.
+
+     La agenda va detrás de tener acceso y no de tener cuenta. Es una decisión:
+     funciona igual para cualquiera —cada una en la suya, ver
+     `app/api/agenda`—, pero quien está dada de alta sin haber contratado nada
+     todavía ve una pantalla que le dice que su espacio se está terminando, y
+     abrirle ahí una agenda suelta desdiría ese mensaje. */
   return conAcceso
     ? [
         { id: 'inicio', label: 'Inicio' },
         { id: 'aula', label: 'Mis clases' },
+        { id: 'agenda', label: 'Mi agenda' },
       ]
     : [{ id: 'inicio', label: 'Inicio' }];
 }
@@ -332,6 +340,8 @@ export const TRATAMIENTOS_ACTIVOS: string[] = [];
 export const PENDIENTE_BETA = [
   { que: 'Acceso con cuenta y roles', listo: true },
   { que: 'Los contactos de la web entran en la plataforma', listo: true },
+  { que: 'Agenda propia, con calendario, para cada terapeuta', listo: true },
+  { que: 'Aula con las clases de lo que cada una ha contratado', listo: true },
   { que: 'Canal privado de casos', listo: false },
   { que: 'Clase en vivo al mes, con grabación', listo: false },
   { que: 'Fichas y protocolos descargables', listo: false },
@@ -374,7 +384,13 @@ export const CONVOCATORIAS: {
   pendiente: string;
 }[] = [];
 
-export const AGENDA_SORELA: { cuando: string; que: string; detalle: string }[] = [];
+/*
+ * Aquí había un AGENDA_SORELA vacío que alimentaba un bloque «Tu calendario»
+ * dentro de Formaciones. No era una lista que se fuera a llenar nunca: la
+ * agenda de verdad vive en Firestore y tiene su propia pantalla, así que ese
+ * bloque enseñaba «sin nada apuntado» incluso con la semana llena. Se quitó
+ * junto con el bloque.
+ */
 
 export const INGRESOS_ADMIN = [
   { label: 'Facturado este mes', valor: '0 €', nota: 'ninguna factura emitida' },

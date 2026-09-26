@@ -113,7 +113,13 @@ export function baseDeDatos(): Firestore {
 export const COLECCIONES = {
   /** Cada persona que deja su contacto en la web. */
   contactos: 'contactos',
-  /** La agenda de Sorela: citas, formaciones, reuniones y recados. */
+  /**
+   * La agenda de cada persona: citas, formaciones, reuniones y recados.
+   *
+   * OJO: no es una colección de la raíz, es una subcolección de cada usuario
+   * —`usuarios/{uid}/agenda`—, y por eso cada una ve solo la suya sin depender
+   * de acordarse de filtrar. Ver `app/api/agenda/route.ts`.
+   */
   agenda: 'agenda',
   /** Lista de espera de la Comunidad Divine. */
   comunidad: 'lista_comunidad',
