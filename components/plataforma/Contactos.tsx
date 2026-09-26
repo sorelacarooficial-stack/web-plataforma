@@ -100,7 +100,7 @@ function cuando(iso: string | null): string {
 }
 
 /* ==========================================================================
-   Apuntar y corregir un cliente
+   Apuntar y corregir un contacto
    ========================================================================== */
 
 /** Lo que se está escribiendo en el formulario, antes de mandarlo. */
@@ -152,7 +152,7 @@ type Resultado =
  * El panel no habla con el servidor: monta el cuerpo y avisa hacia arriba.
  * Quien tiene la lista es quien sabe recargarla.
  */
-function PanelCliente({
+function PanelContacto({
   modo,
   onCerrar,
   onGuardar,
@@ -161,7 +161,8 @@ function PanelCliente({
   modo: Modo;
   onCerrar: () => void;
   onGuardar: (cuerpo: Record<string, unknown>) => Promise<Resultado>;
-  onVerFicha: (id: string) => void;
+  /** Abre la ficha de quien ya estaba apuntada. Devuelve si se ha podido. */
+  onVerFicha: (id: string) => boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   /* Dónde empezó el gesto del ratón, para no confundir «soltar el botón sobre
@@ -195,6 +196,10 @@ function PanelCliente({
   /* El id de quien ya ocupaba ese correo o ese móvil, para poder abrir su
      ficha desde el propio error en vez de mandar a buscarla a mano. */
   const [duplicado, setDuplicado] = useState<string | null>(null);
+  /* Si la ficha de esa duplicada no aparece en la lista cargada. Pasa cuando
+     la lista viene recortada por el tope del servidor: existe, pero no ha
+     llegado, y el botón de abrirla no tendría a quién abrir. */
+  const [duplicadaLejos, setDuplicadaLejos] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
   /* Este panel se monta y se desmuestra entero con cada apertura —la lista lo
@@ -286,6 +291,7 @@ function PanelCliente({
     setErrores(res.errores);
     setFallo(res.fallo ?? null);
     setDuplicado(res.duplicado ?? null);
+    setDuplicadaLejos(false);
     setGuardando(false);
   }
 
@@ -303,7 +309,7 @@ function PanelCliente({
     <dialog
       ref={ref}
       className={css.fichaPanel}
-      aria-label={editando ? 'Corregir los datos del cliente' : 'Apuntar un cliente nuevo'}
+      aria-label={editando ? 'Corregir los datos del contacto' : 'Apuntar un contacto nuevo'}
       // Escape cierra por su cuenta sin pasar por React. Se corta siempre y se
       // decide aquí: si hay algo escrito, intentarCerrar() pregunta, y al
       // decir que no el preventDefault es lo que lo deja abierto.
@@ -343,7 +349,7 @@ function PanelCliente({
           <header style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <p className={css.rotuloSeccion}>{editando ? 'Corregir' : 'Apuntar a mano'}</p>
             <h2 className={css.h3}>
-              {editando ? modo.contacto.nombre || 'Sin nombre' : 'Un cliente nuevo'}
+              {editando ? modo.contacto.nombre || 'Sin nombre' : 'Un contacto nuevo'}
             </h2>
             <p className={css.parrafo}>
               {editando
@@ -374,9 +380,19 @@ function PanelCliente({
           {duplicado && (
             <p className={css.avisoFallo}>
               Esa persona ya estaba apuntada.{' '}
-              <button type="button" className={css.btnLinea} onClick={() => onVerFicha(duplicado)}>
+              <button
+                type="button"
+                className={css.btnLinea}
+                onClick={() => setDuplicadaLejos(!onVerFicha(duplicado))}
+              >
                 Abrir su ficha
               </button>
+              {duplicadaLejos && (
+                <span style={{ display: 'block', marginTop: 6 }}>
+                  Está en la base de datos, pero no en la parte de la lista que se ha cargado.
+                  Ciérrale esto y búscala por su nombre o su correo en el buscador de arriba.
+                </span>
+              )}
             </p>
           )}
 
@@ -547,12 +563,23 @@ export default function Contactos() {
   const [abierta, setAbierta] = useState<string | null>(null);
   // Si el formulario está abierto y para qué. Null es que no lo está.
   const [modo, setModo] = useState<Modo | null>(null);
+  /** Si el servidor ha tenido que cortar la lista por su tope. */
+  const [recortada, setRecortada] = useState(false);
+
+  /* Cada carga lleva su número de turno. Aquí se recarga desde cuatro sitios
+     —al entrar, al guardar, al apuntar una nota y desde «Reintentar»—, así que
+     es fácil tener dos peticiones en el aire, y no tienen por qué contestar en
+     orden: si la primera llega la última, pinta una lista vieja encima de la
+     nueva y nada lo delata. Solo se hace caso al último turno pedido. */
+  const turno = useRef(0);
 
   const cargar = useCallback(async () => {
+    const mio = ++turno.current;
     setFallo(null);
     try {
       const r = await fetch('/api/contactos');
       const c = await r.json().catch(() => ({ ok: false }));
+      if (mio !== turno.current) return;
       if (!c.ok) {
         setFallo(
           c.motivo === 'sin-configurar'
@@ -565,7 +592,9 @@ export default function Contactos() {
         return;
       }
       setLista(c.contactos);
+      setRecortada(Boolean(c.recortada));
     } catch {
+      if (mio !== turno.current) return;
       setFallo('No hay conexión con el servidor.');
       setLista([]);
     }
@@ -575,8 +604,19 @@ export default function Contactos() {
     cargar();
   }, [cargar]);
 
-  async function cambiarEstado(id: string, estado: Estado) {
-    const antes = lista;
+  /**
+   * Cambiar en qué punto está una persona.
+   *
+   * Devuelve si se ha guardado. Lo necesita la ficha: cuando el cambio se
+   * lanza desde ella —que es un diálogo modal— el aviso de fallo de esta
+   * pantalla queda DETRÁS del velo, inerte y sin que nadie lo vea. Con el
+   * resultado en la mano, la ficha lo pinta dentro de sí misma.
+   */
+  async function cambiarEstado(id: string, estado: Estado): Promise<boolean> {
+    /* Se guarda solo el estado anterior de ESA persona, no la lista entera.
+       Restaurando la lista entera, un fallo aquí borraba de la pantalla los
+       cambios que sí se habían guardado bien en otras filas mientras tanto. */
+    const estadoAntes = lista?.find((c) => c.id === id)?.estado;
     setLista((l) => l?.map((c) => (c.id === id ? { ...c, estado } : c)) ?? l);
     try {
       const r = await fetch('/api/contactos', {
@@ -585,11 +625,15 @@ export default function Contactos() {
         body: JSON.stringify({ id, estado }),
       });
       if (!(await r.json().catch(() => ({ ok: false }))).ok) throw new Error();
+      return true;
     } catch {
       // Se deshace y se avisa: dejar la pantalla diciendo «contactado» cuando
       // no se ha guardado es peor que no haber dejado pulsar.
-      setLista(antes ?? null);
+      setLista((l) =>
+        l?.map((c) => (c.id === id ? { ...c, estado: estadoAntes ?? c.estado } : c)) ?? l
+      );
       setFallo('No se ha podido guardar el cambio. Vuelve a intentarlo.');
+      return false;
     }
   }
 
@@ -684,7 +728,9 @@ export default function Contactos() {
       return;
     }
 
-    const antes = lista;
+    // Se guarda la fila y su sitio, no la lista entera: al fallar vuelve donde
+    // estaba y lo demás se queda como esté, que puede haber cambiado.
+    const donde = lista?.findIndex((x) => x.id === c.id) ?? -1;
     setAviso(null);
     setLista((l) => l?.filter((x) => x.id !== c.id) ?? l);
     try {
@@ -693,7 +739,12 @@ export default function Contactos() {
       setFallo(null);
       setAviso(`${quien} ya no está en la lista.`);
     } catch {
-      setLista(antes ?? null);
+      setLista((l) => {
+        if (!l || l.some((x) => x.id === c.id)) return l;
+        const vuelta = [...l];
+        vuelta.splice(donde < 0 ? vuelta.length : donde, 0, c);
+        return vuelta;
+      });
       setFallo('No se ha podido borrar. Vuelve a intentarlo.');
     }
   }
@@ -726,8 +777,26 @@ export default function Contactos() {
       const peligroso = /^[=+\-@\t\r]/.test(texto);
       return `"${(peligroso ? `'${texto}` : texto).replace(/"/g, '""')}"`;
     };
+    /* La fecha, escrita como la escribiría una persona.
+       Antes iba el ISO en crudo —«2026-09-23T10:12:33.000Z»—, que Excel no
+       reconoce como fecha: ni se lee ni se puede ordenar por esa columna. Y va
+       en hora de aquí, no en la Z, que además cae en el día anterior a partir
+       de las dos de la madrugada. */
+    const fecha = (iso: string | null) => {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return Number.isNaN(d.getTime())
+        ? ''
+        : d.toLocaleString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+    };
     const filas = visibles.map((c) =>
-      [c.creado ?? '', c.nombre, c.correo, c.whatsapp, c.ciudad, c.perfil, c.origen, c.estado, c.nota]
+      [fecha(c.creado), c.nombre, c.correo, c.whatsapp, c.ciudad, c.perfil, c.origen, c.estado, c.nota]
         .map(escapa)
         .join(',')
     );
@@ -778,15 +847,29 @@ export default function Contactos() {
 
   return (
     <div className={css.columna}>
-      <div className={css.rejillaKpis}>
-        {resumen.map((k) => (
-          <article key={k.label} className={css.kpi}>
-            <span className={css.kpiValor}>{k.valor}</span>
-            <span className={css.kpiLabel}>{k.label}</span>
-            <span className={css.kpiNota}>{k.nota}</span>
-          </article>
-        ))}
-      </div>
+      {/* Los contadores se calculan sobre la lista, y al fallar la carga la
+          lista se queda vacía: pintarlos entonces sería enseñar cuatro ceros
+          como si fueran un dato. Cuando no se ha podido leer, no se cuenta. */}
+      {!fallo && (
+        <div className={css.rejillaKpis}>
+          {resumen.map((k) => (
+            <article key={k.label} className={css.kpi}>
+              <span className={css.kpiValor}>{k.valor}</span>
+              <span className={css.kpiLabel}>{k.label}</span>
+              <span className={css.kpiNota}>{k.nota}</span>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {/* Los contadores y el buscador trabajan sobre lo que ha llegado, no
+          sobre todo lo que hay. Si viene cortado, se dice. */}
+      {recortada && !fallo && (
+        <p className={css.apunte} role="note">
+          Se muestran los 500 contactos más recientes: los contadores y el buscador solo miran
+          estos.
+        </p>
+      )}
 
       {fallo && (
         <p className={css.avisoFallo} role="alert">
@@ -867,7 +950,7 @@ export default function Contactos() {
               setModo({ que: 'nuevo' });
             }}
           >
-            Añadir cliente
+            Añadir contacto
           </button>
           <button type="button" className={css.btnLinea} onClick={exportar} disabled={!visibles.length}>
             Descargar en Excel
@@ -878,9 +961,13 @@ export default function Contactos() {
       <section className={css.tarjeta}>
         {visibles.length === 0 ? (
           <p className={css.vacioTexto}>
-            {lista.length === 0
-              ? 'Todavía no hay nadie. En cuanto alguien deje su contacto en la web aparecerá aquí, y mientras tanto puedes apuntar tú a quien conozcas con «Añadir cliente».'
-              : 'Ningún contacto con ese filtro.'}
+            {/* Tres cosas distintas, y antes eran dos: si la carga ha fallado
+                no se sabe si hay alguien o no, así que no se afirma. */}
+            {fallo
+              ? 'No he podido leer los contactos, así que no puedo decirte quién hay. Pulsa «Reintentar» aquí arriba.'
+              : lista.length === 0
+                ? 'Todavía no hay nadie. En cuanto alguien deje su contacto en la web aparecerá aquí, y mientras tanto puedes apuntar tú a quien conozcas con «Añadir contacto».'
+                : 'Ningún contacto con ese filtro.'}
           </p>
         ) : (
           visibles.map((c) => (
@@ -900,8 +987,11 @@ export default function Contactos() {
                   {c.ciudad && ` · ${c.ciudad}`}
                 </button>
                 <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
-                  {c.correo}
-                  {c.whatsapp && ` · ${c.whatsapp}`}
+                  {/* Se juntan solo los que existen. Antes se ponía el correo y
+                      luego « · » más el móvil, así que a quien se apuntó en una
+                      feria y solo dejó el teléfono —que es justo para lo que se
+                      hizo esto— la línea le empezaba por el separador. */}
+                  {[c.correo, c.whatsapp].filter(Boolean).join(' · ') || 'Sin correo ni móvil'}
                 </span>
                 {c.nota && (
                   <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--ink-3)' }}>
@@ -938,7 +1028,10 @@ export default function Contactos() {
                 </span>
               </span>
 
-              <span className={`${css.estado} ${CLASE[c.estado]}`}>{c.estado}</span>
+              {/* `?? ''` porque el estado viene de Firestore sin comprobar: si
+                  una ficha vieja guarda uno que ya no existe, CLASE[…] sale
+                  undefined y esa palabra acababa dentro del className. */}
+              <span className={`${css.estado} ${CLASE[c.estado] ?? ''}`}>{c.estado}</span>
 
               <span className={css.acciones}>
                 {c.whatsapp && (
@@ -958,13 +1051,24 @@ export default function Contactos() {
                   value={c.estado}
                   onChange={(e) => cambiarEstado(c.id, e.target.value as Estado)}
                 >
-                  {ESTADOS.map((e) => (
+                  {/* Si la ficha guarda un estado que ya no está en la lista, se
+                      añade al final en vez de dejar el desplegable enseñando
+                      otro: enseñando otro, el primer clic lo cambiaría sin que
+                      nadie hubiera querido cambiar nada. */}
+                  {((ESTADOS as readonly string[]).includes(c.estado)
+                    ? ESTADOS
+                    : [...ESTADOS, c.estado]
+                  ).map((e) => (
                     <option key={e}>{e}</option>
                   ))}
                 </select>
                 <button
                   type="button"
                   className={css.enlaceAccion}
+                  /* Con el nombre dentro: en una lista larga, treinta botones
+                     que solo dicen «Editar» no le sirven a quien navega
+                     escuchando la pantalla. */
+                  aria-label={`Editar la ficha de ${c.nombre || 'este contacto'}`}
                   onClick={() => {
                     setAviso(null);
                     setModo({ que: 'editar', contacto: c });
@@ -972,7 +1076,12 @@ export default function Contactos() {
                 >
                   Editar
                 </button>
-                <button type="button" className={css.enlaceAccion} onClick={() => borrar(c)}>
+                <button
+                  type="button"
+                  className={css.enlaceAccion}
+                  aria-label={`Borrar a ${c.nombre || 'este contacto'}`}
+                  onClick={() => borrar(c)}
+                >
                   Borrar
                 </button>
               </span>
@@ -995,14 +1104,26 @@ export default function Contactos() {
           otra— el panel se monte de nuevo con su borrador recién puesto, en vez
           de quedarse con lo que hubiera escrito antes. */}
       {modo && (
-        <PanelCliente
+        <PanelContacto
           key={modo.que === 'editar' ? `editar-${modo.contacto.id}` : 'nuevo'}
           modo={modo}
           onCerrar={() => setModo(null)}
           onGuardar={guardar}
+          /**
+           * Abrir la ficha de quien ya estaba apuntada.
+           *
+           * Devuelve si se ha podido. La ficha se busca dentro de la lista
+           * cargada, y esa lista viene recortada por el tope del servidor: si
+           * la persona está en la base de datos pero no en el trozo que ha
+           * llegado, cerrar el panel dejaba la pantalla sin panel y sin ficha,
+           * como si el botón no hiciera nada. Ahora, si no está, el panel se
+           * queda abierto y lo dice.
+           */
           onVerFicha={(id) => {
+            if (!lista?.some((c) => c.id === id)) return false;
             setModo(null);
             setAbierta(id);
+            return true;
           }}
         />
       )}

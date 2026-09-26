@@ -173,7 +173,15 @@ export default function FichaPersona({
 }: {
   persona: Persona | null;
   onCerrar: () => void;
-  onCambiarEstado: (id: string, estado: string) => void;
+  /**
+   * Cambia el estado y contesta si se ha guardado.
+   *
+   * El booleano importa: esta ficha es un <dialog> modal, así que el aviso de
+   * fallo de la lista de detrás queda bajo el velo, inerte y sin que nadie lo
+   * vea. Sin esto, el cambio se deshacía en silencio y parecía que no había
+   * pasado nada.
+   */
+  onCambiarEstado: (id: string, estado: string) => Promise<boolean> | void;
   onApuntar: (id: string, texto: string) => Promise<void>;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -183,6 +191,8 @@ export default function FichaPersona({
   const [texto, setTexto] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [falloApunte, setFalloApunte] = useState<string | null>(null);
+  /** El fallo de guardar el estado, pintado DENTRO de la ficha. */
+  const [falloEstado, setFalloEstado] = useState<string | null>(null);
   const [copia, setCopia] = useState<{ campo: string; ok: boolean } | null>(null);
 
   /* Los hooks van todos antes del `return null`: si se colgaran de que haya
@@ -220,6 +230,7 @@ export default function FichaPersona({
   useEffect(() => {
     setTexto('');
     setFalloApunte(null);
+    setFalloEstado(null);
     setCopia(null);
   }, [persona?.id]);
 
@@ -533,13 +544,24 @@ export default function FichaPersona({
               aria-label={`Estado de ${persona.nombre || 'este contacto'}`}
               className={css.campoRedondo}
               value={estadoActual}
-              onChange={(e) => onCambiarEstado(persona.id, e.target.value)}
+              onChange={async (e) => {
+                setFalloEstado(null);
+                const guardado = await onCambiarEstado(persona.id, e.target.value);
+                if (guardado === false) {
+                  setFalloEstado('No se ha podido guardar el estado. Vuelve a intentarlo.');
+                }
+              }}
             >
               {opciones.map((e) => (
                 <option key={e}>{e}</option>
               ))}
             </select>
           </div>
+          {falloEstado && (
+            <p className={css.avisoFallo} role="alert">
+              {falloEstado}
+            </p>
+          )}
           <p className={css.apunte}>
             De dónde viene no cambia nunca; esto sí: es por dónde va la conversación.
           </p>

@@ -193,11 +193,12 @@ export async function GET() {
   const guardia = await exigirAdmin();
   if (guardia.error) return guardia.error;
 
+  const TOPE = 500;
   const lista = await baseDeDatos()
     .collection(COLECCIONES.contactos)
     // Por fecha de entrada, el último arriba: es el que hay que llamar.
     .orderBy('creado', 'desc')
-    .limit(500)
+    .limit(TOPE)
     .get();
 
   const contactos = lista.docs.map((d) => {
@@ -241,7 +242,16 @@ export async function GET() {
 
   const nuevos = contactos.filter((c) => c.estado === 'Nuevo').length;
 
-  return NextResponse.json({ ok: true, contactos, nuevos, total: contactos.length });
+  return NextResponse.json({
+    ok: true,
+    contactos,
+    nuevos,
+    total: contactos.length,
+    /* Si se ha llegado al tope, lo que va abajo no ha llegado, y los
+       contadores, el buscador y los filtros de la pantalla trabajan solo sobre
+       esto. Se dice para que no parezca que eso es todo lo que hay. */
+    recortada: lista.size >= TOPE,
+  });
 }
 
 export async function PATCH(peticion: Request) {
@@ -441,6 +451,45 @@ export async function POST(peticion: Request) {
 
   const id = identificador(datos.correo ?? '', datos.whatsapp ?? '');
   const ref = baseDeDatos().collection(COLECCIONES.contactos).doc(id);
+
+  /*
+   * El móvil repetido, que el choque de create() NO ve.
+   *
+   * create() compara identificadores, y el identificador es el correo cuando
+   * lo hay. Así que dos fichas con el mismo móvil y distinto correo —o con
+   * correo una y sin él la otra— no chocaban: se guardaban las dos y Sorela
+   * acababa con la misma persona por duplicado, cada mitad con su seguimiento.
+   * Justo el caso que más pasa apuntando a mano, porque el móvil es lo que
+   * siempre se tiene.
+   *
+   * Esto NO sustituye al create(), que sigue siendo el cierre atómico del
+   * correo: lo completa. Que sean dos pasos deja un hueco en el que dos altas
+   * a la vez con el mismo móvil pasarían las dos, y se acepta: aquí solo entra
+   * Sorela, y no va a dar de alta a la misma persona dos veces en el mismo
+   * segundo desde dos sitios.
+   */
+  if (datos.whatsapp) {
+    const mismoMovil = await baseDeDatos()
+      .collection(COLECCIONES.contactos)
+      .where('whatsapp', '==', datos.whatsapp)
+      .limit(1)
+      .get()
+      .catch(() => null);
+    const otra = mismoMovil?.docs[0];
+    if (otra && otra.id !== id) {
+      return NextResponse.json(
+        {
+          ok: false,
+          motivo: 'ya-existe',
+          id: otra.id,
+          errores: {
+            whatsapp: `Ese móvil ya es de ${otra.data()?.nombre || 'alguien'}. Abre su ficha y corrígela ahí: si lo guardo otra vez, tendrás la misma persona dos veces.`,
+          },
+        },
+        { status: 409 }
+      );
+    }
+  }
 
   try {
     /*

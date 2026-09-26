@@ -134,7 +134,12 @@ export async function crearSesion(tokenId: string): Promise<Sesion> {
     throw new PlataformaCerrada();
   }
 
-  const rol = await asegurarRol(datos.uid, datos.email ?? null, datos.role);
+  const rol = await asegurarRol(
+    datos.uid,
+    datos.email ?? null,
+    datos.role,
+    (datos.name as string | undefined) ?? null
+  );
 
   const cookie = await auth.createSessionCookie(tokenId, { expiresIn: DURACION_MS });
   const almacen = await cookies();
@@ -211,7 +216,16 @@ export async function sesionActual(): Promise<Sesion | null> {
 export async function asegurarRol(
   uid: string,
   correo: string | null,
-  rolActual: unknown
+  rolActual: unknown,
+  /**
+   * Cómo se llama, si el token lo trae.
+   *
+   * Existe porque la lista de Cuentas enseñaba «Sin nombre» para todas las
+   * cuentas anteriores al alta desde la plataforma, incluida la de Sorela: el
+   * único sitio que escribía el nombre era el alta, y quien entraba con Google
+   * pasaba por aquí, que no lo guardaba aunque lo tuviera delante.
+   */
+  nombre?: string | null
 ): Promise<Rol> {
   const auth = getAuth(aplicacion());
 
@@ -241,6 +255,12 @@ export async function asegurarRol(
         {
           correo,
           rol,
+          /* El nombre solo se escribe si viene, y por eso se monta así en vez
+             de poner `nombre: nombre ?? null`: con merge, un null PISARÍA el
+             nombre que puso el alta a mano. Quien entra con correo y
+             contraseña no trae nombre en el token, y esa cuenta perdería el
+             suyo en su primer acceso. */
+          ...(nombre?.trim() ? { nombre: nombre.trim() } : {}),
           ultimoAcceso: FieldValue.serverTimestamp(),
         },
         { merge: true }

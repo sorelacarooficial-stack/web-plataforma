@@ -234,8 +234,8 @@ try {
     await p.waitForTimeout(500);
   }
 
-  /* ---------- Añadir cliente ---------- */
-  const anadir = p.getByRole('button', { name: /añadir cliente/i }).first();
+  /* ---------- Añadir contacto ---------- */
+  const anadir = p.getByRole('button', { name: /añadir contacto/i }).first();
   if (await anadir.count()) {
     await anadir.click();
     await p.waitForTimeout(1000);
@@ -259,7 +259,11 @@ try {
   // El formulario de alta, relleno pero sin enviar todavía.
   await p.getByLabel(/correo/i).first().fill(CUENTA_PRUEBA);
   await p.getByLabel(/nombre/i).first().fill('Alumna de ejemplo');
-  const formulario = p.locator('form').first();
+  /* Se fotografía la SECCIÓN que envuelve al formulario y no el <form>: el
+     formulario mide justo lo que ocupan sus campos, así que el recuadro del
+     último —con su marco de foco— quedaba cortado por el borde de la imagen y
+     en el manual parecía que la pantalla estaba mal hecha. */
+  const formulario = p.locator('form').first().locator('xpath=..');
   await foto(formulario, 'cuentas-formulario');
 
   // Y ahora sí: se da el alta para fotografiar el recuadro del enlace.

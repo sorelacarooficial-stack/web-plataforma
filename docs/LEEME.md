@@ -12,8 +12,18 @@ Dos documentos, pensados para que los lea ella y no un programador:
 Los PDF no se editan: se escriben los `.html` y se imprimen.
 
 ```
-node docs/generar.mjs
+npm run manuales
 ```
+
+Son tres pasos, y se pueden lanzar sueltos:
+
+1. `node --env-file=.env.local docs/capturas.mjs` — abre la plataforma con una
+   sesión de verdad, le siembra unos contactos y unas citas de ejemplo, la
+   fotografía y borra lo sembrado al terminar.
+2. `node docs/optimizar.mjs` — deja cada captura a 1300 px y con paleta. Las
+   originales a doble resolución no se suben; las `op-` sí, que son las que los
+   manuales enseñan.
+3. `node docs/generar.mjs` — imprime los HTML a PDF.
 
 Usa el Chromium que ya está instalado y las tipografías del propio repositorio
 (`app/fuentes`), así que el resultado no depende de tener nada más ni de que
