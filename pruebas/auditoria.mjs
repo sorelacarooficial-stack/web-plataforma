@@ -56,8 +56,13 @@ for (const ruta of ['/', '/metodo', '/formaciones', '/comunidad', '/terapeutas',
 {
   const ctx = await nav.newContext({ viewport: { width: 1280, height: 900 }, locale: 'es-ES' });
   const p = await ctx.newPage();
+  /* Aquí se medía /formaciones/formacion-base, que no existe: las formaciones
+     no tienen página propia, así que se estaba comprobando que el botón
+     flotante no tapara un «Reservar plaza» que solo había en la página de
+     «esto no existe» —o sea, en ninguna—. Se mide /formaciones, que es la que
+     de verdad lleva el botón. */
   for (const [ruta, texto] of [
-    ['/formaciones/formacion-base', 'Reservar plaza'],
+    ['/formaciones', 'Quiero la información'],
     ['/comunidad', 'Apuntarme a la lista'],
   ]) {
     await p.goto(B + ruta, { waitUntil: 'networkidle' });
@@ -150,7 +155,9 @@ for (const [w, h] of [[320, 568], [390, 844], [768, 900], [1280, 900]]) {
 {
   const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, locale: 'es-ES' });
   const p = await ctx.newPage();
-  await p.goto(B + '/formaciones/formacion-base', { waitUntil: 'networkidle' });
+  // Por el mismo motivo que arriba: esta medía los enlaces del pie en una
+  // página que devuelve 404. El pie es el mismo en todas; se mide en una real.
+  await p.goto(B + '/formaciones', { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
   const pequenos = await p.evaluate(() => {
     const sel = 'footer a, header button, a[class*="volver"], a[class*="enlace-fino"]';
