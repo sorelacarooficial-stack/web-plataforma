@@ -59,6 +59,12 @@ export const COMO_LLEGO: Record<string, string> = {
   /* Los que nacen de «Añadir contacto». Sin estas cuatro líneas, «cita-a-mano»
      caía en la regla de abajo que separa la ciudad del origen y la ficha decía
      «Pidió cita en A mano», que no ha pasado: a esta persona la apuntó Sorela. */
+  /* Los dos del registro de la web. «comunidad-registro» cae en la regla de
+     comunidad y «formacion-registro» en la de formación, así que se clasifican
+     solos; están aquí para que la ficha lo diga con palabras y para que se
+     distinga de quien solo dejó su contacto: esta ya tiene cuenta. */
+  'comunidad-registro': 'Se creó una cuenta para entrar en la comunidad',
+  'formacion-registro': 'Se creó una cuenta para hacer la formación',
   'a-mano': 'La apuntaste tú',
   'cita-a-mano': 'La apuntaste tú: quiere que la trates',
   'formacion-a-mano': 'La apuntaste tú: quiere formarse',

@@ -132,6 +132,15 @@ export async function GET() {
       nombre: (v.nombre as string | undefined) ?? null,
       /** Tiene ficha, así que la lista sabe de ella todo lo que hay que saber. */
       sinFicha: false,
+      /*
+       * Si se creó la cuenta ella desde la web, y a qué dijo que venía.
+       *
+       * Las dos cosas cambian la conversación: a quien dio de alta Sorela ya
+       * le ha cobrado, y a quien se ha registrado sola todavía no. Sin esto,
+       * las dos salen igual en la lista y hay que acordarse de cuál es cuál.
+       */
+      seRegistro: v.altaPor === 'registro',
+      pide: v.pide === 'comunidad' || v.pide === 'curso' ? (v.pide as 'comunidad' | 'curso') : null,
       /* Traducido y no en crudo: las fichas anteriores al cambio guardan
          «alumna», que ya no es un rol. Sin pasarlo por aquí, la pantalla
          pintaría en la lista una palabra que el resto del código no reconoce. */
@@ -165,6 +174,10 @@ export async function GET() {
       correo: u.email ?? null,
       nombre: u.displayName ?? null,
       sinFicha: true,
+      // De una cuenta sin ficha no se sabe ni cómo llegó ni a qué viene: esos
+      // dos datos se guardan en la ficha que no existe.
+      seRegistro: false,
+      pide: null,
       // El rol de verdad vive en la claim, no en Firestore: aquí es lo único
       // que hay, así que se lee de ahí.
       rol: normalizarRol((u.customClaims as { role?: unknown } | undefined)?.role),

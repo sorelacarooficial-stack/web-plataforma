@@ -137,12 +137,18 @@ try {
 
   /* ---------- Entrar con correo y contraseña ---------- */
   check('el acceso pide los datos (Firebase está configurado)', await p.getByText('Entra en tu espacio').isVisible());
-  /* Aquí se comprobaba que hubiera un botón de «Continuar con Google». Ya no
-     lo hay, y no por descuido: se quitó junto con el registro para que nadie
-     que llegue por el buscador pueda darse de alta solo. */
+  /* Aquí se comprobaba que hubiera un botón de «Continuar con Google» y,
+     después, que NO hubiera forma de crearse una cuenta. Las dos cosas han
+     dejado de ser verdad, en este orden: primero se quitó el registro con el
+     botón de Google, y ahora hay registro propio. Lo que no ha cambiado en
+     ningún momento es lo único que de verdad importa, y es lo que se
+     comprueba: tener cuenta no abre nada. */
+  const puerta = await p.locator('body').innerText();
+  check('no hay entrada con Google', !/Continuar con Google/i.test(puerta));
   check(
-    'no hay forma de crearse una cuenta desde el acceso',
-    !/Crear cuenta|Crea tu cuenta|Continuar con Google/i.test(await p.locator('body').innerText())
+    'se puede crear una cuenta, y se dice que no da acceso por sí sola',
+    /Crear la m[íi]a/i.test(puerta) && /no da acceso por s[íi] solo/i.test(puerta),
+    puerta.slice(0, 160).replace(/\n+/g, ' | ')
   );
 
   /*
