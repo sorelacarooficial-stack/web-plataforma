@@ -2,24 +2,46 @@ import { cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
 import css from './proximamente.module.css';
 
 /**
- * Lo que ven alumnas y miembros mientras su espacio se termina de construir.
+ * La portada de quien no es Sorela: qué tiene ya y qué le falta.
  *
  * Antes aquí había ocho apartados llenos de clientas, facturas y citas de
- * mentira. No existe ninguna alumna todavía y la comunidad no se ha abierto:
- * enseñar una plataforma llena por dentro sería enseñar un decorado.
+ * mentira. No existía ninguna alumna todavía y la comunidad no se había
+ * abierto: enseñar una plataforma llena por dentro era enseñar un decorado.
  *
- * Así que se dice lo que es —está en preparación— y se dice bien: qué va a
- * haber dentro, y que se avisa por correo cuando se abra. Cuando cada pieza
- * esté hecha de verdad, se cambia su estado aquí y se vuelve a enrutar su
- * vista, que sigue escrita en `Vistas.tsx`.
+ * Ahora dice dos cosas distintas según el caso, y las dos son verdad. A quien
+ * tiene algo contratado le dice que sus clases y su agenda están abiertas
+ * —porque lo están, y las tiene en el menú— y qué falta. A quien todavía no
+ * tiene nada le dice que su espacio está en preparación y que se le avisa por
+ * correo, sin prometerle la comunidad si no la ha pagado.
+ *
+ * Cuando una pieza más esté hecha de verdad, se sube a `YA` con `listo: true`.
  */
 
 type Pieza = { titulo: string; texto: string; listo?: boolean };
 
+/**
+ * Lo que ya está hecho y se puede usar hoy, esté contratado un curso o la
+ * comunidad. Va primero en la lista: quien entra y lee «próximamente» cinco
+ * veces seguidas cierra la pestaña sin llegar a ver que tiene dos apartados
+ * funcionando en el menú de la izquierda.
+ */
+const YA: Pieza[] = [
+  {
+    titulo: 'Tus clases',
+    texto: 'Las grabaciones de lo que has contratado, en «Mis clases».',
+    listo: true,
+  },
+  {
+    titulo: 'Tu agenda',
+    texto: 'Tus sesiones y tus clientas, con calendario. Solo la ves tú.',
+    listo: true,
+  },
+];
+
 const ALUMNA: Pieza[] = [
   {
-    titulo: 'El aula de tu formación',
-    texto: 'Lo que traer el primer día, las fichas de valoración y las grabaciones de repaso.',
+    titulo: 'El material de la formación',
+    texto: 'Lo que traer el primer día y las fichas de valoración, descargables.',
   },
   {
     titulo: 'Tu certificado',
@@ -45,7 +67,7 @@ const MIEMBRO: Pieza[] = [
     texto: 'El material de consulta rápida que usas con la clienta delante.',
   },
   {
-    titulo: 'Tus clientas y tu agenda',
+    titulo: 'Tu cartera de clientas',
     texto: 'Quién está en plan, cuántas sesiones lleva y cuándo vuelve.',
   },
   {
@@ -77,14 +99,20 @@ export default function Proximamente({
    */
   const conCurso = cursosDe(accesos).length > 0;
   const conComunidad = tieneMembresia(accesos);
+  /* Si ya tiene algo contratado, tiene aula y agenda en el menú de al lado. Eso
+     cambia lo que esta pantalla puede decir sin faltar a la verdad: no es que su
+     espacio esté cerrado, es que le falta la mitad. */
+  const conAcceso = accesos.length > 0;
 
-  const piezas: Pieza[] = conCurso && conComunidad
+  const futuras: Pieza[] = conCurso && conComunidad
     ? // La última de ALUMNA es «la comunidad de terapeutas, entras al
       // terminar», y a quien ya está dentro no se le anuncia como futura.
       [...ALUMNA.slice(0, -1), ...MIEMBRO]
     : conComunidad
       ? MIEMBRO
       : ALUMNA;
+
+  const piezas: Pieza[] = conAcceso ? [...YA, ...futuras] : futuras;
 
   // Quien todavía no tiene nada contratado ve el texto del aula, que es por
   // donde entra todo el mundo. No se le promete la comunidad, que no ha pagado.
@@ -96,23 +124,32 @@ export default function Proximamente({
       <section className={css.centro}>
         <span className={css.sello}>
           <span className={css.selloPunto} aria-hidden="true" />
-          En preparación
+          {conAcceso ? 'Tu espacio, abierto' : 'En preparación'}
         </span>
 
         <h2 className={css.titulo}>
           {pila ? `${pila}, tu espacio` : 'Tu espacio'}
-          <em className={css.tituloEnfasis}>está a punto</em>
+          <em className={css.tituloEnfasis}>
+            {conAcceso ? 'ya está abierto' : 'está a punto'}
+          </em>
         </h2>
 
         <p className={css.entradilla}>
-          {esAlumna
-            ? 'Estamos terminando el aula de la formación. Cuando esté abierta te llegará un correo y podrás entrar con esta misma cuenta.'
-            : 'Estamos terminando la comunidad de terapeutas. Cuando esté abierta te llegará un correo y podrás entrar con esta misma cuenta.'}
+          {conAcceso
+            ? /* Con acceso, la pantalla dice dónde ir en vez de pedir que
+                 espere: sus clases y su agenda están en el menú, y decirle
+                 «estamos terminando» le haría irse sin abrirlos. */
+              'Tienes tus clases y tu agenda a la izquierda. El resto —el material descargable, la certificación y la comunidad— lo estamos terminando, y te avisamos por correo en cuanto se abra.'
+            : esAlumna
+              ? 'Estamos terminando el aula de la formación. Cuando esté abierta te llegará un correo y podrás entrar con esta misma cuenta.'
+              : 'Estamos terminando la comunidad de terapeutas. Cuando esté abierta te llegará un correo y podrás entrar con esta misma cuenta.'}
         </p>
 
         <span className={css.filete} aria-hidden="true" />
 
-        <p className={css.rotulo}>Lo que vas a encontrar aquí</p>
+        <p className={css.rotulo}>
+          {conAcceso ? 'Lo que tienes y lo que falta' : 'Lo que vas a encontrar aquí'}
+        </p>
 
         <ul className={css.lista}>
           {piezas.map((p) => (

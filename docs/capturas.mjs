@@ -125,9 +125,18 @@ const EVENTOS = [
 
 const sembrados = { contactos: [], agenda: [], cuenta: null };
 
+/**
+ * Dónde va la agenda de Sorela.
+ *
+ * Es una función y no una constante porque `admin` se resuelve más abajo, y
+ * aquí arriba todavía no existe. Todas las llamadas a esto ocurren después.
+ */
+const agendaDeSorela = () => db.collection('usuarios').doc(admin.uid).collection('agenda');
+
 async function limpiar() {
   for (const id of sembrados.contactos) await db.collection('contactos').doc(id).delete().catch(() => {});
-  for (const id of sembrados.agenda) await db.collection('agenda').doc(id).delete().catch(() => {});
+  // La agenda cuelga de su dueña —usuarios/{uid}/agenda—, no de la raíz.
+  for (const id of sembrados.agenda) await agendaDeSorela().doc(id).delete().catch(() => {});
   const u = await auth.getUserByEmail(CUENTA_PRUEBA).catch(() => null);
   if (u) {
     await db.collection('usuarios').doc(u.uid).delete().catch(() => {});
@@ -164,7 +173,7 @@ try {
     sembrados.contactos.push(id);
   }
   for (const e of EVENTOS) {
-    const ref = await db.collection('agenda').add({ ...e, creado: Timestamp.now() });
+    const ref = await agendaDeSorela().add({ ...e, creado: Timestamp.now() });
     sembrados.agenda.push(ref.id);
   }
 
@@ -282,7 +291,7 @@ try {
   await limpiar();
   const [c, a, u] = await Promise.all([
     db.collection('contactos').get(),
-    db.collection('agenda').get(),
+    agendaDeSorela().get(),
     db.collection('usuarios').get(),
   ]);
   console.log(`\nlimpieza: ${c.size} contactos · ${a.size} en la agenda · ${u.size} cuentas`);
