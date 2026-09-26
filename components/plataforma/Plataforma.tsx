@@ -23,9 +23,11 @@ import {
  * en `Vistas.tsx` y se volverán a enchufar aquí cuando haya algo real que
  * enseñar dentro. Hasta entonces, esos roles ven `Proximamente`.
  */
-import { Comunidad, Contenido, FormacionesAdmin, PanelSorela } from './Vistas';
+import { Comunidad, FormacionesAdmin, PanelSorela } from './Vistas';
 import Contactos from './Contactos';
 import Proximamente from './Proximamente';
+import Aula from './Aula';
+import SubirClases from './SubirClases';
 import AgendaSorela from './AgendaSorela';
 import Cuentas from './Cuentas';
 import FacturacionSorela from './FacturacionSorela';
@@ -78,7 +80,10 @@ export default function Plataforma({
     };
   }, [menuAbierto]);
 
-  const menu = navDe(rol);
+  /* El menú depende de lo que tenga contratado, no solo del rol: sin nada
+     contratado no hay aula que enseñar. Al mirar «Ver como» desde el panel de
+     Sorela se pasa false, que es el caso de alguien recién dado de alta. */
+  const menu = navDe(rol, !puedeVerComo && accesos.length > 0);
   // Si el rol cambia y la vista actual no existe en su menú, vuelve a Inicio.
   const actual = menu.some((n) => n.id === vista) ? vista : 'inicio';
 
@@ -248,14 +253,17 @@ export default function Plataforma({
               mirar «Ver como» desde el panel de Sorela no hay accesos que
               enseñar, así que se pasa la lista vacía: se ve el espacio de
               alguien recién dado de alta, que es lo que se quiere comprobar. */}
-          {!esAdmin && <Proximamente accesos={puedeVerComo ? [] : accesos} nombre={usuario} />}
+          {!esAdmin && actual === 'inicio' && (
+            <Proximamente accesos={puedeVerComo ? [] : accesos} nombre={usuario} />
+          )}
+          {!esAdmin && actual === 'aula' && <Aula />}
 
           {esAdmin && actual === 'inicio' && <PanelSorela ir={ir} />}
           {/* Contactos de verdad, leídos de Firestore. Antes aquí había una lista
               de leads inventados con nombres y notas de mentira. */}
           {esAdmin && actual === 'leads' && <Contactos />}
           {esAdmin && actual === 'formaciones' && <FormacionesAdmin />}
-          {esAdmin && actual === 'contenido' && <Contenido />}
+          {esAdmin && actual === 'contenido' && <SubirClases />}
           {esAdmin && actual === 'agenda' && <AgendaSorela />}
           {esAdmin && actual === 'facturacion' && <FacturacionSorela />}
           {esAdmin && actual === 'cuentas' && <Cuentas />}

@@ -124,6 +124,12 @@ export const COLECCIONES = {
    */
   usuarios: 'usuarios',
   /**
+   * Las clases del aula: título, a quién van y el identificador de su vídeo.
+   * El vídeo NO está aquí —vive en YouTube—, solo su identificador. Ver
+   * lib/aula.ts.
+   */
+  lecciones: 'lecciones',
+  /**
    * Las facturas emitidas. Una factura que ya tiene número no se borra ni se
    * edita: si está mal, se rectifica con otra. Por eso `app/api/facturas` no
    * expone DELETE.

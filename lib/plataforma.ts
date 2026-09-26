@@ -47,7 +47,7 @@ export type Vista =
  * Cuando cada pieza esté hecha, se vuelve a añadir su línea aquí y su vista
  * —que sigue escrita en `Vistas.tsx`— vuelve a enrutarse en `Plataforma.tsx`.
  */
-export function navDe(rol: Rol): { id: Vista; label: string }[] {
+export function navDe(rol: Rol, conAcceso = false): { id: Vista; label: string }[] {
   if (rol === 'sorela')
     return [
       { id: 'inicio', label: 'Panel' },
@@ -63,7 +63,16 @@ export function navDe(rol: Rol): { id: Vista; label: string }[] {
       // cuando, no todos los días como llamar a una clienta o cobrar.
       { id: 'cuentas', label: 'Cuentas' },
     ];
-  return [{ id: 'inicio', label: 'Inicio' }];
+  /* Quien no ha contratado nada ve una sola puerta, y detrás la pantalla de
+     «en preparación». En cuanto tiene algo —un curso, la comunidad— aparece su
+     aula, que es a lo que viene. Un menú con un aula vacía sería peor que no
+     tenerla: prometería algo que al abrirlo no está. */
+  return conAcceso
+    ? [
+        { id: 'inicio', label: 'Inicio' },
+        { id: 'aula', label: 'Mis clases' },
+      ]
+    : [{ id: 'inicio', label: 'Inicio' }];
 }
 
 /**
@@ -77,7 +86,7 @@ export function tituloDe(vista: Vista, rol: Rol) {
   const admin = rol === 'sorela';
   const titulos: Record<Vista, string> = {
     inicio: admin ? 'Panel de Sorela' : '',
-    aula: admin ? 'Formaciones' : 'Técnica Divine · Formación Base',
+    aula: admin ? 'Formaciones' : 'Tus clases',
     comunidad: 'Comunidad Divine',
     clases: 'Clases y material',
     clientas: 'Mis clientas',
@@ -98,7 +107,7 @@ export function seccionDe(vista: Vista, rol: Rol) {
   const admin = rol === 'sorela';
   const secciones: Record<Vista, string> = {
     inicio: admin ? 'Administración' : '',
-    aula: 'Aula del curso',
+    aula: 'Lo que has contratado',
     comunidad: 'Lo que pasa esta semana',
     clases: 'Aula de la comunidad',
     clientas: 'Tu cartera',
