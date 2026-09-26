@@ -128,23 +128,20 @@ for (const [w, h] of [[320, 568], [390, 844], [768, 900], [1280, 900]]) {
   });
   check(`mapa ${w}px · leyenda y atribución no se pisan`, !pisan);
 
-  // Ficha emergente dentro de la caja, con la × alcanzable
-  await p.locator('g[aria-label^="Marta"]').click();
-  await p.waitForTimeout(500);
-  const ficha = await p.evaluate(() => {
-    const caja = document.querySelector('svg[role="img"]')?.parentElement;
-    const f = [...caja.querySelectorAll('div')].find((d) => d.querySelector('h3'));
-    if (!f) return null;
-    const cr = caja.getBoundingClientRect();
-    const fr = f.getBoundingClientRect();
-    const x = f.querySelector('button[aria-label="Cerrar"]')?.getBoundingClientRect();
-    return {
-      dentro: fr.left >= cr.left - 1 && fr.right <= cr.right + 1 && fr.top >= cr.top - 1 && fr.bottom <= cr.bottom + 1,
-      xDentro: x ? x.left >= cr.left && x.right <= cr.right + 1 && x.top >= cr.top - 1 : false,
-    };
-  });
-  check(`mapa ${w}px · la ficha cabe en el mapa`, ficha?.dentro);
-  check(`mapa ${w}px · la × de la ficha es alcanzable`, ficha?.xDentro);
+  /* Aquí se pulsaba el punto de «Marta» para medir que su ficha cabía dentro
+     del mapa y que la × se alcanzaba. Marta era una de las seis terapeutas
+     inventadas que se retiraron: no hay ningún punto que pulsar, y la prueba
+     se quedaba treinta segundos esperando a que apareciera.
+
+     Lo que se comprueba ahora es que el mapa vacío no finge: ni un punto ni
+     una ficha. Cuando haya terapeutas de verdad, este bloque vuelve a medir la
+     ficha, que el código de la ficha sigue ahí. */
+  const puntos = await p.locator('svg[role="img"] g[aria-label]').count();
+  check(`mapa ${w}px · sin terapeutas, no hay ningún punto`, puntos === 0, puntos + ' puntos');
+  check(
+    `mapa ${w}px · lo dice con palabras`,
+    /todav[íi]a no hay terapeutas/i.test(await p.locator('main').innerText())
+  );
   await p.screenshot({ path: `${OUT}/aud-mapa-${w}.png` });
   await ctx.close();
 }

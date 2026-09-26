@@ -1,10 +1,15 @@
 /**
  * La home como canal de captación: el método explicado, las dos etapas de
- * formación y la comunidad con precio y fecha.
+ * formación y la comunidad con su cuenta atrás.
  *
- * Lo que antes comprobaba este archivo —«las dos puertas», la comunidad en
- * beta y sin precio— ya no existe: la comunidad abre el 17 de octubre y cuesta
- * 47 €. Las comprobaciones del inicio nuevo viven en pruebas/inicio-nuevo.mjs.
+ * Este archivo ha ido por detrás de la web dos veces, y las dos se notó tarde.
+ * Comprobaba «primero abrir, después drenar» —que se cambió por «primero
+ * estimular» porque abrir ganglios no es lo que pasa—, las cinco piezas de la
+ * comunidad y su precio, que se quitaron del inicio al dejar solo la lista de
+ * espera. Una prueba que afirma lo que la web ya no dice no protege nada: da
+ * rojo por su cuenta y acaba ignorándose.
+ *
+ * Las comprobaciones del inicio nuevo viven en pruebas/inicio-nuevo.mjs.
  */
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -24,13 +29,19 @@ await p.waitForTimeout(900);
 
 const txt=await p.locator('main').innerText();
 
-check('explica qué es la Técnica Divine', /primero abrir, despu[ée]s drenar/i.test(txt));
 // innerText aplica text-transform: los rótulos llegan en mayúsculas, así que se compara sin distinguir caja.
-check('están las cinco piezas de la comunidad', /agenda inteligente/i.test(txt) && /telegram/i.test(txt));
-check('promete condición de fundadora', /fundador/i.test(txt));
-check('la comunidad tiene precio', /47\s*€/.test(txt));
-check('ya no aparece el precio antiguo', !/49\s*€/.test(txt));
-check('anuncia la fecha de apertura', /17 de octubre/i.test(txt));
+check('explica el orden del método', /primero estimular, despu[ée]s drenar/i.test(txt));
+check(
+  'NO dice que se abran los ganglios',
+  !/abrir los ganglios|se abren los ganglios/i.test(txt),
+  'un ganglio no se abre, y prometerlo es una afirmación sobre el cuerpo'
+);
+check('la comunidad se anuncia con su lista de espera', /Lista de espera abierta/i.test(txt));
+check(
+  'la comunidad NO lleva precio en el inicio',
+  !/\d+\s*€/.test(txt),
+  'todavía no se cobra: poner un precio sería venderlo antes de tenerlo'
+);
 
 // El bloque de la lista ya no está en el inicio: la lista se entra por la
 // misma ventana emergente que todo lo demás, desde el botón de la comunidad.

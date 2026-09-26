@@ -16,13 +16,19 @@
     "mapa": "node scripts/preparar-mapa.mjs",
     "capturas": "node pruebas/capturas.mjs",
     "manuales": "node --env-file=.env.local docs/capturas.mjs && node docs/optimizar.mjs && node docs/generar.mjs",
-    "pruebas": "node pruebas/interacciones.mjs",
+    "pruebas": "node --env-file=.env.local pruebas/interacciones.mjs",
+    "pruebas:todas": "npm run pruebas && npm run pruebas:home && npm run pruebas:inicio && npm run pruebas:menu && npm run pruebas:auditoria && npm run pruebas:asistente && npm run pruebas:hero && npm run pruebas:acceso && npm run pruebas:plataforma && npm run pruebas:agenda",
     "pruebas:plataforma": "node --env-file=.env.local pruebas/plataforma.mjs",
     "pruebas:agenda": "node --env-file=.env.local pruebas/agenda.mjs",
+    "pruebas:acceso": "node --env-file=.env.local pruebas/acceso.mjs",
+    "pruebas:firebase": "node --env-file=.env.local pruebas/firebase.mjs",
     "pruebas:asistente": "node pruebas/asistente.mjs",
-    "pruebas:menu": "node pruebas/menu.mjs",
+    "pruebas:menu": "node --env-file=.env.local pruebas/menu.mjs",
     "pruebas:auditoria": "node pruebas/auditoria.mjs",
-    "pruebas:home": "node pruebas/home.mjs"
+    "pruebas:home": "node pruebas/home.mjs",
+    "pruebas:hero": "node pruebas/hero.mjs",
+    "pruebas:inicio": "node pruebas/inicio-nuevo.mjs",
+    "pruebas:captacion": "node --env-file=.env.local pruebas/captacion.mjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",

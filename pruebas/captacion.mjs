@@ -7,9 +7,15 @@
  *  · que un fallo del servidor NO se disfrace de «gracias»,
  *  · que el dato que llega a Google sea el correcto y esté normalizado.
  *
- *   node pruebas/captacion.mjs
+ *   npm run pruebas:captacion
+ *
+ * Va aparte de `npm run pruebas:todas` a propósito: levanta su propio servidor
+ * con `next start` en el 3199 —hace falta haber hecho `npm run build` antes— y
+ * tarda lo suyo. Las demás pruebas corren contra el servidor que ya tengas.
  */
 import { chromium } from 'playwright';
+import { cert, getApps, initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
@@ -22,6 +28,42 @@ mkdirSync(OUT, { recursive: true });
 const ok = [];
 const mal = [];
 const check = (n, c, d) => (c ? ok : mal).push(d ? `${n} — ${d}` : n);
+
+/* ---------- Lo que esta prueba deja escrito ----------
+   Los formularios se envían de verdad, así que cada envío deja un contacto en
+   la base de datos. Se quedaban ahí: Ana Ruiz, Marta Gil y las seis del freno
+   por IP, mezcladas con los contactos reales en la lista de Sorela, que es
+   justo lo que esta plataforma lleva todo el proyecto evitando. Se borran al
+   empezar y al terminar.
+
+   Sin Firebase configurado no hay nada que borrar, y tampoco se guarda nada. */
+const SEMBRADOS = [
+  'ana.ruiz@ejemplo.com',
+  'marta@ejemplo.com',
+  'ana@ejemplo.com',
+  ...Array.from({ length: 8 }, (_, i) => `ana${i}@ejemplo.com`),
+];
+
+const db = process.env.FIREBASE_PROYECTO_ID
+  ? getFirestore(
+      getApps()[0] ??
+        initializeApp({
+          credential: cert({
+            projectId: process.env.FIREBASE_PROYECTO_ID,
+            clientEmail: (process.env.FIREBASE_CLIENTE_CORREO || '').trim(),
+            privateKey: (process.env.FIREBASE_CLAVE_PRIVADA || '').replace(/\\n/g, '\n'),
+          }),
+          projectId: process.env.FIREBASE_PROYECTO_ID,
+        })
+    )
+  : null;
+
+async function limpiar() {
+  if (!db) return;
+  for (const id of SEMBRADOS) await db.collection('contactos').doc(id).delete().catch(() => {});
+}
+
+await limpiar();
 
 /* ---------- Apps Script de mentira ---------- */
 const recibido = [];
@@ -240,9 +282,20 @@ for (const [w, h, nombre] of [
 
   await p.locator('dialog[open]').getByRole('checkbox').check();
   await p.locator('dialog[open]').getByRole('button', { name: 'Enviarme la información' }).click();
-  await p.waitForTimeout(1200);
+  /* Se espera a la confirmación en vez de a un reloj: guardar en Firestore y
+     llamar al script son dos viajes, y con 1200 ms fijos la comprobación caía
+     antes de que terminaran. Un timeout fijo en una prueba de red no mide lo
+     que se cree que mide. */
+  await p
+    .getByText('Gracias por contar conmigo')
+    .waitFor({ timeout: 15000 })
+    .catch(() => {});
 
-  check('envío correcto · confirma en pantalla', (await p.getByText('Ya estás dentro, Ana').count()) > 0);
+  check(
+    'envío correcto · confirma en pantalla',
+    (await p.getByText('Gracias por contar conmigo, Ana').count()) > 0,
+    (await p.locator('dialog[open]').innerText().catch(() => '')).slice(0, 120).replace(/\n+/g, ' | ')
+  );
   check('envío correcto · ha llegado un contacto al script', recibido.length === 1);
 
   const d = recibido[0] || {};
@@ -273,14 +326,42 @@ for (const [w, h, nombre] of [
   await rellenar(p, { nombre: 'Marta Gil', correo: 'marta@ejemplo.com' });
   await p.locator('dialog[open]').getByRole('checkbox').check();
   await p.locator('dialog[open]').getByRole('button', { name: 'Enviarme la información' }).click();
-  await p.waitForTimeout(1500);
+  /*
+   * Esto ha cambiado de significado desde que el contacto se guarda en
+   * Firestore ANTES de llamar a Google, y conviene entenderlo.
+   *
+   * Antes, si Google fallaba no quedaba nada en ningún sitio y lo correcto era
+   * decir «no he podido guardarlo» y ofrecer el WhatsApp. Ahora el contacto sí
+   * está guardado: Sorela lo tiene en su lista y va a llamar. Lo que NO ha
+   * salido es el correo de bienvenida.
+   *
+   * Así que ya no hay que comprobar que se pida disculpas, sino que no se
+   * PROMETA un correo que no ha salido. Que alguien se quede mirando su
+   * bandeja durante dos días es la avería de verdad de este camino.
+   */
+  await p
+    .getByText('Gracias por contar conmigo')
+    .waitFor({ timeout: 15000 })
+    .catch(() => {});
 
-  check('si Google falla · NO se dice que ha ido bien', (await p.getByText('Ya estás dentro').count()) === 0);
-  check('si Google falla · se avisa a la persona', (await p.getByText('No he podido guardarlo').count()) > 0);
+  const dicho = await p.locator('dialog[open]').innerText().catch(() => '');
   check(
-    'si Google falla · se ofrece una salida para no perder el contacto',
-    (await p.getByRole('link', { name: /WhatsApp|Instagram/ }).count()) > 0
+    'si el correo no sale · NO se promete un correo',
+    !/te acabo de mandar un correo/i.test(dicho),
+    dicho.slice(0, 140).replace(/\n+/g, ' | ')
   );
+  check(
+    'si el correo no sale · se dice que escribe ella',
+    /te escribo yo/i.test(dicho),
+    dicho.slice(0, 140).replace(/\n+/g, ' | ')
+  );
+  /* Y lo que de verdad importa: que esté guardado. Se mira en la base de
+     datos, no en la pantalla, porque la pantalla es justo lo que podría estar
+     mintiendo. Sin Firebase no se guarda nada y no hay nada que comprobar. */
+  if (db) {
+    const ficha = await db.collection('contactos').doc('marta@ejemplo.com').get();
+    check('si el correo no sale · el contacto sí queda guardado', ficha.exists);
+  }
   await p.screenshot({ path: `${OUT}/fallo.png` });
   modoFallo = false;
   await ctx.close();
@@ -340,6 +421,7 @@ for (const [w, h, nombre] of [
 await nav.close();
 apagar();
 falso.close();
+await limpiar();
 
 console.log('OK (' + ok.length + ')');
 if (mal.length) {
