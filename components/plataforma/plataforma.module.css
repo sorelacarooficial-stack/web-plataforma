@@ -1997,3 +1997,149 @@
     transform: none;
   }
 }
+
+/* ==========================================================================
+   Qué ha contratado cada persona
+   ==========================================================================
+   Dos pesos distintos a propósito. La comunidad se paga cada mes y es lo que
+   hay que ver de un vistazo al abrir la lista: lleva sello dorado. Un curso
+   se compró una vez y no caduca, así que se queda como una etiqueta discreta.
+   Si los dos destacaran igual, no destacaría ninguno. */
+
+.sellos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.selloComunidad {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--oro-line);
+  /* Un degradado muy corto, del tinte al fondo: le da el brillo de una chapa
+     sin que parezca un botón que se pueda pulsar. */
+  background: linear-gradient(135deg, var(--oro-tint), var(--bg));
+  color: var(--oro);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.selloCurso {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line-3);
+  color: var(--muted-2);
+  font-size: 11px;
+  font-weight: 300;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* El botón de dar la comunidad. Es el único de la fila con color: quitarla es
+   una acción de deshacer y usa el enlace normal. */
+.btnComunidad {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--oro-line);
+  background: var(--oro-tint);
+  color: var(--oro-ink);
+  font-size: 12px;
+  font-weight: 300;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.btnComunidad:hover {
+  background: var(--bg);
+  border-color: var(--oro);
+}
+
+/* ---------- En el formulario de alta ---------- */
+
+.contratado {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+/* La comunidad como una ficha que se enciende, no como una casilla suelta en
+   una lista: es la que cuesta dinero cada mes y conviene marcarla a sabiendas. */
+.fichaComunidad {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 13px 15px;
+  border: 1px solid var(--line-3);
+  border-radius: 9px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.fichaComunidad:hover {
+  border-color: var(--oro-line);
+}
+
+.fichaComunidadOn {
+  border-color: var(--oro-line);
+  background: linear-gradient(135deg, var(--oro-tint), var(--bg));
+}
+
+.fichaComunidad input {
+  margin-top: 3px;
+  flex: 0 0 auto;
+  accent-color: var(--oro);
+  width: 15px;
+  height: 15px;
+}
+
+.fichaComunidadTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.fichaComunidadTitulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+/*
+ * El texto de ayuda dentro de un campo.
+ *
+ * `.etiquetaCampo` envuelve el campo entero y pone versalitas, que es lo que
+ * quiere un rótulo de tres palabras en mayúsculas. Una frase larga metida ahí
+ * salía también en mayúsculas y espaciada, ilegible y con pinta de otro
+ * rótulo. Esto la devuelve a texto normal, igual que hace `.errorCampo` con
+ * los errores.
+ */
+.etiquetaCampo .apunte {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12px;
+}

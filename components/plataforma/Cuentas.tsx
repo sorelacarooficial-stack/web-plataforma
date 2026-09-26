@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { ETIQUETA_ROL, ROLES, type Rol } from '@/lib/roles';
+import { cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
 import css from './plataforma.module.css';
 
 /**
@@ -32,6 +33,8 @@ type Cuenta = {
   correo: string | null;
   nombre: string | null;
   rol: Rol | null;
+  /** Qué ha contratado: la comunidad, uno o varios cursos, o las dos cosas. */
+  accesos: Acceso[];
   ultimoAcceso: string | null;
   /** Está en ADMIN_CORREOS: ni se borra ni se le cambia el rol. */
   protegida: boolean;
@@ -70,6 +73,26 @@ const ESTILO_ERROR = {
   letterSpacing: 0,
 };
 
+/**
+ * El pequeño destello del sello de la comunidad.
+ *
+ * Va en SVG y no como emoji ni como carácter: un emoji lo pinta cada sistema
+ * con su propio dibujo y su propio color, y aquí tiene que ser del oro de la
+ * marca y del mismo tamaño en todas partes.
+ */
+function Destello() {
+  return (
+    <svg viewBox="0 0 12 12" width="9" height="9" aria-hidden="true" focusable="false">
+      {/* Cuatro puntas que se estrechan hacia el centro: un brillo, no una
+          estrella de cinco puntas, que se lee como «favorito». */}
+      <path
+        d="M6 0c.5 3.2 2.3 5 5.5 6-3.2 1-5 2.8-5.5 6-.5-3.2-2.3-5-5.5-6 3.2-1 5-2.8 5.5-6z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export default function Cuentas() {
   const [lista, setLista] = useState<Cuenta[] | null>(null);
   const [yo, setYo] = useState<string | null>(null);
@@ -87,7 +110,13 @@ export default function Cuentas() {
      dos líneas más, pero se lee de un vistazo cuál se está tocando. */
   const [correo, setCorreo] = useState('');
   const [nombre, setNombre] = useState('');
-  const [rol, setRol] = useState<Rol>('alumna');
+  const [rol, setRol] = useState<Rol>('miembro');
+  /* Qué ha contratado, marcado en el mismo formulario del alta: es cuando se
+     sabe, porque se la da de alta PORQUE ha comprado algo. El curso es texto
+     libre —lo escribe ella— hasta que haya convocatorias de verdad con las que
+     enlazarlo. */
+  const [conMembresia, setConMembresia] = useState(false);
+  const [curso, setCurso] = useState('');
   const [errores, setErrores] = useState<Partial<Record<string, string>>>({});
   const [guardando, setGuardando] = useState(false);
 
@@ -126,6 +155,44 @@ export default function Cuentas() {
     cargar();
   }, [cargar]);
 
+  /** Lo marcado en el formulario, con la forma que espera el servidor. */
+  function accesosDelFormulario(): Acceso[] {
+    const lista: Acceso[] = [];
+    if (conMembresia) lista.push({ tipo: 'membresia' });
+    const nombreCurso = curso.trim();
+    if (nombreCurso) lista.push({ tipo: 'curso', nombre: nombreCurso });
+    return lista;
+  }
+
+  /**
+   * Dar o quitar la comunidad a alguien que ya tiene cuenta.
+   *
+   * Se manda la lista entera de accesos y no «quítale la membresía»: el
+   * servidor guarda lo que le llega, así que mandar el conjunto completo evita
+   * que dos cambios a la vez desde dos sitios se pisen a medias y dejen a esa
+   * persona con un acceso que nadie le dio.
+   */
+  async function cambiarMembresia(c: Cuenta, dar: boolean) {
+    const antes = lista;
+    const nuevos: Acceso[] = dar
+      ? [...c.accesos.filter((a) => a.tipo !== 'membresia'), { tipo: 'membresia' as const }]
+      : c.accesos.filter((a) => a.tipo !== 'membresia');
+
+    setLista((l) => l?.map((x) => (x.uid === c.uid ? { ...x, accesos: nuevos } : x)) ?? l);
+    try {
+      const r = await fetch('/api/usuarios', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: c.uid, accesos: nuevos }),
+      });
+      if (!(await r.json().catch(() => ({ ok: false }))).ok) throw new Error();
+      setFallo(null);
+    } catch {
+      setLista(antes ?? null);
+      setFallo('No se ha podido cambiar. Vuelve a intentarlo.');
+    }
+  }
+
   async function crear(e: FormEvent) {
     e.preventDefault();
     if (guardando) return;
@@ -137,7 +204,7 @@ export default function Cuentas() {
       const r = await fetch('/api/usuarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correo, nombre, rol }),
+        body: JSON.stringify({ correo, nombre, rol, accesos: accesosDelFormulario() }),
       });
       const c = await r.json().catch(() => ({ ok: false }));
       if (!c.ok) {
@@ -173,7 +240,9 @@ export default function Cuentas() {
       // el mismo correo no existe, y dejar el anterior escrito invita a ello.
       setCorreo('');
       setNombre('');
-      setRol('alumna');
+      setRol('miembro');
+      setConMembresia(false);
+      setCurso('');
       await cargar();
     } catch {
       setFallo('No hay conexión con el servidor.');
@@ -384,7 +453,7 @@ export default function Cuentas() {
           </p>
         ) : (
           lista.map((c) => {
-            const rolActual: Rol = c.rol ?? 'alumna';
+            const rolActual: Rol = c.rol ?? 'miembro';
             // El botón de borrar no se enseña para las administradoras ni para
             // la propia cuenta: el servidor lo rechaza en los dos casos, y un
             // botón que siempre falla solo sirve para asustar.
@@ -401,6 +470,25 @@ export default function Cuentas() {
                   <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
                     {c.correo || 'sin correo'}
                   </span>
+                  {/* De dónde viene: la comunidad y los cursos que haya hecho.
+                      La comunidad lleva sello dorado y los cursos no, porque no
+                      pesan lo mismo: la comunidad se paga cada mes y es la que
+                      hay que mirar de un vistazo. */}
+                  {(tieneMembresia(c.accesos) || cursosDe(c.accesos).length > 0) && (
+                    <span className={css.sellos}>
+                      {tieneMembresia(c.accesos) && (
+                        <span className={css.selloComunidad}>
+                          <Destello />
+                          Comunidad Divine
+                        </span>
+                      )}
+                      {cursosDe(c.accesos).map((a) => (
+                        <span key={a.nombre} className={css.selloCurso}>
+                          {a.nombre}
+                        </span>
+                      ))}
+                    </span>
+                  )}
                 </span>
 
                 <span style={{ flex: '0 1 180px', display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -412,6 +500,18 @@ export default function Cuentas() {
                 </span>
 
                 <span className={css.acciones}>
+                  {/* Dar o quitar la comunidad es lo que más se va a tocar de
+                      esta pantalla: se paga al mes y la gente entra y sale. Por
+                      eso está aquí y no escondido en una ficha aparte. */}
+                  {!c.protegida && (
+                    <button
+                      type="button"
+                      className={tieneMembresia(c.accesos) ? css.btnLinea : css.btnComunidad}
+                      onClick={() => cambiarMembresia(c, !tieneMembresia(c.accesos))}
+                    >
+                      {tieneMembresia(c.accesos) ? 'Quitar comunidad' : 'Dar comunidad'}
+                    </button>
+                  )}
                   {c.protegida ? (
                     // A una administradora no se le cambia el rol: en vez de un
                     // desplegable que rebota, se enseña lo que es.
@@ -507,6 +607,46 @@ export default function Cuentas() {
                   {errores.rol}
                 </span>
               )}
+            </label>
+          </div>
+
+          {/* ---------- Qué ha contratado ----------
+              Va en el mismo formulario y no en una segunda pantalla porque es
+              justo cuando se sabe: se le da de alta PORQUE ha comprado algo.
+              Dejarlo para después significa que la mitad de las fichas se
+              quedan sin ello. */}
+          <div className={css.contratado}>
+            <p className={css.rotuloSeccion}>Qué ha contratado</p>
+
+            <label className={`${css.fichaComunidad} ${conMembresia ? css.fichaComunidadOn : ''}`}>
+              <input
+                type="checkbox"
+                checked={conMembresia}
+                onChange={(e) => setConMembresia(e.target.checked)}
+              />
+              <span className={css.fichaComunidadTexto}>
+                <span className={css.fichaComunidadTitulo}>
+                  <Destello />
+                  Comunidad Divine
+                </span>
+                <span className={css.apunte}>
+                  La membresía de cada mes. Puedes dársela o quitársela luego desde su línea.
+                </span>
+              </span>
+            </label>
+
+            <label className={css.etiquetaCampo}>
+              Formación que ha hecho
+              <input
+                value={curso}
+                onChange={(e) => setCurso(e.target.value)}
+                placeholder="Formación Base, presencial de Bogotá…"
+                className={css.campoCaja}
+              />
+              <span className={css.apunte}>
+                Escríbela como quieras llamarla. Se queda en su ficha para siempre: el curso lo
+                compró, y eso no caduca. Si todavía no ha hecho ninguna, déjalo vacío.
+              </span>
             </label>
           </div>
 

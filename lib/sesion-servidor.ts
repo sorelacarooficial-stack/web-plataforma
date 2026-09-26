@@ -2,7 +2,15 @@ import { cookies } from 'next/headers';
 import { getAuth } from 'firebase-admin/auth';
 import { FieldValue } from 'firebase-admin/firestore';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from './firebase-servidor';
-import { correoEsAdmin, esRol, PLATAFORMA_ABIERTA, ROL_POR_DEFECTO, type Rol } from './roles';
+import {
+  correoEsAdmin,
+  esRol,
+  normalizarRol,
+  PLATAFORMA_ABIERTA,
+  ROL_POR_DEFECTO,
+  type Rol,
+} from './roles';
+import { revisarAccesos, type Acceso } from './accesos';
 
 /** Se lanza cuando alguien con cuenta válida intenta entrar y no le toca. */
 export class PlataformaCerrada extends Error {
@@ -38,6 +46,29 @@ export type Sesion = {
   foto: string | null;
   rol: Rol;
 };
+
+/**
+ * Qué tiene contratado esta persona.
+ *
+ * Se lee de Firestore cada vez que hace falta y NO viaja dentro de la cookie,
+ * aunque ahí cabría. El motivo es que los accesos cambian —alguien deja de
+ * pagar la comunidad— y la cookie dura cinco días: metidos dentro, esa persona
+ * seguiría viendo la comunidad casi una semana después de darse de baja, y no
+ * habría forma de cortarlo sin echarla de la sesión.
+ *
+ * El rol sí va en la cookie, y eso está bien: el rol decide si se entra, se
+ * cambia una vez en la vida y al cambiarlo se invalidan sus tokens a mano.
+ */
+export async function accesosDe(uid: string): Promise<Acceso[]> {
+  if (!hayFirebase()) return [];
+  try {
+    const ficha = await baseDeDatos().collection(COLECCIONES.usuarios).doc(uid).get();
+    return revisarAccesos(ficha.data()?.accesos);
+  } catch (e) {
+    console.error('[sesion] No se han podido leer los accesos:', e);
+    return [];
+  }
+}
 
 /**
  * Si a esta persona la dio de alta Sorela desde la plataforma.
@@ -158,7 +189,10 @@ export async function sesionActual(): Promise<Sesion | null> {
       correo: datos.email ?? null,
       nombre: (datos.name as string) ?? null,
       foto: (datos.picture as string) ?? null,
-      rol: esRol(datos.role) ? datos.role : ROL_POR_DEFECTO,
+      // normalizarRol y no esRol: las cuentas dadas de alta cuando existía
+      // «alumna» llevan eso escrito en su claim, que va firmada y no se puede
+      // reescribir sin que alguien pase por todas. Se traduce al leerla.
+      rol: normalizarRol(datos.role) ?? ROL_POR_DEFECTO,
     };
   } catch {
     // Caducada, revocada o manipulada. Todas son «no hay sesión».
@@ -185,9 +219,15 @@ export async function asegurarRol(
   // Sin esta regla habría un problema de huevo y gallina: para dar roles hay
   // que ser admin, y al principio no hay ninguna.
   const deberiaSerAdmin = correoEsAdmin(correo);
+  /* `esRol` y no `normalizarRol` en la comprobación de si ya está bien: una
+     claim que pone «alumna» NO está bien, aunque se sepa traducir. Que dé
+     false es lo que hace que se reescriba a «miembro» ahí abajo y la cuenta
+     quede arreglada de verdad la primera vez que su dueña entre. */
   const yaCorrecto = deberiaSerAdmin ? rolActual === 'sorela' : esRol(rolActual);
 
-  const rol: Rol = deberiaSerAdmin ? 'sorela' : esRol(rolActual) ? rolActual : ROL_POR_DEFECTO;
+  const rol: Rol = deberiaSerAdmin
+    ? 'sorela'
+    : (normalizarRol(rolActual) ?? ROL_POR_DEFECTO);
 
   if (!yaCorrecto) {
     await auth.setCustomUserClaims(uid, { role: rol });

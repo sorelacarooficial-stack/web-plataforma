@@ -3,7 +3,8 @@ import { randomBytes } from 'node:crypto';
 import { getAuth } from 'firebase-admin/auth';
 import { FieldValue } from 'firebase-admin/firestore';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
-import { esRol, correoEsAdmin, PLATAFORMA_ABIERTA, type Rol } from '@/lib/roles';
+import { esRol, correoEsAdmin, normalizarRol, PLATAFORMA_ABIERTA, type Rol } from '@/lib/roles';
+import { revisarAccesos } from '@/lib/accesos';
 import { sesionActual } from '@/lib/sesion-servidor';
 
 /**
@@ -110,7 +111,14 @@ export async function GET() {
       uid: d.id,
       correo,
       nombre: (v.nombre as string | undefined) ?? null,
-      rol: v.rol ?? null,
+      // Traducido: las fichas anteriores al cambio guardan «alumna», y el
+      // desplegable de la pantalla ya no tiene esa opción. Sin traducirlo se
+      // quedaría en blanco y al primer clic la degradaría sin querer.
+      rol: normalizarRol(v.rol),
+      /* Lo que tiene contratado: la comunidad, los cursos, o las dos cosas.
+         Va revisado y no en crudo porque de aquí sale lo que se pinta, y una
+         ficha a medio escribir en Firestore no debe reventar la lista. */
+      accesos: revisarAccesos(v.accesos),
       // La fecha se manda como texto ISO: un Timestamp de Firestore no
       // sobrevive a JSON.stringify de forma legible.
       ultimoAcceso: v.ultimoAcceso?.toDate?.().toISOString() ?? null,
@@ -154,6 +162,10 @@ export async function POST(peticion: Request) {
   const correo = recortar(cuerpo.correo, 200).toLowerCase();
   const nombre = recortar(cuerpo.nombre, 120);
   const rolPedido = recortar(cuerpo.rol, 20);
+  /* Qué ha contratado, desde el propio formulario del alta. Va aquí y no en
+     una segunda pantalla porque en el momento de dar de alta a alguien es
+     cuando se sabe: se la da de alta PORQUE ha comprado algo. */
+  const accesos = revisarAccesos(cuerpo.accesos);
 
   const errores: Errores = {};
   if (!CORREO.test(correo)) errores.correo = 'Escribe un correo con forma de correo.';
@@ -245,6 +257,7 @@ export async function POST(peticion: Request) {
          * entrado.
          */
         ultimoAcceso: null,
+        accesos,
         creado: FieldValue.serverTimestamp(),
         altaPor: guardia.sesion.uid,
       });
@@ -288,6 +301,7 @@ export async function POST(peticion: Request) {
     correo,
     nombre,
     rol,
+    accesos,
     enlace,
     // Para poder avisar de que el rol guardado no es el que pidió.
     rolForzado: rol !== rolPedido,
@@ -301,17 +315,33 @@ export async function PATCH(peticion: Request) {
   const guardia = await exigirAdmin();
   if (guardia.error) return guardia.error;
 
-  let cuerpo: { uid?: string; rol?: string };
+  let cuerpo: { uid?: string; rol?: string; accesos?: unknown };
   try {
     cuerpo = await peticion.json();
   } catch {
     return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
   }
 
-  const { uid, rol } = cuerpo;
-  if (!uid || !esRol(rol)) {
+  const uid = recortar(cuerpo.uid, 200);
+  // El identificador se revisa igual que en las demás rutas: una barra dentro
+  // no apunta al documento que parece, y sin esto salía como un 500 con traza.
+  if (!idValido(uid)) {
     return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
   }
+
+  /* Dos cosas distintas por la misma puerta: cambiar el rol o cambiar lo que
+     tiene contratado. Se distinguen por lo que llega, y cada una comprueba lo
+     suyo: mandar las dos a la vez también vale. */
+  const cambiaRol = cuerpo.rol !== undefined;
+  const cambiaAccesos = cuerpo.accesos !== undefined;
+  if (!cambiaRol && !cambiaAccesos) {
+    return NextResponse.json({ ok: false, motivo: 'sin-cambios' }, { status: 400 });
+  }
+  if (cambiaRol && !esRol(cuerpo.rol)) {
+    return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
+  }
+  const rol = cuerpo.rol as Rol | undefined;
+  const accesos = cambiaAccesos ? revisarAccesos(cuerpo.accesos) : null;
 
   const auth = getAuth(aplicacion());
   const usuario = await auth.getUser(uid).catch(() => null);
@@ -322,22 +352,33 @@ export async function PATCH(peticion: Request) {
   // Sorela no puede quitarse a sí misma el rol de admin sin querer, ni
   // quitárselo a otra cuenta de la lista de administradoras: se quedaría la
   // plataforma sin nadie que pueda repartir roles.
-  if (correoEsAdmin(usuario.email) && rol !== 'sorela') {
+  if (cambiaRol && correoEsAdmin(usuario.email) && rol !== 'sorela') {
     return NextResponse.json({ ok: false, motivo: 'admin-protegida' }, { status: 409 });
   }
 
-  await auth.setCustomUserClaims(uid, { role: rol as Rol });
+  const ficha: Record<string, unknown> = { correo: usuario.email ?? null };
 
-  // Invalida sus tokens para que el rol nuevo le llegue en el momento y no
-  // dentro de una hora, cuando caduque el que tiene.
-  await auth.revokeRefreshTokens(uid);
+  if (cambiaRol) {
+    await auth.setCustomUserClaims(uid, { role: rol as Rol });
+    // Invalida sus tokens para que el rol nuevo le llegue en el momento y no
+    // dentro de una hora, cuando caduque el que tiene.
+    await auth.revokeRefreshTokens(uid);
+    ficha.rol = rol;
+    ficha.rolCambiado = FieldValue.serverTimestamp();
+  }
 
-  await baseDeDatos()
-    .collection(COLECCIONES.usuarios)
-    .doc(uid)
-    .set({ rol, correo: usuario.email ?? null, rolCambiado: FieldValue.serverTimestamp() }, { merge: true });
+  if (accesos) {
+    /* Los accesos NO van a la claim ni invalidan la sesión, y es a propósito:
+       se leen de Firestore cada vez que hacen falta, así que quitarle la
+       comunidad a alguien tiene efecto en cuanto recarga, sin echarla fuera
+       ni obligarla a volver a entrar. */
+    ficha.accesos = accesos;
+    ficha.accesosCambiados = FieldValue.serverTimestamp();
+  }
 
-  return NextResponse.json({ ok: true, uid, rol });
+  await baseDeDatos().collection(COLECCIONES.usuarios).doc(uid).set(ficha, { merge: true });
+
+  return NextResponse.json({ ok: true, uid, ...(cambiaRol ? { rol } : {}), ...(accesos ? { accesos } : {}) });
 }
 
 export async function DELETE(peticion: Request) {
