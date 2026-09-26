@@ -98,11 +98,30 @@ export async function GET() {
   const guardia = await exigirAdmin();
   if (guardia.error) return guardia.error;
 
-  const lista = await baseDeDatos()
-    .collection(COLECCIONES.usuarios)
-    .orderBy('ultimoAcceso', 'desc')
-    .limit(200)
-    .get();
+  const auth = getAuth(aplicacion());
+  const TOPE = 200;
+
+  /*
+   * Las dos mitades, y las dos hacen falta.
+   *
+   * La lista sale de Firestore porque es donde están el nombre, los accesos y
+   * la última vez que entró. Pero quien de verdad puede entrar es la cuenta de
+   * Authentication, y las dos cosas se pueden desparejar: si el alta falla a
+   * medias —o si alguien crea una cuenta desde la consola de Firebase— queda
+   * una cuenta sin ficha, invisible aquí. Invisible es lo peor que puede ser:
+   * ocupa el correo, impide volver a dar de alta a esa persona y no se puede
+   * borrar desde la pantalla porque su identificador no sale por ningún lado.
+   *
+   * Así que se leen las dos y se juntan por uid. Lo que solo esté en
+   * Authentication sale igualmente, marcado, para que se pueda ver y borrar.
+   */
+  const [lista, deAuth] = await Promise.all([
+    baseDeDatos().collection(COLECCIONES.usuarios).orderBy('ultimoAcceso', 'desc').limit(TOPE).get(),
+    auth.listUsers(TOPE).catch((e) => {
+      console.error('[usuarios] No se han podido listar las cuentas de acceso:', e);
+      return null;
+    }),
+  ]);
 
   const usuarios = lista.docs.map((d) => {
     const v = d.data();
@@ -111,9 +130,11 @@ export async function GET() {
       uid: d.id,
       correo,
       nombre: (v.nombre as string | undefined) ?? null,
-      // Traducido: las fichas anteriores al cambio guardan «alumna», y el
-      // desplegable de la pantalla ya no tiene esa opción. Sin traducirlo se
-      // quedaría en blanco y al primer clic la degradaría sin querer.
+      /** Tiene ficha, así que la lista sabe de ella todo lo que hay que saber. */
+      sinFicha: false,
+      /* Traducido y no en crudo: las fichas anteriores al cambio guardan
+         «alumna», que ya no es un rol. Sin pasarlo por aquí, la pantalla
+         pintaría en la lista una palabra que el resto del código no reconoce. */
       rol: normalizarRol(v.rol),
       /* Lo que tiene contratado: la comunidad, los cursos, o las dos cosas.
          Va revisado y no en crudo porque de aquí sale lo que se pinta, y una
@@ -129,9 +150,38 @@ export async function GET() {
     };
   });
 
+  /*
+   * Las cuentas de acceso que no tienen ficha.
+   *
+   * De una de estas no se sabe casi nada —ni qué ha contratado ni cuándo entró,
+   * porque eso se guarda en la ficha que no existe—, pero sí lo único que
+   * importa aquí: que puede entrar y que hay que poder quitarla.
+   */
+  const conFicha = new Set(usuarios.map((u) => u.uid));
+  const sueltas = (deAuth?.users ?? [])
+    .filter((u) => !conFicha.has(u.uid))
+    .map((u) => ({
+      uid: u.uid,
+      correo: u.email ?? null,
+      nombre: u.displayName ?? null,
+      sinFicha: true,
+      // El rol de verdad vive en la claim, no en Firestore: aquí es lo único
+      // que hay, así que se lee de ahí.
+      rol: normalizarRol((u.customClaims as { role?: unknown } | undefined)?.role),
+      accesos: [],
+      ultimoAcceso: u.metadata.lastSignInTime ? new Date(u.metadata.lastSignInTime).toISOString() : null,
+      protegida: correoEsAdmin(u.email ?? null),
+    }));
+
   return NextResponse.json({
     ok: true,
-    usuarios,
+    usuarios: [...usuarios, ...sueltas],
+    /* Si la lista viene recortada. La pantalla lo dice en vez de dejar creer
+       que eso es todo lo que hay, que es lo que pasaba antes. */
+    recortada: lista.size >= TOPE || (deAuth?.users.length ?? 0) >= TOPE,
+    /* Si no se han podido leer las cuentas de acceso, la lista puede estar
+       incompleta sin que se note. Se dice. */
+    sinAuth: deAuth === null,
     // Quién está mirando: sin esto la pantalla no puede esconderle a Sorela el
     // botón de borrarse a sí misma.
     yo: guardia.sesion.uid,
@@ -171,6 +221,20 @@ export async function POST(peticion: Request) {
   if (!CORREO.test(correo)) errores.correo = 'Escribe un correo con forma de correo.';
   if (nombre.length < 2) errores.nombre = 'Pon el nombre de la persona.';
   if (!esRol(rolPedido)) errores.rol = 'Ese rol no existe.';
+  /*
+   * El rol de administradora NO se reparte desde aquí.
+   *
+   * Con dos roles, el desplegable de la pantalla tenía «Miembro» y «Sorela
+   * (admin)» pegados: un clic de más en la fila equivocada daba acceso a todos
+   * los contactos, a la facturación y al botón de borrar cuentas, sin
+   * confirmación y sin decir qué significaba. Quién es administradora lo decide
+   * ADMIN_CORREOS, que es una variable del servidor y no se cambia de un clic,
+   * y así lo documenta lib/roles.ts desde el principio. Esta comprobación es la
+   * que hace que eso sea verdad y no una intención.
+   */
+  if (rolPedido === 'sorela' && !correoEsAdmin(correo)) {
+    errores.rol = 'El acceso de administradora no se da desde aquí: se da añadiendo el correo a ADMIN_CORREOS en el servidor.';
+  }
   if (Object.keys(errores).length > 0) {
     return NextResponse.json({ ok: false, motivo: 'datos', errores }, { status: 400 });
   }
@@ -356,6 +420,15 @@ export async function PATCH(peticion: Request) {
     return NextResponse.json({ ok: false, motivo: 'admin-protegida' }, { status: 409 });
   }
 
+  /* Subir a alguien a administradora tampoco se hace por aquí, por el mismo
+     motivo que en el alta: eso lo decide ADMIN_CORREOS. Lo que sí se puede es
+     BAJAR a miembro a una cuenta que tenga el rol de admin sin estar en la
+     lista —una que venga de antes de esta regla—, y para eso está la rama de
+     arriba, que solo protege a las que sí están. */
+  if (cambiaRol && rol === 'sorela' && !correoEsAdmin(usuario.email)) {
+    return NextResponse.json({ ok: false, motivo: 'admin-solo-por-entorno' }, { status: 409 });
+  }
+
   const ficha: Record<string, unknown> = { correo: usuario.email ?? null };
 
   if (cambiaRol) {
@@ -376,7 +449,16 @@ export async function PATCH(peticion: Request) {
     ficha.accesosCambiados = FieldValue.serverTimestamp();
   }
 
-  await baseDeDatos().collection(COLECCIONES.usuarios).doc(uid).set(ficha, { merge: true });
+  /* Si la ficha no existía —una cuenta que se quedó suelta y ahora se está
+     arreglando desde la pantalla—, se le pone ultimoAcceso en null al crearla.
+     No es un detalle: el GET ordena por ese campo, y Firestore deja fuera de
+     una consulta ordenada los documentos que no lo tienen, así que sin esta
+     línea la ficha recién escrita volvería a no verse. */
+  const ref = baseDeDatos().collection(COLECCIONES.usuarios).doc(uid);
+  const existe = await ref.get().then((d) => d.exists).catch(() => true);
+  if (!existe) ficha.ultimoAcceso = null;
+
+  await ref.set(ficha, { merge: true });
 
   return NextResponse.json({ ok: true, uid, ...(cambiaRol ? { rol } : {}), ...(accesos ? { accesos } : {}) });
 }

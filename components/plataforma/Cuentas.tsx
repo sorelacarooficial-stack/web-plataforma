@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { ETIQUETA_ROL, ROLES, type Rol } from '@/lib/roles';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { ETIQUETA_ROL, ROL_POR_DEFECTO, type Rol } from '@/lib/roles';
 import { cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
 import css from './plataforma.module.css';
 
@@ -38,6 +38,15 @@ type Cuenta = {
   ultimoAcceso: string | null;
   /** Está en ADMIN_CORREOS: ni se borra ni se le cambia el rol. */
   protegida: boolean;
+  /**
+   * Puede entrar pero no tiene ficha en Firestore.
+   *
+   * Pasa si un alta falló a medias o si la cuenta se creó desde la consola de
+   * Firebase. Antes estas cuentas no salían en la lista, que es lo peor que
+   * les podía pasar: ocupaban el correo, impedían volver a dar de alta a esa
+   * persona y no había forma de borrarlas desde aquí.
+   */
+  sinFicha: boolean;
 };
 
 /** Lo que devuelve el alta y hay que enseñar hasta que se dé por leído. */
@@ -65,13 +74,12 @@ function cuando(iso: string | null): string {
   return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-const ESTILO_ERROR = {
-  fontSize: 12,
-  fontWeight: 300,
-  color: 'var(--arcilla)',
-  textTransform: 'none' as const,
-  letterSpacing: 0,
-};
+/*
+ * Aquí había un ESTILO_ERROR: un objeto de estilos en línea que repetía campo
+ * por campo lo que ya hace `.errorCampo` en plataforma.module.css, añadida
+ * justo para esto. Dos definiciones del mismo aspecto aguantan hasta que
+ * alguien cambia una.
+ */
 
 /**
  * El pequeño destello del sello de la comunidad.
@@ -110,7 +118,6 @@ export default function Cuentas() {
      dos líneas más, pero se lee de un vistazo cuál se está tocando. */
   const [correo, setCorreo] = useState('');
   const [nombre, setNombre] = useState('');
-  const [rol, setRol] = useState<Rol>('miembro');
   /* Qué ha contratado, marcado en el mismo formulario del alta: es cuando se
      sabe, porque se la da de alta PORQUE ha comprado algo. El curso es texto
      libre —lo escribe ella— hasta que haya convocatorias de verdad con las que
@@ -126,11 +133,27 @@ export default function Cuentas() {
   const [alta, setAlta] = useState<Alta | null>(null);
   const [copiado, setCopiado] = useState<boolean | null>(null);
 
+  /** Si la lista viene recortada por el tope del servidor. */
+  const [recortada, setRecortada] = useState(false);
+  /** Si el servidor no ha podido leer las cuentas de acceso. */
+  const [sinAuth, setSinAuth] = useState(false);
+
+  /* Cada carga lleva su número de turno. Recargar dos veces seguidas —al crear
+     una cuenta se recarga, y el botón de Reintentar también— deja dos
+     peticiones en el aire, y no tienen por qué contestar en orden: si la
+     primera llega la última, pinta una lista vieja y nada lo delata. */
+  const turno = useRef(0);
+
+  /* La sección del alta, para saltar a ella cuando el enlace está listo. */
+  const cajaAlta = useRef<HTMLElement | null>(null);
+
   const cargar = useCallback(async () => {
+    const mio = ++turno.current;
     setFallo(null);
     try {
       const r = await fetch('/api/usuarios');
       const c = await r.json().catch(() => ({ ok: false }));
+      if (mio !== turno.current) return;
       if (!c.ok) {
         setFallo(
           c.motivo === 'sin-configurar'
@@ -145,7 +168,10 @@ export default function Cuentas() {
       setLista(c.usuarios);
       setYo(c.yo ?? null);
       setAbierta(Boolean(c.plataformaAbierta));
+      setRecortada(Boolean(c.recortada));
+      setSinAuth(Boolean(c.sinAuth));
     } catch {
+      if (mio !== turno.current) return;
       setFallo('No hay conexión con el servidor.');
       setLista([]);
     }
@@ -173,7 +199,12 @@ export default function Cuentas() {
    * persona con un acceso que nadie le dio.
    */
   async function cambiarMembresia(c: Cuenta, dar: boolean) {
-    const antes = lista;
+    /* Se guarda SOLO lo de esta persona, no la lista entera.
+       Guardando la lista entera y restaurándola al fallar, un error aquí
+       borraba de la pantalla los cambios que se hubieran guardado bien
+       mientras tanto en otras filas: la persona volvía a ver una foto vieja y
+       no había forma de saber cuál de los dos estados era el real. */
+    const accesosAntes = c.accesos;
     const nuevos: Acceso[] = dar
       ? [...c.accesos.filter((a) => a.tipo !== 'membresia'), { tipo: 'membresia' as const }]
       : c.accesos.filter((a) => a.tipo !== 'membresia');
@@ -188,7 +219,7 @@ export default function Cuentas() {
       if (!(await r.json().catch(() => ({ ok: false }))).ok) throw new Error();
       setFallo(null);
     } catch {
-      setLista(antes ?? null);
+      setLista((l) => l?.map((x) => (x.uid === c.uid ? { ...x, accesos: accesosAntes } : x)) ?? l);
       setFallo('No se ha podido cambiar. Vuelve a intentarlo.');
     }
   }
@@ -204,7 +235,14 @@ export default function Cuentas() {
       const r = await fetch('/api/usuarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correo, nombre, rol, accesos: accesosDelFormulario() }),
+        body: JSON.stringify({
+          correo,
+          nombre,
+          // Toda cuenta que se da de alta aquí nace miembro. El rol de
+          // administradora lo reparte ADMIN_CORREOS, no esta pantalla.
+          rol: ROL_POR_DEFECTO,
+          accesos: accesosDelFormulario(),
+        }),
       });
       const c = await r.json().catch(() => ({ ok: false }));
       if (!c.ok) {
@@ -240,9 +278,17 @@ export default function Cuentas() {
       // el mismo correo no existe, y dejar el anterior escrito invita a ello.
       setCorreo('');
       setNombre('');
-      setRol('miembro');
       setConMembresia(false);
       setCurso('');
+      /* El enlace se pinta arriba del todo y el botón de crear está al final,
+         así que al guardar no se movía nada: los campos se vaciaban y parecía
+         que no había pasado nada. Se lleva la vista y el foco hasta el enlace,
+         que además es lo único que queda por hacer. El bloque tiene
+         role="status", así que con el foco encima se lee solo. */
+      requestAnimationFrame(() => {
+        cajaAlta.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        cajaAlta.current?.focus();
+      });
       await cargar();
     } catch {
       setFallo('No hay conexión con el servidor.');
@@ -251,26 +297,49 @@ export default function Cuentas() {
     }
   }
 
-  async function cambiarRol(uid: string, nuevo: Rol) {
-    const antes = lista;
-    // Se pinta antes de que conteste el servidor y se deshace si dice que no:
-    // dejar la pantalla diciendo «terapeuta certificada» cuando no se ha
-    // guardado es peor que no haber dejado pulsar.
-    setLista((l) => l?.map((c) => (c.uid === uid ? { ...c, rol: nuevo } : c)) ?? l);
+  /**
+   * Bajar a miembro una cuenta que tiene rol de administradora sin estar en la
+   * lista del servidor.
+   *
+   * Aquí había un desplegable de rol en cada fila. Con dos roles, sus dos
+   * opciones eran «Miembro» y «Sorela (admin)», pegadas la una a la otra: un
+   * clic de más en la fila equivocada daba a esa persona todos los contactos,
+   * la facturación y el botón de borrar cuentas, sin preguntar y sin decir lo
+   * que significaba. Quién es administradora lo decide ADMIN_CORREOS en el
+   * servidor, y ahora el servidor lo hace cumplir.
+   *
+   * Lo que queda es esto, que solo aparece en la anomalía —rol de admin sin
+   * estar en la lista— y solo sabe bajar. Subir no se puede desde ninguna
+   * pantalla, a propósito.
+   */
+  async function quitarAdmin(c: Cuenta) {
+    const quien = c.nombre || c.correo || 'esta cuenta';
+    if (
+      !window.confirm(
+        `¿Quitarle el acceso de administradora a ${quien}? Dejará de ver los contactos y la facturación, y tendrá que volver a entrar.`
+      )
+    ) {
+      return;
+    }
+
+    const rolAntes = c.rol;
+    setLista((l) => l?.map((x) => (x.uid === c.uid ? { ...x, rol: 'miembro' } : x)) ?? l);
     try {
       const r = await fetch('/api/usuarios', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, rol: nuevo }),
+        body: JSON.stringify({ uid: c.uid, rol: 'miembro' }),
       });
-      const c = await r.json().catch(() => ({ ok: false }));
-      if (!c.ok) throw new Error(c.motivo);
+      const respuesta = await r.json().catch(() => ({ ok: false }));
+      if (!respuesta.ok) throw new Error(respuesta.motivo);
       setFallo(null);
     } catch (e) {
-      setLista(antes ?? null);
+      // Se deshace solo esta fila, no la lista entera: restaurar la lista
+      // borraría de la pantalla lo que se hubiera guardado bien mientras tanto.
+      setLista((l) => l?.map((x) => (x.uid === c.uid ? { ...x, rol: rolAntes } : x)) ?? l);
       setFallo(
         (e as Error).message === 'admin-protegida'
-          ? 'A una administradora no se le puede quitar el rol de admin.'
+          ? 'Ese correo está en la lista de administradoras del servidor: para quitarle el acceso hay que sacarlo de ahí.'
           : 'No se ha podido cambiar el rol. Vuelve a intentarlo.'
       );
     }
@@ -288,7 +357,9 @@ export default function Cuentas() {
       return;
     }
 
-    const antes = lista;
+    /* Se guarda la fila y su sitio, no la lista entera: al fallar se vuelve a
+       meter donde estaba, sin tocar lo demás. */
+    const donde = lista?.findIndex((c) => c.uid === cuenta.uid) ?? -1;
     setLista((l) => l?.filter((c) => c.uid !== cuenta.uid) ?? l);
     try {
       const r = await fetch(`/api/usuarios?uid=${encodeURIComponent(cuenta.uid)}`, {
@@ -299,7 +370,12 @@ export default function Cuentas() {
       setFallo(null);
     } catch (e) {
       const motivo = (e as Error).message;
-      setLista(antes ?? null);
+      setLista((l) => {
+        if (!l || l.some((c) => c.uid === cuenta.uid)) return l;
+        const vuelta = [...l];
+        vuelta.splice(donde < 0 ? vuelta.length : donde, 0, cuenta);
+        return vuelta;
+      });
       setFallo(
         motivo === 'admin-protegida'
           ? 'A una administradora no se la puede borrar.'
@@ -335,11 +411,16 @@ export default function Cuentas() {
     );
   }
 
-  // Si no hay nadie más que quien está mirando, no hay nada que listar: se
-  // dice con palabras en vez de enseñar una fila sola sin explicar nada. Con
-  // `every` y no con la longitud, que daría el mensaje equivocado el día que
-  // la única ficha de la lista fuera la de otra persona.
-  const soloYo = lista.every((c) => c.uid === yo);
+  /*
+   * Si no hay nadie más que quien está mirando.
+   *
+   * Con `every` y no con la longitud, que daría el mensaje equivocado el día
+   * que la única ficha de la lista fuera la de otra persona. Y colgado de que
+   * la carga haya ido bien: al fallar se vacía la lista, y `every` sobre una
+   * lista vacía devuelve true, así que la pantalla afirmaba «ahora mismo solo
+   * está tu cuenta» sobre unos datos que no había llegado a leer.
+   */
+  const soloYo = !fallo && lista.every((c) => c.uid === yo);
 
   return (
     <div className={css.columna}>
@@ -369,7 +450,7 @@ export default function Cuentas() {
       {/* El alta recién hecha, con su enlace. Va arriba del todo porque es lo
           que hay que hacer ahora mismo: copiarlo y mandarlo. */}
       {alta && (
-        <section className={css.tarjeta}>
+        <section className={css.tarjeta} ref={cajaAlta} tabIndex={-1}>
           <div className={css.columna} style={{ gap: 14 }}>
             <p className={css.avisoBien} role="status">
               Cuenta creada para <strong>{alta.nombre}</strong> ({alta.correo}) como{' '}
@@ -428,8 +509,12 @@ export default function Cuentas() {
               <>
                 <p className={css.parrafo} style={{ margin: 0 }}>
                   La cuenta está creada, pero no he podido generar el enlace de la contraseña.
-                  Dile que entre y pulse <strong>«He olvidado mi contraseña»</strong> con este
-                  correo, o borra la cuenta aquí abajo y vuelve a darla de alta.
+                  Dile que entre en la pantalla de acceso y pulse{' '}
+                  {/* El texto va citado exacto, como está en components/Acceso.tsx:
+                      si aquí se escribe de otra manera, Sorela le dicta por
+                      teléfono un botón que esa persona no encuentra. */}
+                  <strong>«¿Has olvidado la contraseña?»</strong> con este correo, o borra la cuenta
+                  aquí abajo y vuelve a darla de alta.
                 </p>
                 <div className={css.barraAcciones}>
                   <span className={css.apunte}>
@@ -445,11 +530,33 @@ export default function Cuentas() {
         </section>
       )}
 
+      {/* Si el servidor no ha podido leer las cuentas de acceso, la lista puede
+          estar incompleta sin que se note: se dice, porque una cuenta que no
+          sale es una cuenta que no se puede quitar. */}
+      {sinAuth && !fallo && (
+        <p className={css.apunte} role="note">
+          No he podido leer las cuentas de acceso de Firebase: aquí sale lo guardado en la base de
+          datos, y puede faltar alguna.
+        </p>
+      )}
+      {recortada && !fallo && (
+        <p className={css.apunte} role="note">
+          Se muestran las 200 cuentas más recientes.
+        </p>
+      )}
+
       <section className={css.tarjeta}>
-        {soloYo ? (
+        {/* Tres casos distintos, y antes eran uno: si la carga ha fallado no se
+            sabe nada de la lista, así que no se afirma nada sobre ella. */}
+        {fallo ? (
+          <p className={css.vacioTexto}>
+            No he podido leer las cuentas, así que no puedo decirte quién hay. Pulsa «Reintentar»
+            aquí arriba.
+          </p>
+        ) : soloYo ? (
           <p className={css.vacioTexto}>
             Ahora mismo solo está tu cuenta. Cuando des de alta a alguien aquí abajo, aparecerá en
-            esta lista con su rol y con la última vez que entró.
+            esta lista con lo que haya contratado y con la última vez que entró.
           </p>
         ) : (
           lista.map((c) => {
@@ -458,6 +565,11 @@ export default function Cuentas() {
             // la propia cuenta: el servidor lo rechaza en los dos casos, y un
             // botón que siempre falla solo sirve para asustar.
             const sePuedeBorrar = !c.protegida && c.uid !== yo;
+            /* Rol de administradora sin estar en la lista del servidor. No se
+               puede llegar a este estado desde la plataforma —ni el alta ni el
+               cambio lo permiten—, así que si aparece viene de antes o de la
+               consola de Firebase. Se enseña y se puede deshacer. */
+            const adminSinLista = rolActual === 'sorela' && !c.protegida;
             return (
               <article key={c.uid} className={css.fila} style={{ padding: '16px 0', gap: 14 }}>
                 <span
@@ -470,6 +582,12 @@ export default function Cuentas() {
                   <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
                     {c.correo || 'sin correo'}
                   </span>
+                  {c.sinFicha && (
+                    <span style={{ fontSize: 12, fontWeight: 300, color: 'var(--arcilla)' }}>
+                      Puede entrar, pero no tiene ficha: no sé qué ha contratado. Si no sabes de
+                      dónde sale, bórrala.
+                    </span>
+                  )}
                   {/* De dónde viene: la comunidad y los cursos que haya hecho.
                       La comunidad lleva sello dorado y los cursos no, porque no
                       pesan lo mismo: la comunidad se paga cada mes y es la que
@@ -512,29 +630,27 @@ export default function Cuentas() {
                       {tieneMembresia(c.accesos) ? 'Quitar comunidad' : 'Dar comunidad'}
                     </button>
                   )}
-                  {c.protegida ? (
-                    // A una administradora no se le cambia el rol: en vez de un
-                    // desplegable que rebota, se enseña lo que es.
-                    <span className={`${css.estado} ${css.estadoTinta}`}>
-                      {ETIQUETA_ROL[rolActual]}
-                    </span>
-                  ) : (
-                    <select
-                      aria-label={`Rol de ${c.nombre || c.correo || 'esta cuenta'}`}
-                      className={css.campoRedondo}
-                      style={{ fontSize: 13 }}
-                      value={rolActual}
-                      onChange={(e) => cambiarRol(c.uid, e.target.value as Rol)}
-                    >
-                      {ROLES.map((r) => (
-                        <option key={r} value={r}>
-                          {ETIQUETA_ROL[r]}
-                        </option>
-                      ))}
-                    </select>
+                  {/* El rol se enseña, no se elige. Ver quitarAdmin(). */}
+                  <span
+                    className={`${css.estado} ${rolActual === 'sorela' ? css.estadoTinta : css.estadoNeutro}`}
+                  >
+                    {ETIQUETA_ROL[rolActual]}
+                  </span>
+                  {adminSinLista && (
+                    <button type="button" className={css.enlaceAccion} onClick={() => quitarAdmin(c)}>
+                      Quitar admin
+                    </button>
                   )}
                   {sePuedeBorrar && (
-                    <button type="button" className={css.enlaceAccion} onClick={() => borrar(c)}>
+                    <button
+                      type="button"
+                      className={css.enlaceAccion}
+                      /* Con el nombre dentro: en una lista de veinte filas,
+                         veinte botones que solo dicen «Borrar» no le sirven a
+                         quien navega escuchando la pantalla. */
+                      aria-label={`Borrar la cuenta de ${c.nombre || c.correo || 'esta persona'}`}
+                      onClick={() => borrar(c)}
+                    >
                       Borrar
                     </button>
                   )}
@@ -567,7 +683,7 @@ export default function Cuentas() {
                 className={css.campoCaja}
               />
               {errores.correo && (
-                <span style={ESTILO_ERROR} role="alert">
+                <span className={css.errorCampo} role="alert">
                   {errores.correo}
                 </span>
               )}
@@ -583,32 +699,27 @@ export default function Cuentas() {
                 className={css.campoCaja}
               />
               {errores.nombre && (
-                <span style={ESTILO_ERROR} role="alert">
+                <span className={css.errorCampo} role="alert">
                   {errores.nombre}
                 </span>
               )}
             </label>
 
-            <label className={css.etiquetaCampo}>
-              Rol
-              <select
-                value={rol}
-                onChange={(e) => setRol(e.target.value as Rol)}
-                className={css.campoCaja}
-              >
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {ETIQUETA_ROL[r]}
-                  </option>
-                ))}
-              </select>
-              {errores.rol && (
-                <span style={ESTILO_ERROR} role="alert">
-                  {errores.rol}
-                </span>
-              )}
-            </label>
+            {/* Aquí había un desplegable de rol con dos opciones: «Miembro» y
+                «Sorela (admin)». Con eso, un clic de más en el sitio
+                equivocado daba a esa persona todos los contactos, la
+                facturación y el botón de borrar cuentas, sin preguntar nada.
+                Toda cuenta nueva nace miembro; quién es administradora lo
+                decide ADMIN_CORREOS en el servidor, y ahora el servidor lo
+                hace cumplir. El error de `rol` se sigue pintando abajo por si
+                el servidor rechaza algo. */}
           </div>
+
+          {errores.rol && (
+            <span className={css.errorCampo} role="alert">
+              {errores.rol}
+            </span>
+          )}
 
           {/* ---------- Qué ha contratado ----------
               Va en el mismo formulario y no en una segunda pantalla porque es

@@ -35,6 +35,7 @@ docs/capturas/clientes-embudo.png
 docs/capturas/cuentas-enlace.png
 docs/capturas/cuentas-formulario.png
 docs/capturas/cuentas-lista.png
+docs/capturas/ficha.png
 
 # Los manuales con la contraseña escrita dentro. Se generan con
 # `CLAVE_SORELA='...' node docs/generar.mjs` y NUNCA se suben: este repositorio

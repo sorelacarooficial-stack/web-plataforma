@@ -127,7 +127,9 @@ function duracionEnPalabras(min: number): string {
   return resto === 0 ? `${horas} h` : `${horas} h ${resto} min`;
 }
 
-const ESTILO_ERROR = { fontSize: 12, fontWeight: 300, color: 'var(--arcilla)', textTransform: 'none' as const, letterSpacing: 0 };
+/* El aspecto de un error de campo vive en `.errorCampo`, dentro de la hoja de
+   estilos. Aquí había una copia en línea del mismo aspecto, y dos copias de lo
+   mismo aguantan hasta que alguien cambia una. */
 
 export default function Agenda({
   /**
@@ -596,7 +598,7 @@ export default function Agenda({
               className={css.campoCaja}
             />
             {errores.titulo && (
-              <span style={ESTILO_ERROR} role="alert">
+              <span className={css.errorCampo} role="alert">
                 {errores.titulo}
               </span>
             )}
@@ -622,7 +624,7 @@ export default function Agenda({
                 className={css.campoCaja}
               />
               {errores.duracionMin && (
-                <span style={ESTILO_ERROR} role="alert">
+                <span className={css.errorCampo} role="alert">
                   {errores.duracionMin}
                 </span>
               )}
@@ -640,7 +642,7 @@ export default function Agenda({
           {/* El error de la fecha va aquí abajo y no dentro de un campo: se
               monta con dos —día y hora—, así que no es culpa de ninguno. */}
           {errores.cuando && (
-            <span style={ESTILO_ERROR} role="alert">
+            <span className={css.errorCampo} role="alert">
               {errores.cuando}
             </span>
           )}
