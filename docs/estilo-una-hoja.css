@@ -1,0 +1,552 @@
+/*
+ * La hoja única, en PDF y apaisada.
+ *
+ * Vive aparte de `estilo-manual.css` aunque comparta colores y tipografías:
+ * aquel está pensado para un documento de varias páginas que se lee seguido, y
+ * este para una sola hoja que se mira entera de golpe. Mezclarlos obligaría a
+ * llenar los dos de excepciones.
+ *
+ * Todo está medido en milímetros y no en píxeles porque el destino es papel.
+ * Si algo deja de caber, lo correcto es QUITAR texto, no bajar el cuerpo de
+ * letra: por debajo de 7 pt esto deja de leerse en una impresión normal.
+ *
+ * Las fuentes se cargan del propio repositorio con una ruta de archivo: dentro
+ * de un PDF no hay red, así que una fuente traída de Google se quedaría sin
+ * cargar y saldría todo en Times New Roman.
+ */
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('../app/fuentes/cormorant-garamond-normal-latin.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('../app/fuentes/cormorant-garamond-italic-latin.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Jost';
+  src: url('../app/fuentes/jost-normal-latin.woff2') format('woff2');
+  font-weight: 300 600;
+  font-style: normal;
+}
+
+:root {
+  --bg: #fbf9f6;
+  --tinta: #141210;
+  --tinta-2: #3e3831;
+  --tinta-3: #4f4840;
+  --suave: #6c645a;
+  --tenue: #a79e92;
+  --oro: #8a6a32;
+  --oro-claro: #a98551;
+  --oro-tinte: #f5efe2;
+  --oro-linea: rgba(138, 106, 50, 0.38);
+  --arcilla: #9a5b43;
+  --arcilla-tinte: #f7ece7;
+  --linea: rgba(20, 18, 16, 0.1);
+  --linea-2: rgba(20, 18, 16, 0.18);
+  --superficie: #f5f2ec;
+}
+
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 297mm;
+  height: 210mm;
+  margin: 0;
+  padding: 7.5mm 11mm 5mm;
+  background: var(--bg);
+  color: var(--tinta-2);
+  font-family: 'Jost', system-ui, sans-serif;
+  font-size: 8.2pt;
+  font-weight: 300;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+  gap: 3mm;
+  /* Los fondos de color se imprimen. Sin esto, Chromium los tira y los
+     recuadros que marcan «esto lo haces tú» desaparecen justo en papel. */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+p {
+  margin: 0;
+}
+
+b {
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+/* ==========================================================================
+   Cabecera
+   ========================================================================== */
+
+.cabecera {
+  display: flex;
+  align-items: flex-start;
+  gap: 7mm;
+  padding-bottom: 2.5mm;
+  border-bottom: 1px solid var(--linea-2);
+}
+
+.marca {
+  flex: 0 0 auto;
+  width: 30mm;
+  height: auto;
+  margin-top: 0.5mm;
+}
+
+.titulares {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+h1 {
+  margin: 0 0 1mm;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 19pt;
+  font-weight: 300;
+  line-height: 1.05;
+  color: var(--tinta);
+}
+
+.sub {
+  max-width: 155mm;
+  font-size: 8pt;
+  color: var(--suave);
+  text-wrap: pretty;
+}
+
+.fecha {
+  flex: 0 0 auto;
+  padding-top: 1mm;
+  font-size: 7pt;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--tenue);
+}
+
+/* ==========================================================================
+   Bloques y rótulos
+   ========================================================================== */
+
+.bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
+}
+
+.rotulo {
+  display: flex;
+  align-items: center;
+  gap: 2.5mm;
+  font-size: 7.6pt;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.6mm;
+  height: 4.6mm;
+  border: 1px solid var(--oro-linea);
+  border-radius: 50%;
+  font-size: 6.6pt;
+  letter-spacing: 0;
+  color: var(--oro);
+}
+
+.subrotulo {
+  margin-bottom: 1.5mm;
+  font-size: 7pt;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--tinta-3);
+}
+
+.apunte {
+  font-size: 7.4pt;
+  color: var(--suave);
+  text-wrap: pretty;
+}
+
+/* ==========================================================================
+   1 · El flujo
+   ========================================================================== */
+
+.flujo {
+  display: flex;
+  align-items: stretch;
+  gap: 1.5mm;
+}
+
+.paso {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+  padding: 2.6mm 3mm;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-top: 2px solid var(--linea-2);
+}
+
+/* El paso en el que no ve nada: apagado a propósito, porque eso es lo que
+   pasa. Un recuadro igual que los demás haría pensar que ya está dentro. */
+.pasoFrio {
+  background: transparent;
+  border-style: dashed;
+  border-top-color: var(--tenue);
+  color: var(--suave);
+}
+
+/* El único paso que depende de ella. Va en oro y con etiqueta porque es el
+   que hay que acordarse de hacer: si no se hace, la persona se queda fuera y
+   nada lo avisa. */
+.pasoTuyo {
+  background: var(--oro-tinte);
+  border-color: var(--oro-linea);
+  border-top-color: var(--oro);
+}
+
+.pasoFinal {
+  border-top-color: var(--oro-claro);
+}
+
+.pasoEtiqueta {
+  font-size: 6.2pt;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.pasoTitulo {
+  font-size: 9pt;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--tinta);
+}
+
+.pasoFrio .pasoTitulo {
+  color: var(--tinta-3);
+}
+
+.pasoTexto {
+  font-size: 7.3pt;
+  line-height: 1.4;
+  color: var(--suave);
+  text-wrap: pretty;
+}
+
+.flecha {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 5.5mm;
+  color: var(--tenue);
+}
+
+.flechaOro {
+  color: var(--oro);
+}
+
+/* ==========================================================================
+   2 y 3, uno al lado del otro
+   ========================================================================== */
+
+.doble {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1.06fr 1fr;
+  gap: 7mm;
+  align-items: start;
+}
+
+.columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5mm;
+}
+
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.3mm;
+}
+
+.lista li {
+  position: relative;
+  padding-left: 4.6mm;
+  font-size: 7.4pt;
+  line-height: 1.35;
+  color: var(--tinta-3);
+  text-wrap: pretty;
+}
+
+.lista li::before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 600;
+}
+
+/* Lo que está hecho y lo que no, marcado de dos maneras distintas y no solo
+   con color: en una impresión en blanco y negro, el color no dice nada. */
+.lista .si::before {
+  content: '✓';
+  color: var(--oro);
+}
+
+.lista .no::before {
+  content: '○';
+  color: var(--tenue);
+}
+
+.lista .no {
+  color: var(--suave);
+}
+
+.aviso {
+  margin-top: 1mm;
+  padding: 2.4mm 3mm;
+  background: var(--arcilla-tinte);
+  border-left: 2px solid var(--arcilla);
+  font-size: 7.4pt;
+  line-height: 1.4;
+  color: var(--tinta-3);
+  text-wrap: pretty;
+}
+
+.aviso b {
+  color: var(--arcilla);
+}
+
+/* Dónde vive cada pieza. En fila y no en lista porque la pregunta que
+   contesta es «¿de quién depende esto?», y así se ve de un golpe que son cinco
+   servicios y que solo falta uno. */
+.donde {
+  margin-top: 2.5mm;
+}
+
+.piezas {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.5mm;
+}
+
+.pieza {
+  padding: 2mm 2.2mm;
+  background: var(--superficie);
+  border-top: 2px solid var(--oro-claro);
+}
+
+/* La que falta, en hueco y con la raya de aviso: en blanco y negro se sigue
+   distinguiendo de las que ya están. */
+.piezaFalta {
+  background: transparent;
+  border-top-color: var(--arcilla);
+  border-bottom: 1px dashed var(--linea-2);
+}
+
+.piezaQuien {
+  font-size: 7.6pt;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.piezaFalta .piezaQuien {
+  color: var(--arcilla);
+}
+
+.piezaQue {
+  font-size: 6.6pt;
+  line-height: 1.3;
+  color: var(--suave);
+  text-wrap: pretty;
+}
+
+/* ==========================================================================
+   3 · Las cifras
+   ========================================================================== */
+
+.cifras {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cifras td {
+  padding: 1.3mm 0;
+  border-bottom: 1px solid var(--linea);
+  font-size: 7.6pt;
+  color: var(--tinta-3);
+  vertical-align: baseline;
+}
+
+.cifras .cifra {
+  width: 24mm;
+  text-align: right;
+  font-size: 8.4pt;
+  font-weight: 600;
+  color: var(--tinta);
+  white-space: nowrap;
+}
+
+.cifras .menos {
+  font-weight: 300;
+  color: var(--suave);
+}
+
+.cifras .nota {
+  width: 42mm;
+  padding-left: 3.5mm;
+  font-size: 6.9pt;
+  color: var(--tenue);
+}
+
+.cifras .entra .cifra,
+.cifras .queda .cifra {
+  color: var(--oro);
+}
+
+.cifras .queda td {
+  border-bottom: none;
+  border-top: 1px solid var(--oro-linea);
+  padding-top: 2mm;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.compacta td {
+  padding: 1.1mm 0;
+  font-size: 7.4pt;
+}
+
+.tiempo {
+  margin-top: 2.5mm;
+}
+
+/* ==========================================================================
+   4 · La línea de tiempo
+   ========================================================================== */
+
+.linea {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5mm;
+}
+
+.hito {
+  position: relative;
+  padding-top: 3.4mm;
+  /* La línea que une los hitos es el borde de arriba de cada uno: así nace y
+     muere exactamente donde está el texto, sin tener que colocarla a mano. */
+  border-top: 1px solid var(--linea-2);
+}
+
+.punto {
+  position: absolute;
+  top: -1.4mm;
+  left: 0;
+  width: 2.8mm;
+  height: 2.8mm;
+  background: var(--bg);
+  border: 1px solid var(--tenue);
+  border-radius: 50%;
+}
+
+.hitoHoy {
+  border-top-color: var(--oro);
+}
+
+.hitoHoy .punto {
+  background: var(--oro);
+  border-color: var(--oro);
+}
+
+.hitoCuando {
+  margin-bottom: 1mm;
+  font-size: 7pt;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tinta);
+}
+
+.hitoHoy .hitoCuando {
+  color: var(--oro);
+}
+
+.hitoQue {
+  font-size: 7.4pt;
+  line-height: 1.4;
+  color: var(--suave);
+  text-wrap: pretty;
+}
+
+/* ==========================================================================
+   El aviso del Excel
+   ========================================================================== */
+
+.ojo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2mm 6mm;
+  margin-top: 1mm;
+  padding: 2.6mm 3.2mm;
+  background: var(--superficie);
+  border: 1px solid var(--linea-2);
+}
+
+.ojoTitulo {
+  grid-column: 1 / -1;
+  font-size: 7.4pt;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--arcilla);
+}
+
+.ojo p {
+  font-size: 7.2pt;
+  line-height: 1.4;
+  color: var(--tinta-3);
+  text-wrap: pretty;
+}
+
+/* ==========================================================================
+   Pie
+   ========================================================================== */
+
+.pie {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2mm;
+  border-top: 1px solid var(--linea);
+  font-size: 6.6pt;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--tenue);
+}
