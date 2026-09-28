@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>La plataforma en una hoja</title>
+    <link rel="stylesheet" href="estilo-una-hoja.css" />
+  </head>
+
+  <!--
+    Una hoja. Literal: si esto ocupa dos páginas, ha dejado de servir para lo
+    que se hizo, que es poder mirarlo entero de un vistazo y saber dónde está
+    todo. `docs/generar.mjs` lo imprime apaisado y comprueba que salga una sola
+    página; si algún día falla ahí, es que se ha añadido texto de más y hay que
+    quitar, no encoger la letra.
+  -->
+  <body>
+    <header class="cabecera">
+      <img class="marca" src="../fotos/logo-sorela.png" alt="Sorela Caro · Técnica Divine" />
+      <div class="titulares">
+        <h1>La plataforma en una hoja</h1>
+        <p class="sub">
+          Qué hay, cómo funciona, cuánto deja y hacia dónde va. Todo probado contra la base de
+          datos de verdad.
+        </p>
+      </div>
+      <p class="fecha">28 de septiembre de 2026</p>
+    </header>
+
+    <!-- ================= 1. El camino de una persona ================= -->
+    <section class="bloque">
+      <p class="rotulo"><span class="num">1</span> Cómo entra una persona</p>
+
+      <div class="flujo">
+        <div class="paso">
+          <p class="pasoTitulo">Te encuentra</p>
+          <p class="pasoTexto">Instagram, Google o el enlace que le pases.</p>
+        </div>
+
+        <svg class="flecha" viewBox="0 0 22 12" aria-hidden="true">
+          <path d="M0 6h18M14 2l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+
+        <div class="paso">
+          <p class="pasoTitulo">Se registra</p>
+          <p class="pasoTexto">Elige <b>su contraseña</b>. No le mandas ningún enlace.</p>
+        </div>
+
+        <svg class="flecha" viewBox="0 0 22 12" aria-hidden="true">
+          <path d="M0 6h18M14 2l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+
+        <div class="paso pasoFrio">
+          <p class="pasoTitulo">Entra, y no ve nada</p>
+          <p class="pasoTexto">«En preparación». Tener cuenta no abre nada.</p>
+        </div>
+
+        <svg class="flecha flechaOro" viewBox="0 0 22 12" aria-hidden="true">
+          <path d="M0 6h18M14 2l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+
+        <div class="paso pasoTuyo">
+          <p class="pasoEtiqueta">Lo haces tú</p>
+          <p class="pasoTitulo">Le das la Comunidad</p>
+          <p class="pasoTexto">Un clic en <i>Cuentas</i>, cuando veas su pago.</p>
+        </div>
+
+        <svg class="flecha" viewBox="0 0 22 12" aria-hidden="true">
+          <path d="M0 6h18M14 2l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+
+        <div class="paso pasoFinal">
+          <p class="pasoTitulo">Ya está dentro</p>
+          <p class="pasoTexto">Mis clases · Mi agenda, al momento.</p>
+        </div>
+      </div>
+
+      <p class="apunte">
+        En paralelo cae en <b>Clientes</b> con su WhatsApp, y en <b>Cuentas</b> sale avisada:
+        «se registró ella, todavía no tiene acceso a nada».
+      </p>
+    </section>
+
+    <div class="doble">
+      <!-- ================= 2. Qué hay dentro ================= -->
+      <section class="bloque">
+        <p class="rotulo"><span class="num">2</span> Qué hay dentro</p>
+
+        <div class="columnas">
+          <div>
+            <p class="subrotulo">Lo tuyo</p>
+            <ul class="lista">
+              <li class="si">Clientes, con seguimiento y WhatsApp</li>
+              <li class="si">Agenda con calendario</li>
+              <li class="si">Facturación con numeración</li>
+              <li class="si">Subir clases (el vídeo, en YouTube)</li>
+              <li class="si">Cuentas: quién entra y qué tiene</li>
+              <li class="no">Convocatorias de formación</li>
+            </ul>
+          </div>
+          <div>
+            <p class="subrotulo">Lo de cada terapeuta</p>
+            <ul class="lista">
+              <li class="si">Sus clases, solo las que ha comprado</li>
+              <li class="si">Su agenda, que no ve nadie más</li>
+              <li class="no">Sus casos <b>(hoy en WhatsApp)</b></li>
+              <li class="no">Su lista de clientas</li>
+              <li class="no">Su ficha en el mapa</li>
+              <li class="no">Certificado</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="aviso">
+          <b>Lo que sostiene el precio es lo que falta.</b> Prometes «tus casos uno a uno, no un
+          foro». Hoy eso vive en tu WhatsApp, y aguanta hasta unas 20 personas.
+        </p>
+
+        <p class="subrotulo donde">Y dónde vive cada cosa</p>
+        <div class="piezas">
+          <div class="pieza">
+            <p class="piezaQuien">Vercel</p>
+            <p class="piezaQue">La web y la plataforma</p>
+          </div>
+          <div class="pieza">
+            <p class="piezaQuien">Firebase</p>
+            <p class="piezaQue">Cuentas, contactos, agenda</p>
+          </div>
+          <div class="pieza">
+            <p class="piezaQuien">YouTube</p>
+            <p class="piezaQue">Los vídeos, sin listar</p>
+          </div>
+          <div class="pieza">
+            <p class="piezaQuien">Tu Gmail</p>
+            <p class="piezaQue">Los correos automáticos</p>
+          </div>
+          <div class="pieza piezaFalta">
+            <p class="piezaQuien">Stripe</p>
+            <p class="piezaQue">El cobro · pendiente</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. Los números ================= -->
+      <section class="bloque">
+        <p class="rotulo"><span class="num">3</span> Con 10 miembros a 47 € al mes</p>
+
+        <table class="cifras">
+          <tr class="entra">
+            <td>Entra</td>
+            <td class="cifra">470 €</td>
+            <td class="nota">al mes · 5.640 € al año</td>
+          </tr>
+          <tr>
+            <td>Stripe</td>
+            <td class="cifra menos">−9,55 €</td>
+            <td class="nota">1,5 % + 0,25 € por cobro</td>
+          </tr>
+          <tr>
+            <td>Vercel Pro</td>
+            <td class="cifra menos">−19 €</td>
+            <td class="nota">el plan gratis no vale si cobras</td>
+          </tr>
+          <tr>
+            <td>Dominio</td>
+            <td class="cifra menos">−1,25 €</td>
+            <td class="nota">15 € al año · Firebase y YouTube, 0 €</td>
+          </tr>
+          <tr class="queda">
+            <td>Te queda</td>
+            <td class="cifra">440 €</td>
+            <td class="nota">al mes, antes de impuestos</td>
+          </tr>
+        </table>
+
+        <p class="subrotulo tiempo">Y tu tiempo, al mes</p>
+        <table class="cifras compacta">
+          <tr>
+            <td>Clase en vivo, con su preparación</td>
+            <td class="cifra">3 h</td>
+          </tr>
+          <tr>
+            <td>Acompañar a 10 personas por WhatsApp</td>
+            <td class="cifra">3 h</td>
+          </tr>
+          <tr>
+            <td>Cobrar a mano, dar accesos, subir la clase</td>
+            <td class="cifra">50 min</td>
+          </tr>
+          <tr class="queda">
+            <td>Total</td>
+            <td class="cifra">≈ 7 h · <b>67 €/hora</b></td>
+          </tr>
+        </table>
+
+        <p class="apunte">
+          A 30 entran 1.410 € al mes, pero el acompañamiento se va a 10 h y sigue sin historial.
+        </p>
+      </section>
+    </div>
+
+    <!-- ================= 4. Hacia dónde vamos ================= -->
+    <section class="bloque">
+      <p class="rotulo"><span class="num">4</span> Hacia dónde vamos</p>
+
+      <div class="linea">
+        <div class="hito hitoHoy">
+          <span class="punto"></span>
+          <p class="hitoCuando">Hoy · 28 de septiembre</p>
+          <p class="hitoQue">
+            Web, registro, aula, agenda, facturación y cuentas, probados.
+            <b>1 contacto · 0 en lista · 0 vídeos.</b>
+          </p>
+        </div>
+
+        <div class="hito">
+          <span class="punto"></span>
+          <p class="hitoCuando">Abrir · fecha por decidir</p>
+          <p class="hitoQue">
+            Grabas las primeras clases. Entran 10. Cobras por Bizum, das el acceso a mano y
+            acompañas por WhatsApp.
+          </p>
+        </div>
+
+        <div class="hito">
+          <span class="punto"></span>
+          <p class="hitoCuando">Un mes después</p>
+          <p class="hitoQue">
+            Stripe: se cobra solo y el acceso se abre solo. Tu Excel importado y la secuencia de
+            correos.
+          </p>
+        </div>
+
+        <div class="hito">
+          <span class="punto"></span>
+          <p class="hitoCuando">Tres meses</p>
+          <p class="hitoQue">
+            Los casos dentro, con su historial. El mapa de terapeutas. El certificado.
+          </p>
+        </div>
+      </div>
+
+      <div class="ojo">
+        <p class="ojoTitulo">Lo del Excel y los correos: dos muros antes de pulsar enviar</p>
+        <p>
+          <b>El técnico.</b> Tu Gmail da para unos 100 correos al día: una base de 2.000 tardaría
+          tres semanas y Google suspende cuentas por menos. Se arregla con un servicio de envíos
+          (~25 €/mes) y la web ya está preparada: es poner dos datos.
+        </p>
+        <p>
+          <b>El legal.</b> En España no se puede escribir a quien no te lo ha pedido (LSSI, art.
+          21), salvo que ya te hubiera comprado algo parecido. Hay que partir la lista en dos.
+          Confírmalo con tu asesoría antes de enviar.
+        </p>
+      </div>
+    </section>
+
+    <footer class="pie">
+      <span>sorelacarodivine.com</span>
+      <span>340 comprobaciones automáticas, todas en verde</span>
+    </footer>
+  </body>
+</html>
