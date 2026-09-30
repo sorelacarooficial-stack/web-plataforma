@@ -68,17 +68,47 @@ const SEGUNDO_CARATULA = 1.2;
 const ALTO_UTIL = 0.53;
 
 /**
- * Dónde está la cara, de 0 a 1 a lo ancho del original.
+ * Cuánto se acerca el recorte: el ancho de la ventana, sobre el ancho original.
  *
- * Al recortar a vertical hay que decidir qué franja de ancho se queda, y la
- * gente no siempre está centrada. Se pone en un `encuadre.json` junto a los
+ * Cuanto más pequeño, más primer plano y menos fondo. 0,333 deja la cara
+ * ocupando alrededor de la mitad del ancho de la tarjeta, que es encuadre de
+ * retrato. Con la ventana grande sobraba fondo por arriba y las tarjetas se
+ * veían vacías.
+ *
+ * Y no se puede agrandar sin romper la alineación: dos de las cuatro se
+ * sentaron más bajas, con los ojos casi tocando la franja del subtítulo, así
+ * que por debajo de ellas no queda sitio. Una ventana mayor no cabría ahí y
+ * habría que empujarla hacia arriba, que es exactamente lo que dejaba sus
+ * caras a una altura distinta de las demás.
+ */
+const ACERCAMIENTO = 0.333;
+
+/**
+ * Cuánto aire queda por encima de la cabeza, sobre el alto de la tarjeta.
+ *
+ * ESTO ES LO QUE ALINEA UNAS CON OTRAS. Recortar siempre desde arriba no vale:
+ * cada persona se sentó a una altura distinta, así que unas salían con medio
+ * palmo de techo encima y otras con la frente pegada al borde. Puestas en fila
+ * se ve enseguida, aunque no se sepa decir por qué.
+ *
+ * Se fija por la coronilla y no por la línea de los ojos, y es por algo que
+ * costó una vuelta entera: la coronilla se ve de un vistazo en un fotograma y
+ * se mide sin equivocarse. Los ojos hay que estimarlos, y estimándolos un poco
+ * bajos —que es lo que pasó— el recorte sube y corta las cabezas.
+ */
+const CORONILLA = 0.1;
+
+/**
+ * Dónde está la cara de cada uno, de 0 a 1 sobre el original: `x` el centro a
+ * lo ancho, `y` la coronilla a lo alto. Va en un `encuadre.json` junto a los
  * vídeos, con el nombre del archivo sin extensión:
  *
- *   { "6": 0.62, "3": 0.48 }
+ *   { "6": { "x": 0.617, "y": 0.146 } }
  *
- * Lo que no esté listado se centra.
+ * Lo que no esté listado se centra a lo ancho y se da por hecho que la cabeza
+ * empieza donde suele empezar en un plano medio.
  */
-const ENCUADRE_POR_DEFECTO = 0.5;
+const ENCUADRE_POR_DEFECTO = { x: 0.5, y: 0.2 };
 
 if (!ORIGEN) {
   console.error('Falta la carpeta con los vídeos.\n\n  npm run testimonios -- ruta/a/la/carpeta\n');
@@ -151,11 +181,28 @@ console.log(`${entradas.length} vídeos en ${ORIGEN}\n`);
  * 9:16 centrada donde diga el encuadre. Los números salen pares porque H.264
  * no admite dimensiones impares.
  */
-function recorte(ancho, alto, centro) {
-  const altoRecorte = Math.floor((alto * ALTO_UTIL) / 2) * 2;
-  const anchoRecorte = Math.min(ancho, Math.floor((altoRecorte * 9) / 16 / 2) * 2);
-  const x = Math.max(0, Math.min(ancho - anchoRecorte, Math.round(ancho * centro - anchoRecorte / 2)));
-  return `crop=${anchoRecorte}:${altoRecorte}:${Math.floor(x / 2) * 2}:0`;
+function recorte(ancho, alto, cara) {
+  const techo = alto * ALTO_UTIL;
+
+  let w = Math.floor((ancho * ACERCAMIENTO) / 2) * 2;
+  let h = Math.floor(((w * 16) / 9) / 2) * 2;
+
+  /* Si con ese acercamiento la ventana no cabe por encima del subtítulo, se
+     acerca un poco más. Pasa con quien se sentó más bajo: sus ojos están
+     cerca de la franja del subtítulo y por debajo ya no queda sitio. */
+  if (h > techo) {
+    h = Math.floor(techo / 2) * 2;
+    w = Math.floor(((h * 9) / 16) / 2) * 2;
+  }
+
+  const cabeza = alto * cara.y;
+  /* La ventana se coloca para dejar CORONILLA de aire por encima de la cabeza,
+     y se empuja dentro de los límites si se sale. Al empujarla el aire cambia
+     un poco; es preferible eso a colarse en el subtítulo. */
+  const y = Math.max(0, Math.min(techo - h, Math.round(cabeza - h * CORONILLA)));
+  const x = Math.max(0, Math.min(ancho - w, Math.round(ancho * cara.x - w / 2)));
+
+  return `crop=${w}:${h}:${Math.floor(x / 2) * 2}:${Math.floor(y / 2) * 2}`;
 }
 
 const hechos = [];
@@ -169,8 +216,8 @@ for (const archivo of entradas) {
 
   const antes = (await stat(entrada)).size;
   const medida = await medir(entrada);
-  const centro = Number(encuadres[nombre] ?? ENCUADRE_POR_DEFECTO);
-  const corte = recorte(medida.ancho, medida.alto, centro);
+  const cara = { ...ENCUADRE_POR_DEFECTO, ...(encuadres[nombre] ?? {}) };
+  const corte = recorte(medida.ancho, medida.alto, cara);
 
   // ---- El vídeo entero, con sonido ----
   await correr('ffmpeg', [
