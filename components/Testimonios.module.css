@@ -5,6 +5,21 @@
  * lista y un desplazamiento del 50 %. Lo que cambia aquí son las tarjetas, que
  * llevan un vídeo vertical dentro, y la velocidad, que llega desde el
  * componente en la variable `--vuelta` porque depende de cuántos haya.
+ *
+ * SOBRE EL CRISTAL. El desenfoque de fondo se usa en dos sitios y en ninguno
+ * es decorativo: el botón de play y la banda del nombre van encima del vídeo,
+ * que es una imagen que no controlamos y que puede ser clara, oscura o las dos
+ * cosas en la misma tarjeta. Un color plano encima tapa la cara; un cristal
+ * deja ver que debajo sigue habiendo vídeo y a la vez separa el texto lo justo
+ * para leerlo. Es el mismo recurso de la cabecera de la web, que también flota
+ * sobre contenido que cambia.
+ *
+ * No hay relieve blando —el «neumorfismo»— y no es por gusto: funciona pintando
+ * dos sombras, una clara y otra oscura, casi del color del fondo, así que todo
+ * lo que dibuja queda por debajo del contraste mínimo. Un botón que solo se
+ * distingue por una sombra de 1,2 a 1 no se ve en un móvil a pleno sol ni lo
+ * encuentra quien no ve bien. Acabamos de subir a verde las 103 medidas de la
+ * web; esto las tiraría abajo.
  */
 
 .zona {
@@ -13,6 +28,19 @@
   border-top: 1px solid var(--azul-line);
   border-bottom: 1px solid var(--azul-line);
   overflow: hidden;
+  /*
+   * La distancia de verdad desde el borde de la pantalla hasta donde empieza
+   * el texto de `.wrap`. No es el relleno de `.wrap` a secas: `.wrap` está
+   * topado en 1240 px y centrado, así que en una pantalla ancha hay además la
+   * mitad de lo que sobra. En 1400 px eso son 80 + 40 = 120, no 40.
+   *
+   * Es la misma cuenta que hace `.sangrado-izq` en globals.css, y por el mismo
+   * motivo: alinear con la columna de texto algo que no vive dentro de ella.
+   */
+  --margen: max(
+    calc((100vw - 1240px) / 2 + clamp(20px, 4vw, 40px)),
+    clamp(20px, 4vw, 40px)
+  );
 }
 
 .cabeza {
@@ -35,13 +63,31 @@
   text-wrap: pretty;
 }
 
+/*
+ * La ventana por la que se ve pasar la tira.
+ *
+ * El desvanecido de las puntas empieza EXACTAMENTE en el margen de `.wrap`, y
+ * ahí está la alineación: la primera tarjeta aparece del todo justo en la línea
+ * vertical donde empieza el titular, no en el borde de la pantalla. Sin eso, el
+ * texto está tabulado y las tarjetas no, y se nota aunque no se sepa por qué.
+ */
 .ventana {
   position: relative;
-  margin-top: clamp(26px, 3.4vw, 44px);
-  /* Las dos puntas se desvanecen: así una tarjeta no aparece ni desaparece de
-     golpe contra el borde de la pantalla, que es lo que delata el truco. */
-  mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+  margin-top: clamp(30px, 3.8vw, 48px);
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--margen),
+    #000 calc(100% - var(--margen)),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 var(--margen),
+    #000 calc(100% - var(--margen)),
+    transparent 100%
+  );
 }
 
 .tira {
@@ -71,10 +117,10 @@
   flex: 0 0 auto;
   display: flex;
   align-items: stretch;
-  gap: clamp(14px, 1.6vw, 22px);
+  gap: clamp(16px, 1.8vw, 24px);
   /* La misma separación entre la última tarjeta de una copia y la primera de
      la siguiente, para que el ritmo no se rompa justo en la costura. */
-  padding-right: clamp(14px, 1.6vw, 22px);
+  padding-right: clamp(16px, 1.8vw, 24px);
 }
 
 /* ==========================================================================
@@ -83,7 +129,7 @@
 
 .tarjeta {
   flex: 0 0 auto;
-  width: clamp(212px, 19vw, 268px);
+  width: clamp(216px, 19vw, 272px);
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -96,8 +142,13 @@
   position: relative;
   aspect-ratio: 9 / 16;
   overflow: hidden;
+  border-radius: 16px;
   background: var(--inverse-bg, #141210);
   border: 1px solid var(--line-4);
+  /* Una sombra sola y muy abierta. Levanta la tarjeta del fondo lo justo para
+     que se lea como un objeto; dos sombras y un degradado la convertirían en
+     un botón de plástico. */
+  box-shadow: 0 18px 40px -24px rgba(20, 18, 16, 0.5);
 }
 
 .portada {
@@ -112,15 +163,36 @@
   text-align: left;
 }
 
+/*
+ * Lo que se ve si la carátula no carga.
+ *
+ * Va SIEMPRE debajo, no solo cuando falla: las carátulas de Drive se cortan
+ * con más facilidad que los vídeos, y un hueco negro con un triángulo encima
+ * parece una avería. Con esto, lo que queda es una tarjeta con las iniciales
+ * en grande, que parece hecho a propósito.
+ */
+.respaldo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(155deg, #2a2521 0%, #17140f 62%, #241f1a 100%);
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 54px;
+  letter-spacing: 0.04em;
+  color: rgba(217, 180, 124, 0.5);
+}
+
 .imagen {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Las carátulas de YouTube vienen en 16:9 con bandas negras arriba y abajo
-     cuando el vídeo es vertical. Al recortarlas a 9:16 las bandas se van y
-     queda la cara, que es lo que hay que ver. */
+  /* Las carátulas vienen en 16:9 con bandas negras arriba y abajo cuando el
+     vídeo es vertical. Al recortarlas a 9:16 las bandas se van y queda la
+     cara, que es lo que hay que ver. */
   transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
@@ -133,26 +205,40 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(20, 18, 16, 0.1) 0%,
-    rgba(20, 18, 16, 0) 38%,
-    rgba(20, 18, 16, 0.62) 82%,
-    rgba(20, 18, 16, 0.82) 100%
+    rgba(20, 18, 16, 0.12) 0%,
+    rgba(20, 18, 16, 0) 34%,
+    rgba(20, 18, 16, 0.34) 68%,
+    rgba(20, 18, 16, 0.62) 100%
   );
 }
 
+/*
+ * El botón de play, en cristal.
+ *
+ * Blanco translúcido con el fondo desenfocado: encima de una cara clara sigue
+ * viéndose el círculo, y encima de una oscura sigue viéndose el triángulo. Con
+ * un blanco opaco habría que elegir uno de los dos casos y fallar en el otro.
+ * El filo de arriba es una línea de luz de un píxel: es lo que hace que parezca
+ * un cristal y no una mancha.
+ */
 .play {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 52px;
-  height: 52px;
+  width: 58px;
+  height: 58px;
   border-radius: 999px;
-  background: rgba(251, 249, 246, 0.94);
-  /* Negro fijo y no var(--ink), por lo mismo que el nombre va en blanco fijo:
-     el círculo es claro en los dos temas. Con --ink, en tema oscuro la tinta
-     se vuelve clara y el triángulo desaparecía dentro del círculo. */
-  color: #141210;
+  background: rgba(251, 249, 246, 0.2);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 10px 28px -12px rgba(0, 0, 0, 0.6);
+  /* Blanco fijo y no var(--ink): el cristal es claro en los dos temas, así que
+     con la tinta del tema el triángulo desaparecería en el oscuro. */
+  color: #fbf9f6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -161,28 +247,41 @@
   padding-left: 3px;
   transition:
     transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1),
-    background 0.28s;
+    background 0.28s,
+    border-color 0.28s;
 }
 
 .portada:hover .play {
   transform: translate(-50%, -50%) scale(1.09);
-  background: #fbf9f6;
+  background: rgba(251, 249, 246, 0.32);
+  border-color: rgba(255, 255, 255, 0.62);
 }
 
+/*
+ * La banda del nombre, también en cristal y por la misma razón: va sobre un
+ * fotograma que no se controla. Se despega de los bordes para que se lea como
+ * una pieza apoyada encima y no como el pie de la foto.
+ */
 .rotulo {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 14px 15px 15px;
+  padding: 11px 13px 12px;
+  border-radius: 11px;
+  background: rgba(16, 14, 12, 0.34);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 .nombre {
   font-size: 14.5px;
-  /* Blanco fijo y no un token: esto va SIEMPRE sobre el velo oscuro, que no
+  /* Blanco fijo y no un token: esto va SIEMPRE sobre el cristal oscuro, que no
      cambia con el tema. Con var(--ink) desaparecería en modo claro. */
   color: #fbf9f6;
   text-wrap: pretty;
@@ -193,7 +292,7 @@
   font-weight: 300;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: rgba(251, 249, 246, 0.74);
+  color: rgba(251, 249, 246, 0.82);
   text-wrap: pretty;
 }
 
@@ -211,14 +310,16 @@
 
 .cerrar {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 9px;
+  right: 9px;
   z-index: 2;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 999px;
-  border: none;
-  background: rgba(20, 18, 16, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(16, 14, 12, 0.46);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: #fbf9f6;
   display: flex;
   align-items: center;
@@ -228,7 +329,7 @@
 }
 
 .cerrar:hover {
-  background: rgba(20, 18, 16, 0.86);
+  background: rgba(16, 14, 12, 0.78);
 }
 
 /* ---------- Lo que dijo, escrito ---------- */
@@ -237,6 +338,11 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  /* Tres líneas de hueco reservado aunque la frase ocupe una.
+     16 px de cuerpo × 1,34 de interlineado × 3 ≈ 64. Sin esto cada tarjeta
+     acaba a una altura distinta y la fila queda con el borde de abajo
+     dentado, que es lo primero que se ve mal de un carrusel. */
+  min-height: 64px;
 }
 
 .iniciales {
@@ -245,6 +351,7 @@
   height: 30px;
   border-radius: 999px;
   background: var(--arcilla-tint);
+  border: 1px solid var(--arcilla-line);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -288,6 +395,12 @@
     animation: none;
   }
 
+  .grupo {
+    /* Arrastrando sí hay primera tarjeta, y tiene que empezar en la misma
+       línea que el titular. */
+    padding-left: var(--margen);
+  }
+
   .grupo[aria-hidden='true'] {
     display: none;
   }
@@ -302,18 +415,38 @@
   }
 }
 
+/*
+ * Sin desenfoque de fondo, el cristal sería un velo translúcido y el texto se
+ * quedaría sobre el fotograma a pelo. Se cierran los fondos para que siga
+ * habiendo contraste: vale más una banda opaca que un texto ilegible.
+ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .play {
+    background: rgba(20, 18, 16, 0.55);
+  }
+
+  .rotulo,
+  .cerrar {
+    background: rgba(16, 14, 12, 0.78);
+  }
+}
+
 @media (max-width: 640px) {
   .tarjeta {
-    width: 196px;
+    width: 202px;
   }
 
   .play {
-    width: 46px;
-    height: 46px;
+    width: 50px;
+    height: 50px;
   }
 
   .frase {
     font-size: 15px;
+  }
+
+  .pie {
+    min-height: 60px;
   }
 }
 
