@@ -1,0 +1,80 @@
+/**
+ * Vídeos alojados en Google Drive.
+ *
+ * POR QUÉ DRIVE Y POR QUÉ ESTO EXISTE. Los testimonios están grabados y viven
+ * en una carpeta de Drive. Subirlos al repositorio exigiría bajarlos,
+ * comprimirlos y volver a subirlos cada vez que cambie uno; incrustarlos desde
+ * Drive los pone en la web hoy, sin mover un archivo. Lo carga el navegador de
+ * quien visita la web directamente contra Drive.
+ *
+ * LO QUE HAY QUE SABER ANTES DE CONFIAR EN ESTO:
+ *
+ *   1. El archivo tiene que estar compartido como «cualquier persona con el
+ *      enlace · lector». Si no, el marco sale en gris pidiendo permiso, y lo
+ *      pide a quien está mirando la web, que evidentemente no lo tiene.
+ *   2. Drive no es un CDN. Limita las descargas de un archivo muy visto y
+ *      contesta «se ha superado la cuota». Para seis vídeos en una portada con
+ *      tráfico normal no pasa; para un lanzamiento con mucha gente a la vez,
+ *      sí puede pasar.
+ *   3. El reproductor es el de Drive, con su barra y su botón de abrir aparte.
+ *      No se puede quitar ni cambiar.
+ *
+ * Por eso esto es el camino rápido, no el definitivo. Cuando haya diez minutos,
+ * lo bueno es subirlos al canal de YouTube como ocultos (`tipo: 'youtube'`) o
+ * comprimirlos al repositorio (`npm run testimonios`, `tipo: 'archivo'`). Los
+ * tres tipos conviven; cambiar uno es cambiar una línea en `lib/contenido.ts`.
+ */
+
+/**
+ * Saca el identificador de lo que sea que se pegue: el enlace de «Compartir»,
+ * el de la barra de direcciones, el de vista previa, o el identificador suelto.
+ *
+ * Se admiten todas las formas porque quien copia un enlace de Drive no sabe
+ * cuál de ellas ha copiado, y fallar por eso sería absurdo.
+ */
+export function idDeDrive(crudo: string): string | null {
+  const t = crudo.trim();
+  if (!t) return null;
+
+  const formas = [
+    /drive\.google\.com\/file\/d\/([\w-]+)/, // .../file/d/ID/view
+    /drive\.google\.com\/open\?id=([\w-]+)/, // .../open?id=ID
+    /drive\.google\.com\/uc\?[^\s]*id=([\w-]+)/, // .../uc?export=...&id=ID
+    /docs\.google\.com\/[^\s]*\/d\/([\w-]+)/, // por si se cuela un enlace de Docs
+  ];
+  for (const f of formas) {
+    const m = t.match(f);
+    if (m) return m[1];
+  }
+
+  // Un identificador suelto. Los de Drive son largos; el mínimo de 20 evita
+  // confundir una palabra escrita a mano con un identificador.
+  return /^[\w-]{20,}$/.test(t) ? t : null;
+}
+
+/**
+ * La dirección que va dentro del marco.
+ *
+ * Es `/preview` y no `/view`: `view` es la página entera de Drive, con su
+ * cabecera y su menú, y dentro de un marco de 250 px de ancho no se ve nada.
+ * `preview` es solo el reproductor.
+ */
+export function urlDeDrive(id: string): string {
+  return `https://drive.google.com/file/d/${encodeURIComponent(id)}/preview`;
+}
+
+/**
+ * La imagen de antes de pulsar.
+ *
+ * Drive saca un fotograma de cada vídeo y lo sirve por aquí. `sz=w800` pide
+ * uno de 800 px de ancho: de sobra para una tarjeta de 270 y lo bastante poco
+ * para que no pese.
+ *
+ * Esto falla más a menudo que el reproductor —Drive corta las imágenes
+ * enlazadas desde fuera antes que los vídeos—, así que la tarjeta tiene que
+ * verse bien también sin ella. De eso se ocupa `Testimonios.tsx`, que deja una
+ * carátula dibujada con las iniciales en lugar de un hueco roto.
+ */
+export function caratulaDeDrive(id: string): string {
+  return `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w800`;
+}

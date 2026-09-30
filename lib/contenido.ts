@@ -35,11 +35,19 @@ export const WHATSAPP_SORELA: string = '+34 686 15 45 56';
  * en silencio; a cambio, los vídeos viven en el repositorio y hay que
  * comprimirlos antes (ver `scripts/preparar-testimonios.mjs`).
  *
- * La tarjeta se pinta igual en los dos casos: lo único que cambia es qué se
+ * `drive` es el tercero, y es el rápido: el vídeo se queda donde ya está, en
+ * la carpeta de Drive, y lo carga el navegador de quien mira la web. No hay
+ * que bajar, comprimir ni subir nada. A cambio hereda las tres pegas de Drive
+ * —el archivo tiene que estar compartido con enlace público, el reproductor es
+ * el suyo y no es un CDN—, que están explicadas en `lib/drive.ts`. Sirve para
+ * hoy; para el lanzamiento conviene pasarlos a uno de los otros dos.
+ *
+ * La tarjeta se pinta igual en los tres casos: lo único que cambia es qué se
  * monta al pulsar.
  */
 export type Video =
   | { tipo: 'youtube'; id: string }
+  | { tipo: 'drive'; id: string }
   | { tipo: 'archivo'; src: string; poster: string };
 
 export type Testimonio = {
@@ -103,8 +111,33 @@ export type Testimonio = {
  *   { nombre: 'María José Pardo',
  *     video: { tipo: 'archivo', src: '/testimonios/1.mp4', poster: '/testimonios/1.jpg' },
  *     frase: '…' },
+ *
+ * ---------------------------------------------------------------------------
+ * LOS SEIS DE ABAJO SON LOS DE LA CARPETA «testimonios» DEL DRIVE.
+ *
+ * Los identificadores son los de verdad y el carrusel ya sabe montarlos. Lo
+ * que falta no lo puede sacar nadie del archivo: quién es cada una, qué hizo,
+ * de dónde es y qué frase suya va escrita debajo para quien no le dé al play.
+ *
+ * Mientras a una le falte el nombre o la frase, el carrusel la salta —lo hace
+ * `components/Testimonios.tsx`—, y si las salta todas no pinta la sección.
+ * Es a propósito: más vale no enseñar nada que enseñar una cara con un
+ * «Testimonio 3» debajo.
+ *
+ * Y antes de que se vean hace falta una cosa más, que está en Drive y no aquí:
+ * la carpeta tiene que estar compartida como «cualquier persona con el enlace
+ * · lector». Ahora mismo solo la ve su dueña, así que a quien entre en la web
+ * le saldría el marco gris pidiendo permiso.
+ * ---------------------------------------------------------------------------
  */
-export const TESTIMONIOS: Testimonio[] = [];
+export const TESTIMONIOS: Testimonio[] = [
+  { nombre: '', video: { tipo: 'drive', id: '1RzPh1OgrflSTX-m0P3Jujl3mNUPDOWmc' }, frase: '' },
+  { nombre: '', video: { tipo: 'drive', id: '1JPSUTlmGtpQQulg8W7V_WgfcGachdMvi' }, frase: '' },
+  { nombre: '', video: { tipo: 'drive', id: '17hdIaUHHU2K2zDxSFuQ7le2htqAFsgJD' }, frase: '' },
+  { nombre: '', video: { tipo: 'drive', id: '1XXVo1z1Hzk_ct97X-vOqVE0uzaVsBfF7' }, frase: '' },
+  { nombre: '', video: { tipo: 'drive', id: '1AhxTyeoT0OxQI4_bvLxDVHsW99XenfKM' }, frase: '' },
+  { nombre: '', video: { tipo: 'drive', id: '12vy-BC3eSB9rqWGst0WaduLgB7n5GLzL' }, frase: '' },
+];
 
 
 export type Pregunta = { q: string; a: string };

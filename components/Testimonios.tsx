@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { TESTIMONIOS, type Testimonio, type Video } from '@/lib/contenido';
 import { urlDeVideo } from '@/lib/youtube';
+import { caratulaDeDrive, urlDeDrive } from '@/lib/drive';
 import css from './Testimonios.module.css';
 
 /**
@@ -36,6 +37,17 @@ const MINIMO_POR_GRUPO = 4;
 /** Segundos que tarda una tarjeta en cruzar. Siete se mira sin agobio. */
 const SEGUNDOS_POR_TARJETA = 7;
 
+/**
+ * Un testimonio está listo cuando tiene vídeo, nombre y frase.
+ *
+ * Los tres, no dos. En `lib/contenido.ts` puede haber fichas empezadas —el
+ * vídeo puesto y el nombre todavía no—, y esas se saltan en vez de salir con
+ * un hueco. Una cara sin nombre no es un testimonio: es una foto.
+ */
+function estaListo(t: Testimonio): boolean {
+  return t.nombre.trim().length > 0 && t.frase.trim().length > 0;
+}
+
 export default function Testimonios() {
   /**
    * Cuál se está viendo, o ninguno.
@@ -57,10 +69,11 @@ export default function Testimonios() {
    */
   const [tocando, setTocando] = useState(false);
 
-  if (TESTIMONIOS.length === 0) return null;
+  const listos = TESTIMONIOS.filter(estaListo);
+  if (listos.length === 0) return null;
 
-  const repeticiones = Math.max(1, Math.ceil(MINIMO_POR_GRUPO / TESTIMONIOS.length));
-  const porGrupo = TESTIMONIOS.length * repeticiones;
+  const repeticiones = Math.max(1, Math.ceil(MINIMO_POR_GRUPO / listos.length));
+  const porGrupo = listos.length * repeticiones;
 
   return (
     <section className={css.zona} aria-label="Lo que dicen de la Técnica Divine">
@@ -72,9 +85,7 @@ export default function Testimonios() {
             «testimonios» avisa de que lo que viene está elegido para convencer,
             y se lee con esa reserva puesta. */}
         <h2 className={`titulo-sm ${css.titulo}`}>Se lo pregunté a ellas.</h2>
-        <p className={css.entradilla}>
-          Sin guion y sin repetir la toma. Toca para oírlas.
-        </p>
+        <p className={css.entradilla}>Sin guion y sin repetir la toma. Toca para oírlas.</p>
       </div>
 
       <div
@@ -108,7 +119,7 @@ export default function Testimonios() {
              */
             <div key={copia} className={css.grupo} aria-hidden={copia === 1}>
               {Array.from({ length: repeticiones }).flatMap((_, vez) =>
-                TESTIMONIOS.map((t, i) => {
+                listos.map((t, i) => {
                   const clave = `${copia}-${vez}-${i}`;
                   return (
                     <Tarjeta
@@ -156,6 +167,9 @@ function Tarjeta({
   onAbrir: () => void;
   onCerrar: () => void;
 }) {
+  const iniciales = inicialesDe(nombre);
+  /* Con espacio duro antes del punto: si no, en una pantalla estrecha el
+     separador se queda solo al principio de la línea siguiente. */
   const pie = [de, lugar].filter(Boolean).join(' · ');
 
   return (
@@ -171,13 +185,13 @@ function Tarjeta({
             tabIndex={decorativa ? -1 : undefined}
             aria-label={`Ver el vídeo de ${nombre}`}
           >
-            <Caratula video={video} />
+            <Caratula video={video} iniciales={iniciales} />
             {/* El velo oscuro de abajo: sin él, el nombre en blanco desaparece
                 sobre una carátula clara y no hay forma de saberlo de antemano,
                 porque las carátulas las pone cada vídeo. */}
             <span className={css.velo} aria-hidden="true" />
             <span className={css.play} aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20">
+              <svg viewBox="0 0 24 24" width="21" height="21">
                 <path d="M8 5.2v13.6L19 12z" fill="currentColor" />
               </svg>
             </span>
@@ -191,7 +205,7 @@ function Tarjeta({
 
       <figcaption className={css.pie}>
         <span className={css.iniciales} aria-hidden="true">
-          {inicialesDe(nombre)}
+          {iniciales}
         </span>
         <blockquote className={css.frase}>{frase}</blockquote>
       </figcaption>
@@ -206,28 +220,39 @@ function Tarjeta({
  * —maxres, sd— no las tienen todos los vídeos, y cuando faltan YouTube
  * devuelve una imagen gris de 120×90 que se estira hasta ocupar la tarjeta
  * entera y queda horrible sin que nada avise.
+ *
+ * Debajo va SIEMPRE el respaldo con las iniciales, y no solo cuando la imagen
+ * falla: las carátulas de Drive se cortan con bastante facilidad, y así lo que
+ * queda cuando eso pasa parece una decisión y no una avería.
  */
-function Caratula({ video }: { video: Video }) {
+function Caratula({ video, iniciales }: { video: Video; iniciales: string }) {
   const src =
     video.tipo === 'youtube'
       ? `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`
-      : video.poster;
+      : video.tipo === 'drive'
+        ? caratulaDeDrive(video.id)
+        : video.poster;
 
   return (
-    // Sin next/image a propósito: las de YouTube vienen de fuera y pasarlas por
-    // el optimizador obligaría a declarar su dominio y a que el servidor las
-    // descargue; las propias ya van comprimidas desde el script.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      className={css.imagen}
-      src={src}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      /* Si la carátula no carga, se esconde y queda el fondo oscuro con el
-         nombre encima. Un icono de imagen rota sería peor. */
-      onError={(e) => (e.currentTarget.style.visibility = 'hidden')}
-    />
+    <>
+      <span className={css.respaldo} aria-hidden="true">
+        {iniciales}
+      </span>
+      {/* Sin next/image a propósito: las de YouTube y las de Drive vienen de
+          fuera y pasarlas por el optimizador obligaría a declarar sus dominios
+          y a que el servidor las descargue; las propias ya van comprimidas
+          desde el script. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        className={css.imagen}
+        src={src}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        /* Si la carátula no carga, se esconde y queda el respaldo. */
+        onError={(e) => (e.currentTarget.style.visibility = 'hidden')}
+      />
+    </>
   );
 }
 
@@ -261,16 +286,7 @@ function Reproductor({
 
   return (
     <>
-      {video.tipo === 'youtube' ? (
-        <iframe
-          className={css.reproductor}
-          src={urlDeVideo(video.id, { arrancar: true })}
-          title={`Testimonio de ${nombre}`}
-          allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-          allowFullScreen
-          referrerPolicy="strict-origin-when-cross-origin"
-        />
-      ) : (
+      {video.tipo === 'archivo' ? (
         // eslint-disable-next-line jsx-a11y/media-has-caption
         <video
           ref={reproductor}
@@ -282,6 +298,17 @@ function Reproductor({
           /* Aquí es donde empieza la descarga: antes de pulsar no se ha bajado
              ni un byte de vídeo, solo la carátula. */
           preload="auto"
+        />
+      ) : (
+        <iframe
+          className={css.reproductor}
+          src={
+            video.tipo === 'youtube' ? urlDeVideo(video.id, { arrancar: true }) : urlDeDrive(video.id)
+          }
+          title={`Testimonio de ${nombre}`}
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+          allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
         />
       )}
 
