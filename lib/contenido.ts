@@ -48,7 +48,23 @@ export const WHATSAPP_SORELA: string = '+34 686 15 45 56';
 export type Video =
   | { tipo: 'youtube'; id: string }
   | { tipo: 'drive'; id: string }
-  | { tipo: 'archivo'; src: string; poster: string };
+  | {
+      tipo: 'archivo';
+      /** El vídeo entero, con sonido. Solo se baja al abrir la tarjeta. */
+      src: string;
+      /**
+       * Los primeros segundos, sin sonido y en pequeño: lo que se ve corriendo
+       * en la portada.
+       *
+       * Va aparte del vídeo entero por una razón de peso, literalmente. Cinco
+       * tarjetas moviéndose a la vez con el archivo completo son trece megas en
+       * la primera pantalla; con los bucles son trescientos kilobytes. Lo
+       * escribe `npm run testimonios`. Si falta, la tarjeta usa el vídeo entero
+       * para el bucle: funciona, pero pesa.
+       */
+      bucle?: string;
+      poster: string;
+    };
 
 export type Testimonio = {
   /** Nombre y apellido. Las iniciales del círculo salen de aquí, no se escriben. */
@@ -113,30 +129,80 @@ export type Testimonio = {
  *     frase: '…' },
  *
  * ---------------------------------------------------------------------------
- * LOS SEIS DE ABAJO SON LOS DE LA CARPETA «testimonios» DEL DRIVE.
+ * DE DÓNDE SALEN ESTOS TRES, Y DÓNDE ESTÁN LOS OTROS DOS.
  *
- * Los identificadores son los de verdad y el carrusel ya sabe montarlos. Lo
- * que falta no lo puede sacar nadie del archivo: quién es cada una, qué hizo,
- * de dónde es y qué frase suya va escrita debajo para quien no le dé al play.
+ * Los vídeos llevan los subtítulos incrustados, así que el nombre y la frase
+ * están leídos de la propia imagen, no inventados ni resumidos. Cada frase es
+ * un tramo seguido de lo que dice, sin recomponer.
  *
- * Mientras a una le falte el nombre o la frase, el carrusel la salta —lo hace
- * `components/Testimonios.tsx`—, y si las salta todas no pinta la sección.
- * Es a propósito: más vale no enseñar nada que enseñar una cara con un
- * «Testimonio 3» debajo.
+ * Faltan dos de los cinco:
  *
- * Y antes de que se vean hace falta una cosa más, que está en Drive y no aquí:
- * la carpeta tiene que estar compartida como «cualquier persona con el enlace
- * · lector». Ahora mismo solo la ve su dueña, así que a quien entre en la web
- * le saldría el marco gris pidiendo permiso.
+ *   · El 6 está listo —vídeo comprimido, bucle y carátula— pero en ningún
+ *     momento dice su nombre. Sin nombre no se pinta: una cara con un
+ *     «Testimonio 4» debajo es peor que no enseñar nada.
+ *   · El 5 está a la espera de una decisión que no es técnica. Dice «pasé de
+ *     no llegar a los ingresos suficientes a cobrar más de lo que me podía
+ *     imaginar» y «te aporta libertad financiera». Eso es una promesa de
+ *     rentabilidad sobre una formación de pago, y en publicidad en España es
+ *     de lo poco que está expresamente prohibido. No basta con no escribirlo
+ *     aquí abajo: lo dice el vídeo, y el vídeo se reproduce. O se recorta la
+ *     parte del dinero —los primeros 15 segundos, que hablan del
+ *     acompañamiento, valen solos— o no entra.
+ *
+ * El 2 dice «quería incrementar mucho más mis ingresos». Eso es distinto y sí
+ * entra: cuenta lo que ella buscaba, no lo que el curso le dio. No es una
+ * promesa; es un motivo.
  * ---------------------------------------------------------------------------
  */
 export const TESTIMONIOS: Testimonio[] = [
-  { nombre: '', video: { tipo: 'drive', id: '1RzPh1OgrflSTX-m0P3Jujl3mNUPDOWmc' }, frase: '' },
-  { nombre: '', video: { tipo: 'drive', id: '1JPSUTlmGtpQQulg8W7V_WgfcGachdMvi' }, frase: '' },
-  { nombre: '', video: { tipo: 'drive', id: '17hdIaUHHU2K2zDxSFuQ7le2htqAFsgJD' }, frase: '' },
-  { nombre: '', video: { tipo: 'drive', id: '1XXVo1z1Hzk_ct97X-vOqVE0uzaVsBfF7' }, frase: '' },
-  { nombre: '', video: { tipo: 'drive', id: '1AhxTyeoT0OxQI4_bvLxDVHsW99XenfKM' }, frase: '' },
-  { nombre: '', video: { tipo: 'drive', id: '12vy-BC3eSB9rqWGst0WaduLgB7n5GLzL' }, frase: '' },
+  {
+    nombre: 'Estefanía Galeano',
+    video: {
+      tipo: 'archivo',
+      src: '/testimonios/2.mp4',
+      bucle: '/testimonios/2-bucle.mp4',
+      poster: '/testimonios/2.jpg',
+    },
+    frase: 'Realicé con Sorela aproximadamente seis meses. El curso me aportó muchísimos más conocimientos.',
+    de: 'Formación',
+  },
+  {
+    nombre: 'Andrea Muñoz',
+    video: {
+      tipo: 'archivo',
+      src: '/testimonios/3.mp4',
+      bucle: '/testimonios/3-bucle.mp4',
+      poster: '/testimonios/3.jpg',
+    },
+    frase: 'La he elegido porque de verdad me ha ofrecido resultados inmediatos, y eso es lo que necesito para mi centro.',
+    de: 'Formación',
+  },
+  {
+    nombre: 'Celia Prat',
+    video: {
+      tipo: 'archivo',
+      src: '/testimonios/4.mp4',
+      bucle: '/testimonios/4-bucle.mp4',
+      poster: '/testimonios/4.jpg',
+    },
+    frase: 'Sorela desde un principio me analizó el cuerpo y me dijo qué partes eran más necesarias trabajar.',
+    de: 'Clienta',
+  },
+
+  /* Listo para entrar en cuanto haya nombre. Lo que dice, leído del vídeo:
+     «Me gusta mucho la manera en que explica: se entiende desde el momento
+     uno. Se nota que tiene muchos años de experiencia.»
+  {
+    nombre: '',
+    video: {
+      tipo: 'archivo',
+      src: '/testimonios/6.mp4',
+      bucle: '/testimonios/6-bucle.mp4',
+      poster: '/testimonios/6.jpg',
+    },
+    frase: 'Me gusta mucho la manera en que explica: se entiende desde el momento uno.',
+  },
+  */
 ];
 
 

@@ -230,15 +230,33 @@
 }
 
 
+/*
+ * El velo de abajo.
+ *
+ * Tiene un solo trabajo: que el nombre en blanco se lea sobre cualquier
+ * fotograma, incluido uno con una pared clara justo detrás. Y tiene un solo
+ * peligro: pasarse, y apagarle la cara a la persona, que es lo único que de
+ * verdad hay que ver.
+ *
+ * Los números salen de una cuenta, no del ojo. Se calcula contra el peor
+ * fotograma posible —una pared blanca justo detrás del rótulo—: el velo deja
+ * ese blanco en 178, la banda de cristal al 52 % lo baja a 93, y sobre 93 el
+ * nombre en blanco da 6,3 a 1 y la línea de debajo 5,3. Los dos por encima del
+ * 4,5 que hace falta, con margen.
+ *
+ * Y de la mitad para arriba el velo es CERO. Ahí está la cara, que es lo único
+ * que de verdad hay que ver; oscurecerla «para dar empaque» es el error que
+ * convierte un vídeo de alguien hablando en una foto de archivo.
+ */
 .velo {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(20, 18, 16, 0.12) 0%,
-    rgba(20, 18, 16, 0) 34%,
-    rgba(20, 18, 16, 0.34) 68%,
-    rgba(20, 18, 16, 0.62) 100%
+    rgba(20, 18, 16, 0) 0%,
+    rgba(20, 18, 16, 0) 52%,
+    rgba(20, 18, 16, 0.16) 74%,
+    rgba(20, 18, 16, 0.42) 100%
   );
 }
 
@@ -302,7 +320,7 @@
   gap: 3px;
   padding: 11px 13px 12px;
   border-radius: 11px;
-  background: rgba(16, 14, 12, 0.34);
+  background: rgba(16, 14, 12, 0.52);
   backdrop-filter: blur(16px) saturate(1.2);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -322,7 +340,7 @@
   font-weight: 300;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: rgba(251, 249, 246, 0.82);
+  color: rgba(251, 249, 246, 0.88);
   text-wrap: pretty;
 }
 

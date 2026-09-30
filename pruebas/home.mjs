@@ -58,13 +58,42 @@ check(
 /* El carrusel de testimonios solo existe si hay testimonios de verdad. Con la
    lista vacía no puede salir ni la sección ni el título: un apartado de
    testimonios en blanco es un cartel diciendo que nadie ha dicho nada. */
-const hayTestimonios = (await p.locator('section[aria-label="Lo que dicen de la Técnica Divine"]').count()) > 0;
-const hayTarjetas = (await p.locator('[class*="testimonios-module"] blockquote').count()) > 0;
+const zonaTestimonios = p.locator('section[aria-label="Lo que dicen de la Técnica Divine"]');
+const hayTestimonios = (await zonaTestimonios.count()) > 0;
+/* Ojo con el selector: el módulo se llama `Testimonios` con mayúscula, y las
+   clases que genera también. Estuvo escrito en minúscula y no encontraba nada,
+   así que esta comprobación pasaba en verde por partida doble —sin sección y
+   sin tarjetas— y habría dejado pasar una sección vacía sin decir nada. */
+const tarjetas = hayTestimonios ? await zonaTestimonios.locator('blockquote').count() : 0;
 check(
   'el apartado de testimonios solo sale si hay testimonios',
-  hayTestimonios === hayTarjetas,
-  hayTestimonios ? 'la sección está pintada' : 'sin testimonios cargados, no se pinta'
+  hayTestimonios === tarjetas > 0,
+  hayTestimonios ? `${tarjetas} tarjetas` : 'sin testimonios cargados, no se pinta'
 );
+
+if (hayTestimonios) {
+  /* Cada tarjeta lleva su vídeo puesto y corriendo, no una foto con un botón. */
+  const videos = await zonaTestimonios.locator('video').count();
+  check('cada tarjeta lleva su vídeo', videos === tarjetas, `${videos} vídeos / ${tarjetas} tarjetas`);
+
+  /* Lo que se carga en la portada es el bucle ligero. Si esto se rompe, la
+     portada pasa de trescientos kilobytes a diez megas sin que se note al
+     mirarla: se ve exactamente igual. */
+  const fuentes = await zonaTestimonios.locator('video').evaluateAll((vs) =>
+    vs.map((v) => v.getAttribute('src') || '')
+  );
+  check(
+    'la portada carga el bucle ligero, no el vídeo entero',
+    fuentes.every((s) => /-bucle\.mp4$/.test(s)),
+    fuentes.find((s) => !/-bucle\.mp4$/.test(s)) ?? 'todos son bucles'
+  );
+
+  check(
+    'y todos arrancan en silencio',
+    await zonaTestimonios.locator('video').evaluateAll((vs) => vs.every((v) => v.muted)),
+    'alguno arrancaba con sonido'
+  );
+}
 check(
   'la comunidad NO lleva precio en el inicio',
   !/\d+\s*€/.test(txt),

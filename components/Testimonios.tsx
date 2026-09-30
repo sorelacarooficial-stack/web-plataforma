@@ -348,13 +348,27 @@ function Bucle({
   /** Si está a la vista. Fuera de la pantalla no se reproduce nada. */
   const [alaVista, setAlaVista] = useState(false);
 
-  const src =
+  /*
+   * Dos archivos, no uno.
+   *
+   * Mientras corre en mudo se usa el bucle: unos segundos, sin sonido y en
+   * pequeño, unas decenas de kilobytes. Al abrirse se monta el vídeo entero.
+   * Si no hay bucle —un vídeo de Drive, o uno propio sin preparar— se usa el
+   * completo para las dos cosas: funciona igual, solo que la portada pesa.
+   *
+   * El cambio de archivo no da salto en pantalla porque la carátula es la
+   * misma en los dos, y React vuelve a montar la etiqueta con ella puesta.
+   */
+  const bucle = video.tipo === 'archivo' ? video.bucle : undefined;
+  const entero =
     video.tipo === 'drive'
       ? urlDirectaDeDrive(video.id)
       : video.tipo === 'archivo'
         ? video.src
         : '';
-  const poster = video.tipo === 'drive' ? caratulaDeDrive(video.id) : (video as { poster?: string }).poster;
+  const src = abierto ? entero : (bucle ?? entero);
+  const poster =
+    video.tipo === 'drive' ? caratulaDeDrive(video.id) : (video as { poster?: string }).poster;
 
   useEffect(() => {
     const v = ref.current;
@@ -367,7 +381,16 @@ function Bucle({
     );
     vigia.observe(v);
     return () => vigia.disconnect();
-  }, []);
+    /*
+     * Depende de `src` a propósito, y no es una dependencia de adorno: al
+     * abrirse cambia el archivo, y con él la etiqueta <video> entera —lleva
+     * `key`—. Sin volver a mirar aquí, el vigía se quedaba observando el
+     * elemento viejo, ya desenganchado del documento, que nunca más entra ni
+     * sale de la pantalla. Resultado: después de abrir una tarjeta por primera
+     * vez, esa tarjeta se quedaba reproduciéndose para siempre, también fuera
+     * de la vista. Justo lo que este vigía existe para evitar.
+     */
+  }, [src]);
 
   /* Arrancar y parar según entre y salga, y según se abra. */
   useEffect(() => {
@@ -398,13 +421,17 @@ function Bucle({
    */
   const vigilarElTiempo = useCallback(() => {
     const v = ref.current;
-    if (!v || abierto) return;
+    if (!v || abierto || bucle) return;
     if (v.currentTime > SEGUNDOS_DE_BUCLE) v.currentTime = 0;
-  }, [abierto]);
+  }, [abierto, bucle]);
 
   return (
     // eslint-disable-next-line jsx-a11y/media-has-caption
     <video
+      /* La clave cambia con el archivo para que el navegador vuelva a cargar
+         de verdad al pasar del bucle al vídeo entero, en vez de quedarse con
+         lo que ya tenía en memoria. */
+      key={src}
       ref={ref}
       className={css.reproductor}
       src={src}
@@ -412,18 +439,22 @@ function Bucle({
       muted
       playsInline
       controls={abierto}
+      /* Con un bucle aparte —que ya dura solo unos segundos— se repite solo y
+         sin costura. Sin él hay que cortar a mano, y eso da un salto visible
+         cada vuelta; es el precio de no tener el archivo preparado. */
+      loop={!abierto && !!bucle}
       /* `metadata` y no `auto`: se baja lo justo para poder empezar, y el resto
          va llegando según se reproduce. Con `auto` el navegador intentaría
          bajarse los seis archivos enteros nada más abrir la página. */
       preload="metadata"
       onTimeUpdate={vigilarElTiempo}
       onError={alFallar}
-      /* Cuando acaba estando abierto, vuelve al bucle mudo en vez de quedarse
-         en negro con el último fotograma. */
+      /* Cuando acaba, vuelve al principio y se queda quieto. No se rearranca
+         solo: quien lo ha visto entero no quiere que empiece otra vez sin
+         haberlo pedido, y el último fotograma congelado parece una avería. */
       onEnded={(e) => {
+        e.currentTarget.pause();
         e.currentTarget.currentTime = 0;
-        e.currentTarget.muted = true;
-        e.currentTarget.play().catch(() => {});
       }}
     />
   );
