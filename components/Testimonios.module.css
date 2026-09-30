@@ -1,9 +1,9 @@
 /*
- * El carrusel de testimonios.
+ * El carrusel de testimonios en vídeo.
  *
  * El movimiento es el mismo que el de la barra de la portada: dos copias de la
- * lista y un desplazamiento del 50%. Lo que cambia aquí son las tarjetas, que
- * tienen alto y hay que igualarlas, y la velocidad, que llega desde el
+ * lista y un desplazamiento del 50 %. Lo que cambia aquí son las tarjetas, que
+ * llevan un vídeo vertical dentro, y la velocidad, que llega desde el
  * componente en la variable `--vuelta` porque depende de cuántos haya.
  */
 
@@ -13,6 +13,26 @@
   border-top: 1px solid var(--azul-line);
   border-bottom: 1px solid var(--azul-line);
   overflow: hidden;
+}
+
+.cabeza {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.titulo {
+  color: var(--ink);
+}
+
+.entradilla {
+  margin: 0;
+  max-width: 460px;
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--muted-2);
+  text-wrap: pretty;
 }
 
 .ventana {
@@ -33,10 +53,17 @@
   animation: divineTestimonios var(--vuelta, 42s) linear infinite;
 }
 
-/* Al pasar el ratón se para, para poder terminar de leer el que iba a
-   escaparse. Con :focus-within, lo mismo llegando por teclado. */
-.zona:hover .tira,
-.zona:focus-within .tira {
+/*
+ * Se para cuando alguien está mirando, y eso llega por dos vías.
+ *
+ * `data-quieto` lo pone el componente: hay un vídeo puesto, o hay un dedo o un
+ * ratón encima. El `:focus-within` es para quien va por teclado, que no toca
+ * nada. La parada por ratón NO se hace aquí con `:hover` aunque se podría: en
+ * un móvil no existe, y allí es donde más falta hace, así que vale más que las
+ * dos vengan del mismo sitio y se comporten igual.
+ */
+.zona:focus-within .tira,
+.tira[data-quieto] {
   animation-play-state: paused;
 }
 
@@ -44,107 +71,206 @@
   flex: 0 0 auto;
   display: flex;
   align-items: stretch;
-  gap: clamp(16px, 1.8vw, 24px);
+  gap: clamp(14px, 1.6vw, 22px);
   /* La misma separación entre la última tarjeta de una copia y la primera de
      la siguiente, para que el ritmo no se rompa justo en la costura. */
-  padding-right: clamp(16px, 1.8vw, 24px);
+  padding-right: clamp(14px, 1.6vw, 22px);
 }
 
-/* ---------- La tarjeta ---------- */
+/* ==========================================================================
+   La tarjeta
+   ========================================================================== */
 
 .tarjeta {
-  position: relative;
   flex: 0 0 auto;
-  width: clamp(270px, 30vw, 380px);
+  width: clamp(212px, 19vw, 268px);
   margin: 0;
-  padding: clamp(26px, 2.8vw, 36px) clamp(24px, 2.6vw, 34px);
-  background: var(--surface);
-  border: 1px solid var(--line-4);
-  /* Filete dorado arriba, el mismo recurso con el que se marcan en el resto de
-     la web las cosas que tienen peso. */
-  border-top: 2px solid var(--oro);
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  justify-content: space-between;
+  gap: 14px;
 }
 
-/*
- * La comilla va EN EL FLUJO, encima de la frase, y no flotando en una esquina.
- *
- * Estaba absoluta arriba a la derecha y el texto pasaba por debajo: en las
- * frases que llenaban el ancho, la primera línea acababa metida dentro del
- * dibujo. Poniéndola en su sitio no hay colisión posible, mida lo que mida lo
- * que dijo la persona, y además se lee como lo que es: una cita.
- *
- * El margen negativo recupera el hueco que deja la altura de línea del glifo,
- * que en esta serif es mucha.
- */
-.comilla {
+/* El marco del vídeo: vertical, que es como se graban estas cosas con el
+   móvil. Forzar 16:9 dejaría dos franjas negras a los lados de cada cara. */
+.marco {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  background: var(--inverse-bg, #141210);
+  border: 1px solid var(--line-4);
+}
+
+.portada {
+  position: absolute;
+  inset: 0;
   display: block;
-  margin-bottom: -22px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(46px, 4.4vw, 62px);
-  line-height: 0.9;
-  color: var(--oro);
-  /* Apagada: acompaña, no compite con lo que dijo la persona. */
-  opacity: 0.3;
-  user-select: none;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  /* Para que el rótulo de abajo se apoye en el borde de la tarjeta. */
+  text-align: left;
 }
 
-.frase {
-  margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(18px, 1.8vw, 22px);
-  line-height: 1.4;
-  color: var(--ink);
+.imagen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Las carátulas de YouTube vienen en 16:9 con bandas negras arriba y abajo
+     cuando el vídeo es vertical. Al recortarlas a 9:16 las bandas se van y
+     queda la cara, que es lo que hay que ver. */
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.portada:hover .imagen {
+  transform: scale(1.04);
+}
+
+.velo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 18, 16, 0.1) 0%,
+    rgba(20, 18, 16, 0) 38%,
+    rgba(20, 18, 16, 0.62) 82%,
+    rgba(20, 18, 16, 0.82) 100%
+  );
+}
+
+.play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: rgba(251, 249, 246, 0.94);
+  /* Negro fijo y no var(--ink), por lo mismo que el nombre va en blanco fijo:
+     el círculo es claro en los dos temas. Con --ink, en tema oscuro la tinta
+     se vuelve clara y el triángulo desaparecía dentro del círculo. */
+  color: #141210;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* El triángulo tira a la izquierda dentro de su caja; se compensa para que
+     parezca centrado, que es lo que el ojo espera. */
+  padding-left: 3px;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1),
+    background 0.28s;
+}
+
+.portada:hover .play {
+  transform: translate(-50%, -50%) scale(1.09);
+  background: #fbf9f6;
+}
+
+.rotulo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 15px 15px;
+}
+
+.nombre {
+  font-size: 14.5px;
+  /* Blanco fijo y no un token: esto va SIEMPRE sobre el velo oscuro, que no
+     cambia con el tema. Con var(--ink) desaparecería en modo claro. */
+  color: #fbf9f6;
   text-wrap: pretty;
 }
 
-.pie {
+.detalle {
+  font-size: 10.5px;
+  font-weight: 300;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(251, 249, 246, 0.74);
+  text-wrap: pretty;
+}
+
+/* ---------- Con el vídeo puesto ---------- */
+
+.reproductor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
+  object-fit: contain;
+}
+
+.cerrar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(20, 18, 16, 0.62);
+  color: #fbf9f6;
   display: flex;
   align-items: center;
-  gap: 13px;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cerrar:hover {
+  background: rgba(20, 18, 16, 0.86);
+}
+
+/* ---------- Lo que dijo, escrito ---------- */
+
+.pie {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .iniciales {
   flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   border-radius: 999px;
   background: var(--arcilla-tint);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
   color: var(--arcilla-ink);
 }
 
-.quien {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.nombre {
-  font-size: 14px;
+.frase {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 16px;
+  line-height: 1.34;
   color: var(--ink);
-}
-
-.detalle {
-  font-size: 11px;
-  font-weight: 300;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--azul-ink);
   text-wrap: pretty;
+  /* Tres líneas y lo que sobre se corta. No es por estética: las tarjetas van
+     en fila y una frase larga estiraría la suya el doble que las demás. La
+     frase entera está en el vídeo, que es a lo que lleva el botón. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /*
- * Quien ha pedido que las cosas no se muevan, que las lea a su ritmo.
+ * Quien ha pedido que las cosas no se muevan, que las mire a su ritmo.
  *
  * No basta con quitar la animación: sin ella la tira se queda parada y las
  * tarjetas de más allá del borde son inalcanzables. Se convierte en una fila
@@ -169,11 +295,25 @@
   .tarjeta {
     scroll-snap-align: center;
   }
+
+  .imagen,
+  .play {
+    transition: none;
+  }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   .tarjeta {
-    width: min(84vw, 320px);
+    width: 196px;
+  }
+
+  .play {
+    width: 46px;
+    height: 46px;
+  }
+
+  .frase {
+    font-size: 15px;
   }
 }
 

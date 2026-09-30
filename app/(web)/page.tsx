@@ -330,6 +330,7 @@ export default function Home() {
             textoCita="Agendar una cita"
             preguntaCita="Quiero agendar una cita. ¿Cómo lo hacemos?"
             alineacion="centro"
+            sobre="oscuro"
           />
         </div>
       </section>

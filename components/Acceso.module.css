@@ -149,20 +149,27 @@
   text-wrap: pretty;
 }
 
+/* La etiqueta entera es lo que se pulsa, y por eso lleva alto mínimo: el
+   cuadradito son 20 px, y 20 px de lado para un dedo es poco. Con 44 el
+   objetivo es toda la línea del texto, que es además lo que la gente intenta
+   tocar. Los mismos números que los formularios de la web pública
+   (`Formularios.module.css`), para que las dos casillas se toquen igual. */
 .condiciones {
   display: flex;
   gap: 10px;
   align-items: flex-start;
+  min-height: 44px;
   font-size: 13px;
   font-weight: 300;
   line-height: 1.5;
   color: var(--muted-2);
+  cursor: pointer;
 }
 
 .casilla {
-  margin-top: 3px;
-  width: 15px;
-  height: 15px;
+  margin-top: 2px;
+  width: 20px;
+  height: 20px;
   flex: 0 0 auto;
   accent-color: var(--oro);
 }
@@ -185,10 +192,13 @@
   background: var(--oro);
 }
 
+/* El relleno vertical no se ve y está para que se pueda pulsar: sin él son
+   19 px de alto, y lo mínimo razonable son 24. `align-self` lo deja pegado a
+   la izquierda, así que ensancharlo no descuadra nada. */
 .olvido {
   margin-top: 4px;
   align-self: flex-start;
-  padding: 0;
+  padding: 3px 0;
   background: none;
   border: none;
   font-size: 13.5px;
@@ -269,7 +279,11 @@
   gap: 18px;
 }
 
+/* Lo mismo que .olvido: 18 px de alto eran pocos para acertarle. Va en
+   línea propia al pie de la tarjeta, así que el relleno no empuja a nadie. */
 .volver {
+  display: inline-block;
+  padding: 4px 0;
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;

@@ -108,12 +108,19 @@
   color: var(--mapa-label);
 }
 
+/* La atribución del mapa. Es la única cosa de este componente que va escrita
+   DIRECTAMENTE sobre el mapa, sin plaquita debajo: las demás —la leyenda, los
+   botones, la ficha— se apoyan en --mapa-chrome, y sobre ese fondo el gris
+   --mapa-txt-2 se lee de sobra. Aquí el fondo es el mar (#dde6ec) y ese mismo
+   gris se quedaba en 3,78 a 1, por debajo del 4,5 que necesita un texto
+   pequeño. Se usa el gris fuerte, que da 7,4 sobre el mar y 8,2 sobre la
+   tierra, y 10 px para una atribución legal es demasiado poco de todas formas. */
 .fuente {
   position: absolute;
   right: 10px;
   bottom: 10px;
-  font-size: 10px;
-  color: var(--mapa-txt-2);
+  font-size: 11px;
+  color: var(--mapa-txt);
 }
 
 /* En estrecho la leyenda mide 233 px fijos y la atribución se le imprimía

@@ -25,11 +25,37 @@ export const WHATSAPP_SORELA: string = '+34 686 15 45 56';
  * publica ninguno.
  */
 
+/**
+ * Dónde está el vídeo de un testimonio. Dos formas, y las dos valen.
+ *
+ * `youtube` no cuesta nada, no engorda el repositorio y aguanta cualquier
+ * tráfico, pero al darle al play aparece el reproductor de YouTube con su
+ * marca. `archivo` es un MP4 servido desde la propia web: se reproduce dentro
+ * de la tarjeta, sin salir del diseño, y permite que la portada se mueva sola
+ * en silencio; a cambio, los vídeos viven en el repositorio y hay que
+ * comprimirlos antes (ver `scripts/preparar-testimonios.mjs`).
+ *
+ * La tarjeta se pinta igual en los dos casos: lo único que cambia es qué se
+ * monta al pulsar.
+ */
+export type Video =
+  | { tipo: 'youtube'; id: string }
+  | { tipo: 'archivo'; src: string; poster: string };
+
 export type Testimonio = {
-  /** Lo que dijo, con sus palabras. Dos o tres frases se leen de un vistazo. */
-  frase: string;
   /** Nombre y apellido. Las iniciales del círculo salen de aquí, no se escriben. */
   nombre: string;
+  /** Su vídeo. Es lo que se enseña: lo demás acompaña. */
+  video: Video;
+  /**
+   * Una frase suya, escrita.
+   *
+   * No es decoración ni un resumen: es lo que lee quien no va a darle al play,
+   * que es la mayoría. Si esto falta, la tarjeta es una foto con un botón y no
+   * dice nada. Sale también para quien navega con lector de pantalla, que no
+   * puede ver el vídeo.
+   */
+  frase: string;
   /** Dónde trabaja: «Valencia», «Bogotá». Opcional. */
   lugar?: string;
   /** Qué hizo: «Formación Base», «Comunidad Divine», «Clienta». Opcional. */
@@ -66,10 +92,17 @@ export type Testimonio = {
  *
  * El formato es este, y se pueden poner los que sean:
  *
- *   { frase: 'Lo que dijo, entrecomillado no hace falta.',
- *     nombre: 'María José Pardo',
+ *   { nombre: 'María José Pardo',
+ *     video: { tipo: 'youtube', id: 'dQw4w9WgXcQ' },
+ *     frase: 'Lo que dijo, para quien no le dé al play.',
  *     lugar: 'Valencia',
  *     de: 'Formación Base' },
+ *
+ * O con el vídeo alojado aquí, que es lo que deja `npm run testimonios`:
+ *
+ *   { nombre: 'María José Pardo',
+ *     video: { tipo: 'archivo', src: '/testimonios/1.mp4', poster: '/testimonios/1.jpg' },
+ *     frase: '…' },
  */
 export const TESTIMONIOS: Testimonio[] = [];
 

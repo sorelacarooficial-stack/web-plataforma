@@ -38,6 +38,37 @@
   border-color: var(--arcilla);
 }
 
+/*
+ * La misma llamada, pero encima de una banda oscura.
+ *
+ * El enlace usa --ink, que es tinta para fondo claro; sobre el negro del
+ * cierre se quedaba en 1,59 a 1, es decir, no se veía. No vale con invertir
+ * el tema: la banda es oscura en los dos temas, así que los colores tienen
+ * que salir de los tokens invertidos, que son los que no cambian de sentido.
+ * El botón sólido de al lado tiene el mismo problema —fondo --ink sobre
+ * banda oscura— y se arregla con `.btn-claro`, que ya existía en globals
+ * para esto; lo pone el componente.
+ */
+.citaClara {
+  color: var(--on-inverse-2);
+  border-bottom-color: var(--line-inverse-2);
+}
+
+.citaClara:hover {
+  color: var(--inverse-ink);
+  border-bottom-color: var(--accent-inverse);
+}
+
+.citaClara:focus-visible {
+  outline-color: var(--accent-inverse);
+}
+
+/* El punto también: --arcilla en tema claro es un marrón que sobre el negro
+   de la banda casi no se distingue del fondo. */
+.citaClara .citaPunto {
+  background: var(--accent-inverse);
+}
+
 .cita:focus-visible {
   outline: 2px solid var(--arcilla);
   outline-offset: 4px;

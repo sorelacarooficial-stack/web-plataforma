@@ -13,6 +13,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "fotos": "node scripts/optimizar-imagenes.mjs",
+    "testimonios": "node scripts/preparar-testimonios.mjs",
     "mapa": "node scripts/preparar-mapa.mjs",
     "capturas": "node pruebas/capturas.mjs",
     "manuales": "node --env-file=.env.local docs/capturas.mjs && node docs/optimizar.mjs && node docs/generar.mjs",

@@ -280,6 +280,24 @@
   text-wrap: pretty;
 }
 
+/*
+ * Esta clase FALTABA, y el párrafo del cierre llevaba desde entonces escrito
+ * en tinta negra sobre el fondo negro de la banda: 1,02 a 1, invisible. En
+ * React eso no da ningún error —`css.cierreTexto` vale `undefined`, el
+ * atributo sale vacío y el párrafo hereda el color del tema claro—, así que
+ * nadie se entera hasta que lo mira. Es la última frase que lee quien ha
+ * bajado la página entera.
+ */
+.cierreTexto {
+  margin: 0;
+  max-width: 620px;
+  font-size: clamp(16px, 1.4vw, 18px);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--on-inverse-2);
+  text-wrap: pretty;
+}
+
 
 /* ==========================================================================
    Las dos puertas (qué existe hoy / qué está en beta)
