@@ -264,7 +264,11 @@ var TEXTOS = {
   comunidad: {
     saludo: 'Gracias por apuntarte a la lista. Como ya eres terapeuta, voy al grano.',
     parrafos: [
-      'La Comunidad Divine abre el sábado 17 de octubre a las 16:00, hora de España. Quien entra en el lanzamiento conserva el precio de fundadora mientras siga dentro.',
+      /* OJO: esto vive fuera del repositorio de la web, en Apps Script, así que
+         no puede leer lib/apertura.ts. Es la única copia de la fecha escrita a
+         mano que queda, y hay que cambiarla A PARTE cuando se mueva el
+         lanzamiento: se edita aquí y se vuelve a implementar el script. */
+      'La Comunidad Divine abre el viernes 6 de noviembre a las 19:00, hora de España: 15:00 en Argentina, 14:00 en Venezuela y 13:00 en Colombia. Quien entra en el lanzamiento conserva el precio de fundadora mientras siga dentro.',
       {
         con: 'A ti te aviso antes que a nadie. Te adjunto la información de la técnica por si quieres repasarla.',
         sin: 'A ti te aviso antes que a nadie. Quería adjuntarte la información de la técnica por si querías repasarla y se me ha quedado fuera del correo: respóndeme y te la mando.',

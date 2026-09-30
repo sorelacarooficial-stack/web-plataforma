@@ -17,6 +17,11 @@
  * reserva si falla.
  */
 
+/* La fecha y la hora de apertura salen de lib/apertura.ts. Aquí estaban
+   escritas a mano en tres frases distintas, y al mover el lanzamiento el
+   asistente se quedaba dando la fecha vieja a quien preguntara. */
+import { APERTURA_POR_PAISES, DIA_APERTURA, FECHA_APERTURA, HORA_ESPANA } from './apertura';
+
 export type Mensaje = { rol: 'yo' | 'asistente'; texto: string };
 
 export const SALUDO =
@@ -40,7 +45,7 @@ export const PROMPT_SISTEMA = [
   'FORMACIÓN, EN DOS ETAPAS Y EN ESTE ORDEN: (1) Online, obligatoria y previa: anatomía linfática, lógica del método y protocolo por fases, a su ritmo y desde su país. (2) Presencial, dos jornadas conmigo: día 1 lipodrenaje, día 2 moldeo y tonificación, con práctica sobre modelos reales. No se puede empezar por la presencial.',
   'FECHAS: las próximas convocatorias son en Sudamérica y están a punto de confirmarse. NO inventes ciudades, fechas ni precios. Lo que ofreces es guardar el sitio: pides nombre, correo y teléfono y dices que avisas en cuanto se cierre la fecha.',
   'AGENDAR CITA: no recojas los datos escritos en el chat, porque no se guardan en ninguna parte. Ofrece abrir el formulario, sin explicar por qué ni hablar de consentimientos: eso es asunto de la web, no de la conversación. Tampoco des horas concretas: no tienes acceso al calendario.',
-  'COMUNIDAD DIVINE: abre el sábado 17 de octubre a las 16:00, hora de España. Cuesta 47 € al mes y quien entra ahora conserva ese precio fundador mientras siga dentro. Incluye una clase en vivo al mes de actualizaciones, acompañamiento personalizado, canal privado en Telegram, la agenda para tus reservas y ficha en el mapa de terapeutas. Es para quien se haya certificado conmigo; en la lista de espera puede entrar cualquiera.',
+  `COMUNIDAD DIVINE: abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España (${APERTURA_POR_PAISES}). Cuesta 47 € al mes y quien entra ahora conserva ese precio fundador mientras siga dentro. Incluye una clase en vivo al mes de actualizaciones, acompañamiento personalizado, canal privado en Telegram, la agenda para tus reservas y ficha en el mapa de terapeutas. Es para quien se haya certificado conmigo; en la lista de espera puede entrar cualquiera.`,
   'CLIENTAS (no profesionales): el mapa de terapeutas certificadas todavía está vacío, porque las primeras aún se están formando. No mandes a nadie a reservar con una terapeuta: recoge el contacto por el formulario y di que avisas cuando haya alguna cerca.',
   'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
   'Termina siempre orientando al siguiente paso concreto.',
@@ -109,11 +114,11 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
   {
     patron: /comunidad|membres|suscrip|lista|47|telegram|fundador/,
     respuesta:
-      'La membresía abre el sábado 17 de octubre a las 16:00, hora de España. Son 47 € al mes, y quien entra en el lanzamiento conserva ese precio.\nDentro: una clase en vivo al mes, tus casos mirados uno a uno, canal privado en Telegram, la agenda para tus reservas y tu ficha en el mapa.',
+      `La membresía abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España.\n${APERTURA_POR_PAISES}.\nSon 47 € al mes, y quien entra en el lanzamiento conserva ese precio.\nDentro: una clase en vivo al mes, tus casos mirados uno a uno, canal privado en Telegram, la agenda para tus reservas y tu ficha en el mapa.`,
     accion: {
       tipo: 'captar',
       titulo: 'Entra en la lista',
-      entradilla: 'Te aviso antes de que abra el 17 de octubre, y entras con el precio de lanzamiento. No pido tarjeta.',
+      entradilla: `Te aviso antes de que abra el ${FECHA_APERTURA}, y entras con el precio de lanzamiento. No pido tarjeta.`,
       etiqueta: 'Apuntarme a la lista',
       origen: 'comunidad-asistente',
     },

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Contador from '@/components/Contador';
 import ListaEspera from '@/components/ListaEspera';
+import { FECHA_APERTURA } from '@/lib/apertura';
 import { COMUNIDAD, OBJECIONES, PIEZAS_COMUNIDAD } from '@/lib/contenido';
 import css from './comunidad.module.css';
 
@@ -12,9 +13,9 @@ import css from './comunidad.module.css';
  * certificadas— para que no se cuele quien todavía busca formarse.
  *
  * La descripción ya no lleva la fecha de apertura ni el precio: la fecha
- * caduca el 17 de octubre y en Google tarda semanas en refrescarse, así que
- * quedaría anunciando algo que ya pasó. Ambos están en la página, que sí se
- * actualiza sola.
+ * caduca el día del lanzamiento y en Google tarda semanas en refrescarse, así
+ * que quedaría anunciando algo que ya pasó. Ambos están en la página, que sí
+ * se actualiza sola.
  */
 export const metadata: Metadata = {
   title: { absolute: 'La Comunidad Divine para terapeutas ya certificadas' },
@@ -82,8 +83,8 @@ export default function Comunidad() {
             {COMUNIDAD.precio} € {COMUNIDAD.periodo}, precio de lanzamiento.
           </h2>
           <p className={css.precioTexto}>
-            Quien entra el 17 de octubre lo conserva mientras siga dentro, aunque después suba.
-            Eso sí te lo puedo prometer.
+            Quien entra el {FECHA_APERTURA} lo conserva mientras siga dentro, aunque después
+            suba. Eso sí te lo puedo prometer.
           </p>
         </div>
       </section>

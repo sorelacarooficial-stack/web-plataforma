@@ -1,18 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { APERTURA, HORAS_APERTURA } from '@/lib/apertura';
 import css from './Contador.module.css';
 
 /**
- * Cuenta atrás hasta la apertura de la Comunidad Divine.
+ * Cuenta atrás hasta la apertura de la Comunidad Divine, con la hora que le
+ * toca a cada país.
  *
- * El 17 de octubre de 2026 a las 16:00 en España son las 14:00 UTC: en esa
- * fecha España va en horario de verano (UTC+2), que no cambia hasta el último
- * domingo de octubre. Se escribe con el desfase explícito para que la hora sea
- * la misma se mire desde donde se mire — importa, porque hay público en
- * Sudamérica y «las 16:00» significa otra cosa allí.
+ * La fecha ya no vive aquí: está en `lib/apertura.ts`. Vivía en este archivo y
+ * además escrita a mano en otros siete sitios, y moverla era buscar «17 de
+ * octubre» por el repositorio y confiar en no dejarse ninguno.
+ *
+ * Las horas de los cuatro países sí se pintan siempre, tenga o no sentido la
+ * cuenta atrás. No es decoración: media lista está en Sudamérica, y «a las
+ * siete de la tarde» sin decir de dónde hace que alguien se pierda el directo
+ * por cuatro horas. Van calculadas del mismo instante, así que no pueden
+ * desajustarse entre ellas.
  */
-export const APERTURA = '2026-10-17T16:00:00+02:00';
 
 const UNIDADES = [
   { clave: 'dias', singular: 'día', plural: 'días' },
@@ -85,6 +90,29 @@ export default function Contador({ compacto = false }: { compacto?: boolean }) {
             } ${restante.horas === 1 ? 'hora' : 'horas'} para la apertura.`
           : 'Calculando cuánto falta para la apertura.'}
       </p>
+
+      <Husos />
     </div>
+  );
+}
+
+/**
+ * La hora del directo en cada país.
+ *
+ * Va fuera del `if` de arriba a propósito: cuando la comunidad ya esté
+ * abierta, el contador desaparece pero esto sigue teniendo sentido si algún
+ * día se reutiliza para otra fecha. De momento se pinta siempre que se pinte
+ * el contador.
+ */
+function Husos() {
+  return (
+    <ul className={css.husos}>
+      {HORAS_APERTURA.map(({ lugar, hora }, i) => (
+        <li key={lugar} className={`${css.huso} ${i === 0 ? css.husoPrincipal : ''}`}>
+          <span className={css.husoHora}>{hora}</span>
+          <span className={css.husoLugar}>{lugar}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
