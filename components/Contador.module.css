@@ -1,15 +1,29 @@
-/* Cuenta atrás. Las cifras van en la serif de la marca y bien grandes: es el
-   único sitio de la web donde un número es el protagonista. */
+/*
+ * Cuenta atrás hasta la apertura.
+ *
+ * ESTE COMPONENTE SE PINTA SOBRE DOS FONDOS OPUESTOS: la portada lo pone sobre
+ * la banda oscura del lanzamiento y /comunidad sobre papel claro. Antes eso se
+ * resolvía dándole a todo una superficie clara fija, y de ahí salían cuatro
+ * cuadrados blancos de canto vivo y una barra blanca maciza encima de un fondo
+ * cálido: legible, pero con la delicadeza de un widget de 2010.
+ *
+ * Ahora hay dos variantes de verdad. Sobre oscuro, las piezas son cristal
+ * —blanco a muy baja opacidad con el fondo desenfocado—, así que la banda y su
+ * halo dorado siguen viéndose por debajo y las cajas parecen apoyadas encima,
+ * no pegadas. Sobre claro, papel con una sombra abierta. Las dos con el mismo
+ * radio, el mismo ritmo y la misma tipografía: es la misma pieza, no dos.
+ */
 
 .contador {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: inherit;
+  gap: clamp(12px, 1.6vw, 18px);
 }
 
 .bloques {
   display: flex;
-  gap: clamp(8px, 1.4vw, 16px);
+  gap: clamp(9px, 1.2vw, 14px);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -19,106 +33,164 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  min-width: clamp(62px, 8vw, 86px);
-  padding: clamp(12px, 1.6vw, 18px) clamp(8px, 1.2vw, 14px);
-  background: var(--surface);
-  border: 1px solid var(--line-4);
-  /* Filete dorado arriba, el mismo recurso que marca las cosas abiertas en el
-     resto de la web. */
-  border-top: 2px solid var(--arcilla);
+  justify-content: center;
+  gap: 7px;
+  min-width: clamp(74px, 8.4vw, 98px);
+  padding: clamp(16px, 2vw, 22px) clamp(10px, 1.2vw, 16px);
+  border-radius: 20px;
+  /* El filete dorado de arriba ya no está. Marcaba una esquina y partía la
+     caja en dos; el oro vive ahora en la hora de España, que es lo único de
+     aquí que de verdad hay que destacar. */
+  background: var(--fondo-pieza);
+  border: 1px solid var(--borde-pieza);
+  box-shadow: var(--sombra-pieza);
 }
 
 .cifra {
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-weight: 400;
-  font-size: clamp(30px, 4vw, 46px);
+  font-size: clamp(34px, 4.4vw, 52px);
   line-height: 1;
   letter-spacing: -0.02em;
-  color: var(--ink);
+  color: var(--tinta-pieza);
   /* Cifras de ancho fijo: sin esto el bloque da un salto cada vez que el
      segundo pasa de 1 a 8, y el movimiento se ve desde la otra punta. */
   font-variant-numeric: tabular-nums;
 }
 
 .unidad {
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
+  font-size: 9.5px;
+  font-weight: 300;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--muted);
-}
-
-.compacto .bloque {
-  min-width: 56px;
-  padding: 10px 8px;
-}
-
-.compacto .cifra {
-  font-size: clamp(24px, 3vw, 32px);
-}
-
-.abierta {
-  margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(22px, 2.6vw, 30px);
-  color: var(--arcilla);
+  color: var(--tinta-suave);
 }
 
 /* ---------- La hora en cada país ----------
-   Van dentro de su propia superficie clara, igual que las cajas de la cuenta
-   atrás, y no sueltas sobre el fondo. No es una decisión de estilo: este
-   componente se pinta en dos sitios con fondos opuestos —la portada lo pone
-   sobre el bloque oscuro del lanzamiento y /comunidad sobre papel claro—, y
-   con el texto suelto los colores que funcionaban en uno se quedaban en 2:1
-   en el otro. Medido: ilegible. Con su propio fondo, los mismos tokens valen
-   en los dos. */
+   Cuatro pastillas sueltas y no una barra maciza. La barra era un rectángulo
+   blanco cruzando la banda de parte a parte, que es exactamente lo que hacía
+   que esto pareciera un widget pegado encima. Sueltas y redondas respiran, y
+   además se reparten solas en dos filas cuando no caben, sin necesitar una
+   rejilla aparte para el móvil. */
 .husos {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px clamp(12px, 1.8vw, 20px);
-  margin: 2px 0 0;
-  padding: 11px clamp(14px, 1.6vw, 20px);
-  background: var(--surface);
-  border: 1px solid var(--line-4);
+  justify-content: inherit;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
 
 .huso {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  /* La raya que separa una de otra es el borde izquierdo de la siguiente, con
-     su hueco: así no hay que meter separadores a mano ni acordarse de quitar
-     el último. */
-  padding-left: clamp(12px, 1.8vw, 20px);
-  border-left: 1px solid var(--line-3);
-}
-
-.huso:first-child {
-  padding-left: 0;
-  border-left: none;
+  gap: 7px;
+  padding: 8px 15px;
+  border-radius: 999px;
+  background: var(--fondo-pieza);
+  border: 1px solid var(--borde-pieza);
 }
 
 .husoHora {
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 400;
-  color: var(--ink);
+  color: var(--tinta-pieza);
   font-variant-numeric: tabular-nums;
 }
 
 /* La hora de España va en oro: es la referencia de la que se habla en el resto
    de la web, y sin destacarla las cuatro se leen como una lista sin jefe. */
+.husoPrincipal {
+  background: var(--fondo-oro);
+  border-color: var(--borde-oro);
+}
+
 .husoPrincipal .husoHora {
-  color: var(--oro);
+  color: var(--tinta-oro);
 }
 
 .husoLugar {
-  font-size: 10.5px;
+  font-size: 9.5px;
   font-weight: 300;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--muted-2);
+  color: var(--tinta-suave);
+}
+
+.abierta {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 2.6vw, 30px);
+  color: var(--tinta-oro);
+}
+
+/* ==========================================================================
+   Las dos variantes
+   ========================================================================== */
+
+/* Sobre papel. Es la de por defecto porque /comunidad no pasa nada. */
+.claro {
+  --fondo-pieza: var(--surface);
+  --borde-pieza: var(--line-4);
+  --sombra-pieza: 0 14px 30px -22px rgba(20, 18, 16, 0.4);
+  --tinta-pieza: var(--ink);
+  --tinta-suave: var(--muted-2);
+  --fondo-oro: var(--arcilla-tint);
+  --borde-oro: var(--arcilla-line);
+  --tinta-oro: var(--arcilla-ink);
+}
+
+/*
+ * Sobre la banda oscura.
+ *
+ * Los colores salen de valores fijos y no de los tokens invertidos porque esta
+ * banda es oscura en los DOS temas de la web: con tokens que cambian de
+ * sentido, el tema claro dejaría las cifras negras sobre el cristal oscuro.
+ *
+ * La tinta suave es blanco al 68 %, medido sobre el cristal: 7,9 a 1. Con el
+ * gris de los textos secundarios se quedaba en 3,96, por debajo del mínimo
+ * para una etiqueta de 9,5 px.
+ */
+.oscuro {
+  --fondo-pieza: rgba(255, 255, 255, 0.06);
+  --borde-pieza: rgba(255, 255, 255, 0.11);
+  --sombra-pieza: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --tinta-pieza: #fbf9f6;
+  --tinta-suave: rgba(251, 249, 246, 0.68);
+  --fondo-oro: rgba(217, 180, 124, 0.13);
+  --borde-oro: rgba(217, 180, 124, 0.34);
+  --tinta-oro: #e3c696;
+}
+
+.oscuro .bloque,
+.oscuro .huso {
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+}
+
+/*
+ * Sin desenfoque de fondo el cristal se queda en un velo del 6 %, que sobre la
+ * banda no dibuja ninguna caja. Se sube la opacidad para que las piezas sigan
+ * existiendo; se pierde el halo de debajo, que es lo de menos.
+ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .oscuro {
+    --fondo-pieza: rgba(255, 255, 255, 0.1);
+    --borde-pieza: rgba(255, 255, 255, 0.16);
+  }
+}
+
+/* ---------- Variante estrecha ---------- */
+
+.compacto .bloque {
+  min-width: 62px;
+  padding: 12px 9px;
+  border-radius: 16px;
+}
+
+.compacto .cifra {
+  font-size: clamp(24px, 3vw, 32px);
 }
 
 /* Solo para lectores de pantalla. */
@@ -136,39 +208,29 @@
 
 @media (max-width: 420px) {
   .bloques {
-    gap: 6px;
+    gap: 7px;
   }
 
-  /* Un suelo de 64px y sin repartir el sobrante: con `flex: 1` y sin mínimo,
+  /* Un suelo de 70 px y sin repartir el sobrante: con `flex: 1` y sin mínimo,
      dentro de un contenedor centrado los bloques se encogían hasta quedarse
-     más estrechos que la palabra «SEGUNDOS», que salía por los lados. Cuatro
-     bloques de 64 con sus separaciones caben de sobra en un móvil estrecho. */
+     más estrechos que la palabra «SEGUNDOS», que salía por los lados. */
   .bloque {
     flex: 0 0 auto;
-    min-width: 64px;
-    padding: 10px 4px;
+    min-width: 70px;
+    padding: 13px 5px;
+    border-radius: 16px;
   }
 
   .cifra {
-    font-size: 26px;
+    font-size: 28px;
   }
 
   .unidad {
-    font-size: 8.5px;
-    letter-spacing: 0.06em;
-  }
-
-  /* En un móvil estrecho las cuatro en fila se parten mal. En dos columnas se
-     leen enteras y siguen ocupando dos líneas de nada. */
-  .husos {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 9px 12px;
-    padding: 12px 14px;
+    font-size: 8px;
+    letter-spacing: 0.1em;
   }
 
   .huso {
-    padding-left: 0;
-    border-left: none;
+    padding: 7px 12px;
   }
 }

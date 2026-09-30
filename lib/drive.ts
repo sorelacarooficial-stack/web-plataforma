@@ -53,11 +53,33 @@ export function idDeDrive(crudo: string): string | null {
 }
 
 /**
- * La dirección que va dentro del marco.
+ * El archivo en crudo, para meterlo en una etiqueta `<video>` de la web.
+ *
+ * POR QUÉ HACE FALTA ESTO Y NO VALE EL VISOR. El visor de Drive va dentro de
+ * un marco de otra web, y desde fuera no se le puede decir nada: ni que empiece
+ * solo, ni que vaya en silencio, ni que se repita. Para que los testimonios se
+ * muevan callados en la portada y se abran con sonido al pararse encima de uno,
+ * el vídeo tiene que ser un `<video>` de la propia página, y eso necesita la
+ * dirección del archivo, no la del visor.
+ *
+ * Esta dirección funciona solo si el archivo está compartido con enlace
+ * público, y Google la limita más que el visor. Es lo que hay mientras los
+ * vídeos vivan en Drive; ver la nota de arriba.
+ */
+export function urlDirectaDeDrive(id: string): string {
+  return `https://drive.usercontent.google.com/download?id=${encodeURIComponent(id)}&export=download`;
+}
+
+/**
+ * La dirección del visor, que se usa solo como red de seguridad.
+ *
+ * Si el archivo en crudo no carga —Google ha cortado, el archivo ha dejado de
+ * ser público, el navegador no entiende el códec—, al pulsar se monta este
+ * marco en su lugar. Se pierde el silencio y el bucle, pero el vídeo se ve, que
+ * es lo que importa.
  *
  * Es `/preview` y no `/view`: `view` es la página entera de Drive, con su
  * cabecera y su menú, y dentro de un marco de 250 px de ancho no se ve nada.
- * `preview` es solo el reproductor.
  */
 export function urlDeDrive(id: string): string {
   return `https://drive.google.com/file/d/${encodeURIComponent(id)}/preview`;

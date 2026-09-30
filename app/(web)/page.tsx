@@ -284,7 +284,7 @@ export default function Home() {
 
             <p className={css.lanzamientoPie}>Lista de espera abierta</p>
 
-            <Contador />
+            <Contador sobre="oscuro" />
 
             <BotonCaptacion
               className={`btn btn-md ${css.lanzamientoBoton}`}
