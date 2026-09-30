@@ -1,5 +1,9 @@
-/** Copy fijo del sitio: testimonios, FAQ y las piezas de la comunidad.
- *  Transcrito del prototipo aprobado; no inventar nada aquí sin pasar por Sorela. */
+/** Copy fijo del sitio: FAQ, piezas de la comunidad y textos de marca.
+ *  Transcrito del prototipo aprobado; no inventar nada aquí sin pasar por Sorela.
+ *
+ *  La fecha y la hora de apertura NO se escriben aquí: salen de lib/apertura.ts,
+ *  que es el único sitio donde viven. */
+import { APERTURA_LARGA, APERTURA_POR_PAISES, DIA_APERTURA, FECHA_APERTURA, HORA_ESPANA } from './apertura';
 
 export const INSTAGRAM = 'https://instagram.com/sorelacaro_';
 export const INSTAGRAM_USUARIO = '@sorelacaro_';
@@ -22,21 +26,50 @@ export const WHATSAPP_SORELA: string = '+34 686 15 45 56';
  */
 
 export type Testimonio = {
+  /** Lo que dijo, con sus palabras. Dos o tres frases se leen de un vistazo. */
   frase: string;
+  /** Nombre y apellido. Las iniciales del círculo salen de aquí, no se escriben. */
   nombre: string;
-  ciudad: string;
-  iniciales: string;
+  /** Dónde trabaja: «Valencia», «Bogotá». Opcional. */
+  lugar?: string;
+  /** Qué hizo: «Formación Base», «Comunidad Divine», «Clienta». Opcional. */
+  de?: string;
 };
 
 /**
- * Aquí había tres testimonios firmados por Marta Ibáñez, Nuria Sanchís y
- * Carla Redondo: las tres primeras terapeutas del mapa, que eran inventadas.
- * Uno de ellos además decía «subí el precio de la sesión un 30 %», que es una
- * promesa de rentabilidad con cifra, de las que no se pueden publicar.
+ * Lo que dicen las que ya han pasado por aquí.
  *
- * Cuando haya testimonios reales: con consentimiento escrito de la persona,
- * hablando de criterio y de trabajo, nunca de precios, porcentajes ni
- * facturación.
+ * ESTÁ VACÍO A PROPÓSITO, y mientras lo esté el carrusel de la portada no se
+ * pinta: ni la sección, ni el título, ni un «próximamente». Un apartado de
+ * testimonios vacío no es un hueco que rellenar más adelante, es un cartel
+ * diciendo que nadie ha dicho nada.
+ *
+ * Aquí había tres firmados por Marta Ibáñez, Nuria Sanchís y Carla Redondo:
+ * las tres primeras terapeutas del mapa, que eran inventadas. Uno además decía
+ * «subí el precio de la sesión un 30 %», que es una promesa de rentabilidad
+ * con cifra, de las que no se pueden publicar.
+ *
+ * TRES REGLAS PARA LOS QUE ENTREN AQUÍ. No son manías:
+ *
+ *   1. Reales, de una persona que existe y que ha dado permiso. Publicar
+ *      testimonios inventados es publicidad engañosa, y desde la reforma de
+ *      2021 está expresamente prohibido en España.
+ *   2. Sin efectos sobre la salud. Esto es estética, no sanidad: nada de
+ *      toxinas, retención, circulación, dolor, celulitis ni adelgazar. Sí se
+ *      puede contar qué aprendió, cómo trabaja ahora y cómo la trataron.
+ *   3. Sin cifras de dinero. «Cobro más», «facturo X», «subí el precio un
+ *      30 %» son promesas de rentabilidad y tampoco se pueden publicar.
+ *
+ * Si vienen de capturas de WhatsApp, se transcriben a texto: una captura lleva
+ * el número de teléfono y la foto de la persona, y eso no se publica aunque
+ * ella diga que sí.
+ *
+ * El formato es este, y se pueden poner los que sean:
+ *
+ *   { frase: 'Lo que dijo, entrecomillado no hace falta.',
+ *     nombre: 'María José Pardo',
+ *     lugar: 'Valencia',
+ *     de: 'Formación Base' },
  */
 export const TESTIMONIOS: Testimonio[] = [];
 
@@ -58,7 +91,7 @@ export const FAQS: Pregunta[] = [
   },
   {
     q: '¿Qué diferencia hay entre la formación y la comunidad?',
-    a: 'La formación es el recorrido donde te certificas: primero online y después presencial. La comunidad es lo que viene después, para no quedarte sola con los casos raros. Abre el 17 de octubre y cuesta 47 € al mes.',
+    a: `La formación es el recorrido donde te certificas: primero online y después presencial. La comunidad es lo que viene después, para no quedarte sola con los casos raros. Abre el ${FECHA_APERTURA} y cuesta 47 € al mes.`,
   },
   {
     q: '¿Puedo entrar en la comunidad sin haberme formado?',
@@ -88,7 +121,7 @@ export const FAQS_CURSO: Pregunta[] = [
 export const OBJECIONES: Pregunta[] = [
   {
     q: '¿Cuándo abre?',
-    a: 'El sábado 17 de octubre a las 16:00, hora de España. Quien esté en la lista lo sabe antes que nadie y entra con el precio fundador.',
+    a: `El ${DIA_APERTURA} a las ${HORA_ESPANA}, hora de España: ${APERTURA_POR_PAISES}. Quien esté en la lista lo sabe antes que nadie y entra con el precio fundador.`,
   },
   {
     q: '¿Me compromete a algo apuntarme?',
@@ -150,8 +183,8 @@ export const COMUNIDAD = {
   precio: 47,
   periodo: 'al mes',
   condicion: 'Precio de lanzamiento',
-  /** 17 de octubre de 2026, 16:00 en España. Ver components/Contador.tsx. */
-  apertura: 'sábado 17 de octubre, 16:00 (hora de España)',
+  /** Sale de lib/apertura.ts, que es donde vive la fecha. */
+  apertura: APERTURA_LARGA,
 } as const;
 
 export const PIEZAS_COMUNIDAD: PiezaComunidad[] = [

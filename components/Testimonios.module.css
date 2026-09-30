@@ -1,0 +1,196 @@
+/*
+ * El carrusel de testimonios.
+ *
+ * El movimiento es el mismo que el de la barra de la portada: dos copias de la
+ * lista y un desplazamiento del 50%. Lo que cambia aquí son las tarjetas, que
+ * tienen alto y hay que igualarlas, y la velocidad, que llega desde el
+ * componente en la variable `--vuelta` porque depende de cuántos haya.
+ */
+
+.zona {
+  padding: clamp(60px, 8vw, 110px) 0 clamp(66px, 9vw, 120px);
+  background: var(--azul-tint);
+  border-top: 1px solid var(--azul-line);
+  border-bottom: 1px solid var(--azul-line);
+  overflow: hidden;
+}
+
+.ventana {
+  position: relative;
+  margin-top: clamp(26px, 3.4vw, 44px);
+  /* Las dos puntas se desvanecen: así una tarjeta no aparece ni desaparece de
+     golpe contra el borde de la pantalla, que es lo que delata el truco. */
+  mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+}
+
+.tira {
+  display: flex;
+  width: max-content;
+  /* Aquí NO puede ir ningún relleno ni ningún margen: el ancho de esta caja es
+     lo que se divide entre dos para desplazar, y todo lo que se le añada
+     desalinea las dos copias y hace que cada vuelta dé un salto. */
+  animation: divineTestimonios var(--vuelta, 42s) linear infinite;
+}
+
+/* Al pasar el ratón se para, para poder terminar de leer el que iba a
+   escaparse. Con :focus-within, lo mismo llegando por teclado. */
+.zona:hover .tira,
+.zona:focus-within .tira {
+  animation-play-state: paused;
+}
+
+.grupo {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  gap: clamp(16px, 1.8vw, 24px);
+  /* La misma separación entre la última tarjeta de una copia y la primera de
+     la siguiente, para que el ritmo no se rompa justo en la costura. */
+  padding-right: clamp(16px, 1.8vw, 24px);
+}
+
+/* ---------- La tarjeta ---------- */
+
+.tarjeta {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(270px, 30vw, 380px);
+  margin: 0;
+  padding: clamp(26px, 2.8vw, 36px) clamp(24px, 2.6vw, 34px);
+  background: var(--surface);
+  border: 1px solid var(--line-4);
+  /* Filete dorado arriba, el mismo recurso con el que se marcan en el resto de
+     la web las cosas que tienen peso. */
+  border-top: 2px solid var(--oro);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+/*
+ * La comilla va EN EL FLUJO, encima de la frase, y no flotando en una esquina.
+ *
+ * Estaba absoluta arriba a la derecha y el texto pasaba por debajo: en las
+ * frases que llenaban el ancho, la primera línea acababa metida dentro del
+ * dibujo. Poniéndola en su sitio no hay colisión posible, mida lo que mida lo
+ * que dijo la persona, y además se lee como lo que es: una cita.
+ *
+ * El margen negativo recupera el hueco que deja la altura de línea del glifo,
+ * que en esta serif es mucha.
+ */
+.comilla {
+  display: block;
+  margin-bottom: -22px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(46px, 4.4vw, 62px);
+  line-height: 0.9;
+  color: var(--oro);
+  /* Apagada: acompaña, no compite con lo que dijo la persona. */
+  opacity: 0.3;
+  user-select: none;
+}
+
+.frase {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(18px, 1.8vw, 22px);
+  line-height: 1.4;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.pie {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.iniciales {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--arcilla-tint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--arcilla-ink);
+}
+
+.quien {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.nombre {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.detalle {
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--azul-ink);
+  text-wrap: pretty;
+}
+
+/*
+ * Quien ha pedido que las cosas no se muevan, que las lea a su ritmo.
+ *
+ * No basta con quitar la animación: sin ella la tira se queda parada y las
+ * tarjetas de más allá del borde son inalcanzables. Se convierte en una fila
+ * que se puede arrastrar, y la segunda copia se esconde, que duplicada y
+ * quieta solo sería la misma lista dos veces.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .ventana {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tira {
+    animation: none;
+  }
+
+  .grupo[aria-hidden='true'] {
+    display: none;
+  }
+
+  .tarjeta {
+    scroll-snap-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .tarjeta {
+    width: min(84vw, 320px);
+  }
+}
+
+/*
+ * Este fotograma vive aquí y no en globals.css, y no es una cuestión de orden:
+ * los CSS Modules le cambian el nombre a la animación —«divineTestimonios» se
+ * convierte en «Fichero-module__hash__divineTestimonios»— y ese nombre no
+ * existe entre los globales. La animación se queda en nada, sin error y sin
+ * aviso: simplemente no se mueve. Así estuvo parada la barra de la portada
+ * desde el primer día. Definiéndolo en el mismo fichero que lo usa, el nombre
+ * se cambia en los dos sitios y vuelven a coincidir.
+ */
+@keyframes divineTestimonios {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}

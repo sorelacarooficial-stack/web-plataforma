@@ -37,6 +37,34 @@ check(
   'un ganglio no se abre, y prometerlo es una afirmación sobre el cuerpo'
 );
 check('la comunidad se anuncia con su lista de espera', /Lista de espera abierta/i.test(txt));
+
+/* La hora del lanzamiento, en los cuatro países. Media lista está en
+   Sudamérica: «a las siete» sin decir de dónde hace que alguien se pierda el
+   directo por cuatro horas. Se comprueban las cuatro y que cuadren entre
+   ellas, no solo que aparezca la palabra. */
+for (const [lugar, hora] of [['España', '19:00'], ['Argentina', '15:00'], ['Venezuela', '14:00'], ['Colombia', '13:00']]) {
+  check(
+    `dice la hora de ${lugar}`,
+    new RegExp(`${hora}\\s*${lugar}`, 'i').test(txt),
+    txt.slice(txt.indexOf('DÍAS'), txt.indexOf('DÍAS') + 180).replace(/\n+/g, ' ')
+  );
+}
+check(
+  'ya no anuncia la fecha vieja',
+  !/17 de octubre|16:00/i.test(txt),
+  'quedaba algo del lanzamiento anterior'
+);
+
+/* El carrusel de testimonios solo existe si hay testimonios de verdad. Con la
+   lista vacía no puede salir ni la sección ni el título: un apartado de
+   testimonios en blanco es un cartel diciendo que nadie ha dicho nada. */
+const hayTestimonios = (await p.locator('section[aria-label="Lo que dicen de la Técnica Divine"]').count()) > 0;
+const hayTarjetas = (await p.locator('[class*="testimonios-module"] blockquote').count()) > 0;
+check(
+  'el apartado de testimonios solo sale si hay testimonios',
+  hayTestimonios === hayTarjetas,
+  hayTestimonios ? 'la sección está pintada' : 'sin testimonios cargados, no se pinta'
+);
 check(
   'la comunidad NO lleva precio en el inicio',
   !/\d+\s*€/.test(txt),

@@ -5,6 +5,7 @@ import Motas from '@/components/Motas';
 import Marquesina from '@/components/Marquesina';
 import Acordeon from '@/components/Acordeon';
 import Contador from '@/components/Contador';
+import Testimonios from '@/components/Testimonios';
 import LlamadaDivine from '@/components/LlamadaDivine';
 import BotonAsistente from '@/components/BotonAsistente';
 import BotonCaptacion from '@/components/BotonCaptacion';
@@ -258,6 +259,13 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ---------- Lo que dicen ----------
+           Va entre «quién está detrás» y la comunidad: justo después de saber
+           quién es ella y justo antes de que se le pida algo. Si no hay
+           testimonios cargados, el componente no pinta nada y las dos
+           secciones quedan pegadas como si esto no existiera. */}
+      <Testimonios />
 
       {/* ---------- Comunidad Divine ----------
            Una sola idea y un solo botón. Antes esta sección contaba lo que hay
