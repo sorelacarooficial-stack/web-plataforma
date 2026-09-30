@@ -149,18 +149,51 @@
      que se lea como un objeto; dos sombras y un degradado la convertirían en
      un botón de plástico. */
   box-shadow: 0 18px 40px -24px rgba(20, 18, 16, 0.5);
+  transition:
+    transform 0.34s cubic-bezier(0.2, 0.7, 0.3, 1),
+    box-shadow 0.34s,
+    border-color 0.34s;
 }
 
-.portada {
+/*
+ * La tarjeta en la que te has parado.
+ *
+ * Crece poco —un 5 %— y se le cierra un filete dorado alrededor. Lo justo para
+ * que quede claro cuál está sonando cuando hay cinco a la vista y todas se
+ * mueven. Más crecimiento se saldría por arriba: la fila está dentro de una
+ * banda con el desbordamiento cortado.
+ */
+.marco[data-abierto] {
+  /* Por encima de las vecinas: al crecer se come parte del hueco de al lado, y
+     sin esto la tarjeta de la derecha —que se pinta después— le pasaría por
+     encima justo por el filo dorado. */
+  z-index: 1;
+  transform: scale(1.05);
+  border-color: var(--accent-inverse, #d9b47c);
+  box-shadow: 0 26px 56px -26px rgba(20, 18, 16, 0.62);
+}
+
+/*
+ * El botón que cubre la tarjeta entera.
+ *
+ * Transparente y sin nada dentro: lo que se ve es el vídeo de debajo. Está por
+ * el dedo y por el teclado, que no tienen «pasar por encima». Desaparece al
+ * abrirse para no robarle el clic a los controles del vídeo.
+ */
+.tocar {
   position: absolute;
   inset: 0;
+  z-index: 2;
   display: block;
   padding: 0;
   background: none;
   border: none;
   cursor: pointer;
-  /* Para que el rótulo de abajo se apoye en el borde de la tarjeta. */
-  text-align: left;
+}
+
+.tocar:focus-visible {
+  outline: 2px solid var(--accent-inverse, #d9b47c);
+  outline-offset: -4px;
 }
 
 /*
@@ -196,9 +229,6 @@
   transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
-.portada:hover .imagen {
-  transform: scale(1.04);
-}
 
 .velo {
   position: absolute;
@@ -251,7 +281,7 @@
     border-color 0.28s;
 }
 
-.portada:hover .play {
+.marco:hover .play {
   transform: translate(-50%, -50%) scale(1.09);
   background: rgba(251, 249, 246, 0.32);
   border-color: rgba(255, 255, 255, 0.62);
@@ -306,30 +336,6 @@
   border: none;
   background: #000;
   object-fit: contain;
-}
-
-.cerrar {
-  position: absolute;
-  top: 9px;
-  right: 9px;
-  z-index: 2;
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(16, 14, 12, 0.46);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #fbf9f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.cerrar:hover {
-  background: rgba(16, 14, 12, 0.78);
 }
 
 /* ---------- Lo que dijo, escrito ---------- */
@@ -410,8 +416,14 @@
   }
 
   .imagen,
-  .play {
+  .play,
+  .marco {
     transition: none;
+  }
+
+  /* Sin crecer: el aumento es movimiento, y es justo lo que aquí sobra. */
+  .marco[data-abierto] {
+    transform: none;
   }
 }
 
@@ -425,8 +437,7 @@
     background: rgba(20, 18, 16, 0.55);
   }
 
-  .rotulo,
-  .cerrar {
+  .rotulo {
     background: rgba(16, 14, 12, 0.78);
   }
 }

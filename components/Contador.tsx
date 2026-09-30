@@ -40,7 +40,21 @@ function calcular(hasta: number): Restante | null {
   };
 }
 
-export default function Contador({ compacto = false }: { compacto?: boolean }) {
+export default function Contador({
+  compacto = false,
+  sobre = 'claro',
+}: {
+  compacto?: boolean;
+  /**
+   * Sobre qué fondo se pinta.
+   *
+   * Hay que decirlo a mano: esto sale en la banda oscura de la portada y en el
+   * papel claro de /comunidad, y la banda es oscura en los dos temas de la web,
+   * así que mirar el tema no sirve de nada. Con `oscuro` las piezas se vuelven
+   * cristal; con `claro`, papel.
+   */
+  sobre?: 'claro' | 'oscuro';
+}) {
   // Arranca en null y no con el valor calculado: el servidor y el navegador
   // darían números distintos, React se quejaría de que no coinciden y el
   // primer pintado parpadearía. Se rellena ya montado, en el navegador.
@@ -56,15 +70,25 @@ export default function Contador({ compacto = false }: { compacto?: boolean }) {
   }, []);
 
   if (montado && !restante) {
+    /* La variante también aquí: sobre la banda oscura, --arcilla es un marrón
+       que no se lee. Sin esto, el día que la comunidad abra el aviso saldría
+       apagado justo cuando más hay que verlo. */
     return (
-      <p className={css.abierta} role="status">
+      <p
+        className={`${css.abierta} ${sobre === 'oscuro' ? css.oscuro : css.claro}`}
+        role="status"
+      >
         La comunidad ya está abierta.
       </p>
     );
   }
 
   return (
-    <div className={`${css.contador} ${compacto ? css.compacto : ''}`}>
+    <div
+      className={`${css.contador} ${sobre === 'oscuro' ? css.oscuro : css.claro} ${
+        compacto ? css.compacto : ''
+      }`}
+    >
       <ul className={css.bloques} aria-hidden="true">
         {UNIDADES.map((u) => {
           const v = restante?.[u.clave];
