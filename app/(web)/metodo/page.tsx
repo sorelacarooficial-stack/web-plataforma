@@ -18,6 +18,12 @@ export const metadata: Metadata = {
     'Divine no es una lista de maniobras que repetir: es aprender a observar, interpretar y decidir antes de poner las manos. Te cuento cómo funciona el método.',
 };
 
+/* El número de cada paso va con el tono «-ink» del color, no con el color a
+   secas, y no es capricho: cada ficha lleva de fondo el tinte de ese mismo
+   color, y --arcilla sobre --arcilla-tint se queda en 4,45 a 1, justo por
+   debajo del 4,5 que necesita un texto de este tamaño. Los tokens «-ink»
+   existen exactamente para esto: el mismo color, dos pasos más oscuro, para
+   cuando va encima de su propio tinte. */
 const PASOS = [
   {
     n: '01',
@@ -25,7 +31,7 @@ const PASOS = [
     texto:
       'Postura, tejido, retención, temperatura, cómo se sube a la camilla. Aprendes a mirar con criterio, no con intuición.',
     fondo: 'var(--arcilla-tint)',
-    color: 'var(--arcilla)',
+    color: 'var(--arcilla-ink)',
   },
   {
     n: '02',
@@ -33,7 +39,7 @@ const PASOS = [
     texto:
       'Qué significa lo que ves. Qué está pidiendo ese cuerpo, qué puede esperar y qué no conviene tocar hoy.',
     fondo: 'var(--salvia-tint)',
-    color: 'var(--salvia)',
+    color: 'var(--salvia-ink)',
   },
   {
     n: '03',
@@ -41,7 +47,7 @@ const PASOS = [
     texto:
       'Qué haces, en qué orden y hasta dónde. Con una razón que puedes decir en voz alta delante de tu clienta.',
     fondo: 'var(--azul-tint)',
-    color: 'var(--azul)',
+    color: 'var(--azul-ink)',
   },
 ];
 

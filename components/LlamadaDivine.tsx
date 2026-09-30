@@ -18,17 +18,33 @@ export default function LlamadaDivine({
   textoCita = 'Agendar una cita',
   preguntaCita = 'Quiero agendar una cita. ¿Qué huecos hay?',
   alineacion = 'izquierda',
+  sobre = 'claro',
 }: {
   textoPrincipal?: string;
   textoCita?: string;
   preguntaCita?: string;
   alineacion?: 'izquierda' | 'centro';
+  /**
+   * Sobre qué fondo se pinta. Hay que decirlo a mano porque no se puede
+   * deducir: las bandas oscuras de la web lo son en los dos temas, así que
+   * mirar el tema no sirve de nada. Con `oscuro`, el botón sólido se vuelve
+   * claro y el enlace pasa a los tokens invertidos.
+   */
+  sobre?: 'claro' | 'oscuro';
 }) {
+  const oscuro = sobre === 'oscuro';
+
   return (
     <div className={`${css.acciones} ${alineacion === 'centro' ? css.centro : ''}`}>
-      <BotonCaptacion>{textoPrincipal}</BotonCaptacion>
+      <BotonCaptacion className={`btn ${oscuro ? 'btn-claro ' : ''}btn-latido`}>
+        {textoPrincipal}
+      </BotonCaptacion>
 
-      <button type="button" className={css.cita} onClick={() => abrirAsistente(preguntaCita)}>
+      <button
+        type="button"
+        className={`${css.cita} ${oscuro ? css.citaClara : ''}`}
+        onClick={() => abrirAsistente(preguntaCita)}
+      >
         <span className={css.citaPunto} aria-hidden="true" />
         {textoCita}
       </button>

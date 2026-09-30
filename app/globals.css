@@ -18,7 +18,22 @@
   --ink-4: #2a2620;
   --muted-2: #5e564c;
   --muted: #6c645a;
-  --faint: #a79e92;
+  /*
+   * El gris más claro con el que se escribe, y por eso no puede ser tan claro
+   * como era.
+   *
+   * Estaba en #a79e92, que sobre el fondo da 2,51 a 1. El mínimo para leer un
+   * texto pequeño es 4,5. No fallaba en un sitio: fallaba en los veintitrés
+   * donde se usa —las unidades de la cuenta atrás, los pies de los campos, las
+   * letras pequeñas del acceso, los rótulos del calendario— y no se veía
+   * porque en una pantalla buena y con buena luz se lee igual. Con luz de día
+   * en un móvil, no.
+   *
+   * Al subirlo se come parte de la distancia con --muted. Es el precio: una
+   * escala de tres grises en la que el tercero no se lee no es una escala, es
+   * un fallo con tres niveles.
+   */
+  --faint: #726a60;
 
   --arcilla: #8a6a32;
   --arcilla-ink: #6e5327;
@@ -103,7 +118,9 @@
   --ink-4: #ebe4d9;
   --muted-2: #b3a99c;
   --muted: #9a9084;
-  --faint: #80776c;
+  /* Lo mismo en oscuro: estaba en #80776c, que sobre los fondos de este tema
+     se quedaba entre 3,67 y 4,25 según en cuál cayera. */
+  --faint: #968d81;
 
   --arcilla: #cfa765;
   --arcilla-ink: #e3c696;

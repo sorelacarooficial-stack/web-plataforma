@@ -55,10 +55,14 @@
   display: none;
 }
 
-
-
+/* El relleno de arriba y abajo no se ve, y está por una razón: sin él estos
+   enlaces miden 18 px de alto y hay que acertarles con el dedo o con el ratón
+   en una franja de 18 px. Lo mínimo razonable son 24, y con 3 px por cada lado
+   se llega. No crece la cabecera: su alto lo fija --cabecera y la fila centra
+   lo que lleve dentro. */
 .enlace {
   flex: 0 0 auto;
+  padding: 4px 0;
   font-size: 12.5px;
   letter-spacing: 0.13em;
   text-transform: uppercase;
