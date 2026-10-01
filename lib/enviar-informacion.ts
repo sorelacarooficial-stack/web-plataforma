@@ -1,3 +1,4 @@
+import { APERTURA_POR_PAISES, DIA_APERTURA, HORA_ESPANA } from './apertura';
 import type { Contacto } from './captacion';
 import { enviar, hayCorreo } from './correo';
 import { correoAviso, correoBienvenida } from './plantillas-correo';
@@ -50,7 +51,25 @@ async function llamarAppsScript(datos: Contacto & { origen: string }): Promise<E
       // igual, pero así el mismo script vale si alguna vez se llama de otra
       // forma. Google entrega el cuerpo entero en e.postData.contents igual.
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ ...datos, secreto: process.env.APPS_SCRIPT_SECRETO }),
+      body: JSON.stringify({
+        ...datos,
+        secreto: process.env.APPS_SCRIPT_SECRETO,
+        /*
+         * La fecha del lanzamiento viaja CON cada contacto, y eso tiene una
+         * razón concreta: el script vive en la cuenta de Google de Sorela y no
+         * puede leer `lib/apertura.ts`, así que la llevaba escrita a mano. Era
+         * la última copia suelta de la fecha en todo el proyecto, y el día que
+         * el lanzamiento se moviera, los correos habrían seguido anunciando el
+         * día viejo sin que nada avisara. Mandándosela, vuelve a haber un solo
+         * sitio donde está escrita. El script la usa si llega y conserva la
+         * suya de reserva si no.
+         */
+        apertura: {
+          dia: DIA_APERTURA,
+          hora: HORA_ESPANA,
+          paises: APERTURA_POR_PAISES,
+        },
+      }),
       signal: AbortSignal.timeout(ESPERA_MAX),
     });
 
