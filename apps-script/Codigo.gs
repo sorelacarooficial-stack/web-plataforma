@@ -10,6 +10,29 @@ var NOMBRE_PDF = 'TECNICA-DIVINE.pdf';
 
 var NOMBRE_HOJA = 'Respaldo';
 
+/*
+ * La fecha de la apertura, SOLO como reserva.
+ *
+ * La web la manda en cada contacto (`datos.apertura`), que es donde vive de
+ * verdad: en `lib/apertura.ts`, escrita una vez. Esto de aquí es para el día
+ * que llegue un contacto sin ella —una versión vieja de la web, una prueba a
+ * mano— y es lo único que hay que tocar si eso pasa y la fecha ha cambiado.
+ */
+var APERTURA_RESERVA = {
+  dia: 'viernes 6 de noviembre',
+  hora: '19:00',
+  paises: '19:00 en España · 15:00 en Argentina · 14:00 en Venezuela · 13:00 en Colombia',
+};
+
+function aperturaDe(datos) {
+  var a = (datos && datos.apertura) || {};
+  return {
+    dia: String(a.dia || APERTURA_RESERVA.dia),
+    hora: String(a.hora || APERTURA_RESERVA.hora),
+    paises: String(a.paises || APERTURA_RESERVA.paises),
+  };
+}
+
 var COLUMNAS = [
   'Fecha',
   'Nombre',
@@ -65,7 +88,7 @@ function doPost(e) {
       avisarSinCuota();
     } else {
       try {
-        correoEnviado = escribirALaPersona(nombre, correo, tipo);
+        correoEnviado = escribirALaPersona(nombre, correo, tipo, aperturaDe(datos));
         if (correoEnviado) apuntarQueSeLeEscribio(correo);
         estado = correoEnviado ? 'sí' : 'no';
       } catch (falloEnvio) {
@@ -196,12 +219,12 @@ function comoLlego(origen) {
   return o;
 }
 
-function escribirALaPersona(nombre, correo, tipo) {
+function escribirALaPersona(nombre, correo, tipo, apertura) {
   var n = nombreCorto(nombre);
   var adjunto = buscarPdf();
 
-  var texto = textoPlano(tipo, n, Boolean(adjunto));
-  var html = plantilla(tipo, n, Boolean(adjunto));
+  var texto = textoPlano(tipo, n, Boolean(adjunto), apertura);
+  var html = plantilla(tipo, n, Boolean(adjunto), apertura);
 
   var mensaje = {
     to: correo,
@@ -232,6 +255,24 @@ function asunto(tipo, n) {
   return 'La información de la Técnica Divine' + cola;
 }
 
+/*
+ * LOS CUATRO CORREOS.
+ *
+ * Cada uno cierra en la Membresía Divine, que es lo único que hay abierto
+ * ahora mismo, pero NO todos de la misma manera, y eso es a propósito. La
+ * membresía es para quien ya trabaja con las manos: ponérsela delante a una
+ * posible clienta que solo quiere una sesión no la acerca, la despista. Así
+ * que a la clienta se le ofrece primero lo suyo y la membresía va después, y
+ * condicionada a que además sea terapeuta.
+ *
+ * El bloque de la membresía se arma solo, con la fecha que manda la web, en
+ * `cierreMembresia`. Está en un sitio porque es el texto que más se va a
+ * retocar de aquí a noviembre y no puede quedarse a medias en tres de cuatro.
+ *
+ * Reglas que no se saltan: ni efectos sobre la salud, ni cifras de dinero
+ * ganado. En estética española lo primero es un reclamo sanitario y lo segundo
+ * una promesa de rentabilidad; las dos cosas están prohibidas.
+ */
 var TEXTOS = {
   clienta: {
     saludo: {
@@ -246,6 +287,7 @@ var TEXTOS = {
       },
       'Antes de empezar hablamos. Hay situaciones en las que esta técnica no se aplica, y eso lo miramos juntas antes de que te subas a la camilla.',
       'Si quieres una sesión o te queda alguna duda, respóndeme a este correo. Lo leo yo.',
+      { membresia: 'clienta' },
     ],
   },
 
@@ -256,7 +298,8 @@ var TEXTOS = {
     },
     parrafos: [
       'La formación son dos etapas y van siempre en este orden: primero online y después presencial. Lo online te prepara; en lo presencial te corrijo la mano sobre cuerpo real.',
-      'Las próximas fechas las estoy cerrando ahora mismo. En cuanto las tenga te las mando, sin que tengas que estar pendiente.',
+      'Las próximas fechas las estoy cerrando ahora mismo y te las mando en cuanto las tenga, sin que tengas que estar pendiente.',
+      { membresia: 'alumna' },
       'Cualquier duda mientras tanto, respóndeme a este correo.',
     ],
   },
@@ -264,14 +307,11 @@ var TEXTOS = {
   comunidad: {
     saludo: 'Gracias por apuntarte a la lista. Como ya eres terapeuta, voy al grano.',
     parrafos: [
-      /* OJO: esto vive fuera del repositorio de la web, en Apps Script, así que
-         no puede leer lib/apertura.ts. Es la única copia de la fecha escrita a
-         mano que queda, y hay que cambiarla A PARTE cuando se mueva el
-         lanzamiento: se edita aquí y se vuelve a implementar el script. */
-      'La Comunidad Divine abre el viernes 6 de noviembre a las 19:00, hora de España: 15:00 en Argentina, 14:00 en Venezuela y 13:00 en Colombia. Quien entra en el lanzamiento conserva el precio de fundadora mientras siga dentro.',
+      { membresia: 'comunidad' },
+      'A ti te aviso antes que a nadie: tendrás el enlace en el correo horas antes de que se abra al resto.',
       {
-        con: 'A ti te aviso antes que a nadie. Te adjunto la información de la técnica por si quieres repasarla.',
-        sin: 'A ti te aviso antes que a nadie. Quería adjuntarte la información de la técnica por si querías repasarla y se me ha quedado fuera del correo: respóndeme y te la mando.',
+        con: 'Te adjunto la información de la técnica por si quieres repasarla.',
+        sin: 'Quería adjuntarte la información de la técnica por si querías repasarla y se me ha quedado fuera del correo: respóndeme y te la mando.',
       },
       'Cualquier duda hasta entonces, respóndeme a este correo.',
     ],
@@ -285,32 +325,95 @@ var TEXTOS = {
         sin: 'Te contesto yo en menos de 48 horas. Quería adjuntarte la información de la Técnica Divine y se me ha quedado fuera del correo: respóndeme y te la mando.',
       },
       'Para no hacerte perder el tiempo: ¿buscas una sesión para ti, quieres formarte en la técnica, o es otra cosa? Con saber eso te mando lo que te sirve.',
+      { membresia: 'otro' },
     ],
   },
 };
 
-function segunPdf(texto, hayPdf) {
-  if (texto && typeof texto === 'object') return hayPdf ? texto.con : texto.sin;
-  return texto;
+/*
+ * El párrafo de la membresía, distinto según con quién se hable.
+ *
+ * A la terapeuta se le cuenta como lo que es; a la alumna, como lo que viene
+ * después del curso; a la clienta, condicionado, porque lo más probable es que
+ * no le toque. Ninguno lleva el precio: el precio está en la web y aquí
+ * repetirlo solo sirve para que un día diga uno y la web otro.
+ */
+function cierreMembresia(quien, apertura) {
+  /* En mayúscula para empezar frase, en minúscula para ir dentro de una. Se
+     construyen las dos porque meter una función que capitalice al vuelo acaba
+     escribiendo «El» en mitad de una oración, que es justo lo que pasó. */
+  var Cuando = 'El ' + apertura.dia + ' a las ' + apertura.hora + ', hora de España,';
+  var cuando = 'el ' + apertura.dia + ' a las ' + apertura.hora + ', hora de España,';
+
+  /* Los otros países, sin repetir España: ya se acaba de decir, y leerlo dos
+     veces en la misma frase hace que parezca un error. */
+  var fuera = String(apertura.paises || '')
+    .split('·')
+    .map(function (t) { return t.trim(); })
+    .filter(function (t) { return t && t.indexOf('España') === -1; })
+    .join(', ');
+
+  if (quien === 'comunidad') {
+    return (
+      Cuando +
+      ' abre la Membresía Divine' +
+      (fuera ? ' (' + fuera + ')' : '') +
+      ': una clase en vivo al mes con lo nuevo del método, tus casos mirados uno a uno, canal privado y tu ficha en el mapa de terapeutas. Quien entra en el lanzamiento conserva el precio de fundadora mientras siga dentro.'
+    );
+  }
+
+  if (quien === 'alumna') {
+    return (
+      'Y por si te sirve para decidirte: la formación no termina en el certificado. ' +
+      Cuando +
+      ' abro la Membresía Divine, que es donde sigo enseñando después del curso: una clase en vivo al mes, tus casos mirados uno a uno y un canal privado donde preguntarme. Quien entra en el lanzamiento conserva el precio de fundadora.'
+    );
+  }
+
+  if (quien === 'clienta') {
+    return (
+      'Y si además de clienta trabajas con las manos —eres terapeuta o esteticista—, dímelo: ' +
+      cuando +
+      ' abro la Membresía Divine, que es donde enseño el método a quien ya trabaja.'
+    );
+  }
+
+  return (
+    'Por si te viene al caso: ' +
+    cuando +
+    ' abro la Membresía Divine, para terapeutas que ya trabajan con las manos.'
+  );
 }
 
-function saludoDe(tipo, hayPdf) {
-  return segunPdf((TEXTOS[tipo] || TEXTOS.otro).saludo, hayPdf);
+/*
+ * Resuelve un párrafo a texto. Puede venir de tres formas:
+ *   'texto'                  — tal cual
+ *   { con: …, sin: … }       — según haya salido el PDF adjunto o no
+ *   { membresia: 'alumna' }  — el cierre de la membresía, con la fecha puesta
+ */
+function resolver(texto, hayPdf, apertura) {
+  if (!texto || typeof texto !== 'object') return texto;
+  if (texto.membresia) return cierreMembresia(texto.membresia, apertura);
+  return hayPdf ? texto.con : texto.sin;
 }
 
-function parrafosDe(tipo, hayPdf) {
+function saludoDe(tipo, hayPdf, apertura) {
+  return resolver((TEXTOS[tipo] || TEXTOS.otro).saludo, hayPdf, apertura);
+}
+
+function parrafosDe(tipo, hayPdf, apertura) {
   return (TEXTOS[tipo] || TEXTOS.otro).parrafos.map(function (p) {
-    return segunPdf(p, hayPdf);
+    return resolver(p, hayPdf, apertura);
   });
 }
 
-function textoPlano(tipo, n, hayPdf) {
+function textoPlano(tipo, n, hayPdf, apertura) {
   return [
     n ? 'Hola ' + n + ',' : 'Hola,',
     '',
-    saludoDe(tipo, hayPdf),
+    saludoDe(tipo, hayPdf, apertura),
     '',
-    parrafosDe(tipo, hayPdf).join('\n\n'),
+    parrafosDe(tipo, hayPdf, apertura).join('\n\n'),
     '',
     'Si te resulta más cómodo, escríbeme por WhatsApp: ' + enlaceWhatsapp(),
     '',
@@ -324,7 +427,7 @@ function textoPlano(tipo, n, hayPdf) {
   ].join('\n');
 }
 
-function plantilla(tipo, n, hayPdf) {
+function plantilla(tipo, n, hayPdf, apertura) {
   var carta = null;
   try {
     carta = HtmlService.createHtmlOutputFromFile('correo').getContent();
@@ -335,7 +438,7 @@ function plantilla(tipo, n, hayPdf) {
   var ETIQUETA_P =
     '<p style="margin:0 0 16px 0; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:1.65; color:#141210;">';
 
-  var cuerpo = parrafosDe(tipo, hayPdf)
+  var cuerpo = parrafosDe(tipo, hayPdf, apertura)
     .map(function (p) {
       return ETIQUETA_P + escapar(p) + '</p>';
     })
@@ -345,7 +448,7 @@ function plantilla(tipo, n, hayPdf) {
     carta = carta.split('<!-- CORTAR-AQUI')[0];
 
     carta = rellenar(carta, 'NOMBRE', n ? escapar(n) + ',' : '');
-    carta = rellenar(carta, 'SALUDO', escapar(saludoDe(tipo, hayPdf)));
+    carta = rellenar(carta, 'SALUDO', escapar(saludoDe(tipo, hayPdf, apertura)));
     carta = rellenar(carta, 'ENLACE_WEB', WEB);
     carta = rellenar(carta, 'WHATSAPP', enlaceWhatsapp());
     return rellenar(carta, 'CUERPO', cuerpo);
@@ -361,7 +464,7 @@ function plantilla(tipo, n, hayPdf) {
     (n ? escapar(n) + ',' : '') +
     '</p>' +
     ETIQUETA_P +
-    escapar(saludoDe(tipo, hayPdf)) +
+    escapar(saludoDe(tipo, hayPdf, apertura)) +
     '</p>' +
     cuerpo +
     ETIQUETA_P +
