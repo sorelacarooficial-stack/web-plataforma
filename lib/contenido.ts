@@ -175,7 +175,8 @@ export const TESTIMONIOS: Testimonio[] = [
       poster: '/testimonios/3.jpg',
     },
     frase: 'La he elegido porque de verdad me ha ofrecido resultados inmediatos, y eso es lo que necesito para mi centro.',
-    de: 'Formación',
+    /* Corregido por Sorela: hizo la presencial, no la Base. */
+    de: 'Formación presencial',
   },
   {
     nombre: 'Celia Prat',
