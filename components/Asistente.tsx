@@ -169,8 +169,20 @@ export default function Asistente() {
               aria-label="Escribe tu pregunta"
               className={css.campo}
             />
-            <button type="submit" className={css.enviar}>
-              Enviar
+            {/* Una flecha y no la palabra «Enviar»: es un botón de 38 px
+                dentro de la pastilla, y ahí una palabra en mayúsculas pide un
+                ancho que deja al campo sin sitio en un móvil. */}
+            <button type="submit" className={css.enviar} aria-label="Enviar">
+              <svg width="17" height="17" viewBox="0 0 20 20" aria-hidden="true">
+                <path
+                  d="M10 16.5V4M10 4 4.5 9.5M10 4l5.5 5.5"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+              </svg>
             </button>
           </form>
         </section>

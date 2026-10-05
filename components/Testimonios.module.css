@@ -1,25 +1,18 @@
 /*
- * El carrusel de testimonios en vídeo.
+ * Los testimonios en vídeo.
  *
- * El movimiento es el mismo que el de la barra de la portada: dos copias de la
- * lista y un desplazamiento del 50 %. Lo que cambia aquí son las tarjetas, que
- * llevan un vídeo vertical dentro, y la velocidad, que llega desde el
- * componente en la variable `--vuelta` porque depende de cuántos haya.
+ * QUIETOS. Esto era una fila que se deslizaba sola y se ha quitado: obligaba a
+ * perseguir la tarjeta que querías mirar, y en un teléfono competía además con
+ * el dedo que estaba haciendo scroll. Ahora es una rejilla en pantalla ancha y
+ * una fila que se arrastra con el dedo en pantalla estrecha. Se mueve cuando
+ * la mueves tú.
  *
  * SOBRE EL CRISTAL. El desenfoque de fondo se usa en dos sitios y en ninguno
  * es decorativo: el botón de play y la banda del nombre van encima del vídeo,
  * que es una imagen que no controlamos y que puede ser clara, oscura o las dos
  * cosas en la misma tarjeta. Un color plano encima tapa la cara; un cristal
  * deja ver que debajo sigue habiendo vídeo y a la vez separa el texto lo justo
- * para leerlo. Es el mismo recurso de la cabecera de la web, que también flota
- * sobre contenido que cambia.
- *
- * No hay relieve blando —el «neumorfismo»— y no es por gusto: funciona pintando
- * dos sombras, una clara y otra oscura, casi del color del fondo, así que todo
- * lo que dibuja queda por debajo del contraste mínimo. Un botón que solo se
- * distingue por una sombra de 1,2 a 1 no se ve en un móvil a pleno sol ni lo
- * encuentra quien no ve bien. Acabamos de subir a verde las 103 medidas de la
- * web; esto las tiraría abajo.
+ * para leerlo.
  */
 
 .zona {
@@ -27,20 +20,6 @@
   background: var(--azul-tint);
   border-top: 1px solid var(--azul-line);
   border-bottom: 1px solid var(--azul-line);
-  overflow: hidden;
-  /*
-   * La distancia de verdad desde el borde de la pantalla hasta donde empieza
-   * el texto de `.wrap`. No es el relleno de `.wrap` a secas: `.wrap` está
-   * topado en 1240 px y centrado, así que en una pantalla ancha hay además la
-   * mitad de lo que sobra. En 1400 px eso son 80 + 40 = 120, no 40.
-   *
-   * Es la misma cuenta que hace `.sangrado-izq` en globals.css, y por el mismo
-   * motivo: alinear con la columna de texto algo que no vive dentro de ella.
-   */
-  --margen: max(
-    calc((100vw - 1240px) / 2 + clamp(20px, 4vw, 40px)),
-    clamp(20px, 4vw, 40px)
-  );
 }
 
 .cabeza {
@@ -64,63 +43,65 @@
 }
 
 /*
- * La ventana por la que se ve pasar la tira.
+ * La lista. Rejilla en ancho, fila que se arrastra en estrecho.
  *
- * El desvanecido de las puntas empieza EXACTAMENTE en el margen de `.wrap`, y
- * ahí está la alineación: la primera tarjeta aparece del todo justo en la línea
- * vertical donde empieza el titular, no en el borde de la pantalla. Sin eso, el
- * texto está tabulado y las tarjetas no, y se nota aunque no se sepa por qué.
+ * ANTES ESTO SE DESLIZABA SOLO y se ha quitado. Una fila que se mueve sola
+ * obliga a perseguir la tarjeta que quieres mirar: justo cuando vas a tocarla,
+ * se ha ido. En un teléfono es peor, porque además compite con el dedo que
+ * está haciendo scroll. Quieta se mira; moviéndose se persigue.
+ *
+ * Las columnas se ajustan solas al número de testimonios que haya. Con tres
+ * salen tres; el día que haya seis, salen tres y tres, sin tocar nada.
  */
-.ventana {
-  position: relative;
-  margin-top: clamp(30px, 3.8vw, 48px);
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    #000 var(--margen),
-    #000 calc(100% - var(--margen)),
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    #000 var(--margen),
-    #000 calc(100% - var(--margen)),
-    transparent 100%
-  );
+.lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: clamp(18px, 2.2vw, 30px);
+  margin: clamp(30px, 3.8vw, 48px) 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-.tira {
-  display: flex;
-  width: max-content;
-  /* Aquí NO puede ir ningún relleno ni ningún margen: el ancho de esta caja es
-     lo que se divide entre dos para desplazar, y todo lo que se le añada
-     desalinea las dos copias y hace que cada vuelta dé un salto. */
-  animation: divineTestimonios var(--vuelta, 42s) linear infinite;
+.celda {
+  min-width: 0;
 }
 
 /*
- * Se para cuando alguien está mirando, y eso llega por dos vías.
+ * En estrecho, una fila que se arrastra con el dedo y para en cada tarjeta.
  *
- * `data-quieto` lo pone el componente: hay un vídeo puesto, o hay un dedo o un
- * ratón encima. El `:focus-within` es para quien va por teclado, que no toca
- * nada. La parada por ratón NO se hace aquí con `:hover` aunque se podría: en
- * un móvil no existe, y allí es donde más falta hace, así que vale más que las
- * dos vengan del mismo sitio y se comporten igual.
+ * Apiladas serían tres vídeos verticales uno debajo de otro: media pantalla
+ * cada uno y la sección entera más larga que el resto de la portada junta.
+ * Puestas en fila se ve que hay más de una y se pasa de una a otra con el
+ * gesto de siempre, el mismo de las fotos del teléfono.
+ *
+ * Se sale del `wrap` por los dos lados con márgenes negativos para que la
+ * primera empiece alineada con el texto y la última pueda asomar por el borde:
+ * una tarjeta cortada por el canto es lo que dice «aquí hay más».
  */
-.zona:focus-within .tira,
-.tira[data-quieto] {
-  animation-play-state: paused;
-}
+@media (max-width: 720px) {
+  .lista {
+    display: flex;
+    gap: 14px;
+    margin-left: calc(clamp(20px, 4vw, 40px) * -1);
+    margin-right: calc(clamp(20px, 4vw, 40px) * -1);
+    padding: 0 clamp(20px, 4vw, 40px);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    /* La barra se esconde: en un móvil no se usa y en un portátil con pantalla
+       táctil aparecería cruzando las frases. */
+    scrollbar-width: none;
+  }
 
-.grupo {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: stretch;
-  gap: clamp(16px, 1.8vw, 24px);
-  /* La misma separación entre la última tarjeta de una copia y la primera de
-     la siguiente, para que el ritmo no se rompa justo en la costura. */
-  padding-right: clamp(16px, 1.8vw, 24px);
+  .lista::-webkit-scrollbar {
+    display: none;
+  }
+
+  .celda {
+    flex: 0 0 auto;
+    width: min(74vw, 280px);
+    scroll-snap-align: center;
+  }
 }
 
 /* ==========================================================================
@@ -400,46 +381,15 @@
   overflow: hidden;
 }
 
-/*
- * Quien ha pedido que las cosas no se muevan, que las mire a su ritmo.
- *
- * No basta con quitar la animación: sin ella la tira se queda parada y las
- * tarjetas de más allá del borde son inalcanzables. Se convierte en una fila
- * que se puede arrastrar, y la segunda copia se esconde, que duplicada y
- * quieta solo sería la misma lista dos veces.
- */
+/* Sin la fila moviéndose sola, aquí queda poco: solo quitar el crecimiento
+   de la tarjeta abierta y las transiciones, que son lo único que se mueve. */
 @media (prefers-reduced-motion: reduce) {
-  .ventana {
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .tira {
-    animation: none;
-  }
-
-  .grupo {
-    /* Arrastrando sí hay primera tarjeta, y tiene que empezar en la misma
-       línea que el titular. */
-    padding-left: var(--margen);
-  }
-
-  .grupo[aria-hidden='true'] {
-    display: none;
-  }
-
-  .tarjeta {
-    scroll-snap-align: center;
-  }
-
   .imagen,
   .play,
   .marco {
     transition: none;
   }
 
-  /* Sin crecer: el aumento es movimiento, y es justo lo que aquí sobra. */
   .marco[data-abierto] {
     transform: none;
   }
@@ -476,23 +426,5 @@
 
   .pie {
     min-height: 60px;
-  }
-}
-
-/*
- * Este fotograma vive aquí y no en globals.css, y no es una cuestión de orden:
- * los CSS Modules le cambian el nombre a la animación —«divineTestimonios» se
- * convierte en «Fichero-module__hash__divineTestimonios»— y ese nombre no
- * existe entre los globales. La animación se queda en nada, sin error y sin
- * aviso: simplemente no se mueve. Así estuvo parada la barra de la portada
- * desde el primer día. Definiéndolo en el mismo fichero que lo usa, el nombre
- * se cambia en los dos sitios y vuelven a coincidir.
- */
-@keyframes divineTestimonios {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
   }
 }
