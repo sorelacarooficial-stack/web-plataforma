@@ -148,3 +148,8 @@
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
+
+/* Sobre la foto con velo oscuro, el titular va en el dorado claro. */
+.banda :global(.titulo-lg) {
+  background-image: var(--degradado-claro);
+}

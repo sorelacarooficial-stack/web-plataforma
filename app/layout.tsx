@@ -143,8 +143,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#0C0C0C' },
-    { media: '(prefers-color-scheme: dark)', color: '#0C0C0C' },
+    { media: '(prefers-color-scheme: light)', color: '#FBF9F6' },
+    { media: '(prefers-color-scheme: dark)', color: '#FBF9F6' },
   ],
 };
 
@@ -153,7 +153,7 @@ export const viewport: Viewport = {
  * negro y el dorado, y ya no hay botón para cambiarlo. Se pone antes del primer
  * pintado para que no aparezca un instante en claro.
  */
-const TEMA_INICIAL = `document.documentElement.setAttribute('data-tema','oscuro');`;
+const TEMA_INICIAL = `document.documentElement.setAttribute('data-tema','claro');`;
 
 export default function RootLayout({
   children,
@@ -161,7 +161,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      data-tema="oscuro"
+      data-tema="claro"
       className={`${cormorant.variable} ${jost.variable}`}
       suppressHydrationWarning
     >

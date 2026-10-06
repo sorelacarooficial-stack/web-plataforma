@@ -112,7 +112,7 @@
   font-size: clamp(36px, 6vw, 88px);
   line-height: 0.95;
   letter-spacing: -0.02em;
-  background-image: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  background-image: var(--degradado-titulo);
   background-size: 100% var(--alto-linea);
   -webkit-background-clip: text;
   background-clip: text;
