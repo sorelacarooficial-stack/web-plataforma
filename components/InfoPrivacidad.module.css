@@ -1,0 +1,111 @@
+/*
+ * El recuadro de protección de datos de los formularios.
+ *
+ * Discreto a propósito: un formulario con un bloque legal enorme encima
+ * espanta. Plegado ocupa una línea; abierto se lee bien.
+ *
+ * Usa los colores de la web, salvo con `claro`, que es para la ventana del
+ * acuerdo: esa ventana es siempre papel claro, sea cual sea el tema, y aquí
+ * lleva sus propios colores por la misma razón.
+ */
+
+.caja {
+  --pv-fondo: var(--surface);
+  --pv-tinta: var(--ink);
+  --pv-suave: var(--muted);
+  --pv-linea: var(--line-2);
+  --pv-oro: var(--arcilla-ink);
+
+  margin: 6px 0 2px;
+  border: 1px solid var(--pv-linea);
+  border-radius: 12px;
+  background: var(--pv-fondo);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--pv-suave);
+  text-align: left;
+}
+
+.caja[data-claro] {
+  --pv-fondo: #ffffff;
+  --pv-tinta: #141210;
+  --pv-suave: #5f574e;
+  --pv-linea: rgba(20, 18, 16, 0.14);
+  --pv-oro: #6e5327;
+}
+
+.resumen {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 500;
+  color: var(--pv-tinta);
+}
+
+.resumen::-webkit-details-marker {
+  display: none;
+}
+
+/* La flecha que dice que se abre. */
+.resumen::after {
+  content: '';
+  margin-left: auto;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.2s;
+  opacity: 0.6;
+}
+
+.caja[open] .resumen::after {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+.icono {
+  display: grid;
+  place-items: center;
+  color: var(--pv-oro);
+}
+
+.lista {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 2px 14px 14px;
+}
+
+.lista > div {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .lista > div {
+    grid-template-columns: 1fr;
+    gap: 1px;
+  }
+}
+
+.lista dt {
+  font-weight: 500;
+  color: var(--pv-tinta);
+}
+
+.lista dd {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.lista a {
+  color: var(--pv-oro);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}

@@ -7,6 +7,7 @@ import Cinta from '@/components/landing/Cinta';
 import FadeIn from '@/components/landing/FadeIn';
 import Magnet from '@/components/landing/Magnet';
 import TextoRevelado from '@/components/landing/TextoRevelado';
+import Video from '@/components/landing/Video';
 import VideoEscala from '@/components/landing/VideoEscala';
 import Galeria from '@/components/presentacion/Galeria';
 import { WHATSAPP_SORELA } from '@/lib/contenido';
@@ -151,7 +152,7 @@ export default function Presentacion() {
       <section className={css.video}>
         <VideoEscala>
           {VIDEO ? (
-            <video className={l.videoReal} src={VIDEO.src} poster={VIDEO.cartel} controls playsInline preload="metadata" />
+            <Video src={VIDEO.src} cartel={VIDEO.cartel} />
           ) : (
             <div className={l.videoHueco}>
               <Image src="/trayectoria/sesion-2.webp" alt="" fill className={l.videoFondo} sizes="100vw" />

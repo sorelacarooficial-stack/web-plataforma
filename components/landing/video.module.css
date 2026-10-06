@@ -1,0 +1,284 @@
+/*
+ * El reproductor de la presentación.
+ *
+ * Cristal oscuro sobre el vídeo, dorados de la marca para lo que avanza, y
+ * todo grande para el dedo: cada botón mide 44 px, que es lo mínimo con lo
+ * que se acierta en un móvil sin mirar.
+ */
+
+.caja {
+  --oro-a: #8a6a32;
+  --oro-b: #e3c696;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  color: #fff;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+}
+
+.caja[data-ocultos] {
+  cursor: none;
+}
+
+.video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+/* ---------- El play grande ---------- */
+
+.grande {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: clamp(76px, 10vw, 112px);
+  height: clamp(76px, 10vw, 112px);
+  padding: 0;
+  border: 1.5px solid rgba(227, 198, 150, 0.55);
+  border-radius: 999px;
+  background: rgba(20, 18, 16, 0.42);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  transition: transform 0.25s, background 0.25s, border-color 0.25s;
+}
+
+@supports (backdrop-filter: blur(10px)) {
+  .grande {
+    background: rgba(20, 18, 16, 0.28);
+    backdrop-filter: blur(14px) saturate(1.2);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  }
+}
+
+.grande:hover {
+  transform: translate(-50%, -50%) scale(1.06);
+  background: rgba(138, 106, 50, 0.55);
+  border-color: var(--oro-b);
+}
+
+.grande svg {
+  margin-left: 4px;
+}
+
+.grandeTiempo {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ---------- La barra de abajo ---------- */
+
+.barra {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 40px clamp(12px, 2.4vw, 26px) clamp(10px, 1.6vw, 18px);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.35) 60%, transparent);
+  transition: opacity 0.35s, transform 0.35s;
+}
+
+/* Antes de darle al play no hay barra: solo el cartel y el botón grande. */
+.barra:not([data-empezado]) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.caja[data-ocultos] .barra {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+/* ---------- Progreso ---------- */
+
+.progreso {
+  position: relative;
+  height: 22px;
+  display: flex;
+  align-items: center;
+}
+
+.pista {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  transition: height 0.2s;
+}
+
+.progreso:hover .pista {
+  height: 6px;
+}
+
+.cargado,
+.hecho {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: inherit;
+}
+
+.cargado {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.hecho {
+  background: linear-gradient(90deg, var(--oro-a), var(--oro-b));
+}
+
+.bolita {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(227, 198, 150, 0.35);
+  transform: translateY(-50%) scale(0);
+  transition: transform 0.2s;
+}
+
+.progreso:hover .bolita,
+.rango:focus-visible + .bolita {
+  transform: translateY(-50%) scale(1);
+}
+
+/* El range de verdad, encima del dibujo e invisible: recibe el dedo y el
+   teclado, y el dibujo de debajo enseña dónde está. */
+.rango {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.progreso:has(.rango:focus-visible) .pista {
+  outline: 2px solid var(--oro-b);
+  outline-offset: 4px;
+}
+
+/* ---------- Botones y tiempo ---------- */
+
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.boton {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.boton:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--oro-b);
+}
+
+.boton:focus-visible {
+  outline: 2px solid var(--oro-b);
+  outline-offset: 1px;
+}
+
+.tiempo {
+  margin-left: 6px;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.tiempoTotal {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.hueco {
+  flex: 1 1 auto;
+}
+
+.sonido {
+  display: flex;
+  align-items: center;
+}
+
+.volumen {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0;
+  height: 4px;
+  margin: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--oro-b) var(--nivel, 100%), rgba(255, 255, 255, 0.25) var(--nivel, 100%));
+  opacity: 0;
+  cursor: pointer;
+  transition: width 0.25s, opacity 0.25s, margin 0.25s;
+}
+
+/* Se despliega al pasar por encima del altavoz, como en cualquier
+   reproductor: no ocupa sitio hasta que se busca. */
+.sonido:hover .volumen,
+.volumen:focus-visible {
+  width: 80px;
+  margin: 0 10px 0 2px;
+  opacity: 1;
+}
+
+.volumen::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.volumen::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+}
+
+@media (hover: none) {
+  .volumen {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .soloAncho {
+    display: none;
+  }
+
+  .tiempo {
+    font-size: 12.5px;
+  }
+}

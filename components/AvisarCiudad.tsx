@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useId, useState } from 'react';
 import { revisar } from '@/lib/captacion';
 import css from './Formularios.module.css';
+import InfoPrivacidad from '@/components/InfoPrivacidad';
+import { CAPA_CITA } from '@/lib/privacidad';
 
 type Estado = 'quieto' | 'enviando' | 'hecho' | 'fallo';
 
@@ -140,13 +142,14 @@ export default function AvisarCiudad() {
       <label className={css.consentimiento}>
         <input type="checkbox" checked={acepta} onChange={(e) => setAcepta(e.target.checked)} />
         <span>
-          Acepto que Sorela guarde estos datos para avisarme.{' '}
+          Acepto que Sorela trate mis datos para avisarme.{' '}
           <Link href="/legal/privacidad" target="_blank">
             Cómo se tratan
           </Link>
           .
         </span>
       </label>
+      <InfoPrivacidad capa={CAPA_CITA} />
 
       {error && (
         <p className={css.error} role="alert">

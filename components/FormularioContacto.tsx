@@ -5,6 +5,8 @@ import { useId, useState } from 'react';
 import { revisar, type Contacto } from '@/lib/captacion';
 import { INSTAGRAM, INSTAGRAM_USUARIO } from '@/lib/contenido';
 import css from './Formularios.module.css';
+import InfoPrivacidad from '@/components/InfoPrivacidad';
+import { CAPA_INFORMACION } from '@/lib/privacidad';
 
 const MOTIVOS = [
   'Quiero formarme',
@@ -173,7 +175,7 @@ export default function FormularioContacto() {
               aria-invalid={errores.consentimiento ? true : undefined}
             />
             <span>
-              Acepto que Sorela guarde estos datos para contestarme.{' '}
+              Acepto que Sorela trate mis datos para contestarme y escribirme sobre sus formaciones y la membresía.{' '}
               <Link href="/legal/privacidad" target="_blank">
                 Cómo se tratan
               </Link>
@@ -181,6 +183,7 @@ export default function FormularioContacto() {
             </span>
           </label>
           {errores.consentimiento && <p className={css.error}>{errores.consentimiento}</p>}
+          <InfoPrivacidad capa={CAPA_INFORMACION} />
 
           <button
             type="submit"

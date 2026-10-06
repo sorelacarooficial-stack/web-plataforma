@@ -7,6 +7,8 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import Marco from './MarcoAcceso';
 import { auth, hayAuth } from '@/lib/firebase-navegador';
 import css from './Acceso.module.css';
+import InfoPrivacidad from '@/components/InfoPrivacidad';
+import { CAPA_CUENTA } from '@/lib/privacidad';
 
 /**
  * Crearse una cuenta.
@@ -272,6 +274,7 @@ export default function Registro() {
               {errores.consentimiento}
             </p>
           )}
+          <InfoPrivacidad capa={CAPA_CUENTA} />
 
           {error && (
             <p className={css.error} role="alert">

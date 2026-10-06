@@ -5,6 +5,8 @@ import { useId, useState } from 'react';
 import { revisar, type Contacto } from '@/lib/captacion';
 import formCss from './Formularios.module.css';
 import css from './Reserva.module.css';
+import InfoPrivacidad from '@/components/InfoPrivacidad';
+import { CAPA_CITA } from '@/lib/privacidad';
 
 type Estado = 'quieto' | 'enviando' | 'hecho' | 'fallo';
 type Errores = Partial<Record<keyof Contacto, string>>;
@@ -219,7 +221,7 @@ export default function Reserva({ ciudad }: { ciudad: string }) {
             aria-invalid={errores.consentimiento ? true : undefined}
           />
           <span>
-            Acepto que se guarden estos datos para gestionar mi cita.{' '}
+            Acepto que Sorela trate mis datos para gestionar mi cita.{' '}
             <Link href="/legal/privacidad" target="_blank">
               Cómo se tratan
             </Link>
@@ -227,6 +229,7 @@ export default function Reserva({ ciudad }: { ciudad: string }) {
           </span>
         </label>
         {errores.consentimiento && <p className={formCss.error}>{errores.consentimiento}</p>}
+        <InfoPrivacidad capa={CAPA_CITA} />
 
         <button
           type="submit"

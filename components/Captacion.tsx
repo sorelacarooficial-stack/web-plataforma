@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { revisar, type Contacto } from '@/lib/captacion';
 import { INSTAGRAM, INSTAGRAM_USUARIO, WHATSAPP_SORELA } from '@/lib/contenido';
 import css from './Captacion.module.css';
+import InfoPrivacidad from '@/components/InfoPrivacidad';
+import { CAPA_INFORMACION } from '@/lib/privacidad';
 
 type Estado = 'quieto' | 'enviando' | 'hecho' | 'sinSitio';
 type Errores = Partial<Record<keyof Contacto, string>>;
@@ -273,7 +275,7 @@ export default function Captacion({
           aria-invalid={errores.consentimiento ? true : undefined}
         />
         <span>
-          Acepto que Sorela guarde estos datos para enviarme la información de la Técnica Divine.{' '}
+          Acepto que Sorela trate mis datos para enviarme la información de la Técnica Divine y escribirme sobre sus formaciones y la membresía.{' '}
           <Link href="/legal/privacidad" target="_blank">
             Cómo se tratan
           </Link>
@@ -281,6 +283,7 @@ export default function Captacion({
         </span>
       </label>
       {errores.consentimiento && <p className={css.error}>{errores.consentimiento}</p>}
+      <InfoPrivacidad capa={CAPA_INFORMACION} />
 
       <button type="submit" className={`btn ${css.enviar}`} disabled={enviando}>
         {enviando ? 'Un momento…' : 'Enviarme la información'}
