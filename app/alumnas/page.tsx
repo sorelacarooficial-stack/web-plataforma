@@ -247,8 +247,8 @@ export default function Alumnas() {
             <h2 className={`${l.gigante} ${l.medio} ${l.degradado}`}>Anatomía</h2>
           </FadeIn>
           <p className={l.entrada}>
-            El sistema linfático, lámina a lámina. El protocolo —presiones, tiempos y maniobras—
-            está en el dossier, detrás del acuerdo.
+            El sistema linfático, lámina a lámina. El protocolo —presiones, tiempos y maniobras— lo
+            encontrarás en el dossier después de firmar el acuerdo.
           </p>
           <div className={l.interactivo}>
             <Anatomia />

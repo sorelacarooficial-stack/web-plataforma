@@ -351,5 +351,5 @@ export const RESULTADOS = [
   '/alumnas/resultado-3.webp',
   '/alumnas/resultado-4.webp',
   '/alumnas/resultado-5.webp',
-  '/alumnas/abdomen-2.webp',
+  '/alumnas/resultado-6.webp',
 ];
