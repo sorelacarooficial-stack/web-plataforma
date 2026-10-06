@@ -138,7 +138,7 @@ export const PILARES: Pilar[] = [
   {
     titulo: 'Maniobras con criterio',
     texto:
-      'Las manipulaciones son concretas, directas y con objetivos claros. No se parece a un masaje corporal: se mira antes de tocar.',
+      'En Divine®, primero se observa y después se toca. Cada maniobra tiene un propósito y se adapta al tejido, a la anatomía y al objetivo de trabajo. No se trata de repetir movimientos, sino de saber por qué, dónde y cómo trabajar.',
   },
   {
     titulo: 'Un método, no una receta',
