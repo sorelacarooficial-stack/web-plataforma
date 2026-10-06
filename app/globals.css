@@ -102,6 +102,22 @@
 
   --cabecera: clamp(66px, 7vw, 86px);
 
+  /* El sistema de las landings, en claro: el lienzo es el blanco cálido de la
+     web, la «crema» pasa a ser la tinta y el degradado de los titulares va de
+     tinta a bronce. Las bandas que deben seguir siendo oscuras (membresía,
+     testimonios, la lista de números) se lo redefinen a mano. */
+  --negro: #fbf9f6;
+  --crema: #141210;
+  --crema-2: rgba(20, 18, 16, 0.7);
+  --oro-a: #8a6a32;
+  --oro-b: #8a6a32;
+  --degradado-titulo: linear-gradient(180deg, #1c1813 30%, #9a7640 96%);
+  --degradado-claro: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  --caja-fondo: linear-gradient(160deg, #ffffff 0%, #f5f0e7 100%);
+  --caja-oro: linear-gradient(160deg, #fbf5e8 0%, #f2e8d4 100%);
+  --caja-borde: rgba(20, 18, 16, 0.1);
+  --toque: rgba(20, 18, 16, 0.06);
+
   color-scheme: light;
 }
 
@@ -119,6 +135,12 @@
   --crema-2: rgba(237, 227, 211, 0.72);
   --oro-a: #8a6a32;
   --oro-b: #d9b47c;
+  --degradado-titulo: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  --degradado-claro: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  --caja-fondo: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
+  --caja-oro: linear-gradient(160deg, #1d170e 0%, #100e0b 100%);
+  --caja-borde: rgba(237, 227, 211, 0.14);
+  --toque: rgba(237, 227, 211, 0.1);
 
   --ink: #f7f2ea;
   --ink-2: #ded6c9;
@@ -446,7 +468,7 @@ img {
 .titulo-lg,
 .titulo-md,
 .degradado {
-  background-image: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  background-image: var(--degradado-titulo);
   background-size: 100% var(--alto-linea, 1.05em);
   background-repeat: repeat-y;
   -webkit-background-clip: text;
@@ -706,7 +728,7 @@ img {
 }
 
 .btn-linea:hover {
-  background: rgba(237, 227, 211, 0.1);
+  background: var(--toque);
   color: var(--crema, var(--ink));
   transform: translateY(-1px);
 }
@@ -836,8 +858,8 @@ textarea.campo {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
-  border: 1px solid rgba(237, 227, 211, 0.14);
+  background: var(--caja-fondo);
+  border: 1px solid var(--caja-borde);
   border-radius: clamp(28px, 3.4vw, 40px);
   padding: clamp(26px, 3.4vw, 40px);
 }
@@ -857,8 +879,8 @@ textarea.campo {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  background: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
-  border: 1px solid rgba(237, 227, 211, 0.14);
+  background: var(--caja-fondo);
+  border: 1px solid var(--caja-borde);
   border-radius: clamp(28px, 3.4vw, 40px);
   padding: clamp(28px, 3.2vw, 40px);
   transition:
@@ -912,56 +934,70 @@ textarea.campo {
 /* ==========================================================================
    Paneles de las landings, para cualquier página
 
-   .panel-blanco: el bloque blanco con las esquinas de arriba redondeadas, en
-   el que el texto pasa a negro. .panel-oscuro: el bloque negro que sube y lo
-   tapa. Juntos hacen el efecto de capas de la referencia.
+   .panel-blanco: el bloque de contraste con las esquinas de arriba
+   redondeadas. En la versión clara de la web es NEGRO (en las landings era
+   blanco sobre negro; aquí es negro sobre blanco), y dentro se redefinen los
+   colores para que todo lo que lleva se lea en oscuro. .panel-oscuro: el
+   bloque del color de la página que sube y lo tapa.
    ========================================================================== */
 .panel-blanco {
-  --bg: #ffffff;
-  --surface: #f5f2ec;
-  --surface-2: #efe9df;
-  --photo-bg: #ede8e0;
-  --ink: #0c0c0c;
-  --ink-2: #2a2620;
-  --ink-3: #3e3831;
-  --ink-4: #2a2620;
-  --muted-2: #4f4840;
-  --muted: #5e564c;
-  --faint: #6c645a;
-  --arcilla: #8a6a32;
-  --arcilla-ink: #6e5327;
-  --oro: #8a6a32;
-  --oro-b: #8a6a32;
-  --crema: #0c0c0c;
-  --oro-tint: #f5efe2;
-  --oro-line: rgba(138, 106, 50, 0.35);
-  --line-1: rgba(12, 12, 12, 0.08);
-  --line-2: rgba(12, 12, 12, 0.12);
-  --line-3: rgba(12, 12, 12, 0.15);
-  --line-4: rgba(12, 12, 12, 0.18);
-  --line-5: rgba(12, 12, 12, 0.3);
-  --logo-filter: brightness(0.42) saturate(1.35);
+  --bg: #0c0c0c;
+  --surface: #151311;
+  --surface-2: #1c1916;
+  --photo-bg: #1c1916;
+  --ink: #f7f2ea;
+  --ink-2: #ded6c9;
+  --ink-3: #cfc6b8;
+  --ink-4: #ebe4d9;
+  --muted-2: #b3a99c;
+  --muted: #a89e91;
+  --faint: #968d81;
+  --arcilla: #cfa765;
+  --arcilla-ink: #e3c696;
+  --oro: #cfa765;
+  --oro-b: #d9b47c;
+  --oro-tint: #1f1a12;
+  --oro-line: rgba(207, 167, 101, 0.38);
+  --crema: #ede3d3;
+  --crema-2: rgba(237, 227, 211, 0.72);
+  /* La lista de las landings pinta los números con --negro: aquí, claros. */
+  --negro: #f3e3c3;
+  --line-1: rgba(247, 242, 234, 0.1);
+  --line-2: rgba(247, 242, 234, 0.14);
+  --line-3: rgba(247, 242, 234, 0.16);
+  --line-4: rgba(247, 242, 234, 0.22);
+  --line-5: rgba(247, 242, 234, 0.3);
+  --degradado-titulo: var(--degradado-claro);
+  --caja-fondo: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
+  --caja-borde: rgba(237, 227, 211, 0.14);
+  --toque: rgba(237, 227, 211, 0.1);
+  --logo-filter: none;
 
   position: relative;
   z-index: 1;
-  background: #ffffff;
   color: var(--ink);
   border-radius: 40px 40px 0 0;
 }
 
-/* Sobre blanco, los titulares van en negro y no en dorado. */
-.panel-blanco .titulo-xl,
-.panel-blanco .titulo-lg,
-.panel-blanco .titulo-md {
-  background: none;
-  -webkit-text-fill-color: currentColor;
-  color: #0c0c0c;
+/* Doble clase para ganar a la lista de las landings, que se pinta en blanco. */
+.panel-blanco.panel-blanco {
+  background: #0c0c0c;
+  color: var(--ink);
 }
 
-.panel-blanco .tarjeta,
-.panel-blanco .formulario {
-  background: #f7f4ef;
-  border-color: rgba(12, 12, 12, 0.08);
+.panel-blanco ol > li {
+  border-color: rgba(237, 227, 211, 0.16) !important;
+}
+
+/* Un titular sobre una banda oscura fija (membresía, fotos con velo). */
+.degradado-claro {
+  background-image: var(--degradado-claro);
+  background-size: 100% var(--alto-linea, 1.05em);
+  background-repeat: repeat-y;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .panel-oscuro {
@@ -1050,7 +1086,7 @@ textarea.campo {
   line-height: 0.96;
   letter-spacing: -0.02em;
   text-wrap: balance;
-  background-image: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  background-image: var(--degradado-titulo);
   background-size: 100% var(--alto-linea);
   -webkit-background-clip: text;
   background-clip: text;
@@ -1060,8 +1096,8 @@ textarea.campo {
 /* La caja oscura con borde fino de las landings, que se enciende en dorado
    al pasar por encima. */
 .caja-landing.caja-landing {
-  background: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
-  border: 1px solid rgba(237, 227, 211, 0.14);
+  background: var(--caja-fondo);
+  border: 1px solid var(--caja-borde);
   border-radius: clamp(28px, 4vw, 48px);
   transition:
     border-color 0.3s,

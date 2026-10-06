@@ -338,8 +338,8 @@
   background: rgba(21, 19, 17, 0.82);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  color: var(--crema, var(--ink));
-  border: 1px solid var(--oro-line);
+  color: #ede3d3;
+  border: 1px solid rgba(207, 167, 101, 0.4);
   border-radius: 999px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
   cursor: pointer;

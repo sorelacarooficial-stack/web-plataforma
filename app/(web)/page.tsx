@@ -306,7 +306,7 @@ export default function Home() {
           <div className={css.lanzamientoCaja}>
             <p className={css.lanzamientoSello}>Próximamente</p>
 
-            <h2 className={`${css.lanzamientoTitulo} degradado`}>
+            <h2 className={`${css.lanzamientoTitulo} degradado-claro`}>
               Membresía
               <em className={css.lanzamientoTituloEnfasis}>Divine</em>
             </h2>
@@ -329,7 +329,7 @@ export default function Home() {
       </section>
 
       {/* ---------- Preguntas ---------- */}
-      <section className={`seccion panel-blanco ${css.preguntas}`}>
+      <section className={`seccion ${css.preguntas}`}>
         <div className="wrap wrap-1040">
           <h2 className={`titulo-lg max-640 ${css.tituloBloque}`}>Lo que más me preguntan.</h2>
           <Acordeon preguntas={FAQS} />

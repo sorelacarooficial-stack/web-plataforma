@@ -64,7 +64,7 @@
 .citaClara:hover {
   color: var(--crema);
   border-color: var(--crema);
-  background: rgba(237, 227, 211, 0.1);
+  background: var(--toque);
   transform: translateY(-1px);
 }
 
