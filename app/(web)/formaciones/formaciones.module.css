@@ -52,8 +52,8 @@
 }
 
 .avisame {
-  border-top: 1px solid var(--line-3);
-  padding: clamp(32px, 5vw, 56px) 0 0;
+  margin-top: 18px;
+  padding: clamp(28px, 3.6vw, 48px);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: clamp(22px, 3vw, 48px);
@@ -84,37 +84,39 @@
 .etapa {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: clamp(24px, 3vw, 38px);
-  background: var(--surface);
-  border: 1px solid var(--line-4);
-  border-top: 3px solid var(--line-5);
+  gap: 16px;
+  padding: clamp(16px, 3vw, 40px);
 }
 
 /* La presencial en oro: es la que tiene fechas y la que cuesta dinero. La
    online es el paso previo, no el destino. */
 .etapaDestacada {
-  border-top-color: var(--arcilla);
+  background: radial-gradient(120% 90% at 100% 0%, rgba(217, 180, 124, 0.12), transparent 60%);
+  border-radius: 40px;
 }
 
 .etapaOrden {
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--muted);
-}
-
-.etapaDestacada .etapaOrden {
-  color: var(--arcilla);
+  color: var(--oro-b);
 }
 
 .etapaTitulo {
+  --alto-linea: 0.95em;
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(24px, 2.6vw, 33px);
-  line-height: 1.12;
-  color: var(--ink);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(36px, 6vw, 88px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  background-image: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  background-size: 100% var(--alto-linea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .etapaLista {
@@ -128,11 +130,11 @@
 
 .etapaLista li {
   position: relative;
-  padding-left: 18px;
-  font-size: 14.5px;
+  padding-left: 22px;
+  font-size: clamp(15px, 1.4vw, 18px);
   font-weight: 300;
-  line-height: 1.5;
-  color: var(--ink-3);
+  line-height: 1.55;
+  color: var(--crema);
 }
 
 .etapaLista li::before {
@@ -153,15 +155,13 @@
   justify-content: space-between;
   gap: clamp(20px, 3vw, 40px);
   margin-top: clamp(32px, 4.5vw, 60px);
-  padding: clamp(26px, 3.4vw, 42px);
-  background: var(--bg);
-  border-left: 3px solid var(--oro);
+  padding: clamp(28px, 3.6vw, 48px);
 }
 
 .fechasTitulo {
   margin: 6px 0 10px;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
+  font-weight: 600;
   font-size: clamp(25px, 3vw, 36px);
   line-height: 1.1;
   color: var(--ink);

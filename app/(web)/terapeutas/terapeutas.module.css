@@ -6,8 +6,4 @@
 .titulo {
   margin: 0 0 22px;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(38px, 6vw, 76px);
-  line-height: 1.02;
-  letter-spacing: -0.015em;
 }

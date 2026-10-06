@@ -35,7 +35,7 @@ export default function Comunidad() {
                 Antes ponía «La membresía de Sorela», que habla de ella en
                 tercera persona como si lo contara otro; aquí quien escribe es
                 ella y quien lee es una terapeuta a la que conoce. */}
-            <h1 className={css.titulo}>Estoy preparando algo especial para ti.</h1>
+            <h1 className={`${css.titulo} degradado`}>Estoy preparando algo especial para ti.</h1>
             <p className="lede max-540" style={{ lineHeight: 1.62 }}>
               El sitio donde sigo enseñando después del curso: una clase en vivo al mes con lo
               nuevo del método, tus casos mirados uno a uno, un canal privado donde preguntarme y
@@ -48,24 +48,20 @@ export default function Comunidad() {
             <Contador />
           </div>
 
-          <div className={css.caja}>
+          <div className={`${css.caja} caja-landing`}>
             <ListaEspera />
           </div>
         </div>
       </section>
 
-      <section className={css.piezasSeccion}>
+      <section className={`${css.piezasSeccion} panel-blanco`}>
         <div className="wrap">
           <p className="antetitulo" style={{ marginBottom: 'clamp(30px,4vw,52px)' }}>
             Qué incluye cada mes
           </p>
           <div className={css.piezas}>
             {PIEZAS_COMUNIDAD.map((m) => (
-              <article
-                key={m.titulo}
-                className={css.pieza}
-                style={{ borderTop: `3px solid ${m.color}` }}
-              >
+              <article key={m.titulo} className={`tarjeta ${css.pieza}`}>
                 <span className={css.estado}>{m.estado}</span>
                 <h3 className={css.piezaTitulo}>{m.titulo}</h3>
                 <p className="texto-fijo" style={{ fontSize: 16 }}>
@@ -77,9 +73,9 @@ export default function Comunidad() {
         </div>
       </section>
 
-      <section className={css.precio}>
+      <section className={`${css.precio} panel-oscuro`}>
         <div className="wrap wrap-900">
-          <h2 className={css.precioTitulo}>
+          <h2 className={`${css.precioTitulo} titulo-cierre`}>
             {COMUNIDAD.precio} € {COMUNIDAD.periodo}, precio de lanzamiento.
           </h2>
           <p className={css.precioTexto}>
@@ -89,7 +85,7 @@ export default function Comunidad() {
         </div>
       </section>
 
-      <section className="seccion-sm superficie">
+      <section className="seccion-sm">
         <div className="wrap wrap-1000">
           <h2 className="titulo-sm" style={{ marginBottom: 'clamp(26px,3vw,44px)', fontSize: 'clamp(26px,3.4vw,42px)' }}>
             Preguntas de la lista

@@ -20,9 +20,9 @@ export const metadata: Metadata = {
 export default function Terapeutas() {
   return (
     <main className="pagina">
-      <section className={css.portada}>
+      <section className={`${css.portada} portada-landing`}>
         <div className="wrap">
-          <h1 className={css.titulo}>Localiza tu terapeuta</h1>
+          <h1 className={`${css.titulo} titulo-xl`}>Localiza tu terapeuta</h1>
           {/* Mientras el mapa esté vacío, el texto no puede decir «mira quién
               tienes cerca»: no hay nadie. */}
           <p className="lede">

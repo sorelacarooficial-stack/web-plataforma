@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import valoracion from '@/fotos/valoracion-abdomen.webp';
+import l from '@/components/landing/landing.module.css';
+import FadeIn from '@/components/landing/FadeIn';
 import css from './metodo.module.css';
 
 /**
@@ -72,7 +74,7 @@ const NOTAN = [
 export default function Metodo() {
   return (
     <main className="pagina">
-      <section className={css.portada}>
+      <section className={`${css.portada} portada-landing`}>
         <div className="wrap wrap-900">
           <p className="antetitulo" style={{ marginBottom: 20 }}>
             El método
@@ -97,25 +99,22 @@ export default function Metodo() {
         </div>
       </section>
 
-      <section className={css.pasos}>
-        <div className="wrap columna" style={{ gap: 'clamp(20px,2.6vw,28px)' }}>
-          {PASOS.map((p) => (
-            <article key={p.n} className={css.paso} style={{ background: p.fondo }}>
-              <div className={css.pasoCabeza}>
-                <span className={css.pasoNum} style={{ color: p.color }}>
-                  {p.n}
-                </span>
-                <h3 className={css.pasoTitulo}>{p.titulo}</h3>
+      {/* Los tres pasos en la lista blanca de números enormes de las landings. */}
+      <section className={`panel-blanco ${l.blanca}`}>
+        <ol className={l.lista}>
+          {PASOS.map((p, i) => (
+            <FadeIn as="li" key={p.n} delay={i * 0.1} className={l.item}>
+              <span className={l.itemNum}>{p.n}</span>
+              <div className={l.itemCuerpo}>
+                <h3 className={l.itemNombre}>{p.titulo}</h3>
+                <p className={l.itemTexto}>{p.texto}</p>
               </div>
-              <p className="texto max-520" style={{ lineHeight: 1.66 }}>
-                {p.texto}
-              </p>
-            </article>
+            </FadeIn>
           ))}
-        </div>
+        </ol>
       </section>
 
-      <section className={css.banda}>
+      <section className={`panel-oscuro ${css.banda}`}>
         <Image
           src={valoracion}
           alt="Valoración manual del abdomen"
@@ -131,10 +130,10 @@ export default function Metodo() {
         </div>
       </section>
 
-      <section className={`${css.seccion} superficie`}>
-        <div className="wrap" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 'clamp(28px,4vw,56px)' }}>
+      <section className={css.seccion}>
+        <div className="wrap" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 'clamp(14px,2vw,22px)' }}>
           {NOTAN.map((n) => (
-            <div key={n.titulo} className={css.nota} style={{ borderTop: `2px solid ${n.color}` }}>
+            <div key={n.titulo} className={`tarjeta ${css.nota}`}>
               <h3 className={css.notaTitulo}>{n.titulo}</h3>
               <p className="texto-fijo">{n.texto}</p>
             </div>
@@ -144,8 +143,8 @@ export default function Metodo() {
 
       <section className={css.seccion}>
         <div className="wrap" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(290px,1fr))', gap: 'clamp(24px,3vw,40px)' }}>
-          <div className={css.filtro} style={{ background: 'var(--surface)', border: '1px solid var(--salvia-line)' }}>
-            <p className="antetitulo" style={{ color: 'var(--salvia)' }}>
+          <div className={`tarjeta ${css.filtro}`}>
+            <p className="antetitulo">
               Ven si
             </p>
             <p className={css.filtroTexto}>
@@ -153,7 +152,7 @@ export default function Metodo() {
               que no se parecen en nada.
             </p>
           </div>
-          <div className={css.filtro} style={{ background: 'var(--surface-2)', border: '1px solid var(--line-2)' }}>
+          <div className={`tarjeta ${css.filtro}`}>
             <p className="antetitulo" style={{ color: 'var(--muted)' }}>
               No vengas si
             </p>
@@ -167,7 +166,7 @@ export default function Metodo() {
 
       <section className={css.cierre}>
         <div className="wrap wrap-800">
-          <h2 className={css.cierreTitulo}>El método se aprende haciéndolo.</h2>
+          <h2 className={`${css.cierreTitulo} degradado`}>El método se aprende haciéndolo.</h2>
           <Link href="/formaciones" className="btn">
             Ver formaciones y fechas
           </Link>

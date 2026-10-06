@@ -1002,3 +1002,75 @@ textarea.campo {
   letter-spacing: 0.26em;
   text-transform: uppercase;
 }
+
+/* ==========================================================================
+   Piezas de las landings para las páginas interiores
+   ========================================================================== */
+
+/* La portada de cada página: centrada, con el titular enorme en dorado y un
+   halo cálido detrás. El doble selector gana al .portada de cada página sin
+   tener que tocar su hoja. */
+.portada-landing.portada-landing {
+  padding: clamp(90px, 14vw, 200px) 0 clamp(70px, 9vw, 130px);
+  text-align: center;
+  background: radial-gradient(60% 70% at 50% 40%, rgba(217, 180, 124, 0.1), transparent 70%);
+  border: 0;
+}
+
+.portada-landing .wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.portada-landing .lede {
+  margin: 0 auto;
+  max-width: 640px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--crema);
+}
+
+/* El cierre de cada página: el titular grande y el botón de brillo. */
+.cierre-landing.cierre-landing {
+  padding: clamp(90px, 13vw, 180px) 0;
+  text-align: center;
+  background: transparent;
+  border: 0;
+}
+
+.titulo-cierre {
+  --alto-linea: 0.96em;
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(38px, 7vw, 110px);
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  background-image: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  background-size: 100% var(--alto-linea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* La caja oscura con borde fino de las landings, que se enciende en dorado
+   al pasar por encima. */
+.caja-landing.caja-landing {
+  background: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
+  border: 1px solid rgba(237, 227, 211, 0.14);
+  border-radius: clamp(28px, 4vw, 48px);
+  transition:
+    border-color 0.3s,
+    transform 0.3s;
+}
+
+@media (hover: hover) {
+  .caja-landing.caja-landing:hover {
+    border-color: rgba(217, 180, 124, 0.55);
+    transform: translateY(-3px);
+  }
+}

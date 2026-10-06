@@ -1,7 +1,15 @@
 .portada {
-  padding: clamp(70px, 10vw, 140px) 0 clamp(50px, 6vw, 80px);
-  background: var(--surface);
-  border-bottom: 1px solid var(--line-1);
+  padding: clamp(90px, 14vw, 200px) 0 clamp(70px, 9vw, 130px);
+  text-align: center;
+  background: radial-gradient(60% 70% at 50% 40%, rgba(217, 180, 124, 0.1), transparent 70%);
+}
+
+.portada :global(.lede) {
+  margin: 0 auto;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 300;
+  color: var(--crema);
 }
 
 .seccion {
@@ -45,7 +53,7 @@
 /* ---------- Banda con foto ---------- */
 .banda {
   position: relative;
-  min-height: min(70vh, 640px);
+  min-height: min(78vh, 720px);
   display: flex;
   align-items: flex-end;
   overflow: hidden;
@@ -108,19 +116,18 @@
 
 .filtroTexto {
   margin: 0;
-  font-weight: 300;
-  font-size: clamp(17px, 1.4vw, 20px);
-  line-height: 1.55;
-  color: var(--ink);
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: clamp(22px, 2.2vw, 30px);
+  line-height: 1.25;
+  color: var(--crema);
   text-wrap: pretty;
 }
 
 /* ---------- Cierre ---------- */
 .cierre {
-  padding: clamp(70px, 10vw, 140px) 0;
+  padding: clamp(90px, 13vw, 180px) 0;
   text-align: center;
-  background: var(--surface);
-  border-top: 1px solid var(--line-1);
 }
 
 .cierre > div {
@@ -131,11 +138,13 @@
 }
 
 .cierreTitulo {
+  --alto-linea: 0.96em;
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(32px, 5vw, 62px);
-  line-height: 1.04;
-  letter-spacing: -0.012em;
-  text-wrap: pretty;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(38px, 7vw, 110px);
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }

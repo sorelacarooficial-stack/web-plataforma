@@ -23,7 +23,7 @@ export default function Contacto() {
       <section style={{ padding: 'clamp(70px,10vw,140px) 0 clamp(60px,9vw,120px)' }}>
         <div className="wrap rejilla" style={{ alignItems: 'start' }}>
           <div className="columna" style={{ gap: 22 }}>
-            <h1 className="titulo-xl" style={{ fontSize: 'clamp(40px,6vw,76px)' }}>
+            <h1 className="titulo-xl" style={{ fontSize: 'clamp(44px,6.6vw,104px)' }}>
               Escríbeme.
             </h1>
             <p className="lede max-440" style={{ lineHeight: 1.62 }}>
