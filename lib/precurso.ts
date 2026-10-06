@@ -176,7 +176,7 @@ export const QUE_LLEVAS: QueLlevas[] = [
 
 /** El párrafo que se enciende letra a letra en la landing. */
 export const METODO_TEXTO =
-  'Un método de drenaje y modelado corporal nacido de más de tres décadas en estética avanzada. No es una secuencia cerrada que se aplica igual a todo el mundo: es un orden de trabajo que se adapta a cada cuerpo. Lo Divine no se improvisa: se siente, se vive y se recuerda.';
+  'Un método de drenaje y modelado corporal nacido de más de tres décadas en estética avanzada. No es una secuencia cerrada que se aplica igual a todo el mundo: es un orden de trabajo que se adapta a cada cuerpo. Divine no se improvisa: se siente, se vive y se recuerda.';
 
 /**
  * Las fotos de la cinta que se desplaza con el scroll.
