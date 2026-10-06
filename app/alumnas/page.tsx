@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import logo from '@/fotos/logo-sorela.png';
 import Acuerdo from '@/components/alumnas/Acuerdo';
 import Anatomia from '@/components/alumnas/Anatomia';
 import AntesDespues from '@/components/alumnas/AntesDespues';
@@ -43,6 +44,10 @@ export default function Alumnas() {
       <header className={css.hero}>
         <div className={`wrap ${css.heroCaja}`}>
           <div className={css.heroTexto}>
+            {/* Esta página no lleva la cabecera de la web, así que el
+                logotipo tiene que estar aquí: sin él, la primera pantalla no
+                dice de quién es. */}
+            <Image src={logo} alt="Sorela Caro · Técnica Divine" className={css.marca} priority sizes="190px" />
             <p className={css.sello}>Precurso oficial · plazas limitadas</p>
             <h1 className={css.heroTitulo}>
               Juventud
@@ -217,6 +222,7 @@ export default function Alumnas() {
 
       <footer className={css.pie}>
         <div className="wrap wrap-1040">
+          <Image src={logo} alt="Sorela Caro · Técnica Divine" className={css.pieLogo} sizes="150px" />
           <p className={css.pieMarca}>Sorela Caro · Formación en estética avanzada</p>
           <p className={css.pieLegal}>
             Formación en técnicas manuales de estética. No sustituye el diagnóstico ni el

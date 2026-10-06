@@ -271,14 +271,7 @@ export const LAMINAS: Lamina[] = [
     alt: 'Lámina de los capilares linfáticos y el líquido intersticial',
     titulo: 'Capilares linfáticos',
     texto:
-      'Diminutos vasos de paredes delgadas, cerrados por un extremo, repartidos por casi todo el cuerpo salvo el sistema nervioso central y los tejidos no vasculares. Por ahí entra la linfa.',
-  },
-  {
-    src: '/alumnas/anatomia-tejido.webp',
-    alt: 'Lámina de la estructura de un vaso linfático',
-    titulo: 'El vaso linfático',
-    texto:
-      'Tiene válvulas que obligan a la linfa a circular en un solo sentido. Conocer su trayecto y su dirección es lo que decide hacia dónde se trabaja.',
+      'Diminutos vasos de paredes delgadas, cerrados por un extremo, repartidos por casi todo el cuerpo salvo el sistema nervioso central y los tejidos no vasculares. Por ahí entra la linfa, y las válvulas del vaso la obligan a circular en un solo sentido.',
   },
   {
     src: '/alumnas/anatomia-ganglios.webp',

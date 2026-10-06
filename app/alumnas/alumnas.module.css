@@ -349,3 +349,27 @@
   line-height: 1.6;
   color: var(--faint);
 }
+
+/* ==========================================================================
+   El logotipo
+
+   Esta página no lleva la cabecera de la web, así que el logotipo va dentro.
+   El filtro es el mismo que usa la cabecera: el archivo es dorado claro y
+   sobre papel crema se queda sin contraste, así que en tema claro se oscurece
+   a bronce y en oscuro se deja como está.
+   ========================================================================== */
+
+.marca {
+  display: block;
+  width: clamp(140px, 16vw, 190px);
+  height: auto;
+  margin: 0 0 clamp(20px, 3vw, 30px);
+  filter: var(--logo-filter);
+}
+
+.pieLogo {
+  width: 130px;
+  height: auto;
+  margin-bottom: 14px;
+  filter: var(--logo-filter);
+}

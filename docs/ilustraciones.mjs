@@ -59,7 +59,7 @@ export const ILUSTRACIONES = [
   // Parte V · Vasos y capilares linfáticos
   {
     apertura: { src: A + 'anatomia-vias.jpg', pie: 'Vías de drenaje y territorios', lamina: true },
-    dentro: [{ tras: 6, src: A + 'anatomia-tejido.jpg', pie: 'El vaso linfático por dentro', lamina: true }],
+    dentro: [{ tras: 6, src: A + 'anatomia-capilar.jpg', pie: 'Válvulas y flujo de la linfa', lamina: true }],
   },
 
   // Parte VI · Los órganos linfáticos
