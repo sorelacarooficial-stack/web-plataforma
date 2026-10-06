@@ -178,28 +178,29 @@ export const QUE_LLEVAS: QueLlevas[] = [
 export const METODO_TEXTO =
   'Un método de drenaje y modelado corporal nacido de más de tres décadas en estética avanzada. No es una secuencia cerrada que se aplica igual a todo el mundo: es un orden de trabajo que se adapta a cada cuerpo. Lo Divine no se improvisa: se siente, se vive y se recuerda.';
 
-/** Las fotos de la cinta que se desplaza con el scroll. */
+/**
+ * Las fotos de la cinta que se desplaza con el scroll.
+ *
+ * SOLO ANTES Y DESPUÉS. La cinta es lo primero que se ve después de la
+ * portada, y en una página que vende una formación lo primero tiene que ser
+ * el resultado. Mezclar ahí láminas de anatomía o fotos de ambiente diluía lo
+ * único que convence. Las láminas tienen su sitio: la sección de anatomía.
+ */
 export const CINTA_ALUMNAS = [
-  '/alumnas/manos.webp',
   '/alumnas/resultado-2.webp',
-  '/alumnas/anatomia-sistema.webp',
-  '/alumnas/camilla.webp',
-  '/trayectoria/rostro-2.webp',
-  '/alumnas/abdomen-1.webp',
-  '/trayectoria/equipo-2.webp',
+  '/trayectoria/rostro-1.webp',
   '/alumnas/resultado-4.webp',
-  '/alumnas/anatomia-ganglio.webp',
-  '/trayectoria/sesion-2.webp',
-  '/alumnas/abdomen-2.webp',
-  '/alumnas/resultado-5.webp',
-  '/alumnas/anatomia-funcion.webp',
+  '/trayectoria/rostro-3.webp',
+  '/trayectoria/cuerpo-1.webp',
   '/trayectoria/rostro-5.webp',
-  '/alumnas/rostro.webp',
-  '/alumnas/resultado-3.webp',
-  '/trayectoria/equipo.webp',
-  '/alumnas/anatomia-vias.webp',
-  '/trayectoria/sesion-1.webp',
+  '/alumnas/resultado-5.webp',
+  '/trayectoria/rostro-2.webp',
   '/alumnas/resultado-1.webp',
+  '/trayectoria/rostro-4.webp',
+  '/trayectoria/cuerpo-5.webp',
+  '/trayectoria/rostro-6.webp',
+  '/alumnas/resultado-3.webp',
+  '/trayectoria/cuerpo-4.webp',
 ];
 
 /**

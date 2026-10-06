@@ -358,10 +358,15 @@
   will-change: transform;
 }
 
+/*
+ * En vertical, y no apaisadas como en la referencia: cada foto es un antes y
+ * después con las dos imágenes una encima de otra, y en apaisado se cortaba
+ * justo por la mitad —la línea que separa el antes del después—.
+ */
 .cintaFoto {
   flex: 0 0 auto;
-  width: 300px;
-  height: 195px;
+  width: 210px;
+  height: 280px;
   border-radius: 16px;
   object-fit: cover;
   background: #1c1916;
@@ -369,8 +374,8 @@
 
 @media (min-width: 768px) {
   .cintaFoto {
-    width: 420px;
-    height: 270px;
+    width: 300px;
+    height: 400px;
   }
 }
 

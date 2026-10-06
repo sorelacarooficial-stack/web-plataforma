@@ -56,9 +56,9 @@ export default function Cinta({ fotos }: { fotos: string[] }) {
         key={`${src}-${i}`}
         src={src}
         alt=""
-        width={420}
-        height={270}
-        sizes="420px"
+        width={300}
+        height={400}
+        sizes="300px"
         className={css.cintaFoto}
       />
     ));

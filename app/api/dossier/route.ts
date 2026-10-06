@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
 
@@ -70,15 +70,17 @@ export async function GET(peticion: Request) {
     return NextResponse.json({ ok: false, motivo: 'sin-archivo' }, { status: 500 });
   }
 
-  /* La descarga se apunta, pero no se espera a que termine de apuntarse: si
-     Firestore va lento, quien ha firmado no tiene por qué esperar su dossier
-     por una línea de registro. */
-  void doc.ref
-    .update({
-      descargas: FieldValue.increment(1),
-      ultimaDescarga: new Date().toISOString(),
-    })
-    .catch((error) => console.error('[dossier] no se ha podido apuntar la descarga', error));
+  /* La descarga se apunta después de responder, con `after`: así quien ha
+     firmado no espera su dossier por una línea de registro, y la plataforma
+     no congela la función antes de que la línea se escriba. */
+  after(() =>
+    doc.ref
+      .update({
+        descargas: FieldValue.increment(1),
+        ultimaDescarga: new Date().toISOString(),
+      })
+      .catch((error) => console.error('[dossier] no se ha podido apuntar la descarga', error))
+  );
 
   return new NextResponse(new Uint8Array(pdf), {
     headers: {

@@ -115,7 +115,11 @@ function doPost(e) {
     }
 
     var todoBien = correoEnviado || repetido;
-    return responder({ ok: todoBien, correoEnviado: todoBien, guardado: Boolean(fila) });
+    /* `tipo` vuelve en la respuesta para que la web sepa que habla con esta
+       versión del script: la anterior no conocía los acuerdos y mandaba el
+       correo genérico. Si la web no recibe `tipo: 'acuerdo'`, lo manda ella
+       por otro camino. */
+    return responder({ ok: todoBien, correoEnviado: todoBien, guardado: Boolean(fila), tipo: tipo });
   } catch (fallo) {
     console.error(fallo);
     return responder({ ok: false, motivo: 'error' });
@@ -284,8 +288,15 @@ function escribirPorElAcuerdo(n, correo, datos) {
     '',
   ];
 
+  var adjuntos = adjuntosDe(datos);
+
+  if (adjuntos.length) {
+    lineas.push('Te adjunto tu acuerdo firmado y tu dossier del precurso.');
+    lineas.push('');
+  }
+
   if (enlace) {
-    lineas.push('Aquí tienes tu dossier del precurso:');
+    lineas.push('Si el dossier no te llega adjunto, lo tienes también aquí:');
     lineas.push(enlace);
     lineas.push('');
     lineas.push('Es un documento confidencial. Lo que has firmado dice que no se reproduce, ni se modifica, ni se comparte con nadie. Te pido que lo cumplas: es el trabajo de treinta años.');
@@ -301,11 +312,13 @@ function escribirPorElAcuerdo(n, correo, datos) {
     '<div style="font-family:Georgia,serif;font-size:16px;line-height:1.65;color:#2b2622;max-width:560px">' +
     '<p>' + escaparHtml(saludo) + '</p>' +
     '<p>Queda firmado tu acuerdo de confidencialidad de la Técnica Divine. Gracias.</p>' +
+    (adjuntos.length ? '<p>Te adjunto tu <strong>acuerdo firmado</strong> y tu <strong>dossier del precurso</strong>, los dos en PDF.</p>' : '') +
     '<p style="background:#f5efe2;border:1px solid #d9c6a0;border-radius:10px;padding:14px 16px;margin:22px 0">' +
     '<span style="display:block;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#6e5327">Tu referencia</span>' +
     '<strong style="font-size:21px;letter-spacing:.06em">' + escaparHtml(referencia || '—') + '</strong></p>' +
     (enlace
       ? '<p><a href="' + escaparHtml(enlace) + '" style="display:inline-block;background:#141210;color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding:14px 26px;border-radius:999px">Abrir mi dossier</a></p>' +
+        '<p style="font-size:13px;color:#6c645a">Si el dossier no te llega adjunto, este botón lo abre igualmente.</p>' +
         '<p style="font-size:14px;color:#6c645a">Es un documento confidencial. Lo que has firmado dice que no se reproduce, ni se modifica, ni se comparte con nadie. Te pido que lo cumplas: es el trabajo de treinta años.</p>'
       : '<p>Te paso el dossier en cuanto lo tenga listo.</p>') +
     '<p>Nos vemos en la formación.<br>Sorela</p>' +
@@ -320,10 +333,35 @@ function escribirPorElAcuerdo(n, correo, datos) {
     replyTo: propiedad('RESPONDER_A') || propiedad('AVISO_A') || '',
   };
 
+  if (adjuntos.length) mensaje.attachments = adjuntos;
   if (!mensaje.replyTo) delete mensaje.replyTo;
 
   MailApp.sendEmail(mensaje);
   return true;
+}
+
+/*
+ * Los PDF que manda la web: el acuerdo firmado y el dossier.
+ *
+ * Llegan en base64 dentro del propio aviso, porque el acuerdo se genera en el
+ * momento con la firma de la alumna y no está guardado en ningún Drive. Si
+ * alguno llega roto se salta y el correo sale con los demás: es mejor que le
+ * llegue el contrato sin el dossier que no le llegue nada.
+ */
+function adjuntosDe(datos) {
+  var lista = Array.isArray(datos.adjuntos) ? datos.adjuntos : [];
+  var salida = [];
+  for (var i = 0; i < lista.length; i++) {
+    try {
+      var a = lista[i];
+      salida.push(
+        Utilities.newBlob(Utilities.base64Decode(String(a.base64)), String(a.tipo || 'application/pdf'), String(a.nombre || 'documento.pdf'))
+      );
+    } catch (roto) {
+      console.warn('Un adjunto del acuerdo ha llegado roto: ' + roto);
+    }
+  }
+  return salida;
 }
 
 function escaparHtml(t) {
