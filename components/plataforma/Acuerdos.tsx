@@ -7,7 +7,7 @@ import css from './plataforma.module.css';
 /**
  * Los acuerdos de confidencialidad firmados por las alumnas.
  *
- * Cada fila es una firma: quién, con qué DNI, cuándo y si le ha llegado el
+ * Cada fila es una firma: quién, con qué documento, cuándo y si le ha llegado el
  * correo con su contrato y su dossier. Desde aquí se abre el PDF del acuerdo
  * firmado —generado en el momento desde la copia guardada al firmar, así que
  * dice exactamente lo que ella firmó— y se puede reenviar el correo.
@@ -136,7 +136,7 @@ export default function Acuerdos() {
                   {f.nombre} {f.apellidos}
                 </strong>
                 <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
-                  DNI {f.documento} · {[f.correo, f.telefono].filter(Boolean).join(' · ')}
+                  Doc. {f.documento} · {[f.correo, f.telefono].filter(Boolean).join(' · ')}
                 </span>
                 <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
                   {f.referencia} · {f.lugar}, {f.firmadoEl ? fechaLarga(f.firmadoEl) : 'sin fecha'}

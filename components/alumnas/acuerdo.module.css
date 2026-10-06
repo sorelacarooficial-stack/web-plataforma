@@ -612,3 +612,25 @@
 .dossier:hover {
   opacity: 0.86;
 }
+
+/* ==========================================================================
+   El teléfono: país y número en la misma fila
+
+   El país va aparte para que nadie tenga que saberse su prefijo. Ocupa lo
+   justo para «🇨🇴 +57 · Colombia» recortado; el número se lleva el resto.
+   ========================================================================== */
+
+.telefono {
+  display: grid;
+  grid-template-columns: minmax(0, 132px) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.prefijo {
+  padding-right: 6px;
+  text-overflow: ellipsis;
+}
+
+.prefijo:disabled {
+  opacity: 0.5;
+}

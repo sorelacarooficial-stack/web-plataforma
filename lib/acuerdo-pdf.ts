@@ -132,7 +132,7 @@ export async function pdfDelAcuerdo(a: AcuerdoGuardado): Promise<Uint8Array> {
 
   const nombre = `${a.nombre} ${a.apellidos}`.trim();
   escribir(
-    `Celebran de una parte la alumna ${nombre}, con DNI/NIE ${a.documento}, en adelante el RECEPTOR, y de otra parte la formadora Sorela Caro, en adelante el DIVULGANTE, ambas mayores de edad y con capacidad de obrar, a tenor de las cláusulas siguientes.`,
+    `Celebran de una parte la alumna ${nombre}, con documento de identidad n.º ${a.documento}, en adelante el RECEPTOR, y de otra parte la formadora Sorela Caro, en adelante el DIVULGANTE, ambas mayores de edad y con capacidad de obrar, a tenor de las cláusulas siguientes.`,
     { despues: 12 }
   );
 
