@@ -280,7 +280,10 @@ export default function Acuerdo() {
               </ol>
             )}
 
-            <div className={css.cuerpo}>
+            {/* En la firma el cuerpo no se desplaza: todo cabe a la vista y el
+                recuadro ocupa lo que sobra. Quien firma desde el móvil no sabe
+                que hay más abajo, y no tiene por qué saberlo. */}
+            <div className={paso === 2 ? `${css.cuerpo} ${css.cuerpoFirma}` : css.cuerpo}>
               {paso === 0 && (
                 <Datos
                   datos={datos}
@@ -549,6 +552,8 @@ function Clausulas({
         })}
       </ul>
 
+      <p className={css.legal}>{CIERRE_ACUERDO}</p>
+
       {error && (
         <p className={css.fallo} role="alert">
           {error}
@@ -595,10 +600,23 @@ function Firma({
     const ajustar = () => {
       const caja = c.getBoundingClientRect();
       const densidad = window.devicePixelRatio || 1;
-      c.width = Math.round(caja.width * densidad);
-      c.height = Math.round(caja.height * densidad);
+      const ancho = Math.round(caja.width * densidad);
+      const alto = Math.round(caja.height * densidad);
+      if (!ancho || !alto || (ancho === c.width && alto === c.height)) return;
+      /* Cambiar el tamaño de un lienzo lo borra. El recuadro ahora ocupa el
+         alto que queda libre, y ese alto cambia al girar el móvil: se guarda
+         lo firmado y se vuelve a pintar encima, para no perder la firma. */
+      const previo = c.width && c.height ? document.createElement('canvas') : null;
+      if (previo) {
+        previo.width = c.width;
+        previo.height = c.height;
+        previo.getContext('2d')?.drawImage(c, 0, 0);
+      }
+      c.width = ancho;
+      c.height = alto;
       const ctx = c.getContext('2d');
       if (!ctx) return;
+      if (previo) ctx.drawImage(previo, 0, 0, previo.width, previo.height, 0, 0, Math.min(ancho, previo.width), Math.min(alto, previo.height));
       ctx.scale(densidad, densidad);
       ctx.lineWidth = 2.2;
       ctx.lineCap = 'round';
@@ -606,8 +624,9 @@ function Firma({
       ctx.strokeStyle = '#141210';
     };
     ajustar();
-    window.addEventListener('resize', ajustar);
-    return () => window.removeEventListener('resize', ajustar);
+    const vigia = new ResizeObserver(ajustar);
+    vigia.observe(c);
+    return () => vigia.disconnect();
   }, []);
 
   function punto(e: React.PointerEvent<HTMLCanvasElement>) {
@@ -674,29 +693,21 @@ function Firma({
   }
 
   return (
-    <>
-      <h2 className={css.titulo}>Tu firma</h2>
-      <p className={css.explica}>Último paso. Escribe dónde estás y firma en el recuadro.</p>
+    <div className={css.firmaPaso}>
+      <h2 className={`${css.titulo} ${css.tituloFirma}`}>Tu firma</h2>
 
-      <label className={css.campo} style={{ maxWidth: 360 }}>
-        <span className={css.etiqueta}>Lugar de firma</span>
+      <label className={`${css.campo} ${css.campoFirma}`}>
+        <span className={css.etiqueta}>Ciudad donde firmas</span>
         <input
           type="text"
           value={datos.lugar}
-          placeholder="Ciudad donde firmas"
+          placeholder="Ej.: Madrid"
           onChange={(e) => poner('lugar', e.target.value)}
           aria-invalid={errores.lugar ? true : undefined}
           className={css.entrada}
         />
-        <span className={css.error}>{errores.lugar ?? ''}</span>
+        {errores.lugar && <span className={css.error}>{errores.lugar}</span>}
       </label>
-
-      {/* La instrucción va pegada al recuadro y no en un párrafo suelto:
-          quien firma desde el móvil mira el recuadro, no el texto de arriba. */}
-      <div className={css.firmaCabeza}>
-        <span className={css.etiqueta}>Firma</span>
-        <span className={css.firmaComo}>Con el dedo o con el ratón, dentro del recuadro</span>
-      </div>
 
       <div className={css.marco} data-firmado={hayTrazo ? '' : undefined}>
         <canvas
@@ -713,7 +724,7 @@ function Firma({
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
               <path d="M3 17c3-4 5-9 7-9s-1 9 1 9 3-5 5-5 1 4 3 4h2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Firma aquí
+            Firma aquí con el dedo
           </span>
         )}
         <span className={css.raya} aria-hidden="true" />
@@ -725,17 +736,15 @@ function Firma({
         {errores.firma ? (
           <span className={css.error}>{errores.firma}</span>
         ) : hayTrazo ? (
-          <span className={css.firmaLista}>✓ Firma lista. Pulsa «Firmar y enviar».</span>
+          <span className={css.firmaLista}>✓ Firma lista</span>
         ) : (
-          <span className={css.firmaNota}>La fecha y la hora las pone el sistema al enviar.</span>
+          <span className={css.firmaNota}>Firma dentro del recuadro</span>
         )}
         <button type="button" className={css.borrar} onClick={borrar} disabled={!hayTrazo}>
-          Borrar y repetir
+          Borrar
         </button>
       </div>
-
-      <p className={css.legal}>{CIERRE_ACUERDO}</p>
-    </>
+    </div>
   );
 }
 
