@@ -33,6 +33,7 @@ const DOCS = [
   { nombre: 'manual-cuentas', titulo: 'Dar acceso a una persona' },
   { nombre: 'manual-plataforma', titulo: 'Tu plataforma, de un vistazo' },
   { nombre: 'una-hoja', apaisado: true, sinPie: true, hojas: 1 },
+  { nombre: 'dossier', titulo: 'Dossier · Precurso Técnica Divine' },
 ];
 
 /**

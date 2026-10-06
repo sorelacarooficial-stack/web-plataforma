@@ -1,0 +1,94 @@
+/* La evaluación de comprensión. Sin nota y sin guardar nada. */
+
+.zona {
+  margin-top: clamp(28px, 3.6vw, 44px);
+}
+
+.preguntas {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(18px, 2.4vw, 28px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: p;
+}
+
+.pregunta {
+  padding: clamp(18px, 2.4vw, 26px);
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+}
+
+.enunciado {
+  margin: 0 0 14px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 21px;
+  line-height: 1.22;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.opcion {
+  padding: 11px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line-4);
+  background: var(--bg);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition:
+    background 0.22s,
+    border-color 0.22s,
+    color 0.22s;
+}
+
+.opcion:hover {
+  border-color: var(--arcilla-line);
+}
+
+/* El verde y el rojo solo aparecen una vez contestada: pintarlos antes sería
+   regalar la respuesta. Y van acompañados de la explicación, que es lo que de
+   verdad enseña algo. */
+.opcion[data-estado='bien'] {
+  background: var(--salvia-tint);
+  border-color: var(--salvia);
+  color: var(--salvia-ink);
+}
+
+.opcion[data-estado='mal'] {
+  background: var(--arcilla-tint);
+  border-color: var(--arcilla-line);
+  color: var(--arcilla-ink);
+  text-decoration: line-through;
+}
+
+.opcion[data-estado='gris'] {
+  opacity: 0.55;
+}
+
+.explicacion {
+  margin: 14px 0 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--arcilla-line);
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--muted-2);
+  text-wrap: pretty;
+}
+
+.marcador {
+  margin: clamp(20px, 2.6vw, 28px) 0 0;
+  font-size: 14px;
+  color: var(--muted-2);
+}
