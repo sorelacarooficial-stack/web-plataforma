@@ -190,9 +190,27 @@ export const TESTIMONIOS: Testimonio[] = [
     de: 'Clienta',
   },
 
-  /* Listo para entrar en cuanto haya nombre. Lo que dice, leído del vídeo:
-     «Me gusta mucho la manera en que explica: se entiende desde el momento
-     uno. Se nota que tiene muchos años de experiencia.»
+  /*
+   * Las dos de abajo no tienen nombre todavía, y NO se les inventa uno.
+   * Salen con lo que hicieron —«Alumna · Formación»— en lugar del nombre, que
+   * es verdad, en vez de con un nombre que no lo es. En cuanto Sorela diga
+   * cómo se llaman, se escribe en `nombre` y ya está.
+   *
+   * Las frases están copiadas de lo que dicen en el vídeo, palabra por
+   * palabra, leídas de sus propios subtítulos.
+   */
+  {
+    nombre: '',
+    video: {
+      tipo: 'archivo',
+      src: '/testimonios/5.mp4',
+      bucle: '/testimonios/5-bucle.mp4',
+      poster: '/testimonios/5.jpg',
+    },
+    frase:
+      'Es muy profesional, muy perfeccionista, y está contigo hasta que se asegure de que haces la técnica totalmente a la perfección.',
+    de: 'Alumna · Formación',
+  },
   {
     nombre: '',
     video: {
@@ -202,8 +220,8 @@ export const TESTIMONIOS: Testimonio[] = [
       poster: '/testimonios/6.jpg',
     },
     frase: 'Me gusta mucho la manera en que explica: se entiende desde el momento uno.',
+    de: 'Alumna · Formación',
   },
-  */
 ];
 
 
