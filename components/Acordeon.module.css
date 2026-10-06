@@ -76,3 +76,25 @@
     transform: none;
   }
 }
+
+/* Neumorfismo: cada pregunta es una pieza en relieve; la abierta se hunde. */
+.lista {
+  gap: 16px;
+}
+
+.fila {
+  border-top: 0;
+  padding: 0 clamp(20px, 2.6vw, 34px);
+  border-radius: 28px;
+  background: var(--neu-base);
+  box-shadow: var(--neu-fuera-sm);
+  transition: box-shadow 0.35s;
+}
+
+.fila:hover {
+  box-shadow: var(--neu-fuera);
+}
+
+.fila:has([aria-expanded='true']) {
+  box-shadow: var(--neu-dentro);
+}

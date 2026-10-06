@@ -12,7 +12,14 @@ import css from './landing.module.css';
  * queda delante. El resultado es un mazo de cartas que se va formando con el
  * dedo, en vez de tres bloques uno detrás de otro.
  */
-export default function Apiladas({ tarjetas }: { tarjetas: ReactNode[] }) {
+export default function Apiladas({
+  tarjetas,
+  claseTarjeta,
+}: {
+  tarjetas: ReactNode[];
+  /** Una clase más para cada tarjeta: la web le da relieve; las landings no la usan. */
+  claseTarjeta?: string;
+}) {
   const zona = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: zona, offset: ['start start', 'end end'] });
 
@@ -27,6 +34,7 @@ export default function Apiladas({ tarjetas }: { tarjetas: ReactNode[] }) {
             total={tarjetas.length}
             escalaFinal={final}
             progreso={scrollYProgress}
+            clase={claseTarjeta}
           >
             {t}
           </Tarjeta>
@@ -42,8 +50,10 @@ function Tarjeta({
   total,
   escalaFinal,
   progreso,
+  clase,
 }: {
   children: ReactNode;
+  clase?: string;
   indice: number;
   total: number;
   escalaFinal: number;
@@ -55,7 +65,7 @@ function Tarjeta({
   return (
     <div className={css.apiladaHueco}>
       <motion.div
-        className={css.apilada}
+        className={clase ? `${css.apilada} ${clase}` : css.apilada}
         style={{ scale: escala, top: `calc(var(--apilada-top) + ${indice * 28}px)` }}
       >
         {children}

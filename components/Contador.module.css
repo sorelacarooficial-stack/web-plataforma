@@ -131,9 +131,9 @@
 
 /* Sobre papel. Es la de por defecto porque /comunidad no pasa nada. */
 .claro {
-  --fondo-pieza: var(--surface);
-  --borde-pieza: var(--line-4);
-  --sombra-pieza: 0 14px 30px -22px rgba(20, 18, 16, 0.4);
+  --fondo-pieza: var(--neu-base);
+  --borde-pieza: transparent;
+  --sombra-pieza: var(--neu-fuera-sm);
   --tinta-pieza: var(--ink);
   --tinta-suave: var(--muted-2);
   --fondo-oro: var(--arcilla-tint);

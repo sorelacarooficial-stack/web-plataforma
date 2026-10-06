@@ -18,10 +18,11 @@
 }
 
 .select {
-  padding: 13px 16px;
-  background: var(--surface);
-  border: 1px solid var(--line-4);
+  padding: 13px 18px;
+  background: var(--neu-base);
+  border: 1px solid transparent;
   border-radius: 999px;
+  box-shadow: var(--neu-fuera-sm);
   font-size: 14px;
   font-weight: 300;
   color: var(--ink);

@@ -335,13 +335,12 @@
   gap: 13px;
   padding: 12px 24px 12px 13px;
   /* Cristal oscuro con borde dorado: flota sobre la página sin taparla. */
-  background: rgba(21, 19, 17, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  color: #ede3d3;
-  border: 1px solid rgba(207, 167, 101, 0.4);
+  /* Pastilla en relieve sobre el papel, como el resto de botones. */
+  background: var(--neu-base);
+  color: var(--ink);
+  border: 1px solid transparent;
   border-radius: 999px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--neu-fuera);
   cursor: pointer;
   transition:
     background 0.3s,
@@ -350,7 +349,8 @@
 }
 
 .lanzador:hover {
-  background: rgba(31, 26, 18, 0.92);
+  background: var(--neu-base);
+  box-shadow: var(--neu-fuera-hover);
   transform: translateY(-3px);
   box-shadow: 0 24px 52px rgba(12, 10, 9, 0.34);
 }
