@@ -3,7 +3,9 @@
    ========================================================================== */
 .pantalla {
   min-height: 100vh;
-  background: var(--surface-2);
+  background:
+    radial-gradient(50% 40% at 80% 0%, rgba(217, 180, 124, 0.08), transparent 70%),
+    var(--negro, #0c0c0c);
   color: var(--ink);
 }
 
@@ -34,8 +36,10 @@
   top: 0;
   max-height: 100vh;
   overflow-y: auto;
-  background: var(--bg);
-  border-right: 1px solid var(--line-2);
+  background: rgba(21, 19, 17, 0.6);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-right: 1px solid rgba(237, 227, 211, 0.08);
   padding: 26px 18px;
   display: flex;
   flex-direction: column;
@@ -70,21 +74,26 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 11px 12px;
+  padding: 12px 16px;
   background: transparent;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
   cursor: pointer;
   text-align: left;
-  transition: background 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
 }
 
 .navBoton:hover {
-  background: var(--surface-2);
+  background: rgba(237, 227, 211, 0.06);
+  transform: translateX(2px);
 }
 
 .navActivo {
-  background: var(--oro-tint);
+  background: linear-gradient(123deg, rgba(138, 106, 50, 0.32), rgba(217, 180, 124, 0.14));
+  border-color: var(--oro-line);
 }
 
 .navActivo:hover {
@@ -104,8 +113,10 @@
 }
 
 .navTexto {
-  font-size: 14px;
-  font-weight: 300;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--muted-2);
 }
 
@@ -152,9 +163,13 @@
     color 0.2s;
 }
 
+.rol {
+  border-radius: 999px;
+}
+
 .rolActivo {
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--crema, var(--ink));
+  color: var(--negro, var(--bg));
 }
 
 .salir {
@@ -192,20 +207,37 @@
 
 .seccion {
   margin: 0;
-  font-size: 11px;
-  letter-spacing: 0.2em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-b, var(--oro));
 }
 
+/* El titular de cada pantalla, enorme y en el dorado de las landings. */
 .titulo {
+  --alto-linea: 0.92em;
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(28px, 3.6vw, 46px);
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  text-wrap: pretty;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(38px, 5.4vw, 84px);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  background-image: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  background-size: 100% var(--alto-linea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: platEntra 0.7s cubic-bezier(0.25, 0.1, 0.25, 1) backwards;
+}
+
+@keyframes platEntra {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
 }
 
 .usuario {
@@ -228,19 +260,26 @@
    Piezas reutilizadas
    ========================================================================== */
 .tarjeta {
-  background: var(--bg);
-  border: 1px solid var(--line-2);
-  border-radius: 12px;
+  background: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
+  border: 1px solid rgba(237, 227, 211, 0.12);
+  border-radius: clamp(24px, 2.6vw, 36px);
+  transition: border-color 0.3s;
   padding: clamp(20px, 2.4vw, 30px);
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
+.tarjeta:hover {
+  border-color: rgba(217, 180, 124, 0.4);
+}
+
 .tarjetaOro {
-  background: var(--oro-tint);
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(217, 180, 124, 0.16), transparent 60%),
+    linear-gradient(160deg, #1d170e 0%, #100e0b 100%);
   border: 1px solid var(--oro-line);
-  border-radius: 12px;
+  border-radius: clamp(24px, 2.6vw, 36px);
   padding: clamp(20px, 2.4vw, 28px);
   display: flex;
   flex-direction: column;
@@ -250,7 +289,8 @@
 .tarjetaOscura {
   background: var(--inverse-bg);
   color: var(--on-inverse-2);
-  border-radius: 12px;
+  border: 1px solid rgba(237, 227, 211, 0.12);
+  border-radius: clamp(24px, 2.6vw, 36px);
   padding: clamp(22px, 2.8vw, 34px);
 }
 
@@ -273,7 +313,7 @@
 .h2 {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
+  font-weight: 600;
   font-size: clamp(22px, 2.4vw, 30px);
   line-height: 1.12;
   text-wrap: pretty;
@@ -282,7 +322,7 @@
 .h3 {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
+  font-weight: 600;
   font-size: clamp(20px, 2.1vw, 26px);
   line-height: 1.14;
   text-wrap: pretty;
@@ -361,20 +401,36 @@
 
 /* Botones */
 .btn {
-  padding: 13px 26px;
-  background: var(--ink);
-  color: var(--bg);
+  padding: 13px 30px;
+  background: linear-gradient(123deg, #1a1208 7%, #8a6a32 37%, #d9b47c 72%, #6e5327 100%);
+  color: #fff;
   border: none;
   border-radius: 999px;
+  box-shadow:
+    0 4px 4px rgba(217, 180, 124, 0.22),
+    inset 4px 4px 12px #a98551;
+  outline: 2px solid #fff;
+  outline-offset: -3px;
   font-size: 11.5px;
+  font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.25s;
+  transition:
+    transform 0.25s,
+    box-shadow 0.25s;
 }
 
 .btn:hover {
-  background: var(--oro);
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 26px rgba(217, 180, 124, 0.32),
+    inset 4px 4px 12px #a98551;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  transform: none;
 }
 
 .btnSm {
@@ -384,10 +440,10 @@
 }
 
 .btnLinea {
-  padding: 12px 24px;
+  padding: 12px 26px;
   background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--line-5);
+  color: var(--crema, var(--ink));
+  border: 2px solid var(--crema, var(--line-5));
   border-radius: 999px;
   font-size: 11.5px;
   letter-spacing: 0.14em;
@@ -397,7 +453,7 @@
 }
 
 .btnLinea:hover {
-  border-color: var(--oro);
+  background: rgba(237, 227, 211, 0.1);
 }
 
 .btnClaro {
@@ -449,8 +505,9 @@
 }
 
 .chipActivo {
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--crema, var(--ink));
+  color: var(--negro, var(--bg));
+  border-color: transparent;
 }
 
 /* Avatares */
@@ -538,9 +595,9 @@
 
 /* KPI */
 .kpi {
-  background: var(--bg);
-  border: 1px solid var(--line-2);
-  border-radius: 12px;
+  background: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
+  border: 1px solid rgba(237, 227, 211, 0.12);
+  border-radius: clamp(24px, 2.6vw, 32px);
   padding: clamp(18px, 2.2vw, 24px);
   display: flex;
   flex-direction: column;
@@ -564,9 +621,13 @@
 
 .kpiValor {
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 3vw, 38px);
-  line-height: 1;
-  color: var(--ink);
+  font-weight: 600;
+  font-size: clamp(40px, 4.4vw, 64px);
+  line-height: 0.9;
+  background-image: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .kpiNota {
@@ -577,10 +638,10 @@
 
 /* Campos */
 .campo {
-  padding: 13px 15px;
+  padding: 13px 18px;
   background: var(--surface);
-  border: 1px solid var(--line-4);
-  border-radius: 0;
+  border: 1px solid var(--line-3);
+  border-radius: 16px;
   font-size: 15px;
   font-weight: 300;
   color: var(--ink);
@@ -599,10 +660,10 @@
 }
 
 .campoCaja {
-  padding: 13px 15px;
+  padding: 13px 18px;
   background: var(--surface-2);
   border: 1px solid var(--line-3);
-  border-radius: 8px;
+  border-radius: 16px;
   font-size: 15px;
   font-weight: 300;
   color: var(--ink);
@@ -2347,5 +2408,11 @@
     width: 100%;
     height: auto;
     aspect-ratio: 16 / 9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .titulo {
+    animation: none;
   }
 }
