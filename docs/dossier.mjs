@@ -13,6 +13,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { ILUSTRACIONES } from './ilustraciones.mjs';
 
 const AQUI = path.dirname(new URL(import.meta.url).pathname);
 const ORIGEN =
@@ -60,17 +61,61 @@ function bloque(b) {
 
 const romanos = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
+/**
+ * Una figura: la imagen y su pie.
+ *
+ * Las láminas de anatomía llevan `lamina`, que las pinta sobre papel claro con
+ * un filete alrededor en vez de a sangre. No es un capricho: son dibujos con
+ * rótulos pequeños sobre fondo blanco, y recortarlos a sangre les come las
+ * letras de los bordes, que es justo lo que hay que poder leer.
+ */
+function figura(f, clase = 'figura') {
+  const clases = [clase, f.lamina ? 'figuraLamina' : '', f.alto ? 'figuraAlta' : '']
+    .filter(Boolean)
+    .join(' ');
+  return `      <figure class="${clases}">
+        <img src="${escapar(f.src)}" alt="">
+        ${f.pie ? `<figcaption>${escapar(f.pie)}</figcaption>` : ''}
+      </figure>`;
+}
+
+function galeria(g) {
+  return `      <section class="galeria">
+        <h3 class="galeriaTitulo">${escapar(g.titulo)}</h3>
+        <div class="galeriaRejilla">
+${g.fotos.map((src) => `          <img src="${escapar(src)}" alt="">`).join('\n')}
+        </div>
+        ${g.pie ? `<p class="galeriaPie">${escapar(g.pie)}</p>` : ''}
+      </section>`;
+}
+
 const cuerpo = secciones
   .map((s, i) => {
     const entradilla = s.entradilla
       ? `\n        <p class="seccionEntradilla">${escapar(s.entradilla)}</p>`
       : '';
+    const ilustra = ILUSTRACIONES[i] ?? {};
+
+    /* Las imágenes de dentro se insertan POR POSICIÓN, detrás del bloque que
+       les toca. Se recorre la lista una sola vez y se va mirando si a este
+       bloque le sigue alguna: así una imagen mal colocada no desplaza el resto
+       del texto, solo se queda donde estaba. */
+    const dentro = new Map((ilustra.dentro ?? []).map((f) => [f.tras, f]));
+    const pintados = [];
+    s.bloques.forEach((b, j) => {
+      const html = bloque(b);
+      if (html) pintados.push(html);
+      const f = dentro.get(j);
+      if (f) pintados.push(figura(f));
+    });
+
     return `    <section class="seccion">
       <header class="seccionCabeza">
         <span class="seccionNum">Parte ${romanos[i] ?? i + 1}</span>
         <h1 class="seccionTitulo">${escapar(s.titulo)}</h1>${entradilla}
       </header>
-${s.bloques.map(bloque).filter(Boolean).join('\n')}
+${ilustra.apertura ? figura(ilustra.apertura, 'figura figuraApertura') + '\n' : ''}${pintados.join('\n')}
+${ilustra.galeria ? galeria(ilustra.galeria) : ''}
     </section>`;
   })
   .join('\n\n');
@@ -96,6 +141,7 @@ const html = `<!doctype html>
 <body>
 
   <section class="portada">
+    <img class="portadaFondo" src="./impresion/rostro.jpg" alt="">
     <div class="marca">
       <img src="../app/icon.png" alt="">
       <span>

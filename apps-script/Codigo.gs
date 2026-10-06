@@ -63,7 +63,10 @@ function doPost(e) {
     var origen = String(datos.origen || '').trim();
     var tipo = queBusca(origen);
 
-    var repetido = yaSeLeEscribioHoy(correo);
+    /* Haber escrito hoy a alguien no puede impedir el correo de su acuerdo:
+       quien pide información por la mañana y firma por la tarde se quedaría
+       sin su dossier por haber hecho las dos cosas el mismo día. */
+    var repetido = tipo !== 'acuerdo' && yaSeLeEscribioHoy(correo);
     var sinCuota = false;
     try {
       sinCuota = MailApp.getRemainingDailyQuota() < 5;
@@ -88,7 +91,7 @@ function doPost(e) {
       avisarSinCuota();
     } else {
       try {
-        correoEnviado = escribirALaPersona(nombre, correo, tipo, aperturaDe(datos));
+        correoEnviado = escribirALaPersona(nombre, correo, tipo, aperturaDe(datos), datos);
         if (correoEnviado) apuntarQueSeLeEscribio(correo);
         estado = correoEnviado ? 'sí' : 'no';
       } catch (falloEnvio) {
@@ -160,6 +163,10 @@ function queBusca(origen) {
   var o = String(origen || '').toLowerCase().trim();
   if (!o) return 'otro';
 
+  /* El acuerdo firmado. No es alguien pidiendo información: es alguien que ya
+     ha firmado y a quien hay que darle su dossier. Correo propio y aparte. */
+  if (o === 'acuerdo') return 'acuerdo';
+
   if (o === 'comunidad' || empiezaPor(o, 'lista-comunidad') || empiezaPor(o, 'comunidad-')) {
     return 'comunidad';
   }
@@ -180,6 +187,7 @@ function queBusca(origen) {
 }
 
 var ETIQUETA = {
+  acuerdo: 'ACUERDO FIRMADO: hay que darle acceso',
   clienta: 'Posible clienta (quiere que la traten)',
   alumna: 'Posible alumna (quiere aprender)',
   comunidad: 'Terapeuta certificada (comunidad)',
@@ -219,8 +227,23 @@ function comoLlego(origen) {
   return o;
 }
 
-function escribirALaPersona(nombre, correo, tipo, apertura) {
+function escribirALaPersona(nombre, correo, tipo, apertura, datos) {
   var n = nombreCorto(nombre);
+
+  /*
+   * El correo del acuerdo firmado va por su cuenta.
+   *
+   * No lleva el PDF comercial de la técnica —que es lo que se le manda a quien
+   * pide información— ni el cierre que invita a la membresía: quien ha firmado
+   * ya está dentro. Lleva su referencia y el enlace a su dossier, y nada más.
+   *
+   * EL DOSSIER VA COMO ENLACE Y NO COMO ADJUNTO, a propósito. Un adjunto, una
+   * vez enviado, ya no se puede retirar ni se sabe quién acaba teniéndolo. El
+   * enlace está atado a la referencia de su firma: queda registrado cuándo se
+   * descarga, y si un día hay que cortarlo, se corta.
+   */
+  if (tipo === 'acuerdo') return escribirPorElAcuerdo(n, correo, datos || {});
+
   var adjunto = buscarPdf();
 
   var texto = textoPlano(tipo, n, Boolean(adjunto), apertura);
@@ -245,6 +268,70 @@ function escribirALaPersona(nombre, correo, tipo, apertura) {
 
   MailApp.sendEmail(mensaje);
   return true;
+}
+
+function escribirPorElAcuerdo(n, correo, datos) {
+  var referencia = String(datos.referencia || '').trim();
+  var enlace = String(datos.enlaceDossier || '').trim();
+  var saludo = n ? 'Hola, ' + n + '.' : 'Hola.';
+
+  var lineas = [
+    saludo,
+    '',
+    'Queda firmado tu acuerdo de confidencialidad de la Técnica Divine. Gracias.',
+    '',
+    'Tu referencia es ' + (referencia || '—') + '. Guárdala: es lo que tienes que citar si alguna vez hay que localizar tu acuerdo.',
+    '',
+  ];
+
+  if (enlace) {
+    lineas.push('Aquí tienes tu dossier del precurso:');
+    lineas.push(enlace);
+    lineas.push('');
+    lineas.push('Es un documento confidencial. Lo que has firmado dice que no se reproduce, ni se modifica, ni se comparte con nadie. Te pido que lo cumplas: es el trabajo de treinta años.');
+  } else {
+    lineas.push('Te paso el dossier en cuanto lo tenga listo.');
+  }
+
+  lineas.push('');
+  lineas.push('Nos vemos en la formación.');
+  lineas.push('Sorela');
+
+  var html =
+    '<div style="font-family:Georgia,serif;font-size:16px;line-height:1.65;color:#2b2622;max-width:560px">' +
+    '<p>' + escaparHtml(saludo) + '</p>' +
+    '<p>Queda firmado tu acuerdo de confidencialidad de la Técnica Divine. Gracias.</p>' +
+    '<p style="background:#f5efe2;border:1px solid #d9c6a0;border-radius:10px;padding:14px 16px;margin:22px 0">' +
+    '<span style="display:block;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#6e5327">Tu referencia</span>' +
+    '<strong style="font-size:21px;letter-spacing:.06em">' + escaparHtml(referencia || '—') + '</strong></p>' +
+    (enlace
+      ? '<p><a href="' + escaparHtml(enlace) + '" style="display:inline-block;background:#141210;color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding:14px 26px;border-radius:999px">Abrir mi dossier</a></p>' +
+        '<p style="font-size:14px;color:#6c645a">Es un documento confidencial. Lo que has firmado dice que no se reproduce, ni se modifica, ni se comparte con nadie. Te pido que lo cumplas: es el trabajo de treinta años.</p>'
+      : '<p>Te paso el dossier en cuanto lo tenga listo.</p>') +
+    '<p>Nos vemos en la formación.<br>Sorela</p>' +
+    '</div>';
+
+  var mensaje = {
+    to: correo,
+    subject: 'Tu acuerdo firmado y tu dossier' + (n ? ', ' + n : ''),
+    body: lineas.join('\n'),
+    htmlBody: html,
+    name: REMITENTE,
+    replyTo: propiedad('RESPONDER_A') || propiedad('AVISO_A') || '',
+  };
+
+  if (!mensaje.replyTo) delete mensaje.replyTo;
+
+  MailApp.sendEmail(mensaje);
+  return true;
+}
+
+function escaparHtml(t) {
+  return String(t == null ? '' : t)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function asunto(tipo, n) {

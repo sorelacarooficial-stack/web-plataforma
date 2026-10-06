@@ -34,6 +34,32 @@ import css from './acuerdo.module.css';
 
 type Paso = 0 | 1 | 2 | 3;
 
+/**
+ * El envío, con un segundo intento.
+ *
+ * Una firma se manda UNA vez y desde un móvil, muchas veces con la cobertura
+ * justa. Si el primer intento se cae por red, perder el acuerdo entero y
+ * enseñar un error es desproporcionado: se espera un segundo y se reintenta.
+ *
+ * Solo se reintenta lo que se ha caído sin llegar —un `fetch` que lanza—. Una
+ * respuesta del servidor, aunque sea un error, NO se reintenta: si ha llegado
+ * y ha dicho que no, repetirlo no cambia nada y arriesga guardar dos veces.
+ */
+async function enviarConReintento(cuerpo: unknown): Promise<Response> {
+  const peticion = () =>
+    fetch('/api/acuerdos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cuerpo),
+    });
+  try {
+    return await peticion();
+  } catch {
+    await new Promise((r) => setTimeout(r, 1200));
+    return peticion();
+  }
+}
+
 const PASOS = ['Tus datos', 'Cláusulas', 'Firma'] as const;
 
 const VACIO: DatosAcuerdo = {
@@ -68,7 +94,7 @@ export default function Acuerdo() {
   const [errores, setErrores] = useState<ErroresAcuerdo>({});
   const [enviando, setEnviando] = useState(false);
   const [fallo, setFallo] = useState('');
-  const [hecho, setHecho] = useState<{ referencia: string; firmadoEl: string } | null>(null);
+  const [hecho, setHecho] = useState<{ referencia: string; firmadoEl: string; dossier: string } | null>(null);
 
   /** El señuelo para robots. Una persona no lo ve y no lo rellena. */
   const [empresa, setEmpresa] = useState('');
@@ -133,30 +159,55 @@ export default function Acuerdo() {
     setEnviando(true);
     setFallo('');
     try {
-      const r = await fetch('/api/acuerdos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...datos,
-          empresa,
-          clausulas: aceptadas,
-        }),
-      });
-      const c = await r.json();
+      const r = await enviarConReintento({ ...datos, empresa, clausulas: aceptadas });
+
+      /*
+       * La respuesta se lee como TEXTO y se intenta interpretar después.
+       *
+       * Llamar directo a `r.json()` parecía más corto y escondía el único fallo
+       * que de verdad importa: cuando algo va mal por encima de la aplicación
+       * —la ruta no está desplegada, la función revienta al arrancar, el
+       * servidor devuelve su propia página de error— lo que llega es HTML, y
+       * `r.json()` revienta con una excepción que acababa contada como «revisa
+       * tu conexión». Decirle a alguien que mire su wifi cuando el problema
+       * está en el servidor es mandarla a buscar donde no hay nada.
+       */
+      const crudo = await r.text();
+      let c: Record<string, unknown> | null = null;
+      try {
+        c = JSON.parse(crudo) as Record<string, unknown>;
+      } catch {
+        c = null;
+      }
+
+      if (!c) {
+        setFallo(
+          `El servidor no ha respondido bien (error ${r.status}). No es cosa tuya: avisa a Sorela con este número.`
+        );
+        return;
+      }
+
       if (!r.ok || !c.ok) {
-        if (c.errores) {
-          setErrores(c.errores);
-          if (CAMPOS.some(({ clave }) => c.errores[clave])) setPaso(0);
+        const errs = c.errores as ErroresAcuerdo | undefined;
+        if (errs) {
+          setErrores(errs);
+          if (CAMPOS.some(({ clave }) => errs[clave])) setPaso(0);
+          else if (errs.firma) setPaso(2);
+        } else if (c.motivo === 'demasiado-rapido') {
+          setFallo('Has enviado varios seguidos. Espera un momento y vuelve a intentarlo.');
+        } else if (c.motivo === 'sin-base') {
+          setFallo('El registro está caído ahora mismo. Avisa a Sorela: le falta la configuración.');
         } else {
-          setFallo(
-            c.motivo === 'demasiado-rapido'
-              ? 'Has enviado varios seguidos. Espera un momento y vuelve a intentarlo.'
-              : 'No se ha podido guardar. Vuelve a intentarlo en un minuto.'
-          );
+          setFallo(`No se ha podido guardar (${c.motivo ?? r.status}). Vuelve a intentarlo.`);
         }
         return;
       }
-      setHecho({ referencia: c.referencia, firmadoEl: c.firmadoEl });
+
+      setHecho({
+        referencia: String(c.referencia),
+        firmadoEl: String(c.firmadoEl),
+        dossier: String(c.dossier ?? ''),
+      });
       setPaso(3);
     } catch {
       setFallo('No se ha podido guardar. Revisa tu conexión y vuelve a intentarlo.');
@@ -488,11 +539,33 @@ function Firma({
     if (!hayTrazo) setHayTrazo(true);
   }
 
+  /**
+   * La firma sale del lienzo REDUCIDA a un ancho fijo.
+   *
+   * El lienzo se dibuja a la densidad real de la pantalla para que el trazo no
+   * salga borroso, y en un móvil moderno eso son tres píxeles por punto: una
+   * imagen enorme para lo que es un garabato. Enviarla tal cual significa un
+   * envío de varios cientos de kilobytes desde una conexión móvil, que es
+   * justo donde más se cae. A 1000 píxeles de ancho la firma se lee
+   * perfectamente —se imprime a 85 mm— y el envío baja de forma brutal.
+   */
   function terminar() {
     if (!pintando.current) return;
     pintando.current = false;
     const c = lienzo.current;
-    if (c) alFirmar(c.toDataURL('image/png'));
+    if (!c) return;
+
+    const ANCHO = 1000;
+    if (c.width <= ANCHO) return alFirmar(c.toDataURL('image/png'));
+
+    const pequeno = document.createElement('canvas');
+    pequeno.width = ANCHO;
+    pequeno.height = Math.round((c.height / c.width) * ANCHO);
+    const ctx = pequeno.getContext('2d');
+    if (!ctx) return alFirmar(c.toDataURL('image/png'));
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(c, 0, 0, pequeno.width, pequeno.height);
+    alFirmar(pequeno.toDataURL('image/png'));
   }
 
   function borrar() {
@@ -560,16 +633,25 @@ function Gracias({
   hecho,
 }: {
   datos: DatosAcuerdo;
-  hecho: { referencia: string; firmadoEl: string };
+  hecho: { referencia: string; firmadoEl: string; dossier: string };
 }) {
   return (
     <div className={css.gracias}>
       <span className={css.sello}>Acuerdo firmado</span>
       <h2 className={css.graciasTitulo}>Gracias, {datos.nombre}.</h2>
       <p className={css.graciasTexto}>
-        Queda registrado el {fechaLarga(hecho.firmadoEl)}. Sorela lo recibe en su plataforma y te
-        escribe para darte acceso al dossier y a tu espacio de alumna.
+        Queda registrado el {fechaLarga(hecho.firmadoEl)}. Te llega por correo, y Sorela lo recibe
+        en su plataforma para darte acceso a tu espacio de alumna.
       </p>
+
+      {/* El dossier se abre AQUÍ MISMO, sin esperar al correo. El correo
+          llega, pero depende de Google, de la cobertura y de la carpeta de
+          promociones; esto no depende de nada. */}
+      {hecho.dossier && (
+        <a className={css.dossier} href={hecho.dossier} target="_blank" rel="noreferrer">
+          Abrir mi dossier
+        </a>
+      )}
       <p className={css.referencia}>
         <span>Tu referencia</span>
         <strong>{hecho.referencia}</strong>

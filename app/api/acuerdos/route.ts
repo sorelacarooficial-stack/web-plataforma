@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
+import { enlaceDelDossier, enviarDossier } from '@/lib/enviar-dossier';
 import {
   CIERRE_ACUERDO,
   CLAUSULAS,
@@ -77,6 +78,22 @@ export async function POST(peticion: Request) {
     return NextResponse.json({ ok: true, referencia: referenciaNueva() });
   }
 
+  /*
+   * La firma NO se recorta: o cabe, o se rechaza.
+   *
+   * Recortarla como se recorta un nombre demasiado largo parecía defensivo y
+   * era lo contrario: una imagen cortada por la mitad sigue siendo una cadena
+   * válida, se guardaba sin protestar, y lo que quedaba archivado era un
+   * documento con una firma rota que nadie descubriría hasta necesitarla.
+   */
+  const firma = String(cuerpo.firma ?? '').trim();
+  if (firma.length > MAX_FIRMA) {
+    return NextResponse.json(
+      { ok: false, errores: { firma: 'La firma ha salido demasiado grande. Bórrala y hazla otra vez.' } },
+      { status: 413 }
+    );
+  }
+
   const datos: DatosAcuerdo = {
     nombre: recortar(cuerpo.nombre, 90),
     apellidos: recortar(cuerpo.apellidos, 120),
@@ -84,7 +101,7 @@ export async function POST(peticion: Request) {
     correo: recortar(cuerpo.correo, 200).toLowerCase(),
     telefono: recortar(cuerpo.telefono, 30),
     lugar: recortar(cuerpo.lugar, 80),
-    firma: recortar(cuerpo.firma, MAX_FIRMA),
+    firma,
   };
 
   const aceptadas = Array.isArray(cuerpo.clausulas) ? cuerpo.clausulas.length : 0;
@@ -116,29 +133,65 @@ export async function POST(peticion: Request) {
    */
   const ahora = new Date().toISOString();
 
-  await base
-    .collection(COLECCION)
-    .doc(referencia)
-    .set({
-      ...datos,
-      referencia,
-      firmadoEl: ahora,
-      creadoEn: FieldValue.serverTimestamp(),
-      /* La copia congelada: qué se le enseñó exactamente. */
-      version: VERSION_ACUERDO,
-      titulo: TITULO_ACUERDO,
-      clausulas: CLAUSULAS,
-      cierre: CIERRE_ACUERDO,
-      prueba: {
-        ip,
-        navegador: recortar(peticion.headers.get('user-agent'), 300),
-      },
-      /* Para el embudo: quien firma todavía no es alumna, es alguien que va a
-         serlo. Sorela le da el acceso al curso desde su pantalla. */
-      estado: 'firmado',
-    });
+  /*
+   * La escritura va envuelta, y no por costumbre.
+   *
+   * Si Firestore rechaza la credencial —la clave privada mal pegada en el
+   * panel del servidor es el caso típico— esto lanza, y una excepción que sale
+   * de aquí la convierte la plataforma en su propia página de error en HTML.
+   * El navegador entonces no encuentra JSON donde esperaba, y quien firma veía
+   * «revisa tu conexión» por un problema que no tenía nada que ver con su
+   * conexión. Fallando aquí, el motivo llega escrito y se puede arreglar.
+   */
+  try {
+    await base
+      .collection(COLECCION)
+      .doc(referencia)
+      .set({
+        ...datos,
+        referencia,
+        firmadoEl: ahora,
+        creadoEn: FieldValue.serverTimestamp(),
+        /* La copia congelada: qué se le enseñó exactamente. */
+        version: VERSION_ACUERDO,
+        titulo: TITULO_ACUERDO,
+        clausulas: CLAUSULAS,
+        cierre: CIERRE_ACUERDO,
+        prueba: {
+          ip,
+          navegador: recortar(peticion.headers.get('user-agent'), 300),
+        },
+        /* Para el embudo: quien firma todavía no es alumna, es alguien que va a
+           serlo. Sorela le da el acceso al curso desde su pantalla. */
+        estado: 'firmado',
+      });
+  } catch (error) {
+    console.error('[acuerdos] no se ha podido guardar', error);
+    return NextResponse.json({ ok: false, motivo: 'base-rechaza' }, { status: 502 });
+  }
 
-  return NextResponse.json({ ok: true, referencia, firmadoEl: ahora });
+  /*
+   * El correo sale, pero no se espera a que salga.
+   *
+   * La firma ya está guardada y Sorela la ve en su plataforma: eso es lo que
+   * importa y ya ha ocurrido. Dejar colgada la pantalla de quien acaba de
+   * firmar mientras se habla con Google sería cambiar lo que importa por lo
+   * que no, y si Google tarda o falla, la firma seguiría siendo válida igual.
+   */
+  void enviarDossier({
+    nombre: datos.nombre,
+    apellidos: datos.apellidos,
+    correo: datos.correo,
+    telefono: datos.telefono,
+    referencia,
+  });
+
+  return NextResponse.json({
+    ok: true,
+    referencia,
+    firmadoEl: ahora,
+    dossier: enlaceDelDossier(referencia),
+  });
 }
 
 export async function GET() {

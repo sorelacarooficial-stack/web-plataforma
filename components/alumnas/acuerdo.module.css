@@ -586,3 +586,29 @@
     flex: 1 1 auto;
   }
 }
+
+/* ==========================================================================
+   El dossier, al terminar
+
+   Se enseña en la propia pantalla y no solo por correo. El correo llega, pero
+   depende de Google, de la cobertura del móvil y de en qué carpeta lo meta
+   Gmail; el botón que ya está delante no depende de nada.
+   ========================================================================== */
+
+.dossier {
+  display: inline-block;
+  margin: clamp(20px, 3vw, 28px) 0 0;
+  padding: 15px 30px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.dossier:hover {
+  opacity: 0.86;
+}

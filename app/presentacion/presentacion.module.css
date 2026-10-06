@@ -1,0 +1,601 @@
+/*
+ * La presentación profesional.
+ *
+ * Usa los tokens de la web —el mismo bronce, la misma Cormorant— pero alterna
+ * oscuro y claro en vez de ir todo sobre papel crema. La razón es el ritmo: son
+ * ocho secciones seguidas y, si todas tienen el mismo fondo, al tercer scroll
+ * se pierde la noción de haber avanzado. Alternando, cada cambio de fondo dice
+ * «esto es otra cosa» sin necesidad de escribirlo.
+ */
+
+.pagina {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* ==========================================================================
+   Portada
+   ========================================================================== */
+
+.hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: min(92vh, 880px);
+  padding: clamp(80px, 14vw, 150px) 0 clamp(40px, 6vw, 72px);
+  background: #17140f;
+  color: #fff;
+  overflow: hidden;
+}
+
+.heroFoto {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.retrato {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* El retrato está tomado de cuerpo entero y centrado; encuadrando a la
+     derecha, la cara queda en el tercio y el texto cae sobre la pared. */
+  object-position: 72% 22%;
+}
+
+/*
+ * El velo.
+ *
+ * No es un gris plano encima de la foto: es un degradado que empieza casi
+ * opaco por la izquierda —donde va el texto— y se abre hacia la derecha, donde
+ * está ella. Un velo uniforme dejaría el título legible ensuciando la foto
+ * entera; así se paga oscuridad solo donde hace falta.
+ */
+.heroFoto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(100deg, rgba(14, 12, 9, 0.94) 0%, rgba(14, 12, 9, 0.82) 34%, rgba(14, 12, 9, 0.22) 68%, rgba(14, 12, 9, 0.5) 100%),
+    linear-gradient(to top, rgba(14, 12, 9, 0.75), transparent 38%);
+}
+
+.heroCaja {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.heroTexto {
+  max-width: 44ch;
+}
+
+.sello {
+  display: inline-block;
+  margin: 0 0 clamp(18px, 2.4vw, 28px);
+  padding: 8px 18px;
+  border: 1px solid rgba(217, 180, 124, 0.45);
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #e6c895;
+}
+
+.heroTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(44px, 8.4vw, 96px);
+  line-height: 0.94;
+  letter-spacing: -0.022em;
+  color: #fff;
+}
+
+.heroEnfasis {
+  display: block;
+  margin-top: 4px;
+  font-style: italic;
+  color: #d9b47c;
+}
+
+.heroLema {
+  margin: clamp(20px, 3vw, 32px) 0 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 3.2vw, 32px);
+  font-style: italic;
+  color: #f0e7da;
+}
+
+.heroEntradilla {
+  margin: 16px 0 0;
+  font-size: clamp(15px, 1.6vw, 17px);
+  line-height: 1.68;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+@media (max-width: 860px) {
+  .retrato {
+    object-position: 62% 14%;
+  }
+
+  .heroFoto::after {
+    background:
+      linear-gradient(to top, rgba(14, 12, 9, 0.96) 0%, rgba(14, 12, 9, 0.88) 42%, rgba(14, 12, 9, 0.3) 100%);
+  }
+}
+
+/* ==========================================================================
+   Secciones
+   ========================================================================== */
+
+.seccion {
+  padding: clamp(56px, 9vw, 118px) 0;
+  background: var(--bg);
+}
+
+.seccionClara {
+  padding: clamp(56px, 9vw, 118px) 0;
+  background: var(--surface);
+  border-top: 1px solid var(--line-1);
+  border-bottom: 1px solid var(--line-1);
+}
+
+.rotulo {
+  margin: 0 0 14px;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--arcilla-ink);
+}
+
+.titulo {
+  margin: 0;
+  max-width: 20ch;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(32px, 5.4vw, 60px);
+  line-height: 1.02;
+  letter-spacing: -0.018em;
+  color: var(--ink);
+}
+
+.titulo em {
+  font-style: italic;
+  color: var(--arcilla-ink);
+}
+
+.subtitulo {
+  margin: clamp(44px, 6vw, 74px) 0 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(24px, 3.4vw, 36px);
+  color: var(--ink);
+}
+
+.entradilla {
+  margin: 14px 0 clamp(24px, 3.4vw, 38px);
+  max-width: 62ch;
+  font-size: clamp(15px, 1.6vw, 17px);
+  line-height: 1.68;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   El vídeo
+   ========================================================================== */
+
+.seccionVideo {
+  padding: clamp(44px, 7vw, 86px) 0;
+  background: var(--bg);
+}
+
+.video {
+  position: relative;
+  /* Horizontal, como pidió: 16:9 y a todo el ancho de la caja. */
+  aspect-ratio: 16 / 9;
+  border-radius: clamp(16px, 2vw, 26px);
+  overflow: hidden;
+  background: var(--photo-bg);
+  border: 1px solid var(--line-1);
+}
+
+.videoReal {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.videoHueco {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  height: 100%;
+  gap: 6px;
+  text-align: center;
+  padding: 20px;
+  background:
+    radial-gradient(120% 100% at 50% 0%, var(--oro-tint) 0%, var(--photo-bg) 72%);
+}
+
+.videoIcono {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--oro-line);
+  color: var(--arcilla-ink);
+}
+
+.videoTexto {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(20px, 2.6vw, 28px);
+  color: var(--ink);
+}
+
+.videoFino {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   Cifras
+   ========================================================================== */
+
+.cifras {
+  padding: clamp(28px, 4vw, 46px) 0;
+  background: #17140f;
+  color: #fff;
+}
+
+.cifrasLista {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(14px, 3vw, 36px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 700px) {
+  .cifrasLista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 26px;
+  }
+}
+
+.cifra {
+  text-align: center;
+}
+
+.cifraDato {
+  display: block;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(36px, 5.4vw, 56px);
+  line-height: 1;
+  color: #d9b47c;
+}
+
+.cifraTexto {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+/* ==========================================================================
+   El método
+   ========================================================================== */
+
+.metodo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: start;
+  gap: clamp(26px, 5vw, 64px);
+  margin-top: clamp(28px, 4vw, 50px);
+}
+
+@media (max-width: 860px) {
+  .metodo {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metodoLista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.metodoItem + .metodoItem {
+  margin-top: clamp(22px, 3vw, 34px);
+  padding-top: clamp(22px, 3vw, 34px);
+  border-top: 1px solid var(--line-1);
+}
+
+.metodoTitulo {
+  margin: 0 0 8px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(21px, 2.8vw, 28px);
+  color: var(--ink);
+}
+
+.metodoTexto {
+  margin: 0;
+  font-size: clamp(14.5px, 1.5vw, 16px);
+  line-height: 1.72;
+  color: var(--muted);
+}
+
+.metodoFoto {
+  margin: 0;
+  border-radius: clamp(16px, 2vw, 24px);
+  overflow: hidden;
+  background: var(--photo-bg);
+}
+
+.metodoImagen {
+  display: block;
+  width: 100%;
+  height: clamp(320px, 46vw, 560px);
+  object-fit: cover;
+  object-position: center 35%;
+}
+
+/* ==========================================================================
+   Efectos
+   ========================================================================== */
+
+.preambulo {
+  max-width: 68ch;
+  margin: clamp(22px, 3vw, 34px) 0 clamp(30px, 4.4vw, 50px);
+}
+
+.preambuloTexto {
+  margin: 0 0 12px;
+  font-size: clamp(15px, 1.7vw, 18px);
+  line-height: 1.7;
+  color: var(--txt);
+}
+
+.efectos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(14px, 2.2vw, 24px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 760px) {
+  .efectos {
+    grid-template-columns: 1fr;
+  }
+}
+
+.efecto {
+  padding: clamp(20px, 2.8vw, 30px);
+  border: 1px solid var(--oro-line);
+  border-radius: clamp(14px, 1.8vw, 20px);
+  background: var(--oro-tint);
+}
+
+.efectoTitulo {
+  margin: 0 0 14px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--arcilla-ink);
+}
+
+.efectoPuntos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.efectoPunto {
+  position: relative;
+  padding-left: 20px;
+  font-size: clamp(14.5px, 1.5vw, 16px);
+  line-height: 1.6;
+  color: var(--txt);
+}
+
+.efectoPunto + .efectoPunto {
+  margin-top: 11px;
+}
+
+.efectoPunto::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.62em;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--arcilla);
+}
+
+.nota {
+  margin: clamp(24px, 3.4vw, 36px) 0 0;
+  padding: clamp(16px, 2vw, 22px);
+  border-left: 2px solid var(--oro-line);
+  background: var(--bg);
+  font-size: 13.5px;
+  line-height: 1.66;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   Resultados
+   ========================================================================== */
+
+.aviso {
+  margin: clamp(22px, 3vw, 32px) 0 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--faint);
+}
+
+/* ==========================================================================
+   Estructura
+   ========================================================================== */
+
+.estructura {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2.6vw, 30px);
+  margin: clamp(28px, 4vw, 48px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 860px) {
+  .estructura {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bloque {
+  padding: clamp(20px, 2.8vw, 30px);
+  border: 1px solid var(--line-1);
+  border-radius: clamp(14px, 1.8vw, 20px);
+  background: var(--surface);
+}
+
+.bloqueTitulo {
+  margin: 0 0 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-1);
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(20px, 2.4vw, 25px);
+  color: var(--ink);
+}
+
+.bloqueLista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bloqueItem {
+  position: relative;
+  padding-left: 18px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.bloqueItem + .bloqueItem {
+  margin-top: 10px;
+}
+
+.bloqueItem::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.66em;
+  width: 8px;
+  height: 1px;
+  background: var(--arcilla);
+}
+
+.equipo {
+  margin: clamp(28px, 4vw, 48px) 0 0;
+  border-radius: clamp(16px, 2vw, 24px);
+  overflow: hidden;
+  background: var(--photo-bg);
+}
+
+.equipoFoto {
+  display: block;
+  width: 100%;
+  height: clamp(220px, 34vw, 420px);
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+/* ==========================================================================
+   Cierre
+   ========================================================================== */
+
+.cierre {
+  padding: clamp(64px, 10vw, 130px) 0;
+  background: #17140f;
+  color: #fff;
+  text-align: center;
+}
+
+.cierreTitulo {
+  margin: 0 auto;
+  max-width: 18ch;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(30px, 5.2vw, 56px);
+  line-height: 1.04;
+  color: #fff;
+}
+
+.cierreTexto {
+  margin: clamp(18px, 2.4vw, 26px) auto 0;
+  max-width: 64ch;
+  font-size: clamp(15px, 1.6vw, 17px);
+  line-height: 1.72;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.lema {
+  margin: clamp(32px, 4.4vw, 54px) 0 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(22px, 3.4vw, 34px);
+  color: #d9b47c;
+}
+
+.remate {
+  margin: 12px auto 0;
+  max-width: 48ch;
+  font-size: clamp(14px, 1.5vw, 16px);
+  line-height: 1.66;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ==========================================================================
+   Pie
+   ========================================================================== */
+
+.pie {
+  padding: 26px 0;
+  background: #0f0d0a;
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.pieCaja {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+}
+
+.pieMarca {
+  margin: 0;
+}
+
+.pieEnlace {
+  color: #d9b47c;
+  text-decoration: none;
+}
+
+.pieEnlace:hover {
+  text-decoration: underline;
+}

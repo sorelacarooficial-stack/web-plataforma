@@ -2,6 +2,18 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  /*
+   * El dossier viaja con su ruta de API.
+   *
+   * Vive en `docs/` y NO en `public/` a propósito: en `public/` tendría una
+   * dirección fija que cualquiera podría abrir y reenviar, y es el documento
+   * que la alumna se compromete por escrito a no divulgar. Al estar fuera,
+   * Next no lo incluiría en el paquete que se despliega y la ruta no lo
+   * encontraría en el servidor; esto se lo dice.
+   */
+  outputFileTracingIncludes: {
+    '/api/dossier': ['./docs/dossier.pdf'],
+  },
   images: {
     // Las fotos ya se pre-optimizan a WebP con scripts/optimizar-imagenes.mjs.
     // Next vuelve a redimensionar por breakpoint desde esas fuentes.

@@ -279,3 +279,73 @@
   color: var(--muted-2);
   text-wrap: pretty;
 }
+
+/* ==========================================================================
+   La tira de fotos
+
+   Va entre el bloque del método y el horario, a sangre de borde a borde. Antes
+   ahí había dos pantallas seguidas de texto: una explicación y, pegado, un
+   horario de once bloques. La tira parte esa lectura en dos y enseña de qué se
+   está hablando, que es lo que un párrafo no puede hacer.
+   ========================================================================== */
+
+.tira {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin: clamp(40px, 6vw, 72px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 760px) {
+  .tira {
+    /* En móvil, apiladas de dos en dos no cuadra con tres; se desliza. */
+    grid-template-columns: repeat(3, 72vw);
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 0 18px;
+    scrollbar-width: none;
+  }
+
+  .tira::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tiraItem {
+    scroll-snap-align: center;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+}
+
+.tiraItem {
+  margin: 0;
+  background: var(--photo-bg);
+}
+
+.tiraFoto {
+  display: block;
+  width: 100%;
+  height: clamp(200px, 26vw, 330px);
+  object-fit: cover;
+  object-position: center 42%;
+}
+
+/* ---------- Subtítulo y aviso de la galería ---------- */
+
+.subtitulo {
+  margin: clamp(44px, 6vw, 72px) 0 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(24px, 3.4vw, 36px);
+  color: var(--ink);
+}
+
+.avisoFotos {
+  margin: clamp(20px, 2.6vw, 28px) 0 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--faint);
+}

@@ -452,3 +452,146 @@ p {
   line-height: 1.55;
   color: var(--suave);
 }
+
+/* ==========================================================================
+   Imágenes
+
+   Las del documento original de Sorela: sus láminas de anatomía y sus fotos de
+   trabajo. Dos tratamientos distintos y deliberados:
+
+   LAS FOTOS van a sangre de margen a margen, sin filete. Son fotografía y una
+   fotografía encajonada en una caja con borde pierde la mitad de su fuerza.
+
+   LAS LÁMINAS, no. Son dibujos con rotulitos sobre fondo blanco: llevarlas a
+   sangre les come las letras de los bordes —que es exactamente lo que hay que
+   leer— y encima pegaría su blanco contra el papel crema del documento, que se
+   ve sucio. Van sobre una placa clara, con aire alrededor y un filete fino.
+   ========================================================================== */
+
+.figura {
+  /* Sangra hasta el borde del papel por los dos lados. */
+  margin: 7mm -17mm;
+  page-break-inside: avoid;
+}
+
+.figura img {
+  display: block;
+  width: 100%;
+  max-height: 110mm;
+  object-fit: cover;
+  object-position: center;
+}
+
+.figura figcaption {
+  margin: 3mm 17mm 0;
+  font-size: 7.2pt;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tenue);
+}
+
+/* La lámina: sobre placa, con filete, y entera —nada de recortar. */
+.figuraLamina {
+  margin: 8mm 0;
+  padding: 6mm 6mm 4mm;
+  background: #fff;
+  border: 1px solid var(--oro-linea);
+}
+
+.figuraLamina img {
+  max-height: 150mm;
+  object-fit: contain;
+}
+
+.figuraLamina figcaption {
+  margin: 4mm 0 0;
+  text-align: center;
+  color: var(--oro-ink);
+}
+
+/* La de apertura de parte: manda en la página, así que puede ser más alta. */
+.figuraApertura img {
+  max-height: 95mm;
+}
+
+.figuraApertura.figuraLamina img {
+  max-height: 165mm;
+}
+
+.figuraAlta img {
+  max-height: 130mm;
+}
+
+/* ==========================================================================
+   Galería de resultados
+   ========================================================================== */
+
+.galeria {
+  margin-top: 9mm;
+  page-break-inside: avoid;
+}
+
+.galeriaTitulo {
+  margin: 0 0 4mm;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 19pt;
+  color: var(--tinta);
+}
+
+.galeriaRejilla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4mm;
+}
+
+.galeriaRejilla img {
+  display: block;
+  width: 100%;
+  height: 72mm;
+  object-fit: cover;
+  object-position: center;
+}
+
+.galeriaPie {
+  margin: 3mm 0 0;
+  font-size: 7.6pt;
+  color: var(--tenue);
+}
+
+/* ==========================================================================
+   La foto de la portada
+
+   Va en banda baja y a sangre por los dos lados, no de fondo detrás del texto:
+   el título es Cormorant a 54 puntos en tinta oscura sobre papel crema, y
+   meterle una foto por debajo obligaría a oscurecerla con un velo para que el
+   texto siguiera leyéndose. Un velo sobre una foto bonita la estropea.
+   ========================================================================== */
+
+.portada {
+  position: relative;
+  overflow: hidden;
+}
+
+.portadaFondo {
+  position: absolute;
+  left: -17mm;
+  right: -17mm;
+  bottom: -20mm;
+  width: calc(100% + 34mm);
+  height: 92mm;
+  object-fit: cover;
+  object-position: center 28%;
+}
+
+/* El texto se levanta por encima de la banda. */
+.portadaCentro {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 96mm;
+}
+
+.portadaPie {
+  position: relative;
+  z-index: 1;
+}
