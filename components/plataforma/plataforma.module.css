@@ -2509,3 +2509,201 @@
   transform: translateY(1px);
   box-shadow: var(--neu-dentro-sm);
 }
+
+/* ==========================================================================
+   Detalles que marcan la diferencia
+
+   1. Contraste: el menú lateral pasa a negro, con el apartado elegido hundido
+      y en dorado. Todo lo demás queda en el papel claro, y la mirada sabe al
+      instante dónde está el menú y dónde el trabajo.
+   2. Números limpios: las cifras grandes van en la letra de texto (Jost),
+      seminegrita y en tinta sólida, sin degradado. La Cormorant queda para
+      los titulares; en una cifra, sus remates la hacen parecer adorno.
+      Donde los números van en columna, todos los dígitos ocupan lo mismo.
+   3. Detalles: un filete dorado en las tarjetas, un punto dorado en cada
+      rótulo y una barra fina de desplazamiento en dorado.
+   ========================================================================== */
+
+/* ---------- 1. El menú lateral, en negro ---------- */
+.lateral {
+  --ink: #f7f2ea;
+  --ink-2: #ded6c9;
+  --ink-3: #cfc6b8;
+  --ink-4: #ebe4d9;
+  --muted-2: #b9b0a3;
+  --muted: #a39a8e;
+  --faint: #8f877b;
+  --arcilla: #d9b47c;
+  --oro: #d9b47c;
+  --oro-claro: #e8cc9a;
+  --line-2: rgba(237, 227, 211, 0.12);
+  --line-3: rgba(237, 227, 211, 0.16);
+  --crema: #ede3d3;
+  --negro: #141210;
+  --logo-filter: none;
+  --neu-base: #161412;
+  --neu-luz: rgba(255, 255, 255, 0.05);
+  --neu-sombra: rgba(0, 0, 0, 0.7);
+  --neu-fuera-sm: 5px 5px 12px var(--neu-sombra), -4px -4px 10px var(--neu-luz);
+  --neu-fuera: 10px 10px 24px var(--neu-sombra), -8px -8px 20px var(--neu-luz);
+  --neu-dentro-sm: inset 4px 4px 9px var(--neu-sombra), inset -3px -3px 8px var(--neu-luz);
+
+  background:
+    radial-gradient(120% 40% at 0% 0%, rgba(217, 180, 124, 0.1), transparent 60%),
+    #161412;
+  color: var(--ink);
+  border-right-color: transparent;
+  box-shadow: 14px 0 40px -22px rgba(20, 18, 16, 0.55);
+}
+
+.navTexto {
+  color: var(--muted-2);
+}
+
+.navActivo .navTexto {
+  color: var(--arcilla);
+}
+
+/* El punto del apartado elegido se enciende. */
+.navActivo .navPunto {
+  background: var(--arcilla);
+  box-shadow: 0 0 0 4px rgba(217, 180, 124, 0.16), 0 0 12px rgba(217, 180, 124, 0.6);
+}
+
+/* ---------- 2. Números limpios ---------- */
+.kpiValor {
+  margin-top: 4px;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: clamp(36px, 3.4vw, 52px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+.kpiLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: var(--muted-2);
+}
+
+.kpiLabel::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--arcilla);
+}
+
+.kpiNota {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.diaNum,
+.rankingPos {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.facturaImporte,
+.facturaNum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 3. Detalles ---------- */
+
+/* El filete dorado: una línea finísima arriba de cada tarjeta, que se
+   ilumina al pasar el ratón. */
+.kpi,
+.tarjeta {
+  position: relative;
+}
+
+.kpi::after,
+.tarjeta::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 28px;
+  right: 28px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(154, 118, 64, 0.55), transparent);
+  opacity: 0.55;
+  transition: opacity 0.35s;
+  pointer-events: none;
+}
+
+.kpi:hover::after,
+.tarjeta:hover::after {
+  opacity: 1;
+}
+
+/* Cada rótulo de sección arranca con un trazo dorado. */
+.seccion,
+.rotulo,
+.rotuloSeccion {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.seccion::before {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: currentColor;
+}
+
+/* Quién ha entrado: el avatar con un anillo dorado. */
+.usuario .avatar,
+.avatar {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--neu-base), 0 0 0 3px var(--oro-line);
+}
+
+/* La barra de desplazamiento, fina y dorada. */
+.pantalla {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(154, 118, 64, 0.55) transparent;
+}
+
+.pantalla ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.pantalla ::-webkit-scrollbar-thumb {
+  background: rgba(154, 118, 64, 0.5);
+  border-radius: 99px;
+}
+
+/* El total de la factura que se está escribiendo, también limpio. */
+.totalVivo {
+  border-color: transparent;
+  border-radius: 18px;
+  background: var(--neu-base);
+  box-shadow: var(--neu-dentro-sm);
+}
+
+.totalVivoCifra {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.claseNumero {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
