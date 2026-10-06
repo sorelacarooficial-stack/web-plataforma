@@ -1,8 +1,10 @@
 .cabecera {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  background: var(--surface);
-  border-bottom: 1px solid var(--line-1);
+  align-items: stretch;
+  gap: clamp(0px, 2vw, 24px);
+  padding: 0 clamp(0px, 2vw, 24px) clamp(0px, 2vw, 24px);
+  background: radial-gradient(60% 70% at 20% 40%, rgba(217, 180, 124, 0.1), transparent 70%);
 }
 
 .intro {
@@ -14,12 +16,14 @@
 }
 
 .nombre {
+  --alto-linea: 0.88em;
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(42px, 6.4vw, 84px);
-  line-height: 1;
-  letter-spacing: -0.015em;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(56px, 10vw, 170px);
+  line-height: 0.88;
+  letter-spacing: -0.03em;
 }
 
 .subtitulo {
@@ -27,16 +31,17 @@
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-style: italic;
   font-weight: 300;
-  font-size: clamp(20px, 2.2vw, 28px);
+  font-size: clamp(22px, 2.6vw, 34px);
   line-height: 1.3;
-  color: var(--ink-3);
+  color: var(--oro-b);
 }
 
 .foto {
   position: relative;
-  min-height: min(62vh, 560px);
+  min-height: min(78vh, 720px);
   background: var(--photo-bg);
   overflow: hidden;
+  border-radius: clamp(0px, 4vw, 60px);
 }
 
 .foto img {
@@ -84,8 +89,7 @@
 
 /* ---------- Hoy ---------- */
 .hoy {
-  padding: clamp(56px, 8vw, 110px) 0;
-  background: var(--azul-tint);
+  padding: clamp(80px, 11vw, 140px) 0 clamp(110px, 13vw, 180px);
 }
 
 .cifras {
@@ -95,8 +99,9 @@
 }
 
 .cifra {
-  background: var(--surface);
-  padding: clamp(24px, 3vw, 34px);
+  background: #f7f4ef;
+  border-radius: clamp(28px, 3.4vw, 40px);
+  padding: clamp(28px, 3.4vw, 40px);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -105,8 +110,9 @@
 .cifraGrande {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(38px, 4.4vw, 56px);
-  line-height: 1;
+  font-weight: 600;
+  font-size: clamp(64px, 8vw, 120px);
+  line-height: 0.85;
   color: var(--ink);
 }
 
@@ -121,14 +127,15 @@
 .cifraPie {
   margin: 0;
   font-size: 12px;
-  letter-spacing: 0.16em;
+  font-weight: 500;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--azul-ink);
+  color: var(--arcilla);
 }
 
 /* ---------- Cierre ---------- */
 .cierre {
-  padding: clamp(70px, 10vw, 140px) 0;
+  padding: clamp(90px, 13vw, 180px) 0;
   text-align: center;
 }
 

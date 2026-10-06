@@ -24,7 +24,7 @@ export default function Sobre() {
       <section className={css.cabecera}>
         <div className={`${css.intro} sangrado-izq`}>
           <p className="antetitulo">Sobre</p>
-          <h1 className={css.nombre}>Sorela Caro</h1>
+          <h1 className={`${css.nombre} degradado`}>Sorela Caro</h1>
           <p className={css.subtitulo}>Creadora de la Técnica Divine.</p>
         </div>
         <div className={css.foto}>
@@ -100,7 +100,7 @@ export default function Sobre() {
         </div>
       </section>
 
-      <section className={css.hoy}>
+      <section className={`${css.hoy} panel-blanco`}>
         <div className="wrap">
           <h2 className="titulo-md" style={{ marginBottom: 'clamp(32px,4vw,56px)' }}>
             Hoy formo a terapeutas.
@@ -134,9 +134,9 @@ export default function Sobre() {
         </div>
       </section>
 
-      <section className={css.cierre}>
+      <section className={`${css.cierre} panel-oscuro`}>
         <div className="wrap wrap-800">
-          <h2 className={css.cierreTitulo}>Si quieres formarte conmigo:</h2>
+          <h2 className="titulo-cierre">Si quieres formarte conmigo:</h2>
           <Link href="/formaciones" className="btn">
             Ver formaciones
           </Link>

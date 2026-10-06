@@ -1,17 +1,19 @@
 .portada {
-  padding: clamp(70px, 10vw, 140px) 0 clamp(50px, 7vw, 90px);
-  background: var(--arcilla-tint);
-  border-bottom: 1px solid var(--arcilla-line);
+  padding: clamp(80px, 12vw, 170px) 0 clamp(70px, 9vw, 130px);
+  background: radial-gradient(60% 70% at 30% 30%, rgba(217, 180, 124, 0.1), transparent 70%);
 }
 
 .titulo {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(38px, 6vw, 76px);
-  line-height: 1.02;
-  letter-spacing: -0.015em;
-  text-wrap: pretty;
+  --alto-linea: 0.92em;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(40px, 5.2vw, 88px);
+  overflow-wrap: anywhere;
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
 }
 
 .contador {
@@ -23,7 +25,6 @@
 }
 
 .caja {
-  background: var(--surface);
   padding: clamp(26px, 3.4vw, 40px);
   display: flex;
   flex-direction: column;
@@ -32,7 +33,7 @@
 
 /* ---------- Piezas ---------- */
 .piezasSeccion {
-  padding: 0 0 clamp(56px, 8vw, 110px);
+  padding: clamp(80px, 11vw, 140px) 0 clamp(110px, 13vw, 180px);
 }
 
 .piezas {
@@ -42,8 +43,6 @@
 }
 
 .pieza {
-  background: var(--surface);
-  padding: clamp(26px, 3vw, 38px);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -52,23 +51,22 @@
     box-shadow 0.28s;
 }
 
-.pieza:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 18px 40px rgba(20, 18, 16, 0.07);
-}
+
 
 .estado {
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--oro-b);
 }
 
 .piezaTitulo {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 500;
-  font-size: clamp(21px, 2.2vw, 28px);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(22px, 2.4vw, 30px);
   line-height: 1.18;
   text-wrap: pretty;
 }
@@ -76,8 +74,7 @@
 /* ---------- Precio ---------- */
 .precio {
   padding: clamp(70px, 11vw, 150px) 0;
-  background: var(--inverse-bg);
-  color: var(--on-inverse-2);
+  color: var(--crema-2);
   text-align: center;
 }
 
@@ -90,12 +87,6 @@
 
 .precioTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(32px, 5vw, 64px);
-  line-height: 1.04;
-  color: var(--inverse-ink);
-  text-wrap: pretty;
 }
 
 .precioTexto {
@@ -104,7 +95,7 @@
   font-weight: 300;
   font-size: clamp(16px, 1.25vw, 18.5px);
   line-height: 1.64;
-  color: var(--on-inverse-2);
+  color: var(--crema-2);
   text-wrap: pretty;
 }
 

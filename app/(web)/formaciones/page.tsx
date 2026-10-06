@@ -3,6 +3,7 @@ import AvisarCiudad from '@/components/AvisarCiudad';
 import BotonAsistente from '@/components/BotonAsistente';
 import BotonCaptacion from '@/components/BotonCaptacion';
 import DatosEstructurados from '@/components/DatosEstructurados';
+import Apiladas from '@/components/landing/Apiladas';
 import css from './formaciones.module.css';
 
 /**
@@ -97,7 +98,7 @@ export default function Formaciones() {
           { nombre: 'Formaciones', ruta: '/formaciones' },
         ]}
       />
-      <section className={css.portada}>
+      <section className={`${css.portada} portada-landing`}>
         <div className="wrap">
           <h1 className="titulo-xl" style={{ marginBottom: 24 }}>
             Formaciones
@@ -111,8 +112,9 @@ export default function Formaciones() {
 
       <section className="seccion">
         <div className="wrap">
-          <div className={css.etapas}>
-            {ETAPAS.map((e) => (
+          {/* Las dos etapas, en tarjetas que se apilan al bajar. */}
+          <Apiladas
+            tarjetas={ETAPAS.map((e) => (
               <article
                 key={e.titulo}
                 className={`${css.etapa} ${e.destacada ? css.etapaDestacada : ''}`}
@@ -127,12 +129,12 @@ export default function Formaciones() {
                 </ul>
               </article>
             ))}
-          </div>
+          />
 
           {/* Las fechas: la respuesta honesta hoy es que no hay ninguna cerrada,
               y se dice así. Una fecha que luego se mueve cuesta más que no
               darla, sobre todo cuando alguien ya ha comprado un vuelo. */}
-          <div className={css.fechas}>
+          <div className={`${css.fechas} caja-landing`}>
             <div>
               <p className="antetitulo" style={{ color: 'var(--oro)' }}>
                 Próximas convocatorias
@@ -163,7 +165,7 @@ export default function Formaciones() {
             </div>
           </div>
 
-          <div className={css.avisame}>
+          <div className={`${css.avisame} caja-landing`}>
             <h2 className={css.avisameTitulo}>¿Tu ciudad no está?</h2>
             <div className="columna" style={{ gap: 20, alignItems: 'flex-start' }}>
               <p className="texto-fijo max-440">
