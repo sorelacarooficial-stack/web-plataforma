@@ -151,9 +151,9 @@ export type QueLlevas = { titulo: string; texto: string };
 
 export const QUE_LLEVAS: QueLlevas[] = [
   {
-    titulo: 'Dossier de 42 páginas',
+    titulo: 'El dossier completo',
     texto:
-      'El recorrido completo del sistema linfático con láminas ilustradas, el protocolo y las contraindicaciones. Se entrega al firmar el acuerdo.',
+      'El recorrido del sistema linfático con sus láminas, el protocolo y las contraindicaciones. Te llega en cuanto firmas el acuerdo.',
   },
   {
     titulo: 'Práctica con modelos reales',
@@ -167,6 +167,39 @@ export const QUE_LLEVAS: QueLlevas[] = [
     titulo: 'Diploma de terapeuta Divine',
     texto: 'Al terminar la segunda jornada.',
   },
+  {
+    titulo: 'Tu espacio de alumna',
+    texto:
+      'Acceso a la plataforma de Sorela: el aula con los vídeos, tu material y la comunidad de terapeutas Divine.',
+  },
+];
+
+/** El párrafo que se enciende letra a letra en la landing. */
+export const METODO_TEXTO =
+  'Un método de drenaje y modelado corporal nacido de más de tres décadas en estética avanzada. No es una secuencia cerrada que se aplica igual a todo el mundo: es un orden de trabajo que se adapta a cada cuerpo. Lo Divine no se improvisa: se siente, se vive y se recuerda.';
+
+/** Las fotos de la cinta que se desplaza con el scroll. */
+export const CINTA_ALUMNAS = [
+  '/alumnas/manos.webp',
+  '/alumnas/resultado-2.webp',
+  '/alumnas/anatomia-sistema.webp',
+  '/alumnas/camilla.webp',
+  '/trayectoria/rostro-2.webp',
+  '/alumnas/abdomen-1.webp',
+  '/trayectoria/equipo-2.webp',
+  '/alumnas/resultado-4.webp',
+  '/alumnas/anatomia-ganglio.webp',
+  '/trayectoria/sesion-2.webp',
+  '/alumnas/abdomen-2.webp',
+  '/alumnas/resultado-5.webp',
+  '/alumnas/anatomia-funcion.webp',
+  '/trayectoria/rostro-5.webp',
+  '/alumnas/rostro.webp',
+  '/alumnas/resultado-3.webp',
+  '/trayectoria/equipo.webp',
+  '/alumnas/anatomia-vias.webp',
+  '/trayectoria/sesion-1.webp',
+  '/alumnas/resultado-1.webp',
 ];
 
 /**

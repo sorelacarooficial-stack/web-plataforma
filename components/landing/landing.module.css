@@ -1,0 +1,1245 @@
+/*
+ * Las landings: alumnas y presentación.
+ *
+ * Una sola hoja para las dos porque son el mismo sistema —oscuro, titulares
+ * enormes, todo moviéndose con el scroll— con contenido distinto. Dos hojas
+ * copiadas acabarían siendo dos estilos el día que se toque una y no la otra.
+ *
+ * LA TIPOGRAFÍA Y LOS COLORES SON LOS DE LA MARCA, NO LOS DE LA REFERENCIA. La
+ * estructura y los efectos siguen la referencia; el titular va en Cormorant y
+ * el degradado en los dorados de Sorela, no en el gris azulado del original.
+ * Con la tipografía de la referencia, esto sería la web de otra persona.
+ */
+
+/* ==========================================================================
+   El lienzo
+
+   Además del fondo, se redefinen aquí los colores con los que están hechos
+   los componentes interactivos que ya existían —el horario, las láminas, el
+   test, el antes y después, la galería—. Así se ven en oscuro dentro de esta
+   página sin tocar una sola línea suya, y en el resto de la web siguen igual.
+   ========================================================================== */
+
+.pagina {
+  --negro: #0c0c0c;
+  --crema: #ede3d3;
+  --crema-2: rgba(237, 227, 211, 0.72);
+  --oro-a: #8a6a32;
+  --oro-b: #d9b47c;
+
+  --bg: #0c0c0c;
+  --surface: #151311;
+  --surface-2: #1c1916;
+  --photo-bg: #1c1916;
+  --ink: #f7f2ea;
+  --ink-2: #ded6c9;
+  --txt: #ded6c9;
+  --muted: #a89e91;
+  --faint: #968d81;
+  --arcilla: #cfa765;
+  --arcilla-ink: #e3c696;
+  --oro: #cfa765;
+  --oro-tint: #1f1a12;
+  --oro-line: rgba(207, 167, 101, 0.38);
+  --line-1: rgba(247, 242, 234, 0.1);
+  --line-2: rgba(247, 242, 234, 0.14);
+  --accent-inverse: #d9b47c;
+  --logo-filter: none;
+
+  background: var(--negro);
+  color: var(--crema);
+  overflow-x: clip;
+}
+
+/* El degradado de los titulares: de bronce apagado arriba a crema abajo. */
+.degradado {
+  background: linear-gradient(180deg, #6e5a3c 0%, #f3e3c3 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.gigante {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  text-align: center;
+  font-size: clamp(3rem, 12vw, 160px);
+}
+
+/* ==========================================================================
+   Portada
+   ========================================================================== */
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100svh;
+  min-height: 560px;
+  overflow-x: clip;
+}
+
+.nav {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0;
+}
+
+@media (min-width: 768px) {
+  .nav {
+    padding: 32px 40px 0;
+  }
+}
+
+.nav a {
+  color: var(--crema);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: opacity 0.2s;
+}
+
+.nav a:hover {
+  opacity: 0.7;
+}
+
+@media (min-width: 768px) {
+  .nav a {
+    font-size: 1.05rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nav a {
+    font-size: 1.2rem;
+  }
+}
+
+.navLogo {
+  width: 96px;
+  height: auto;
+}
+
+@media (min-width: 768px) {
+  .navLogo {
+    width: 130px;
+  }
+}
+
+.heroTituloCaja {
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+@media (min-width: 640px) {
+  .heroTituloCaja {
+    margin-top: 12px;
+  }
+}
+
+.heroTitulo {
+  margin: 0;
+  width: 100%;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  line-height: 0.86;
+  white-space: nowrap;
+  text-align: center;
+  /* El tamaño se pasa desde la página: cada titular tiene su largo. */
+  font-size: var(--hero-talla, 15vw);
+}
+
+.heroPie {
+  position: relative;
+  z-index: 20;
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 0 24px 28px;
+}
+
+@media (min-width: 768px) {
+  .heroPie {
+    padding: 0 40px 40px;
+  }
+}
+
+.heroLema {
+  margin: 0;
+  max-width: 170px;
+  color: var(--crema);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  font-size: clamp(0.75rem, 1.4vw, 1.4rem);
+}
+
+@media (min-width: 640px) {
+  .heroLema {
+    max-width: 230px;
+  }
+}
+
+@media (min-width: 768px) {
+  .heroLema {
+    max-width: 290px;
+  }
+}
+
+.retrato {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 10;
+  width: 270px;
+  transform: translate(-50%, -42%);
+}
+
+@media (min-width: 640px) {
+  .retrato {
+    top: auto;
+    bottom: 0;
+    width: 360px;
+    transform: translateX(-50%);
+  }
+}
+
+@media (min-width: 768px) {
+  .retrato {
+    width: 430px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .retrato {
+    width: 500px;
+  }
+}
+
+.retratoFoto {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Un halo dorado detrás del recorte, para que se despegue del negro. */
+  filter: drop-shadow(0 30px 60px rgba(217, 180, 124, 0.18));
+}
+
+/* En móvil el retrato va sobre el titular; se oscurece por debajo para que
+   el lema y el botón se sigan leyendo encima. */
+@media (max-width: 639px) {
+  .heroPie::before {
+    content: '';
+    position: absolute;
+    inset: -80px 0 0;
+    background: linear-gradient(to top, rgba(12, 12, 12, 0.92), transparent);
+    z-index: -1;
+  }
+}
+
+/* ==========================================================================
+   Botones
+   ========================================================================== */
+
+.brillo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: linear-gradient(123deg, #1a1208 7%, #8a6a32 37%, #d9b47c 72%, #6e5327 100%);
+  box-shadow:
+    0 4px 4px rgba(217, 180, 124, 0.25),
+    inset 4px 4px 12px #a98551;
+  outline: 2px solid #fff;
+  outline-offset: -3px;
+  color: #fff;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.brillo:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 24px rgba(217, 180, 124, 0.35),
+    inset 4px 4px 12px #a98551;
+}
+
+@media (min-width: 640px) {
+  .brillo {
+    padding: 14px 40px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .brillo {
+    padding: 16px 48px;
+    font-size: 1rem;
+  }
+}
+
+.contorno {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 32px;
+  border: 2px solid var(--crema);
+  border-radius: 999px;
+  color: var(--crema);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.8rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.contorno:hover {
+  background: rgba(237, 227, 211, 0.1);
+}
+
+@media (min-width: 640px) {
+  .contorno {
+    padding: 14px 40px;
+    font-size: 0.95rem;
+  }
+}
+
+/* ==========================================================================
+   La cinta de fotos
+   ========================================================================== */
+
+.cinta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 96px 0 40px;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .cinta {
+    padding-top: 128px;
+  }
+}
+
+@media (min-width: 768px) {
+  .cinta {
+    padding-top: 160px;
+  }
+}
+
+.cintaFila {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+  will-change: transform;
+}
+
+.cintaFoto {
+  flex: 0 0 auto;
+  width: 300px;
+  height: 195px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: #1c1916;
+}
+
+@media (min-width: 768px) {
+  .cintaFoto {
+    width: 420px;
+    height: 270px;
+  }
+}
+
+/* ==========================================================================
+   Sobre mí: el bloque central con cuatro piezas en las esquinas
+   ========================================================================== */
+
+.sobre {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 80px 20px;
+  gap: 64px;
+}
+
+@media (min-width: 640px) {
+  .sobre {
+    padding: 80px 32px;
+    gap: 80px;
+  }
+}
+
+.sobreTexto {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+@media (min-width: 640px) {
+  .sobreTexto {
+    gap: 56px;
+  }
+}
+
+.revelado {
+  margin: 0;
+  max-width: 600px;
+  color: var(--crema);
+  font-weight: 400;
+  text-align: center;
+  line-height: 1.6;
+  font-size: clamp(1.05rem, 2vw, 1.4rem);
+}
+
+/* Las piezas de las esquinas: fotos redondeadas e inclinadas, como
+   fotografías dejadas encima de la mesa. */
+.esquina {
+  position: absolute;
+  z-index: 1;
+}
+
+.esquinaFoto {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 22px;
+  border: 1px solid rgba(237, 227, 211, 0.16);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55);
+}
+
+.esquinaRedonda {
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: #fff;
+  object-fit: cover;
+}
+
+.esqSI {
+  top: 4%;
+  left: 2%;
+  width: 104px;
+  transform: rotate(-8deg);
+}
+
+.esqII {
+  bottom: 8%;
+  left: 4%;
+  width: 92px;
+  transform: rotate(6deg);
+}
+
+.esqSD {
+  top: 4%;
+  right: 2%;
+  width: 104px;
+  transform: rotate(7deg);
+}
+
+.esqID {
+  bottom: 8%;
+  right: 4%;
+  width: 112px;
+  transform: rotate(-6deg);
+}
+
+@media (min-width: 640px) {
+  .esqSI,
+  .esqSD {
+    width: 150px;
+  }
+
+  .esqII {
+    width: 130px;
+    left: 6%;
+  }
+
+  .esqID {
+    width: 160px;
+    right: 6%;
+  }
+}
+
+@media (min-width: 768px) {
+  .esqSI {
+    width: 170px;
+    left: 3%;
+  }
+
+  .esqSD {
+    width: 170px;
+    right: 3%;
+  }
+
+  .esqII {
+    width: 160px;
+    left: 8%;
+  }
+
+  .esqID {
+    width: 190px;
+    right: 8%;
+  }
+}
+
+/* En móvil las esquinas quedarían encima del texto: se apagan un poco. */
+@media (max-width: 639px) {
+  .esquina {
+    opacity: 0.5;
+  }
+}
+
+/* ==========================================================================
+   La lista blanca con números enormes
+   ========================================================================== */
+
+.blanca {
+  position: relative;
+  z-index: 1;
+  padding: 80px 20px;
+  background: #fff;
+  color: var(--negro);
+  border-radius: 40px 40px 0 0;
+}
+
+@media (min-width: 640px) {
+  .blanca {
+    padding: 96px 32px;
+    border-radius: 50px 50px 0 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .blanca {
+    padding: 128px 40px;
+    border-radius: 60px 60px 0 0;
+  }
+}
+
+.blancaTitulo {
+  color: var(--negro);
+  margin-bottom: 64px;
+}
+
+@media (min-width: 768px) {
+  .blancaTitulo {
+    margin-bottom: 112px;
+  }
+}
+
+.lista {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 32px 0;
+  border-top: 1px solid rgba(12, 12, 12, 0.15);
+}
+
+.item:last-child {
+  border-bottom: 1px solid rgba(12, 12, 12, 0.15);
+}
+
+@media (min-width: 768px) {
+  .item {
+    gap: 48px;
+    padding: 48px 0;
+  }
+}
+
+.itemNum {
+  flex: 0 0 auto;
+  min-width: 1.4em;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  line-height: 0.82;
+  color: var(--negro);
+  font-size: clamp(3rem, 10vw, 140px);
+}
+
+.itemCuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.itemNombre {
+  margin: 0;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: clamp(1rem, 2.2vw, 2rem);
+}
+
+.itemTexto {
+  margin: 0;
+  max-width: 42rem;
+  font-weight: 300;
+  line-height: 1.6;
+  opacity: 0.66;
+  font-size: clamp(0.9rem, 1.6vw, 1.2rem);
+}
+
+/* ==========================================================================
+   El bloque oscuro que tapa al blanco
+   ========================================================================== */
+
+.oscura {
+  position: relative;
+  z-index: 10;
+  margin-top: -40px;
+  padding: 80px 16px 96px;
+  background: var(--negro);
+  border-radius: 40px 40px 0 0;
+}
+
+@media (min-width: 640px) {
+  .oscura {
+    margin-top: -48px;
+    padding: 96px 24px 120px;
+    border-radius: 50px 50px 0 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .oscura {
+    margin-top: -56px;
+    padding: 128px 40px 140px;
+    border-radius: 60px 60px 0 0;
+  }
+}
+
+.entrada {
+  max-width: 640px;
+  margin: 24px auto 0;
+  text-align: center;
+  color: var(--crema-2);
+  font-weight: 300;
+  line-height: 1.65;
+  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+}
+
+/* ==========================================================================
+   Las tarjetas apiladas
+   ========================================================================== */
+
+.apiladas {
+  --apilada-top: 96px;
+  max-width: 1200px;
+  margin: 64px auto 0;
+}
+
+@media (min-width: 768px) {
+  .apiladas {
+    --apilada-top: 128px;
+    margin-top: 96px;
+  }
+}
+
+.apiladaHueco {
+  height: 85vh;
+  min-height: 560px;
+}
+
+.apilada {
+  position: sticky;
+  transform-origin: top center;
+  padding: 16px;
+  border: 2px solid var(--crema);
+  border-radius: 40px;
+  background: var(--negro);
+}
+
+@media (min-width: 640px) {
+  .apilada {
+    padding: 24px;
+    border-radius: 50px;
+  }
+}
+
+@media (min-width: 768px) {
+  .apilada {
+    padding: 32px;
+    border-radius: 60px;
+  }
+}
+
+.cartaCabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 8px 20px;
+}
+
+@media (min-width: 768px) {
+  .cartaCabeza {
+    padding: 8px 12px 28px;
+  }
+}
+
+.cartaIzq {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .cartaIzq {
+    gap: 28px;
+  }
+}
+
+.cartaNum {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  line-height: 0.8;
+  font-size: clamp(3rem, 8vw, 110px);
+}
+
+.cartaCategoria {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--oro-b);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.cartaNombre {
+  margin: 0;
+  color: var(--crema);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: clamp(1rem, 2.4vw, 2rem);
+  line-height: 1.1;
+}
+
+.cartaFotos {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .cartaFotos {
+    gap: 16px;
+  }
+}
+
+.cartaCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .cartaCol {
+    gap: 16px;
+  }
+}
+
+.cartaFoto {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 28px;
+  background: #1c1916;
+}
+
+@media (min-width: 640px) {
+  .cartaFoto {
+    border-radius: 40px;
+  }
+}
+
+@media (min-width: 768px) {
+  .cartaFoto {
+    border-radius: 50px;
+  }
+}
+
+.cartaFotoA {
+  height: clamp(110px, 16vw, 220px);
+}
+
+.cartaFotoB {
+  height: clamp(130px, 21vw, 320px);
+}
+
+.cartaFotoAlta {
+  height: calc(clamp(110px, 16vw, 220px) + clamp(130px, 21vw, 320px) + 12px);
+}
+
+@media (min-width: 768px) {
+  .cartaFotoAlta {
+    height: calc(clamp(110px, 16vw, 220px) + clamp(130px, 21vw, 320px) + 16px);
+  }
+}
+
+/* ==========================================================================
+   El vídeo
+   ========================================================================== */
+
+.videoZona {
+  padding: 40px 0 0;
+}
+
+.videoCaja {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #151311;
+  border: 1px solid rgba(237, 227, 211, 0.14);
+  border-radius: 20px;
+}
+
+.videoReal {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.videoHueco {
+  position: relative;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  height: 100%;
+  gap: 10px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.videoFondo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.35;
+  filter: blur(2px) saturate(0.8);
+}
+
+.videoPlay {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(64px, 8vw, 96px);
+  height: clamp(64px, 8vw, 96px);
+  border-radius: 999px;
+  background: rgba(237, 227, 211, 0.12);
+  border: 1px solid rgba(237, 227, 211, 0.4);
+  color: var(--crema);
+}
+
+@supports (backdrop-filter: blur(6px)) {
+  .videoPlay {
+    backdrop-filter: blur(12px);
+  }
+}
+
+.videoTexto {
+  position: relative;
+  margin: 0;
+  color: var(--crema);
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(1.3rem, 3vw, 2.2rem);
+}
+
+.videoFino {
+  position: relative;
+  margin: 0;
+  color: var(--crema-2);
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Tarjetas de cuatro (efectos)
+   ========================================================================== */
+
+.cuatro {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  max-width: 1100px;
+  margin: 56px auto 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 760px) {
+  .cuatro {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+
+.cuatroItem {
+  padding: 28px;
+  border: 1px solid rgba(237, 227, 211, 0.14);
+  border-radius: 32px;
+  background: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.cuatroItem:hover {
+  border-color: rgba(217, 180, 124, 0.55);
+  transform: translateY(-4px);
+}
+
+@media (min-width: 768px) {
+  .cuatroItem {
+    padding: 36px;
+    border-radius: 40px;
+  }
+}
+
+.cuatroTitulo {
+  margin: 0 0 18px;
+  color: var(--oro-b);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.cuatroLista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cuatroPunto {
+  position: relative;
+  padding-left: 22px;
+  color: var(--crema);
+  font-weight: 300;
+  line-height: 1.6;
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+}
+
+.cuatroPunto + .cuatroPunto {
+  margin-top: 12px;
+}
+
+.cuatroPunto::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.62em;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--oro-b);
+}
+
+.nota {
+  max-width: 1100px;
+  margin: 24px auto 0;
+  padding: 20px 24px;
+  border-left: 2px solid var(--oro-a);
+  color: var(--faint);
+  font-size: 0.85rem;
+  line-height: 1.65;
+}
+
+/* ==========================================================================
+   Un bloque genérico dentro de la parte oscura
+   ========================================================================== */
+
+.bloque {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 96px 0 0;
+}
+
+@media (min-width: 768px) {
+  .bloque {
+    padding-top: 140px;
+  }
+}
+
+.rotulo {
+  display: block;
+  margin: 0 0 16px;
+  text-align: center;
+  color: var(--oro-b);
+  font-size: 0.75rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.medio {
+  font-size: clamp(2.4rem, 8vw, 110px);
+}
+
+.avisoFotos {
+  max-width: 1100px;
+  margin: 24px auto 0;
+  text-align: center;
+  color: var(--faint);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   El cierre
+   ========================================================================== */
+
+.cierre {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding: 120px 20px 100px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.cierreLema {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--oro-b);
+  font-size: clamp(1.5rem, 3.6vw, 2.6rem);
+}
+
+.cierreTexto {
+  margin: 0;
+  max-width: 560px;
+  color: var(--crema-2);
+  font-weight: 300;
+  line-height: 1.7;
+  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+}
+
+.cierreLogo {
+  width: 150px;
+  height: auto;
+  opacity: 0.9;
+}
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 24px;
+  border-top: 1px solid rgba(237, 227, 211, 0.1);
+  color: var(--faint);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+@media (min-width: 768px) {
+  .pie {
+    padding: 28px 40px;
+  }
+}
+
+.pie a {
+  color: var(--oro-b);
+  text-decoration: none;
+}
+
+.pie p {
+  margin: 0;
+}
+
+/* ==========================================================================
+   El bloque claro del final
+
+   El acuerdo se firma sobre papel. Dentro hay un lienzo donde se dibuja la
+   firma en tinta oscura, y sobre fondo negro no se vería; por eso aquí se
+   devuelven los colores claros de la web.
+   ========================================================================== */
+
+.claro {
+  --bg: #fbf9f6;
+  --surface: #ffffff;
+  --surface-2: #f5f2ec;
+  --photo-bg: #ede8e0;
+  --ink: #141210;
+  --ink-2: #3e3831;
+  --txt: #3e3831;
+  --muted: #6c645a;
+  --faint: #726a60;
+  --arcilla: #8a6a32;
+  --arcilla-ink: #6e5327;
+  --oro: #8a6a32;
+  --oro-tint: #f5efe2;
+  --oro-line: rgba(138, 106, 50, 0.35);
+  --line-1: rgba(20, 18, 16, 0.1);
+  --line-2: rgba(20, 18, 16, 0.14);
+  --logo-filter: brightness(0.42) saturate(1.35);
+
+  position: relative;
+  z-index: 11;
+  margin-top: -40px;
+  padding: 96px 20px 110px;
+  background: #fff;
+  color: var(--ink);
+  border-radius: 40px 40px 0 0;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .claro {
+    margin-top: -56px;
+    padding: 130px 40px 140px;
+    border-radius: 60px 60px 0 0;
+  }
+}
+
+.claroTexto {
+  max-width: 600px;
+  margin: 24px auto 40px;
+  color: var(--muted);
+  font-weight: 300;
+  line-height: 1.7;
+  font-size: clamp(0.98rem, 1.6vw, 1.15rem);
+}
+
+/* ==========================================================================
+   Movimiento reducido: lo que se mueve solo, quieto
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .brillo,
+  .cuatroItem {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Tres en fila, con el aspecto de las tarjetas de efectos
+   ========================================================================== */
+
+.tres {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 860px) {
+  .tres {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+
+.tresTexto {
+  margin: 0;
+  color: var(--crema-2);
+  font-weight: 300;
+  line-height: 1.65;
+  font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+}
+
+/* Un componente interactivo dentro de la parte oscura: con aire y centrado. */
+.interactivo {
+  max-width: 1040px;
+  margin: 48px auto 0;
+}
+
+/* Una franja sin titular, para lo que acompaña a la sección anterior. */
+.franja {
+  display: flex;
+  justify-content: center;
+  padding: 0 20px 96px;
+}
+
+@media (min-width: 768px) {
+  .franja {
+    padding: 0 40px 128px;
+  }
+}
+
+/* ==========================================================================
+   Móvil
+
+   Cuatro enlaces y el logotipo en 390 px no caben: se juntaban hasta leerse
+   como una sola palabra. Debajo de 640 px el logotipo se va del menú —está
+   en el cierre y en el pie— y los enlaces encogen con aire entre ellos.
+
+   Y el lema y el botón de la portada, que en escritorio van a cada lado, en
+   un teléfono se pisaban: se apilan.
+   ========================================================================== */
+
+@media (max-width: 639px) {
+  .nav {
+    gap: 12px;
+    padding: 20px 18px 0;
+  }
+
+  .nav a {
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+  }
+
+  .navLogo {
+    display: none;
+  }
+
+  .heroPie {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 0 18px 24px;
+  }
+
+  .heroLema {
+    max-width: 260px;
+  }
+}

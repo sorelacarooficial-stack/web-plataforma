@@ -233,24 +233,29 @@ export const CUERPOS = [
   '/trayectoria/cuerpo-1.webp',
   '/trayectoria/cuerpo-4.webp',
   '/trayectoria/cuerpo-5.webp',
-  '/trayectoria/cuerpo-2.webp',
-  '/trayectoria/cuerpo-3.webp',
+  '/trayectoria/cuerpo-b.webp',
+  '/trayectoria/cuerpo-c.webp',
   '/trayectoria/cuerpo-6.webp',
 ];
 
 /**
- * Las páginas de prensa.
+ * La prensa: la portada de Nueva Estética y las páginas del reportaje.
  *
- * Son páginas enteras de revista, no recortes: se sacan del PDF a 160 puntos
- * por pulgada para que al ampliarlas se pueda leer el texto. Un recorte del
- * titular luciría más en la rejilla y no demostraría nada.
+ * Se recortan de la página del documento original donde aparecen en miniatura,
+ * renderizada a 300 puntos por pulgada para que al ampliarlas se lea el texto.
+ *
+ * OJO con de dónde se saca esto. En una versión anterior aquí iban páginas
+ * enteras del dossier confundidas con las de la revista: el dossier es el
+ * documento confidencial que se entrega al firmar el acuerdo y no puede estar
+ * en una página pública. Lo que va aquí son SOLO las de la revista.
  */
 export const PRENSA = [
-  '/trayectoria/prensa-1.webp',
-  '/trayectoria/prensa-2.webp',
-  '/trayectoria/prensa-3.webp',
-  '/trayectoria/prensa-4.webp',
-  '/trayectoria/prensa-5.webp',
+  '/trayectoria/revista-1.webp',
+  '/trayectoria/revista-2.webp',
+  '/trayectoria/revista-3.webp',
+  '/trayectoria/revista-4.webp',
+  '/trayectoria/revista-5.webp',
+  '/trayectoria/revista-6.webp',
 ];
 
 /**
@@ -263,3 +268,63 @@ export const PRENSA = [
  */
 export const AVISO_IMAGENES =
   'Imágenes reales de clientas, cedidas con su autorización. Los resultados dependen de cada persona, de su punto de partida y del número de sesiones.';
+
+/* ==========================================================================
+   Lo que hace, en cinco líneas
+
+   La lista grande de la página. Sale del propio documento: el método, la
+   aplicación estética y lo que incluye la formación. Ninguna línea dice nada
+   que no dijera ya el material de Sorela.
+   ========================================================================== */
+
+export const SERVICIOS: { nombre: string; texto: string }[] = [
+  {
+    nombre: 'Lipodrenaje',
+    texto:
+      'Drenaje y modelado en una misma sesión, con maniobras específicas orientadas a la sensación de ligereza y al contorno de la silueta.',
+  },
+  {
+    nombre: 'Modelado corporal',
+    texto:
+      'Trabajo sobre la apariencia del contorno corporal en abdomen, flancos y piernas, adaptado a las características de cada persona.',
+  },
+  {
+    nombre: 'Divine Facial',
+    texto:
+      'El protocolo facial de la técnica: trabajo manual sobre el rostro, con un cambio visible en una sola sesión, como enseñan las imágenes.',
+  },
+  {
+    nombre: 'Formación presencial',
+    texto:
+      'Dos jornadas completas de teoría y práctica sobre cinco modelos reales, con dossier, vídeos paso a paso y diploma de terapeuta Divine.',
+  },
+  {
+    nombre: 'Comunidad Divine',
+    texto:
+      'Acompañamiento ilimitado, masterclasses, tutorías y un mapa público de terapeutas certificadas que recibe y deriva clientas.',
+  },
+];
+
+/** Las fotos de la cinta que se desplaza con el scroll. */
+export const CINTA = [
+  '/trayectoria/sesion-2.webp',
+  '/trayectoria/rostro-1.webp',
+  '/trayectoria/equipo.webp',
+  '/alumnas/camilla.webp',
+  '/trayectoria/revista-2.webp',
+  '/trayectoria/cuerpo-1.webp',
+  '/alumnas/manos.webp',
+  '/trayectoria/rostro-5.webp',
+  '/trayectoria/equipo-2.webp',
+  '/trayectoria/revista-4.webp',
+  '/alumnas/abdomen-2.webp',
+  '/trayectoria/sesion-1.webp',
+  '/trayectoria/rostro-3.webp',
+  '/alumnas/abdomen-1.webp',
+  '/trayectoria/revista-5.webp',
+  '/trayectoria/cuerpo-5.webp',
+  '/alumnas/rostro.webp',
+  '/trayectoria/rostro-6.webp',
+  '/trayectoria/revista-6.webp',
+  '/trayectoria/cuerpo-4.webp',
+];
