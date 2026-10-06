@@ -11,6 +11,7 @@ import {
   type DatosAcuerdo,
   type ErroresAcuerdo,
 } from '@/lib/acuerdo';
+import { PREFIJOS, regionProbable, telefonoCompleto } from '@/lib/prefijos';
 import css from './acuerdo.module.css';
 
 /**
@@ -81,13 +82,21 @@ const CAMPOS: {
 }[] = [
   { clave: 'nombre', etiqueta: 'Nombre', ejemplo: 'María José', tipo: 'text', completar: 'given-name' },
   { clave: 'apellidos', etiqueta: 'Apellidos', ejemplo: 'Pardo Ruiz', tipo: 'text', completar: 'family-name' },
-  { clave: 'documento', etiqueta: 'DNI o NIE', ejemplo: '12345678Z', tipo: 'text', completar: 'off' },
+  /* Documento de cualquier país: DNI, cédula, pasaporte. Sorela forma en
+     todo el mundo y pedir un DNI español dejaba fuera a quien no lo tiene. */
+  { clave: 'documento', etiqueta: 'Documento de identidad o pasaporte', ejemplo: 'Número del documento', tipo: 'text', completar: 'off' },
   { clave: 'correo', etiqueta: 'Correo', ejemplo: 'maria@ejemplo.com', tipo: 'email', completar: 'email' },
-  { clave: 'telefono', etiqueta: 'Teléfono', ejemplo: '600 00 00 00', tipo: 'tel', completar: 'tel' },
+  { clave: 'telefono', etiqueta: 'Teléfono', ejemplo: '300 123 4567', tipo: 'tel', completar: 'tel-national' },
 ];
 
 export default function Acuerdo() {
   const [abierto, setAbierto] = useState(false);
+  /* El país del teléfono. Se propone por el idioma del móvil al abrir la
+     página —en el servidor no se sabe—, y se cambia con un toque. */
+  const [region, setRegion] = useState('ES');
+  useEffect(() => setRegion(regionProbable()), []);
+  /** Los datos con el teléfono ya con su prefijo: lo que se revisa y se envía. */
+  const completos = (): DatosAcuerdo => ({ ...datos, telefono: telefonoCompleto(region, datos.telefono) });
   const [paso, setPaso] = useState<Paso>(0);
   const [datos, setDatos] = useState<DatosAcuerdo>(VACIO);
   const [aceptadas, setAceptadas] = useState<number[]>([]);
@@ -106,7 +115,7 @@ export default function Acuerdo() {
 
   const cerrar = useCallback(() => {
     setAbierto(false);
-    /* No se borra lo escrito al cerrar: quien sale a mirar su DNI vuelve y se
+    /* No se borra lo escrito al cerrar: quien sale a mirar su documento vuelve y se
        lo encuentra puesto. Solo se limpia al terminar de firmar. */
   }, []);
 
@@ -128,7 +137,7 @@ export default function Acuerdo() {
 
   function siguiente() {
     if (paso === 0) {
-      const e = revisarAcuerdo({ ...datos, firma: 'x'.repeat(2100), lugar: 'x' }, CLAUSULAS.length);
+      const e = revisarAcuerdo({ ...completos(), firma: 'x'.repeat(2100), lugar: 'x' }, CLAUSULAS.length);
       /* En este paso solo importan los campos de este paso. */
       const soloDatos: ErroresAcuerdo = {};
       for (const { clave } of CAMPOS) if (e[clave]) soloDatos[clave] = e[clave];
@@ -145,11 +154,11 @@ export default function Acuerdo() {
   }
 
   async function firmar() {
-    const e = revisarAcuerdo(datos, aceptadas.length);
+    const e = revisarAcuerdo(completos(), aceptadas.length);
     if (Object.keys(e).length > 0) {
       setErrores(e);
       /* Si lo que falta está en un paso anterior, se vuelve a él: dejar a
-         alguien en la pantalla de la firma con un error de su DNI es dejarla
+         alguien en la pantalla de la firma con un error de su documento es dejarla
          sin saber qué hacer. */
       if (CAMPOS.some(({ clave }) => e[clave])) setPaso(0);
       else if (e.clausulas) setPaso(1);
@@ -159,7 +168,7 @@ export default function Acuerdo() {
     setEnviando(true);
     setFallo('');
     try {
-      const r = await enviarConReintento({ ...datos, empresa, clausulas: aceptadas });
+      const r = await enviarConReintento({ ...completos(), empresa, clausulas: aceptadas });
 
       /*
        * La respuesta se lee como TEXTO y se intenta interpretar después.
@@ -258,7 +267,7 @@ export default function Acuerdo() {
 
             <div className={css.cuerpo}>
               {paso === 0 && (
-                <Datos datos={datos} errores={errores} poner={poner} />
+                <Datos datos={datos} errores={errores} poner={poner} region={region} setRegion={setRegion} />
               )}
 
               {paso === 1 && (
@@ -354,10 +363,14 @@ function Datos({
   datos,
   errores,
   poner,
+  region,
+  setRegion,
 }: {
   datos: DatosAcuerdo;
   errores: ErroresAcuerdo;
   poner: (c: keyof DatosAcuerdo, v: string) => void;
+  region: string;
+  setRegion: (r: string) => void;
 }) {
   const nombre = nombreCompleto(datos);
 
@@ -365,7 +378,44 @@ function Datos({
     <>
       <h2 className={css.titulo}>Tus datos</h2>
       <div className={css.campos}>
-        {CAMPOS.map(({ clave, etiqueta, ejemplo, tipo, completar }) => (
+        {CAMPOS.map(({ clave, etiqueta, ejemplo, tipo, completar }) =>
+          clave === 'telefono' ? (
+            <div key={clave} className={css.campo}>
+              <label className={css.etiqueta} htmlFor="acuerdo-telefono">
+                {etiqueta}
+              </label>
+              {/* El país va en un desplegable aparte del número: así nadie
+                  tiene que saberse su prefijo, y un número escrito con su
+                  «+» delante se respeta tal cual. */}
+              <div className={css.telefono}>
+                <select
+                  className={`${css.entrada} ${css.prefijo}`}
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
+                  aria-label="País del teléfono"
+                  disabled={datos.telefono.trim().startsWith('+')}
+                >
+                  {PREFIJOS.map((p) => (
+                    <option key={p.region} value={p.region}>
+                      {p.bandera} {p.prefijo} · {p.pais}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  id="acuerdo-telefono"
+                  type="tel"
+                  inputMode="tel"
+                  value={datos.telefono}
+                  placeholder={ejemplo}
+                  autoComplete={completar}
+                  onChange={(e) => poner('telefono', e.target.value)}
+                  aria-invalid={errores.telefono ? true : undefined}
+                  className={css.entrada}
+                />
+              </div>
+              <span className={css.error}>{errores.telefono ?? ''}</span>
+            </div>
+          ) : (
           <label key={clave} className={css.campo}>
             <span className={css.etiqueta}>{etiqueta}</span>
             <input
@@ -380,7 +430,8 @@ function Datos({
             />
             <span className={css.error}>{errores[clave] ?? ''}</span>
           </label>
-        ))}
+          )
+        )}
       </div>
 
       {/* La vista previa. Lo que se firma se ve antes de firmarlo: un documento
@@ -389,7 +440,7 @@ function Datos({
         <span className={css.vistaRotulo}>Vista previa</span>
         <p className={css.vistaTexto}>
           Celebran de una parte la alumna{' '}
-          <mark className={css.hueco}>{nombre || '________'}</mark> con DNI{' '}
+          <mark className={css.hueco}>{nombre || '________'}</mark> con documento{' '}
           <mark className={css.hueco}>{datos.documento || '________'}</mark> y de otra parte la
           formadora <strong>Sorela Caro</strong>, ambas mayores de edad y con capacidad de obrar, a
           tenor de las declaraciones y las cláusulas siguientes.
@@ -586,7 +637,7 @@ function Firma({
         <input
           type="text"
           value={datos.lugar}
-          placeholder="Valencia"
+          placeholder="Ciudad donde firmas"
           onChange={(e) => poner('lugar', e.target.value)}
           aria-invalid={errores.lugar ? true : undefined}
           className={css.entrada}

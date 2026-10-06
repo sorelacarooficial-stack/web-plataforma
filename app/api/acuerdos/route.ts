@@ -119,7 +119,7 @@ export async function POST(peticion: Request) {
     'desconocida';
 
   /* El freno va DESPUÉS de validar, a propósito: así quien se equivoca al
-     escribir su DNI y lo reintenta tres veces no se queda fuera por rápido. */
+     escribir su documento y lo reintenta tres veces no se queda fuera por rápido. */
   if (vaDemasiadoRapido(ip)) {
     return NextResponse.json({ ok: false, motivo: 'demasiado-rapido' }, { status: 429 });
   }

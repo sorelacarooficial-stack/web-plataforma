@@ -85,7 +85,10 @@ export const CIERRE_ACUERDO =
 export type DatosAcuerdo = {
   nombre: string;
   apellidos: string;
-  /** DNI o NIE. Se guarda tal cual lo escribe, en mayúsculas y sin espacios. */
+  /**
+   * Su documento de identidad: DNI, cédula, pasaporte, el que tenga. Se
+   * guarda tal cual lo escribe, en mayúsculas.
+   */
   documento: string;
   correo: string;
   telefono: string;
@@ -157,32 +160,30 @@ export function nombreCompleto(d: Pick<DatosAcuerdo, 'nombre' | 'apellidos'>): s
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /**
- * El DNI español y el NIE, con su letra comprobada.
+ * Un documento de identidad, de cualquier país.
  *
- * Se comprueba la letra de verdad y no solo la forma: en un documento que se
- * firma, un número de DNI mal copiado lo invalida, y el fallo no se ve hasta
- * que hace falta. Quien tenga un documento de otro país no pasa por aquí —se
- * admite cualquier cosa de 6 a 20 caracteres—, porque exigir un DNI español a
- * una alumna de Colombia sería dejarla fuera.
+ * Antes se comprobaba la letra del DNI español. Sorela forma en todo el mundo,
+ * y una cédula colombiana, un pasaporte mexicano o un ID estadounidense no
+ * tienen letra que comprobar: la regla dejaba fuera a media alumnado. Ahora se
+ * pide solo lo que tiene cualquier documento: entre 4 y 30 caracteres, con al
+ * menos un número.
  */
-const LETRAS_DNI = 'TRWAGMYFPDXBNJZSQVHLCKE';
-
 export function documentoValido(crudo: string): boolean {
-  const d = (crudo || '').toUpperCase().replace(/[\s-]/g, '');
-  if (d.length < 6 || d.length > 20) return false;
+  const d = (crudo || '').trim();
+  return d.length >= 4 && d.length <= 30 && /\d/.test(d);
+}
 
-  const dni = d.match(/^(\d{8})([A-Z])$/);
-  if (dni) return LETRAS_DNI[Number(dni[1]) % 23] === dni[2];
-
-  const nie = d.match(/^([XYZ])(\d{7})([A-Z])$/);
-  if (nie) {
-    const n = Number(String('XYZ'.indexOf(nie[1])) + nie[2]);
-    return LETRAS_DNI[n % 23] === nie[3];
-  }
-
-  /* Ni DNI ni NIE: se da por bueno si al menos tiene números y letras, que es
-     lo que tiene cualquier documento de identidad del mundo. */
-  return /\d/.test(d) && /[A-Z]/.test(d);
+/**
+ * Un teléfono con prefijo internacional: «+57 300 123 4567».
+ *
+ * Entre 8 y 15 cifras contando el prefijo, que es el rango de los números de
+ * todo el mundo. Sin el «+» delante no se sabe de qué país es, y entonces no
+ * sirve para escribirle por WhatsApp.
+ */
+export function telefonoValido(crudo: string): boolean {
+  const t = (crudo || '').trim();
+  const cifras = t.replace(/\D/g, '').length;
+  return t.startsWith('+') && cifras >= 8 && cifras <= 15;
 }
 
 export type ErroresAcuerdo = Partial<Record<keyof DatosAcuerdo | 'clausulas', string>>;
@@ -198,9 +199,9 @@ export function revisarAcuerdo(d: Partial<DatosAcuerdo>, clausulasAceptadas: num
 
   if (texto(d.nombre).length < 2) e.nombre = 'Escribe tu nombre.';
   if (texto(d.apellidos).length < 2) e.apellidos = 'Escribe tus apellidos.';
-  if (!documentoValido(texto(d.documento))) e.documento = 'Revisa el DNI o NIE: la letra no cuadra.';
+  if (!documentoValido(texto(d.documento))) e.documento = 'Escribe el número de tu documento de identidad o pasaporte.';
   if (!CORREO.test(texto(d.correo))) e.correo = 'Escribe un correo con forma de correo.';
-  if (texto(d.telefono).replace(/\D/g, '').length < 7) e.telefono = 'Escribe un teléfono.';
+  if (!telefonoValido(texto(d.telefono))) e.telefono = 'Revisa el teléfono y el prefijo de tu país.';
   if (texto(d.lugar).length < 2) e.lugar = 'Escribe la ciudad donde firmas.';
 
   /* La firma tiene que ser un PNG dibujado. Se mira que sea una imagen y que

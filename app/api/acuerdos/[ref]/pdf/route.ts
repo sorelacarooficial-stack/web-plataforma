@@ -10,7 +10,7 @@ import { acuerdoGuardado } from '@/lib/enviar-acuerdo';
  *   GET /api/acuerdos/DIV-K7P2-4M9X/pdf
  *
  * Se genera en el momento a partir de la copia congelada que se guardó al
- * firmar, así que siempre dice exactamente lo que ella firmó. Lleva su DNI,
+ * firmar, así que siempre dice exactamente lo que ella firmó. Lleva su documento,
  * su teléfono y su firma: por eso no se abre con la referencia sola, como el
  * dossier, sino con la sesión de Sorela.
  */
