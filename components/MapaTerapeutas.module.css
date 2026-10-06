@@ -1,229 +1,239 @@
+/*
+ * El globo de las terapeutas.
+ *
+ * Una tarjeta oscura con el globo dentro: el negro es lo que hace brillar los
+ * puntos de luz, y en el tema claro de la web se lee como una ventana a la
+ * noche. Los controles van en cristal, encima, para no tapar el globo.
+ */
+
 .caja {
   position: relative;
   width: 100%;
-  height: clamp(320px, 52vh, 520px);
-  background: var(--mapa-sea);
-  border: 1px solid var(--line-3);
+  height: clamp(440px, 62vw, 640px);
   overflow: hidden;
-}
-
-.svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  cursor: grab;
+  border-radius: clamp(20px, 2.6vw, 32px);
+  background:
+    radial-gradient(60% 70% at 50% 45%, #1a160f 0%, #0c0b09 70%, #080706 100%);
+  box-shadow:
+    0 0 0 1px rgba(217, 180, 124, 0.18),
+    0 40px 90px -40px rgba(0, 0, 0, 0.7);
+  /* El globo se gira arrastrando: el dedo no tiene que mover la página. */
   touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.arrastrando {
+.caja:active {
   cursor: grabbing;
 }
 
-.tierra {
-  fill: var(--mapa-land);
-  stroke: var(--mapa-land-line);
-  stroke-width: 0.8;
+@media (max-width: 640px) {
+  .caja {
+    height: min(118vw, 560px);
+  }
 }
 
-/* ---------- Puntos ---------- */
-.pin circle {
-  fill: var(--mapa-pin);
-  stroke: var(--mapa-sea);
-  stroke-width: 2;
-  cursor: pointer;
-  transition: fill 0.2s;
-}
-
-.pin text {
-  fill: var(--mapa-pin-ink);
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 13px;
-  text-anchor: middle;
-  pointer-events: none;
-}
-
-.pin:hover circle,
-.pin:focus-visible circle {
-  fill: var(--mapa-pin-hover);
-}
-
-.pinOff circle {
-  fill: var(--mapa-pin-off);
-  stroke: var(--mapa-pin-off-line);
-}
-
-.pinOff text {
-  fill: var(--mapa-faint);
-}
-
-.ciudad {
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  fill: var(--mapa-label);
-  pointer-events: none;
-}
-
-.ciudadOff {
-  fill: var(--mapa-label-off);
-}
-
-/* ---------- Controles ---------- */
-.zoom {
+.lienzo {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* El botón de cada consulta: invisible, encima de su punto, del tamaño de un
+   dedo. Lo que se ve es el brillo dibujado en el lienzo. */
+.pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  will-change: transform;
+}
+
+.pin:focus-visible {
+  outline: 2px solid #e3c696;
+  outline-offset: 2px;
+}
+
+/* ---------- Mandos ---------- */
+
+.mandos {
+  position: absolute;
+  top: 16px;
+  right: 16px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgba(20, 17, 13, 0.55);
+  border: 1px solid rgba(237, 227, 211, 0.16);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-.zoom button {
+.mandos button {
+  display: grid;
+  place-items: center;
   width: 40px;
   height: 40px;
-  background: var(--mapa-chrome);
-  border: 1px solid var(--mapa-chrome-line);
-  border-radius: 6px;
-  font-size: 17px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #f3e3c3;
+  font-size: 20px;
   line-height: 1;
-  color: var(--mapa-chrome-ink);
   cursor: pointer;
+  transition: background 0.2s, color 0.2s;
 }
 
-.zoom button:hover {
-  border-color: var(--mapa-acento);
-  color: var(--mapa-acento);
+.mandos button:hover {
+  background: rgba(217, 180, 124, 0.2);
+  color: #fff;
+}
+
+.mandos button:focus-visible {
+  outline: 2px solid #e3c696;
 }
 
 .leyenda {
   position: absolute;
-  left: 12px;
-  bottom: 12px;
-  padding: 9px 14px;
-  background: var(--mapa-chrome-blur);
-  border: 1px solid var(--mapa-chrome-line);
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100% - 32px);
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(20, 17, 13, 0.55);
+  border: 1px solid rgba(237, 227, 211, 0.16);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--mapa-label);
+  color: #f3e3c3;
 }
 
-/* La atribución del mapa. Es la única cosa de este componente que va escrita
-   DIRECTAMENTE sobre el mapa, sin plaquita debajo: las demás —la leyenda, los
-   botones, la ficha— se apoyan en --mapa-chrome, y sobre ese fondo el gris
-   --mapa-txt-2 se lee de sobra. Aquí el fondo es el mar (#dde6ec) y ese mismo
-   gris se quedaba en 3,78 a 1, por debajo del 4,5 que necesita un texto
-   pequeño. Se usa el gris fuerte, que da 7,4 sobre el mar y 8,2 sobre la
-   tierra, y 10 px para una atribución legal es demasiado poco de todas formas. */
-.fuente {
+.leyendaPunto {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ffeccb;
+  box-shadow: 0 0 10px 3px rgba(217, 180, 124, 0.7);
+}
+
+.ayuda {
   position: absolute;
-  right: 10px;
-  bottom: 10px;
+  top: 20px;
+  left: 20px;
   font-size: 11px;
-  color: var(--mapa-txt);
+  letter-spacing: 0.08em;
+  color: rgba(237, 227, 211, 0.5);
+  pointer-events: none;
 }
 
-/* En estrecho la leyenda mide 233 px fijos y la atribución se le imprimía
-   encima. La atribución se va arriba, que ahí hay sitio de sobra. */
-@media (max-width: 480px) {
-  .fuente {
-    bottom: auto;
-    top: 10px;
-    right: 10px;
+@media (max-width: 640px) {
+  .ayuda {
+    display: none;
   }
 }
 
 .cargando {
   position: absolute;
   inset: 0;
+  display: grid;
+  place-items: center;
   margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  letter-spacing: 0.16em;
+  font-size: 13px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--mapa-txt-2);
-  background: var(--mapa-sea);
+  color: rgba(237, 227, 211, 0.6);
 }
 
-/* ---------- Ficha emergente ---------- */
+/* ---------- La ficha de una consulta ---------- */
+
 .ficha {
   position: absolute;
-  width: min(250px, calc(100% - 24px));
-  background: var(--mapa-chrome);
-  border: 1px solid var(--mapa-chrome-line);
-  box-shadow: 0 14px 40px rgba(26, 23, 20, 0.22);
-  padding: 18px 20px;
-  transform: translate(-50%, -100%);
-  z-index: 3;
+  z-index: 5;
+  width: 252px;
+  transform: translate(-50%, calc(-100% - 22px));
+  padding: 18px 18px 16px;
+  border-radius: 18px;
+  background: rgba(251, 249, 246, 0.97);
+  color: #141210;
+  box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.7);
+  cursor: default;
 }
 
 .ficha h3 {
-  margin: 0 0 6px;
+  margin: 0 26px 4px 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
+  font-weight: 500;
   font-size: 21px;
   line-height: 1.1;
-  color: var(--mapa-chrome-ink);
 }
 
 .fichaCiudad {
   margin: 0 0 10px;
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--mapa-acento);
-}
-
-.fichaDir {
-  margin: 0 0 4px;
-  font-size: 13px;
-  font-weight: 300;
-  line-height: 1.5;
-  color: var(--mapa-txt);
-}
-
-.fichaTrat {
-  margin: 0 0 15px;
-  font-size: 12.5px;
-  font-weight: 300;
-  line-height: 1.5;
-  color: var(--mapa-txt-2);
-}
-
-.fichaVer {
-  padding: 11px 20px;
-  background: var(--mapa-pin);
-  color: var(--mapa-pin-ink);
-  border: none;
-  border-radius: 999px;
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    color 0.2s;
+  color: #6e5327;
 }
 
-.fichaVer:hover {
-  background: var(--mapa-acento);
-  color: #ffffff;
+.fichaDir,
+.fichaTrat {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #4f4840;
 }
 
 .fichaCerrar {
   position: absolute;
-  top: 8px;
+  top: 10px;
   right: 10px;
-  background: none;
-  border: none;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(20, 18, 16, 0.06);
   font-size: 18px;
   line-height: 1;
-  color: var(--mapa-faint);
   cursor: pointer;
 }
 
-.fichaCerrar:hover {
-  color: var(--mapa-chrome-ink);
+.fichaVer {
+  width: 100%;
+  margin-top: 8px;
+  min-height: 42px;
+  border: 0;
+  border-radius: 999px;
+  background: #141210;
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.fichaVer:hover {
+  background: #8a6a32;
+}
+
+.ficha[data-abajo] {
+  transform: translate(-50%, 24px);
 }

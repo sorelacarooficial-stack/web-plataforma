@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit",
     "fotos": "node scripts/optimizar-imagenes.mjs",
     "testimonios": "node scripts/preparar-testimonios.mjs",
-    "mapa": "node scripts/preparar-mapa.mjs",
+    "globo": "node scripts/preparar-globo.mjs",
     "capturas": "node pruebas/capturas.mjs",
     "manuales": "node --env-file=.env.local docs/capturas.mjs && node docs/optimizar.mjs && node docs/generar.mjs",
     "pruebas": "node --env-file=.env.local pruebas/interacciones.mjs",
@@ -34,9 +34,6 @@
   },
   "dependencies": {
     "d3-geo": "^3.1.1",
-    "d3-selection": "^3.0.0",
-    "d3-transition": "^3.0.1",
-    "d3-zoom": "^3.0.0",
     "firebase": "^12.19.0",
     "firebase-admin": "^14.4.0",
     "framer-motion": "^12.43.0",
@@ -50,9 +47,6 @@
   },
   "devDependencies": {
     "@types/d3-geo": "^3.1.0",
-    "@types/d3-selection": "^3.0.11",
-    "@types/d3-transition": "^3.0.9",
-    "@types/d3-zoom": "^3.0.8",
     "@types/node": "^22.10.2",
     "@types/nodemailer": "^8.0.2",
     "@types/react": "^19.2.0",
