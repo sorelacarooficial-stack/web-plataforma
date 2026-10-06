@@ -92,25 +92,17 @@ body {
   gap: 11px;
 }
 
+/*
+ * El logotipo oficial, el mismo que la cabecera de la web.
+ *
+ * Antes aquí iba el icono cuadrado con el nombre escrito al lado en texto, que
+ * era una reconstrucción del logotipo con otra tipografía y otro color. Tener
+ * dos versiones de una marca es tener media marca: esto es el archivo de
+ * verdad, y ya trae dentro el nombre y «Técnica Divine».
+ */
 .marca img {
-  width: 44px;
-  height: 44px;
-}
-
-.marcaNombre {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 15pt;
-  letter-spacing: 0.06em;
-  color: var(--tinta);
-  line-height: 1;
-}
-
-.marcaPie {
-  margin-top: 3px;
-  font-size: 6.6pt;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--oro);
+  width: 52mm;
+  height: auto;
 }
 
 .portadaCentro {
@@ -594,4 +586,12 @@ p {
 .portadaPie {
   position: relative;
   z-index: 1;
+}
+
+/* El logotipo del cierre, centrado sobre el remate del documento. */
+.cierreLogo {
+  display: block;
+  width: 46mm;
+  height: auto;
+  margin: 0 auto 10mm;
 }

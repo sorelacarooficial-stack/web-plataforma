@@ -582,8 +582,9 @@
 .pieCaja {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 14px;
   font-size: 12.5px;
 }
 
@@ -598,4 +599,24 @@
 
 .pieEnlace:hover {
   text-decoration: underline;
+}
+
+/* ==========================================================================
+   El logotipo
+
+   Es el archivo oficial, el mismo que la cabecera de la web. Es dorado sobre
+   transparente: sobre el negro del hero y del pie va tal cual, sin filtro.
+   ========================================================================== */
+
+.marca {
+  display: block;
+  width: clamp(150px, 17vw, 210px);
+  height: auto;
+  margin: 0 0 clamp(20px, 3vw, 30px);
+}
+
+.pieLogo {
+  width: 130px;
+  height: auto;
+  opacity: 0.8;
 }

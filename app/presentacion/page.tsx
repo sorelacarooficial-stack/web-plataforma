@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import logo from '@/fotos/logo-sorela.png';
 import Galeria from '@/components/presentacion/Galeria';
 import {
   AVISO_IMAGENES,
@@ -64,6 +65,10 @@ export default function Presentacion() {
 
         <div className={`wrap ${css.heroCaja}`}>
           <div className={css.heroTexto}>
+            {/* El logotipo oficial, el mismo archivo que la cabecera de la web.
+                Es dorado sobre transparente, así que sobre el negro del hero
+                va tal cual, sin filtro. */}
+            <Image src={logo} alt="Sorela Caro · Técnica Divine" className={css.marca} priority sizes="210px" />
             <p className={css.sello}>Presentación profesional</p>
             <h1 className={css.heroTitulo}>
               {PERFIL.nombre}
@@ -277,6 +282,7 @@ export default function Presentacion() {
 
       <footer className={css.pie}>
         <div className={`wrap ${css.pieCaja}`}>
+          <Image src={logo} alt="Sorela Caro · Técnica Divine" className={css.pieLogo} sizes="150px" />
           <p className={css.pieMarca}>
             {PERFIL.nombre} · {PERFIL.oficio}
           </p>

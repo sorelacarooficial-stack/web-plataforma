@@ -143,11 +143,7 @@ const html = `<!doctype html>
   <section class="portada">
     <img class="portadaFondo" src="./impresion/rostro.jpg" alt="">
     <div class="marca">
-      <img src="../app/icon.png" alt="">
-      <span>
-        <span class="marcaNombre">SORELA CARO</span>
-        <span class="marcaPie">Técnica Divine</span>
-      </span>
+      <img src="../fotos/logo-sorela.png" alt="Sorela Caro · Técnica Divine">
     </div>
 
     <div class="portadaCentro">
@@ -176,6 +172,7 @@ ${indice}
 ${cuerpo}
 
   <section class="cierre">
+    <img class="cierreLogo" src="../fotos/logo-sorela.png" alt="Sorela Caro · Técnica Divine">
     <h1 class="cierreTitulo">Prepárate para el<em> éxito</em></h1>
     <p class="cierreTexto">
       Este dossier acompaña a la formación presencial. Lo que no está escrito aquí
