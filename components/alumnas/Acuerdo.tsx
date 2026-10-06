@@ -257,8 +257,17 @@ export default function Acuerdo() {
             {paso < 3 && (
               <ol className={css.pasos}>
                 {PASOS.map((p, i) => (
-                  <li key={p} className={css.paso} data-estado={i < paso ? 'hecho' : i === paso ? 'ahora' : undefined}>
-                    <span className={css.pasoBarra} />
+                  <li
+                    key={p}
+                    className={css.paso}
+                    data-estado={i < paso ? 'hecho' : i === paso ? 'ahora' : undefined}
+                    aria-current={i === paso ? 'step' : undefined}
+                  >
+                    {/* Número, o una marca si ya está hecho: se ve de un
+                        vistazo cuánto falta, que es lo que tranquiliza. */}
+                    <span className={css.pasoNum} aria-hidden="true">
+                      {i < paso ? '✓' : i + 1}
+                    </span>
                     <span className={css.pasoTexto}>{p}</span>
                   </li>
                 ))}
@@ -630,9 +639,10 @@ function Firma({
 
   return (
     <>
-      <h2 className={css.titulo}>Lugar y firma</h2>
+      <h2 className={css.titulo}>Tu firma</h2>
+      <p className={css.explica}>Último paso. Escribe dónde estás y firma en el recuadro.</p>
 
-      <label className={css.campo} style={{ maxWidth: 320 }}>
+      <label className={css.campo} style={{ maxWidth: 360 }}>
         <span className={css.etiqueta}>Lugar de firma</span>
         <input
           type="text"
@@ -645,11 +655,14 @@ function Firma({
         <span className={css.error}>{errores.lugar ?? ''}</span>
       </label>
 
-      <p className={css.explica}>
-        Firma con el dedo o con el ratón. La fecha la pone el sistema al enviarlo.
-      </p>
+      {/* La instrucción va pegada al recuadro y no en un párrafo suelto:
+          quien firma desde el móvil mira el recuadro, no el texto de arriba. */}
+      <div className={css.firmaCabeza}>
+        <span className={css.etiqueta}>Firma</span>
+        <span className={css.firmaComo}>Con el dedo o con el ratón, dentro del recuadro</span>
+      </div>
 
-      <div className={css.marco}>
+      <div className={css.marco} data-firmado={hayTrazo ? '' : undefined}>
         <canvas
           ref={lienzo}
           className={css.lienzo}
@@ -659,14 +672,29 @@ function Firma({
           onPointerLeave={terminar}
           aria-label="Dibuja aquí tu firma"
         />
-        {!hayTrazo && <span className={css.pista}>Firma aquí</span>}
+        {!hayTrazo && (
+          <span className={css.pista}>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+              <path d="M3 17c3-4 5-9 7-9s-1 9 1 9 3-5 5-5 1 4 3 4h2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Firma aquí
+          </span>
+        )}
         <span className={css.raya} aria-hidden="true" />
       </div>
 
       <div className={css.firmaPie}>
-        <span className={css.error}>{errores.firma ?? ''}</span>
-        <button type="button" className={css.borrar} onClick={borrar}>
-          Borrar
+        {/* Se dice cuándo la firma ya vale. Sin esto, quien firma no sabe si
+            su garabato ha quedado guardado o tiene que hacer algo más. */}
+        {errores.firma ? (
+          <span className={css.error}>{errores.firma}</span>
+        ) : hayTrazo ? (
+          <span className={css.firmaLista}>✓ Firma lista. Pulsa «Firmar y enviar».</span>
+        ) : (
+          <span className={css.firmaNota}>La fecha y la hora las pone el sistema al enviar.</span>
+        )}
+        <button type="button" className={css.borrar} onClick={borrar} disabled={!hayTrazo}>
+          Borrar y repetir
         </button>
       </div>
 
@@ -688,11 +716,17 @@ function Gracias({
 }) {
   return (
     <div className={css.gracias}>
+      <span className={css.check} aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" strokeWidth="2.2">
+          <path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
       <span className={css.sello}>Acuerdo firmado</span>
       <h2 className={css.graciasTitulo}>Gracias, {datos.nombre}.</h2>
       <p className={css.graciasTexto}>
-        Queda registrado el {fechaLarga(hecho.firmadoEl)}. Te llega por correo, y Sorela lo recibe
-        en su plataforma para darte acceso a tu espacio de alumna.
+        Tu acuerdo queda registrado el {fechaLarga(hecho.firmadoEl)}. En unos minutos te llega a{' '}
+        <strong>{datos.correo}</strong> un correo con <strong>tu acuerdo firmado</strong> y{' '}
+        <strong>tu dossier</strong>. Si no lo ves, mira en la carpeta de spam.
       </p>
 
       {/* El dossier se abre AQUÍ MISMO, sin esperar al correo. El correo

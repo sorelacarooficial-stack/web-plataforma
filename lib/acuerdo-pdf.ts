@@ -78,7 +78,15 @@ function lineas(texto: string, fuente: PDFFont, talla: number, ancho: number): s
   return salida;
 }
 
-export async function pdfDelAcuerdo(a: AcuerdoGuardado): Promise<Uint8Array> {
+/**
+ * `firmaSorela` es la firma de la formadora, ya limpia (ver
+ * `lib/firma-sorela.ts`). Si todavía no ha subido ninguna, su lado queda con la
+ * raya en blanco, como un papel pendiente de firmar.
+ */
+export async function pdfDelAcuerdo(
+  a: AcuerdoGuardado,
+  { firmaSorela }: { firmaSorela?: Buffer | null } = {}
+): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   doc.setTitle(`${a.titulo} · ${a.referencia}`);
   doc.setAuthor('Sorela Caro · Técnica Divine');
@@ -172,6 +180,17 @@ export async function pdfDelAcuerdo(a: AcuerdoGuardado): Promise<Uint8Array> {
     pagina.drawImage(firma, { x: MARGEN, y: arriba - 22 - alto, width: (firma.width / firma.height) * alto, height: alto });
   } catch {
     pagina.drawText('[firma no disponible]', { x: MARGEN, y: arriba - 60, size: 10, font: cursiva, color: SUAVE });
+  }
+
+  if (firmaSorela) {
+    try {
+      const suya = await doc.embedPng(firmaSorela);
+      const alto = Math.min(80, (suya.height / suya.width) * Math.min(columna, 210));
+      const ancho = (suya.width / suya.height) * alto;
+      pagina.drawImage(suya, { x: MARGEN + columna + 24, y: arriba - 22 - alto, width: ancho, height: alto });
+    } catch {
+      /* Sin su firma, su lado queda con la raya en blanco. */
+    }
   }
 
   const linea = arriba - 108;
