@@ -50,7 +50,15 @@
  * real y un cartel, en vez de desaparecer: así se ve dónde va a ir y la página
  * no cambia de forma el día que se suba.
  */
-export const VIDEO: { src: string; cartel?: string } | null = null;
+export const VIDEO: { src: string; cartel?: string } | null = {
+  /* El vídeo que entregó Sorela, sin volver a comprimir: ya venía comprimido
+     y otra pasada solo lo ensuciaría. Se ha reordenado por dentro para que
+     empiece a verse en cuanto se pulsa, sin esperar a bajarse entero. */
+  src: '/presentacion/tecnica-divine.mp4',
+  /* La portada es el fotograma de bienvenida: «Hola, bienvenidos y
+     bienvenidas», con Sorela y sus alumnas. */
+  cartel: '/presentacion/cartel.webp',
+};
 
 /* ==========================================================================
    Quién
