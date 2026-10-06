@@ -32,6 +32,7 @@ export type Vista =
   | 'suscripcion'
   | 'pagos'
   | 'leads'
+  | 'acuerdos'
   | 'formaciones'
   | 'contenido'
   | 'cuentas';
@@ -54,6 +55,8 @@ export function navDe(rol: Rol, conAcceso = false): { id: Vista; label: string }
       // El orden es el del día a día: primero a quién hay que llamar, después
       // qué hay en el calendario, y luego lo que se cobra.
       { id: 'leads', label: 'Clientes' },
+      // Las alumnas que han firmado el acuerdo de confidencialidad.
+      { id: 'acuerdos', label: 'Acuerdos' },
       { id: 'agenda', label: 'Agenda' },
       { id: 'facturacion', label: 'Facturación' },
       { id: 'formaciones', label: 'Formaciones' },
@@ -99,6 +102,7 @@ export function tituloDe(vista: Vista, rol: Rol) {
     clases: 'Clases y material',
     clientas: 'Mis clientas',
     leads: 'Tus clientes',
+    acuerdos: 'Acuerdos firmados',
     formaciones: 'Formaciones y plazas',
     pagos: 'Tus pagos',
     contenido: 'Qué publicas en el aula',
@@ -122,6 +126,7 @@ export function seccionDe(vista: Vista, rol: Rol) {
     facturacion: admin ? 'Administración' : 'Tu negocio',
     perfil: 'Localiza tu terapeuta',
     leads: 'Quién ha levantado la mano',
+    acuerdos: 'Alumnas · confidencialidad',
     formaciones: 'Convocatorias',
     pagos: 'Tu formación',
     contenido: 'Aula · autoría',

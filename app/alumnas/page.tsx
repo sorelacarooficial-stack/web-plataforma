@@ -133,20 +133,20 @@ export default function Alumnas() {
       <Cinta fotos={CINTA_ALUMNAS} />
 
       {/* ================= El método =================
-          En las esquinas, las láminas de anatomía en medallón: lo que se va a
-          estudiar, rodeando lo que se va a aprender. */}
+          En las esquinas, resultados. Las láminas de anatomía van SOLO en su
+          sección: aquí se vende lo que consiguen las manos, no se estudia. */}
       <section className={l.sobre} id="metodo">
         <FadeIn className={`${l.esquina} ${l.esqSI}`} delay={0.1} x={-80} y={0} duration={0.9}>
-          <Image src="/alumnas/anatomia-ganglio.webp" alt="" width={300} height={300} className={`${l.esquinaFoto} ${l.esquinaRedonda}`} sizes="210px" />
+          <Image src="/trayectoria/rostro-3.webp" alt="" width={300} height={375} className={l.esquinaFoto} sizes="210px" />
         </FadeIn>
         <FadeIn className={`${l.esquina} ${l.esqII}`} delay={0.25} x={-80} y={0} duration={0.9}>
-          <Image src="/alumnas/anatomia-capilar.webp" alt="" width={300} height={300} className={`${l.esquinaFoto} ${l.esquinaRedonda}`} sizes="180px" />
+          <Image src="/alumnas/resultado-2.webp" alt="" width={300} height={375} className={l.esquinaFoto} sizes="180px" />
         </FadeIn>
         <FadeIn className={`${l.esquina} ${l.esqSD}`} delay={0.15} x={80} y={0} duration={0.9}>
-          <Image src="/alumnas/anatomia-funcion.webp" alt="" width={300} height={300} className={`${l.esquinaFoto} ${l.esquinaRedonda}`} sizes="210px" />
+          <Image src="/trayectoria/rostro-5.webp" alt="" width={300} height={375} className={l.esquinaFoto} sizes="210px" />
         </FadeIn>
         <FadeIn className={`${l.esquina} ${l.esqID}`} delay={0.3} x={80} y={0} duration={0.9}>
-          <Image src="/alumnas/anatomia-vias.webp" alt="" width={300} height={300} className={`${l.esquinaFoto} ${l.esquinaRedonda}`} sizes="220px" />
+          <Image src="/alumnas/resultado-4.webp" alt="" width={300} height={375} className={l.esquinaFoto} sizes="220px" />
         </FadeIn>
 
         <div className={l.sobreTexto}>

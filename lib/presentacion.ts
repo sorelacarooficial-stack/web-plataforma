@@ -305,26 +305,27 @@ export const SERVICIOS: { nombre: string; texto: string }[] = [
   },
 ];
 
-/** Las fotos de la cinta que se desplaza con el scroll. */
+/**
+ * Las fotos de la cinta que se desplaza con el scroll.
+ *
+ * SOLO ANTES Y DESPUÉS. La cinta es lo primero que se ve después de la
+ * portada, y en una página que vende una formación lo primero tiene que ser
+ * el resultado. Mezclar ahí láminas de anatomía o fotos de ambiente diluía lo
+ * único que convence. Las láminas tienen su sitio: la sección de anatomía.
+ */
 export const CINTA = [
-  '/trayectoria/sesion-2.webp',
   '/trayectoria/rostro-1.webp',
-  '/trayectoria/equipo.webp',
-  '/alumnas/camilla.webp',
-  '/trayectoria/revista-2.webp',
   '/trayectoria/cuerpo-1.webp',
-  '/alumnas/manos.webp',
-  '/trayectoria/rostro-5.webp',
-  '/trayectoria/equipo-2.webp',
-  '/trayectoria/revista-4.webp',
-  '/alumnas/abdomen-2.webp',
-  '/trayectoria/sesion-1.webp',
-  '/trayectoria/rostro-3.webp',
-  '/alumnas/abdomen-1.webp',
-  '/trayectoria/revista-5.webp',
-  '/trayectoria/cuerpo-5.webp',
-  '/alumnas/rostro.webp',
+  '/trayectoria/rostro-4.webp',
+  '/alumnas/resultado-2.webp',
   '/trayectoria/rostro-6.webp',
-  '/trayectoria/revista-6.webp',
+  '/alumnas/resultado-5.webp',
+  '/trayectoria/rostro-2.webp',
+  '/trayectoria/rostro-5.webp',
+  '/alumnas/resultado-4.webp',
+  '/trayectoria/rostro-3.webp',
+  '/trayectoria/cuerpo-5.webp',
+  '/alumnas/resultado-1.webp',
   '/trayectoria/cuerpo-4.webp',
+  '/alumnas/resultado-3.webp',
 ];

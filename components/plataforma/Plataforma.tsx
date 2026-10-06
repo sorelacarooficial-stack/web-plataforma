@@ -25,6 +25,7 @@ import {
  */
 import { Comunidad, FormacionesAdmin, PanelSorela } from './Vistas';
 import Contactos from './Contactos';
+import Acuerdos from './Acuerdos';
 import Proximamente from './Proximamente';
 import Aula from './Aula';
 import SubirClases from './SubirClases';
@@ -267,6 +268,7 @@ export default function Plataforma({
           {/* Contactos de verdad, leídos de Firestore. Antes aquí había una lista
               de leads inventados con nombres y notas de mentira. */}
           {esAdmin && actual === 'leads' && <Contactos />}
+          {esAdmin && actual === 'acuerdos' && <Acuerdos />}
           {esAdmin && actual === 'formaciones' && <FormacionesAdmin />}
           {esAdmin && actual === 'contenido' && <SubirClases />}
           {esAdmin && actual === 'agenda' && <Agenda esSorela />}

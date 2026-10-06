@@ -48,6 +48,8 @@ export type Envio = {
   texto: string;
   html?: string;
   responderA?: string;
+  /** Archivos que van adjuntos: el acuerdo firmado y el dossier, por ejemplo. */
+  adjuntos?: { nombre: string; contenido: Buffer; tipo: string }[];
 };
 
 export async function enviar(e: Envio): Promise<void> {
@@ -59,5 +61,10 @@ export async function enviar(e: Envio): Promise<void> {
     text: e.texto,
     html: e.html,
     replyTo: e.responderA || process.env.CORREO_DE || process.env.SMTP_USUARIO,
+    attachments: e.adjuntos?.map((a) => ({
+      filename: a.nombre,
+      content: a.contenido,
+      contentType: a.tipo,
+    })),
   });
 }

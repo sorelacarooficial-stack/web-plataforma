@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
-import { enlaceDelDossier, enviarDossier } from '@/lib/enviar-dossier';
+import { enlaceDelDossier, enviarAcuerdo } from '@/lib/enviar-acuerdo';
 import {
   CIERRE_ACUERDO,
   CLAUSULAS,
@@ -37,6 +37,9 @@ import {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+/* El correo sale después de responder y lleva dos PDF: necesita margen. */
+export const maxDuration = 60;
 
 const COLECCION = 'acuerdos';
 
@@ -171,20 +174,17 @@ export async function POST(peticion: Request) {
   }
 
   /*
-   * El correo sale, pero no se espera a que salga.
+   * El correo sale DESPUÉS de responder, con `after`.
    *
-   * La firma ya está guardada y Sorela la ve en su plataforma: eso es lo que
-   * importa y ya ha ocurrido. Dejar colgada la pantalla de quien acaba de
-   * firmar mientras se habla con Google sería cambiar lo que importa por lo
-   * que no, y si Google tarda o falla, la firma seguiría siendo válida igual.
+   * Antes se lanzaba con un `void` y la respuesta salía a la vez. En un
+   * servidor normal eso funciona; en Vercel no: la función se congela en
+   * cuanto responde, y lo que quedaba a medias —el correo entero— no llegaba
+   * a salir nunca. `after` le dice a la plataforma que espere a que termine.
+   *
+   * Y sigue sin bloquear a quien firma: la firma ya está guardada, que es lo
+   * que importa, y no tiene por qué esperar a que Google acepte dos PDF.
    */
-  void enviarDossier({
-    nombre: datos.nombre,
-    apellidos: datos.apellidos,
-    correo: datos.correo,
-    telefono: datos.telefono,
-    referencia,
-  });
+  after(() => enviarAcuerdo(referencia));
 
   return NextResponse.json({
     ok: true,
@@ -221,8 +221,11 @@ export async function GET() {
       lugar: String(x.lugar ?? ''),
       firmadoEl: String(x.firmadoEl ?? ''),
       version: String(x.version ?? ''),
-      firma: String(x.firma ?? ''),
       estado: String(x.estado ?? 'firmado'),
+      descargas: Number(x.descargas ?? 0),
+      correoEnviado: Boolean(x.envioCorreo?.enviado),
+      correoDetalle: String(x.envioCorreo?.detalle ?? 'Pendiente'),
+      correoFecha: String(x.envioCorreo?.fecha ?? ''),
     };
   });
 

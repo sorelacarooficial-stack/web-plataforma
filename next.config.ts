@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
    */
   outputFileTracingIncludes: {
     '/api/dossier': ['./docs/dossier.pdf'],
+    /* La firma y el reenvío adjuntan el dossier al correo, y el PDF del
+       acuerdo lleva el logotipo. */
+    '/api/acuerdos': ['./docs/dossier.pdf', './fotos/logo-sorela.png'],
+    '/api/acuerdos/**': ['./docs/dossier.pdf', './fotos/logo-sorela.png'],
   },
   images: {
     // Las fotos ya se pre-optimizan a WebP con scripts/optimizar-imagenes.mjs.
