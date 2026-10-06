@@ -90,9 +90,9 @@ export const METODO: { titulo: string; texto: string }[] = [
       'La Técnica Divine combina técnicas especializadas de drenaje y modelado corporal en un protocolo diseñado para trabajar el cuerpo de forma global. Su aplicación se adapta a distintas zonas —abdomen, piernas y rostro, sobre todo— teniendo en cuenta las características y necesidades de cada cliente.',
   },
   {
-    titulo: 'Lipodrenaje',
+    titulo: 'Linfodrenaje',
     texto:
-      'El Lipodrenaje integra dos enfoques complementarios en una misma sesión: el trabajo de drenaje y las técnicas orientadas al modelado de la silueta. A través de maniobras específicas, el protocolo busca favorecer la sensación de ligereza y mejorar visualmente el contorno corporal.',
+      'El Linfodrenaje integra dos enfoques complementarios en una misma sesión: el trabajo de drenaje y las técnicas orientadas al modelado de la silueta. A través de maniobras específicas, el protocolo busca favorecer la sensación de ligereza y mejorar visualmente el contorno corporal.',
   },
   {
     titulo: 'Una experiencia diferencial',
@@ -287,7 +287,7 @@ export const AVISO_IMAGENES =
 
 export const SERVICIOS: { nombre: string; texto: string }[] = [
   {
-    nombre: 'Lipodrenaje',
+    nombre: 'Linfodrenaje',
     texto:
       'Drenaje y modelado en una misma sesión, con maniobras específicas orientadas a la sensación de ligereza y al contorno de la silueta.',
   },
