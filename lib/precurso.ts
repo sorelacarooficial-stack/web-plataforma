@@ -157,7 +157,7 @@ export const QUE_LLEVAS: QueLlevas[] = [
   },
   {
     titulo: 'Práctica con modelos reales',
-    texto: 'Cuatro modelos a lo largo de los dos días, con corrección de la mano sobre el cuerpo.',
+    texto: 'Cinco modelos reales a lo largo de los dos días, con corrección de la mano sobre el cuerpo.',
   },
   {
     titulo: 'Evaluación de comprensión',
