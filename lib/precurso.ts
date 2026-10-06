@@ -233,3 +233,96 @@ export const COMPARATIVA = {
   aviso:
     'Fotografía real, sin retoque, publicada con permiso de la clienta. Los resultados varían según cada persona.',
 } as const;
+
+/* ==========================================================================
+   Las láminas de anatomía
+
+   QUÉ SE PUEDE ENSEÑAR Y QUÉ NO. La anatomía del sistema linfático está en
+   cualquier manual: enseñarla no regala nada. Lo que no está en ningún manual
+   —el orden de trabajo, las presiones, los tiempos, las maniobras— se queda en
+   el dossier, detrás del acuerdo de confidencialidad.
+
+   Los textos DESCRIBEN ANATOMÍA. Ninguno atribuye a la técnica un efecto sobre
+   la salud, porque esto es una página pública y una página pública de un
+   servicio estético no puede hacerlo. Son las mismas frases del dossier,
+   recortadas a lo que es estructura y función del sistema, sin el salto a lo
+   que pasa cuando se trabaja encima.
+   ========================================================================== */
+
+export type Lamina = { src: string; alt: string; titulo: string; texto: string };
+
+export const LAMINAS: Lamina[] = [
+  {
+    src: '/alumnas/anatomia-sistema.webp',
+    alt: 'Lámina del sistema linfático en el cuerpo humano',
+    titulo: 'El sistema linfático',
+    texto:
+      'Una red de vasos, ganglios y órganos repartida por todo el cuerpo, en paralelo al sistema circulatorio. Recorrerla de memoria es el primer requisito para trabajar sobre ella.',
+  },
+  {
+    src: '/alumnas/anatomia-funcion.webp',
+    alt: 'Lámina de la función principal del sistema linfático',
+    titulo: 'Qué hace',
+    texto:
+      'Devuelve a la circulación sanguínea las proteínas plasmáticas y el líquido que no se reabsorbe en los tejidos. Esa carga es lo que se llama carga linfática.',
+  },
+  {
+    src: '/alumnas/anatomia-capilar.webp',
+    alt: 'Lámina de los capilares linfáticos y el líquido intersticial',
+    titulo: 'Capilares linfáticos',
+    texto:
+      'Diminutos vasos de paredes delgadas, cerrados por un extremo, repartidos por casi todo el cuerpo salvo el sistema nervioso central y los tejidos no vasculares. Por ahí entra la linfa.',
+  },
+  {
+    src: '/alumnas/anatomia-tejido.webp',
+    alt: 'Lámina de la estructura de un vaso linfático',
+    titulo: 'El vaso linfático',
+    texto:
+      'Tiene válvulas que obligan a la linfa a circular en un solo sentido. Conocer su trayecto y su dirección es lo que decide hacia dónde se trabaja.',
+  },
+  {
+    src: '/alumnas/anatomia-ganglios.webp',
+    alt: 'Lámina de los ganglios linfáticos superficiales y profundos',
+    titulo: 'Dónde están los ganglios',
+    texto:
+      'Agrupados por regiones: cervicales, axilares, epitrocleares, inguinales, poplíteos, y los profundos del tronco. Cada región recoge de un territorio concreto.',
+  },
+  {
+    src: '/alumnas/anatomia-ganglio.webp',
+    alt: 'Lámina de la estructura interna de un ganglio linfático',
+    titulo: 'El ganglio por dentro',
+    texto:
+      'Pequeñas estructuras con forma de judía intercaladas en el recorrido de los vasos. La linfa entra, los atraviesa y sale filtrada.',
+  },
+  {
+    src: '/alumnas/anatomia-vias.webp',
+    alt: 'Lámina de las vías de drenaje y los territorios linfáticos',
+    titulo: 'Vías y territorios',
+    texto:
+      'El cuerpo está dividido en territorios, y cada uno drena hacia su grupo de ganglios. Las líneas que los separan son las que marcan por dónde se empieza.',
+  },
+  {
+    src: '/alumnas/anatomia-torso.webp',
+    alt: 'Lámina de los órganos linfáticos del tronco',
+    titulo: 'Los órganos linfáticos',
+    texto:
+      'Bazo, timo, amígdalas y médula ósea, además de la propia red de ganglios. Jalonan el trayecto de los vasos.',
+  },
+  {
+    src: '/alumnas/anatomia-quilo.webp',
+    alt: 'Lámina de la absorción intestinal y los vasos quilíferos',
+    titulo: 'Absorción intestinal',
+    texto:
+      'En el intestino, unos vasos linfáticos especiales recogen las grasas de la digestión. Es la vía por la que esas grasas llegan a la sangre.',
+  },
+];
+
+/** Los resultados que se enseñan en la landing, ampliables. */
+export const RESULTADOS = [
+  '/alumnas/resultado-1.webp',
+  '/alumnas/resultado-2.webp',
+  '/alumnas/resultado-3.webp',
+  '/alumnas/resultado-4.webp',
+  '/alumnas/resultado-5.webp',
+  '/alumnas/abdomen-2.webp',
+];

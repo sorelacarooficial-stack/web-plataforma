@@ -1,11 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 /**
- * El subdominio de alumnas.
+ * Los subdominios.
  *
- * `alumnas.sorelacarodivine.com` enseña la landing del Precurso sin que la
- * dirección cambie a `/alumnas`: quien entra ve el subdominio en la barra y se
- * queda ahí.
+ * `alumnas.sorelacarodivine.com` enseña la landing del Precurso y
+ * `presentacion.sorelacarodivine.com` la presentación profesional, sin que la
+ * dirección cambie a `/alumnas` ni a `/presentacion`: quien entra ve el
+ * subdominio en la barra y se queda ahí.
  *
  * SE HACE CON UNA REESCRITURA Y NO CON UNA REDIRECCIÓN, y la diferencia
  * importa: una redirección mandaría a la persona a la web principal y el
@@ -19,29 +20,37 @@ import { NextResponse, type NextRequest } from 'next/server';
  * a Vercel, y el dominio añadido en el proyecto de Vercel—. Sin esas dos, este
  * archivo no se ejecuta nunca porque no hay petición que repartir.
  *
- * La ruta `/alumnas` sigue existiendo por sí misma en el dominio principal.
- * No se esconde: tener una sola página accesible por dos caminos es normal, y
- * esconder uno de los dos solo sirve para que un día nadie sepa por qué una
- * dirección da 404.
+ * Las rutas `/alumnas` y `/presentacion` siguen existiendo por sí mismas en el
+ * dominio principal. No se esconden: tener una sola página accesible por dos
+ * caminos es normal, y esconder uno de los dos solo sirve para que un día
+ * nadie sepa por qué una dirección da 404.
  */
 
-/** El prefijo del subdominio. Se compara en minúsculas y sin el puerto. */
-const SUBDOMINIO = 'alumnas';
+/**
+ * Qué subdominio sirve qué carpeta.
+ *
+ * El nombre del subdominio y el de la ruta coinciden a propósito: así basta
+ * una lista de nombres y no hay que mantener una tabla de equivalencias que
+ * algún día dejará de cuadrar. Añadir uno nuevo es añadirlo aquí y darlo de
+ * alta en el DNS y en Vercel.
+ */
+const SUBDOMINIOS = ['alumnas', 'presentacion'] as const;
 
 export function middleware(peticion: NextRequest) {
   const anfitrion = (peticion.headers.get('host') ?? '').toLowerCase().split(':')[0];
+  const cual = SUBDOMINIOS.find((s) => anfitrion.startsWith(`${s}.`));
 
-  if (!anfitrion.startsWith(`${SUBDOMINIO}.`)) return NextResponse.next();
+  if (!cual) return NextResponse.next();
 
   const url = peticion.nextUrl.clone();
 
   /* Ya está dentro: no se reescribe otra vez. Sin esto, `/alumnas` en el
      subdominio acabaría en `/alumnas/alumnas`. */
-  if (url.pathname === `/${SUBDOMINIO}` || url.pathname.startsWith(`/${SUBDOMINIO}/`)) {
+  if (url.pathname === `/${cual}` || url.pathname.startsWith(`/${cual}/`)) {
     return NextResponse.next();
   }
 
-  url.pathname = `/${SUBDOMINIO}${url.pathname === '/' ? '' : url.pathname}`;
+  url.pathname = `/${cual}${url.pathname === '/' ? '' : url.pathname}`;
   return NextResponse.rewrite(url);
 }
 

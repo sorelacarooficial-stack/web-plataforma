@@ -1,0 +1,156 @@
+/*
+ * Las láminas de anatomía.
+ *
+ * La lista a la izquierda y la lámina grande a la derecha. En móvil la lista se
+ * convierte en una fila que se desliza con el dedo, porque nueve botones
+ * apilados verticalmente dejarían la lámina —que es lo que se viene a ver— por
+ * debajo de la línea de flotación en cualquier teléfono.
+ */
+
+.zona {
+  display: grid;
+  grid-template-columns: minmax(0, 0.34fr) minmax(0, 0.66fr);
+  gap: clamp(18px, 3vw, 36px);
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .zona {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- La lista ---------- */
+
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 860px) {
+  .lista {
+    display: flex;
+    gap: 8px;
+    /* Se sale de la caja por los dos lados para que la primera y la última no
+       queden pegadas al borde al deslizar. */
+    margin: 0 calc(var(--gutter, 18px) * -1);
+    padding: 2px var(--gutter, 18px) 10px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .lista::-webkit-scrollbar {
+    display: none;
+  }
+
+  .lista > li {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+}
+
+.pestana {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  width: 100%;
+  /* Alto cómodo para el dedo, muy por encima del mínimo de 24 px. */
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.pestana:hover {
+  background: var(--surface);
+}
+
+.pestana[data-activa] {
+  background: var(--surface);
+  border-color: var(--oro-line);
+}
+
+@media (max-width: 860px) {
+  .pestana {
+    width: auto;
+    white-space: nowrap;
+    border-color: var(--line-1);
+    background: var(--surface);
+  }
+
+  .pestana[data-activa] {
+    background: var(--oro-tint);
+    border-color: var(--oro-line);
+  }
+}
+
+.num {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+
+.pestana[data-activa] .num {
+  color: var(--arcilla-ink);
+}
+
+.nombre {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(16px, 1.9vw, 19px);
+  line-height: 1.25;
+  color: var(--muted);
+}
+
+.pestana[data-activa] .nombre {
+  color: var(--ink);
+}
+
+/* ---------- La lámina ---------- */
+
+.vista {
+  margin: 0;
+}
+
+.marco {
+  padding: clamp(12px, 2vw, 22px);
+  border: 1px solid var(--oro-line);
+  border-radius: clamp(14px, 2vw, 20px);
+  /* Blanco y no el crema de la página: las láminas vienen sobre fondo blanco y
+     cualquier otro color de detrás les hace un cerco visible. */
+  background: #fff;
+}
+
+.lamina {
+  display: block;
+  width: 100%;
+  height: clamp(280px, 44vw, 520px);
+  object-fit: contain;
+  object-position: center;
+}
+
+.pie {
+  margin-top: clamp(14px, 2vw, 20px);
+}
+
+.pieTitulo {
+  margin: 0 0 6px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(20px, 2.6vw, 26px);
+  color: var(--ink);
+}
+
+.pieTexto {
+  margin: 0;
+  max-width: 60ch;
+  font-size: clamp(14.5px, 1.5vw, 16px);
+  line-height: 1.68;
+  color: var(--muted);
+}

@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Acuerdo from '@/components/alumnas/Acuerdo';
+import Anatomia from '@/components/alumnas/Anatomia';
 import AntesDespues from '@/components/alumnas/AntesDespues';
 import Evaluacion from '@/components/alumnas/Evaluacion';
 import Programa from '@/components/alumnas/Programa';
-import { PILARES, QUE_LLEVAS } from '@/lib/precurso';
+import Galeria from '@/components/presentacion/Galeria';
+import { PILARES, QUE_LLEVAS, RESULTADOS } from '@/lib/precurso';
 import css from './alumnas.module.css';
 
 /**
@@ -95,6 +97,41 @@ export default function Alumnas() {
             ))}
           </ul>
         </div>
+
+        {/* Tres fotos del trabajo real, a sangre. Entre el bloque del método y
+            el horario había dos pantallas seguidas de texto. */}
+        <ul className={css.tira}>
+          {[
+            { src: '/alumnas/manos.webp', alt: 'Trabajo manual sobre abdomen' },
+            { src: '/alumnas/camilla.webp', alt: 'Sesión de Técnica Divine' },
+            { src: '/alumnas/abdomen-2.webp', alt: 'Maniobra de drenaje abdominal' },
+          ].map((f) => (
+            <li key={f.src} className={css.tiraItem}>
+              <Image
+                src={f.src}
+                alt={f.alt}
+                width={900}
+                height={700}
+                className={css.tiraFoto}
+                sizes="(max-width: 760px) 100vw, 33vw"
+              />
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* ---------- Anatomía ---------- */}
+      <section className={css.seccionSuave} id="anatomia">
+        <div className="wrap wrap-1040">
+          <p className="antetitulo">Lo que hay que saber</p>
+          <h2 className={css.titulo}>El sistema linfático, lámina a lámina.</h2>
+          <p className={css.entradilla}>
+            La anatomía con la que se trabaja durante los dos días. Toca cada apartado para ver su
+            lámina. El protocolo —las presiones, los tiempos y las maniobras— está en el dossier,
+            detrás del acuerdo.
+          </p>
+          <Anatomia />
+        </div>
       </section>
 
       {/* ---------- Programa ---------- */}
@@ -130,6 +167,17 @@ export default function Alumnas() {
           <p className="antetitulo">Resultado real</p>
           <h2 className={css.titulo}>Antes. Después.</h2>
           <AntesDespues />
+
+          <h3 className={css.subtitulo}>Más resultados</h3>
+          <p className={css.entradilla}>
+            Procesos de distintas clientas sobre abdomen, flancos y piernas. Toca cualquiera para
+            verla entera.
+          </p>
+          <Galeria fotos={RESULTADOS} alto columnas={3} />
+          <p className={css.avisoFotos}>
+            Imágenes reales de clientas, cedidas con su autorización. Los resultados dependen de
+            cada persona, de su punto de partida y del número de sesiones.
+          </p>
         </div>
       </section>
 
