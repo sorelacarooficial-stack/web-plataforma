@@ -149,3 +149,26 @@
     display: none;
   }
 }
+
+/* Neumorfismo: la barra flota sobre el papel con una sombra suave debajo, y
+   «Entrar» es una pastilla en relieve que se hunde al pulsarla. */
+.cabecera {
+  border-bottom-color: transparent;
+  box-shadow: 0 10px 30px -18px var(--neu-sombra);
+}
+
+.entrar {
+  border-color: transparent;
+  background: var(--neu-base);
+  box-shadow: var(--neu-fuera-sm);
+}
+
+.entrar:hover {
+  background: var(--neu-base);
+  border-color: transparent;
+  box-shadow: var(--neu-fuera);
+}
+
+.entrar:active {
+  box-shadow: var(--neu-dentro-sm);
+}

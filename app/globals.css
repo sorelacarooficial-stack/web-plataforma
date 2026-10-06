@@ -6,8 +6,10 @@
    usa para decidir qué banda lleva qué fondo.
    ========================================================================== */
 :root {
-  --bg: #fbf9f6;
-  --bg-blur: rgba(251, 249, 246, 0.92);
+  /* Un punto más tostado que el blanco de antes: el neumorfismo necesita un
+     fondo con cuerpo para que la luz de arriba y la sombra de abajo se vean. */
+  --bg: #f4efe7;
+  --bg-blur: rgba(244, 239, 231, 0.92);
   --surface: #ffffff;
   --surface-2: #f5f2ec;
   --photo-bg: #ede8e0;
@@ -106,7 +108,7 @@
      web, la «crema» pasa a ser la tinta y el degradado de los titulares va de
      tinta a bronce. Las bandas que deben seguir siendo oscuras (membresía,
      testimonios, la lista de números) se lo redefinen a mano. */
-  --negro: #fbf9f6;
+  --negro: #f4efe7;
   --crema: #141210;
   --crema-2: rgba(20, 18, 16, 0.7);
   --oro-a: #8a6a32;
@@ -117,6 +119,18 @@
   --caja-oro: linear-gradient(160deg, #fbf5e8 0%, #f2e8d4 100%);
   --caja-borde: rgba(20, 18, 16, 0.1);
   --toque: rgba(20, 18, 16, 0.06);
+
+  /* Neumorfismo: las piezas son del mismo color que el papel y se despegan de
+     él con dos sombras, luz arriba a la izquierda y sombra abajo a la derecha.
+     Hundidas (campos, botón pulsado) es la misma pareja por dentro. */
+  --neu-base: #f4efe7;
+  --neu-luz: rgba(255, 255, 255, 0.92);
+  --neu-sombra: rgba(150, 128, 96, 0.3);
+  --neu-fuera: 12px 12px 28px var(--neu-sombra), -12px -12px 28px var(--neu-luz);
+  --neu-fuera-hover: 18px 18px 38px var(--neu-sombra), -14px -14px 34px var(--neu-luz);
+  --neu-fuera-sm: 6px 6px 14px var(--neu-sombra), -6px -6px 14px var(--neu-luz);
+  --neu-dentro: inset 6px 6px 12px var(--neu-sombra), inset -6px -6px 12px var(--neu-luz);
+  --neu-dentro-sm: inset 3px 3px 7px var(--neu-sombra), inset -3px -3px 7px var(--neu-luz);
 
   color-scheme: light;
 }
@@ -141,6 +155,14 @@
   --caja-oro: linear-gradient(160deg, #1d170e 0%, #100e0b 100%);
   --caja-borde: rgba(237, 227, 211, 0.14);
   --toque: rgba(237, 227, 211, 0.1);
+  --neu-base: #151311;
+  --neu-luz: rgba(255, 255, 255, 0.045);
+  --neu-sombra: rgba(0, 0, 0, 0.6);
+  --neu-fuera: 12px 12px 28px var(--neu-sombra), -10px -10px 26px var(--neu-luz);
+  --neu-fuera-hover: 18px 18px 38px var(--neu-sombra), -12px -12px 30px var(--neu-luz);
+  --neu-fuera-sm: 6px 6px 14px var(--neu-sombra), -5px -5px 12px var(--neu-luz);
+  --neu-dentro: inset 6px 6px 12px var(--neu-sombra), inset -5px -5px 10px var(--neu-luz);
+  --neu-dentro-sm: inset 3px 3px 7px var(--neu-sombra), inset -3px -3px 6px var(--neu-luz);
 
   --ink: #f7f2ea;
   --ink-2: #ded6c9;
@@ -971,6 +993,14 @@ textarea.campo {
   --caja-fondo: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
   --caja-borde: rgba(237, 227, 211, 0.14);
   --toque: rgba(237, 227, 211, 0.1);
+  --neu-base: #151311;
+  --neu-luz: rgba(255, 255, 255, 0.045);
+  --neu-sombra: rgba(0, 0, 0, 0.6);
+  --neu-fuera: 12px 12px 28px var(--neu-sombra), -10px -10px 26px var(--neu-luz);
+  --neu-fuera-hover: 18px 18px 38px var(--neu-sombra), -12px -12px 30px var(--neu-luz);
+  --neu-fuera-sm: 6px 6px 14px var(--neu-sombra), -5px -5px 12px var(--neu-luz);
+  --neu-dentro: inset 6px 6px 12px var(--neu-sombra), inset -5px -5px 10px var(--neu-luz);
+  --neu-dentro-sm: inset 3px 3px 7px var(--neu-sombra), inset -3px -3px 6px var(--neu-luz);
   --logo-filter: none;
 
   position: relative;
@@ -1108,5 +1138,119 @@ textarea.campo {
   .caja-landing.caja-landing:hover {
     border-color: rgba(217, 180, 124, 0.55);
     transform: translateY(-3px);
+  }
+}
+
+/* ==========================================================================
+   Neumorfismo
+
+   Todas las piezas que flotan sobre el papel (tarjetas, cajas, formularios,
+   pastillas) salen de él con la pareja de sombras; todo lo que se escribe o
+   se pulsa se hunde. Va al final para ganar a las reglas de arriba sin
+   tener que tocarlas una a una.
+   ========================================================================== */
+.tarjeta,
+.formulario,
+.caja-landing.caja-landing,
+.neu {
+  background: var(--neu-base);
+  border-color: transparent;
+  box-shadow: var(--neu-fuera);
+  transition:
+    box-shadow 0.4s cubic-bezier(0.2, 0.7, 0.3, 1),
+    transform 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@media (hover: hover) {
+  .tarjeta:hover,
+  .caja-landing.caja-landing:hover,
+  .neu:hover {
+    border-color: transparent;
+    box-shadow: var(--neu-fuera-hover);
+    transform: translateY(-3px);
+  }
+}
+
+/* Los campos, hundidos en el papel. */
+.campo,
+.campo-pastilla {
+  background: var(--neu-base);
+  border-color: transparent;
+  box-shadow: var(--neu-dentro-sm);
+  transition: box-shadow 0.25s;
+}
+
+.campo:focus-visible,
+.campo-pastilla:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--neu-dentro-sm),
+    0 0 0 3px rgba(138, 106, 50, 0.28);
+}
+
+/* Las pastillas de borde: ahora en relieve, y al pulsarlas se hunden. */
+.btn-linea,
+.distintivo {
+  background: var(--neu-base);
+  border-color: transparent;
+  box-shadow: var(--neu-fuera-sm);
+}
+
+.btn-linea:hover {
+  background: var(--neu-base);
+  box-shadow: var(--neu-fuera);
+}
+
+.btn-linea:active {
+  box-shadow: var(--neu-dentro-sm);
+  transform: none;
+}
+
+/* El botón dorado gana un poco de relieve sobre el papel. */
+.btn {
+  box-shadow:
+    8px 8px 18px var(--neu-sombra),
+    -6px -6px 16px var(--neu-luz),
+    inset 4px 4px 12px #a98551;
+}
+
+.btn:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 4px 4px 10px rgba(0, 0, 0, 0.25),
+    inset 4px 4px 12px #a98551;
+}
+
+/* Las fotos también se despegan del papel. */
+.foto {
+  box-shadow: var(--neu-fuera);
+}
+
+/* Las tarjetas que se apilan (Apiladas recibe esta clase desde la web). */
+.neu-apilada.neu-apilada {
+  background: var(--neu-base);
+  border-color: transparent;
+  box-shadow: var(--neu-fuera);
+}
+
+/* En la banda negra, el mismo relieve pero en oscuro. */
+.panel-blanco {
+  --neu-base: #121110;
+  --neu-luz: rgba(255, 255, 255, 0.045);
+  --neu-sombra: rgba(0, 0, 0, 0.65);
+  --neu-fuera: 12px 12px 28px var(--neu-sombra), -10px -10px 26px var(--neu-luz);
+  --neu-fuera-hover: 18px 18px 38px var(--neu-sombra), -12px -12px 30px var(--neu-luz);
+  --neu-fuera-sm: 6px 6px 14px var(--neu-sombra), -5px -5px 12px var(--neu-luz);
+}
+
+.panel-blanco.panel-blanco {
+  background: #121110;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta:hover,
+  .caja-landing.caja-landing:hover,
+  .neu:hover {
+    transform: none;
   }
 }

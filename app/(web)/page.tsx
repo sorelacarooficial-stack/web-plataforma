@@ -201,6 +201,7 @@ export default function Home() {
 
           <div>
             <Apiladas
+              claseTarjeta="neu-apilada"
               tarjetas={[
                 <article key="online" className={css.etapa}>
                   <span className={css.etapaOrden}>Primera etapa</span>

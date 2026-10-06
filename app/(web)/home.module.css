@@ -1064,3 +1064,10 @@
     padding-bottom: 36px;
   }
 }
+
+/* Neumorfismo en la portada: el sello en relieve. */
+.sello {
+  border-color: transparent;
+  background: var(--neu-base);
+  box-shadow: var(--neu-fuera-sm);
+}

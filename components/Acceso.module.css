@@ -408,3 +408,34 @@
   border-color: var(--oro);
   box-shadow: 0 0 0 4px rgba(217, 180, 124, 0.16);
 }
+
+/* Neumorfismo: los campos hundidos, las opciones en relieve y la elegida
+   hundida, como un botón pulsado. */
+.campo {
+  background: var(--neu-base);
+  border-color: transparent;
+  box-shadow: var(--neu-dentro-sm);
+}
+
+.campo:focus-visible {
+  border-color: transparent;
+  box-shadow:
+    var(--neu-dentro-sm),
+    0 0 0 3px rgba(138, 106, 50, 0.28);
+}
+
+.opcion {
+  background: var(--neu-base);
+  border-color: transparent;
+  box-shadow: var(--neu-fuera-sm);
+}
+
+.opcionElegida {
+  border-color: transparent;
+  background: var(--neu-base);
+  box-shadow: var(--neu-dentro);
+}
+
+.foto {
+  box-shadow: var(--neu-fuera);
+}

@@ -114,6 +114,7 @@ export default function Formaciones() {
         <div className="wrap">
           {/* Las dos etapas, en tarjetas que se apilan al bajar. */}
           <Apiladas
+              claseTarjeta="neu-apilada"
             tarjetas={ETAPAS.map((e) => (
               <article
                 key={e.titulo}

@@ -2416,3 +2416,96 @@
     animation: none;
   }
 }
+
+/* ==========================================================================
+   Neumorfismo
+
+   Las piezas salen del papel con la pareja de sombras; lo elegido (la vista
+   del menú, el filtro, el rol) se hunde como un botón pulsado; lo que se
+   escribe va hundido.
+   ========================================================================== */
+.lateral {
+  background: var(--neu-base);
+  border-right-color: transparent;
+  box-shadow: 10px 0 30px -18px var(--neu-sombra);
+}
+
+.navBoton:hover {
+  background: transparent;
+  box-shadow: var(--neu-fuera-sm);
+  transform: none;
+}
+
+.navActivo,
+.navActivo:hover {
+  background: var(--neu-base);
+  border-color: transparent;
+  box-shadow: var(--neu-dentro-sm);
+}
+
+.navActivo .navTexto {
+  color: var(--arcilla);
+}
+
+.tarjeta,
+.kpi,
+.tarjetaOro {
+  background: var(--neu-base);
+  border-color: transparent;
+  box-shadow: var(--neu-fuera);
+}
+
+.tarjetaOro {
+  box-shadow:
+    var(--neu-fuera),
+    inset 0 0 0 1px var(--oro-line);
+}
+
+.tarjeta:hover,
+.kpi:hover {
+  border-color: transparent;
+  box-shadow: var(--neu-fuera-hover);
+}
+
+.usuario,
+.chip,
+.rol,
+.btnLinea {
+  background: var(--neu-base);
+  border-color: transparent;
+  box-shadow: var(--neu-fuera-sm);
+}
+
+.btnLinea:hover {
+  background: var(--neu-base);
+  box-shadow: var(--neu-fuera);
+}
+
+.chipActivo,
+.rolActivo {
+  background: var(--neu-base);
+  color: var(--arcilla);
+  box-shadow: var(--neu-dentro-sm);
+}
+
+.campo,
+.campoRedondo,
+.campoCaja {
+  background: var(--neu-base);
+  border-color: transparent;
+  box-shadow: var(--neu-dentro-sm);
+}
+
+.btn {
+  box-shadow:
+    6px 6px 14px var(--neu-sombra),
+    -5px -5px 12px var(--neu-luz),
+    inset 4px 4px 12px #a98551;
+}
+
+.btn:active,
+.btnLinea:active,
+.chip:active {
+  transform: translateY(1px);
+  box-shadow: var(--neu-dentro-sm);
+}
