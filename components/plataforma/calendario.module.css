@@ -214,8 +214,10 @@
 }
 
 .numero {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 16.5px;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-size: 14.5px;
   line-height: 1;
   color: var(--ink-3);
 }
