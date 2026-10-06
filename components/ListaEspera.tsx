@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useId, useState } from 'react';
 import { revisar, type Contacto } from '@/lib/captacion';
 import css from './Formularios.module.css';
+import InfoPrivacidad from '@/components/InfoPrivacidad';
+import { CAPA_INFORMACION } from '@/lib/privacidad';
 
 type Estado = 'quieto' | 'enviando' | 'hecho' | 'fallo';
 type Errores = Partial<Record<keyof Contacto, string>>;
@@ -198,7 +200,7 @@ export default function ListaEspera() {
           aria-invalid={errores.consentimiento ? true : undefined}
         />
         <span>
-          Acepto que Sorela guarde estos datos para avisarme de la Comunidad Divine.{' '}
+          Acepto que Sorela trate mis datos para avisarme de la Comunidad Divine y escribirme sobre la membresía y las formaciones.{' '}
           <Link href="/legal/privacidad" target="_blank">
             Cómo se tratan
           </Link>
@@ -206,6 +208,7 @@ export default function ListaEspera() {
         </span>
       </label>
       {errores.consentimiento && <p className={css.error}>{errores.consentimiento}</p>}
+      <InfoPrivacidad capa={CAPA_INFORMACION} />
 
       <button
         type="submit"

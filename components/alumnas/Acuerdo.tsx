@@ -12,6 +12,8 @@ import {
   type ErroresAcuerdo,
 } from '@/lib/acuerdo';
 import { PREFIJOS, regionProbable, telefonoCompleto } from '@/lib/prefijos';
+import InfoPrivacidad from '@/components/InfoPrivacidad';
+import { CAPA_ACUERDO } from '@/lib/privacidad';
 import css from './acuerdo.module.css';
 
 /**
@@ -94,6 +96,9 @@ export default function Acuerdo() {
   /* El país del teléfono. Se propone por el idioma del móvil al abrir la
      página —en el servidor no se sabe—, y se cambia con un toque. */
   const [region, setRegion] = useState('ES');
+  /* Que ha leído la información de protección de datos. Va en el primer paso,
+     ANTES de enviar nada: es cuando la ley dice que hay que informar. */
+  const [privacidad, setPrivacidad] = useState(false);
   useEffect(() => setRegion(regionProbable()), []);
   /** Los datos con el teléfono ya con su prefijo: lo que se revisa y se envía. */
   const completos = (): DatosAcuerdo => ({ ...datos, telefono: telefonoCompleto(region, datos.telefono) });
@@ -141,6 +146,7 @@ export default function Acuerdo() {
       /* En este paso solo importan los campos de este paso. */
       const soloDatos: ErroresAcuerdo = {};
       for (const { clave } of CAMPOS) if (e[clave]) soloDatos[clave] = e[clave];
+      if (!privacidad) soloDatos.privacidad = 'Marca la casilla para seguir.';
       if (Object.keys(soloDatos).length > 0) return setErrores(soloDatos);
       return setPaso(1);
     }
@@ -168,7 +174,7 @@ export default function Acuerdo() {
     setEnviando(true);
     setFallo('');
     try {
-      const r = await enviarConReintento({ ...completos(), empresa, clausulas: aceptadas });
+      const r = await enviarConReintento({ ...completos(), empresa, clausulas: aceptadas, privacidad });
 
       /*
        * La respuesta se lee como TEXTO y se intenta interpretar después.
@@ -200,7 +206,7 @@ export default function Acuerdo() {
         const errs = c.errores as ErroresAcuerdo | undefined;
         if (errs) {
           setErrores(errs);
-          if (CAMPOS.some(({ clave }) => errs[clave])) setPaso(0);
+          if (CAMPOS.some(({ clave }) => errs[clave]) || errs.privacidad) setPaso(0);
           else if (errs.firma) setPaso(2);
         } else if (c.motivo === 'demasiado-rapido') {
           setFallo('Has enviado varios seguidos. Espera un momento y vuelve a intentarlo.');
@@ -276,7 +282,18 @@ export default function Acuerdo() {
 
             <div className={css.cuerpo}>
               {paso === 0 && (
-                <Datos datos={datos} errores={errores} poner={poner} region={region} setRegion={setRegion} />
+                <Datos
+                  datos={datos}
+                  errores={errores}
+                  poner={poner}
+                  region={region}
+                  setRegion={setRegion}
+                  privacidad={privacidad}
+                  setPrivacidad={(v) => {
+                    setPrivacidad(v);
+                    setErrores((e) => ({ ...e, privacidad: undefined }));
+                  }}
+                />
               )}
 
               {paso === 1 && (
@@ -374,12 +391,16 @@ function Datos({
   poner,
   region,
   setRegion,
+  privacidad,
+  setPrivacidad,
 }: {
   datos: DatosAcuerdo;
   errores: ErroresAcuerdo;
   poner: (c: keyof DatosAcuerdo, v: string) => void;
   region: string;
   setRegion: (r: string) => void;
+  privacidad: boolean;
+  setPrivacidad: (v: boolean) => void;
 }) {
   const nombre = nombreCompleto(datos);
 
@@ -455,6 +476,21 @@ function Datos({
           tenor de las declaraciones y las cláusulas siguientes.
         </p>
       </div>
+
+      <label className={css.casilla}>
+        <input
+          type="checkbox"
+          checked={privacidad}
+          onChange={(e) => setPrivacidad(e.target.checked)}
+          aria-invalid={errores.privacidad ? true : undefined}
+        />
+        <span>
+          He leído la información sobre protección de datos y sé para qué se usan los datos de este
+          acuerdo.
+        </span>
+      </label>
+      {errores.privacidad && <span className={css.error}>{errores.privacidad}</span>}
+      <InfoPrivacidad capa={CAPA_ACUERDO} claro />
     </>
   );
 }

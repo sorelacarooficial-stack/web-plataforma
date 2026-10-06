@@ -3,6 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
 import { enlaceDelDossier, enviarAcuerdo } from '@/lib/enviar-acuerdo';
+import { REVISADA } from '@/lib/privacidad';
 import {
   CIERRE_ACUERDO,
   CLAUSULAS,
@@ -109,6 +110,9 @@ export async function POST(peticion: Request) {
 
   const aceptadas = Array.isArray(cuerpo.clausulas) ? cuerpo.clausulas.length : 0;
   const errores = revisarAcuerdo(datos, aceptadas);
+  /* La información de protección de datos se tiene que haber dado ANTES de
+     recoger nada. Si no llega marcada, no se guarda. */
+  if (cuerpo.privacidad !== true) errores.privacidad = 'Falta confirmar la información de protección de datos.';
   if (Object.keys(errores).length > 0) {
     return NextResponse.json({ ok: false, errores }, { status: 400 });
   }
@@ -167,6 +171,9 @@ export async function POST(peticion: Request) {
         /* Para el embudo: quien firma todavía no es alumna, es alguien que va a
            serlo. Sorela le da el acceso al curso desde su pantalla. */
         estado: 'firmado',
+        /* La prueba de que se le informó antes de firmar: cuándo y de qué
+           versión de la política. */
+        privacidad: { informada: true, fecha: ahora, politica: REVISADA },
       });
   } catch (error) {
     console.error('[acuerdos] no se ha podido guardar', error);

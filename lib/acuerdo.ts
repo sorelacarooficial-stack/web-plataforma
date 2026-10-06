@@ -186,7 +186,7 @@ export function telefonoValido(crudo: string): boolean {
   return t.startsWith('+') && cifras >= 8 && cifras <= 15;
 }
 
-export type ErroresAcuerdo = Partial<Record<keyof DatosAcuerdo | 'clausulas', string>>;
+export type ErroresAcuerdo = Partial<Record<keyof DatosAcuerdo | 'clausulas' | 'privacidad', string>>;
 
 /**
  * Revisa lo que llega, y lo hace en un sitio del que tiran las dos puntas: la
