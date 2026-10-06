@@ -521,18 +521,56 @@
 
 /* ---------- La firma ---------- */
 
-.firmaCabeza {
+/*
+ * El paso de la firma, todo a la vista y sin desplazarse.
+ *
+ * El cuerpo pasa a ser una columna que no se mueve: arriba el título y la
+ * ciudad, abajo el aviso y el botón de borrar, y el recuadro de la firma se
+ * estira para ocupar todo lo que quede en medio. Así en un móvil pequeño el
+ * recuadro es más bajo y en uno grande más alto, pero nunca hay nada escondido
+ * debajo que obligue a bajar para encontrarlo.
+ */
+.cuerpoFirma {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 4px 12px;
-  margin: 4px 0 8px;
+  flex-direction: column;
+  padding-top: 18px;
+  padding-bottom: 16px;
 }
 
-.firmaComo {
-  font-size: 13px;
-  color: var(--suave);
+.firmaPaso {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tituloFirma {
+  margin-bottom: 14px;
+  font-size: clamp(28px, 6vw, 36px);
+}
+
+.campoFirma {
+  max-width: 360px;
+  margin-bottom: 14px;
+}
+
+.campoFirma .entrada {
+  min-height: 46px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.firmaPaso .marco {
+  flex: 1 1 auto;
+  /* Por debajo de esto ya no se puede firmar con comodidad: si la pantalla es
+     tan baja, mejor que el cuerpo se desplace que un recuadro inservible. */
+  min-height: 150px;
+}
+
+.firmaPaso .firmaPie {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  margin-top: 10px;
 }
 
 .marco {
@@ -553,16 +591,10 @@
 .lienzo {
   display: block;
   width: 100%;
-  height: 240px;
+  height: 100%;
   /* Sin esto, arrastrar el dedo para firmar hace scroll en la página. */
   touch-action: none;
   cursor: crosshair;
-}
-
-@media (max-width: 640px) {
-  .lienzo {
-    height: 220px;
-  }
 }
 
 .pista {
