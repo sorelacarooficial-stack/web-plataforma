@@ -556,6 +556,28 @@
   position: relative;
 }
 
+/* En pantallas estrechas las fotos de las esquinas caen detrás del texto.
+   Se quedan, pero veladas, y el texto va sobre un cristal esmerilado: se lee
+   entero y las fotos siguen asomando, desenfocadas, por detrás. */
+@media (max-width: 899px) {
+  .fotoEsquina {
+    opacity: 0.55;
+    filter: saturate(0.85);
+  }
+
+  .cristal {
+    padding: clamp(34px, 8vw, 56px) clamp(20px, 6vw, 44px);
+    border-radius: 28px;
+    background: rgba(251, 249, 246, 0.5);
+    -webkit-backdrop-filter: blur(18px) saturate(1.15);
+    backdrop-filter: blur(18px) saturate(1.15);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow:
+      0 24px 60px -28px rgba(60, 45, 25, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+}
+
 /* Los tres pilares van numerados y en fila porque son un orden, no una lista
    de ventajas: el número dice que el segundo no funciona sin el primero. */
 .pilares {

@@ -114,19 +114,19 @@ export default function Home() {
            efectos sobre la salud no se prometen en una web de estética. */}
       <section id="metodo" className={`${l.sobre} ${css.metodo}`}>
         <FadeIn className={`${l.esquina} ${l.esqSI}`} delay={0.1} x={-80} y={0} duration={0.9}>
-          <Image src={lumbar} alt="Manos trabajando la zona lumbar" className={l.esquinaFoto} sizes="210px" placeholder="blur" />
+          <Image src={lumbar} alt="Manos trabajando la zona lumbar" className={`${l.esquinaFoto} ${css.fotoEsquina}`} sizes="210px" placeholder="blur" />
         </FadeIn>
         <FadeIn className={`${l.esquina} ${l.esqSD}`} delay={0.15} x={80} y={0} duration={0.9}>
-          <Image src="/alumnas/manos.webp" alt="" width={300} height={375} className={l.esquinaFoto} sizes="210px" />
+          <Image src="/alumnas/manos.webp" alt="" width={300} height={375} className={`${l.esquinaFoto} ${css.fotoEsquina}`} sizes="210px" />
         </FadeIn>
         <FadeIn className={`${l.esquina} ${l.esqII}`} delay={0.25} x={-80} y={0} duration={0.9}>
-          <Image src="/trayectoria/sesion-1.webp" alt="" width={300} height={375} className={l.esquinaFoto} sizes="180px" />
+          <Image src="/trayectoria/sesion-1.webp" alt="" width={300} height={375} className={`${l.esquinaFoto} ${css.fotoEsquina}`} sizes="180px" />
         </FadeIn>
         <FadeIn className={`${l.esquina} ${l.esqID}`} delay={0.3} x={80} y={0} duration={0.9}>
-          <Image src="/alumnas/camilla.webp" alt="" width={300} height={375} className={l.esquinaFoto} sizes="220px" />
+          <Image src="/alumnas/camilla.webp" alt="" width={300} height={375} className={`${l.esquinaFoto} ${css.fotoEsquina}`} sizes="220px" />
         </FadeIn>
 
-        <div className={l.sobreTexto}>
+        <div className={`${l.sobreTexto} ${css.cristal}`}>
           <FadeIn y={40} className={css.centro}>
             <p className="antetitulo">Qué es la Técnica Divine</p>
             <h2 className="titulo-lg max-640">
