@@ -47,12 +47,13 @@ export const ILUSTRACIONES = [
     dentro: [
       { tras: 10, src: A + 'anatomia-funcion.jpg', pie: 'Función principal del sistema linfático', lamina: true },
       { tras: 22, src: A + 'anatomia-capilar.jpg', pie: 'Capilares linfáticos y líquido intersticial', lamina: true },
+      { tras: 28, src: A + 'cuerpo-bloqueado.jpg', alto: true },
     ],
   },
 
   // Parte IV · Los ganglios linfáticos
   {
-    apertura: { src: A + 'anatomia-ganglios.jpg', pie: 'Ganglios superficiales y profundos', lamina: true },
+    apertura: { src: A + 'anatomia-ganglios.jpg', pie: 'Ganglios inguinales: una región clave del sistema linfático', lamina: true },
     dentro: [{ tras: 8, src: A + 'anatomia-ganglio.jpg', pie: 'Estructura de un ganglio linfático', lamina: true }],
   },
 
