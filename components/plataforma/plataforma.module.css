@@ -2707,3 +2707,10 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+/* En móvil, el cajón cerrado no deja asomar su sombra por el borde izquierdo. */
+@media (max-width: 880px) {
+  .lateral:not(.lateralAbierta) {
+    box-shadow: none;
+  }
+}
