@@ -213,7 +213,7 @@ export default function Alumnas() {
               num="02"
               categoria="Corporal"
               nombre="Piernas y glúteos"
-              fotos={['/alumnas/abdomen-2.webp', '/alumnas/resultado-5.webp', '/alumnas/resultado-4.webp']}
+              fotos={['/alumnas/resultado-6.webp', '/alumnas/resultado-5.webp', '/alumnas/resultado-4.webp']}
             />,
             <Carta
               key="facial"
