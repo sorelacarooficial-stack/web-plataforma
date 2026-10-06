@@ -24,8 +24,12 @@ import { leerFirmaSorela } from './firma-sorela';
 
 const COLECCION = 'acuerdos';
 
-/** Quince segundos: dos PDF en base64 tardan algo más en subir que un formulario. */
-const ESPERA_MAX = 15_000;
+/**
+ * Cuarenta y cinco segundos. Con quince se cortaba: el dossier pesa casi 2 MB
+ * y, en base64 y con el acuerdo al lado, el Apps Script tarda más en recibirlo
+ * y mandarlo. Queda por debajo de los 60 s que tienen las rutas que lo llaman.
+ */
+const ESPERA_MAX = 45_000;
 
 export type ResultadoCorreo = {
   enviado: boolean;
