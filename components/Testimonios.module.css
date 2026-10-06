@@ -1,107 +1,183 @@
 /*
  * Los testimonios en vídeo.
  *
- * QUIETOS. Esto era una fila que se deslizaba sola y se ha quitado: obligaba a
- * perseguir la tarjeta que querías mirar, y en un teléfono competía además con
- * el dedo que estaba haciendo scroll. Ahora es una rejilla en pantalla ancha y
- * una fila que se arrastra con el dedo en pantalla estrecha. Se mueve cuando
- * la mueves tú.
+ * EN OSCURO, A PROPÓSITO. Es la única banda de la portada que es casi entera
+ * vídeo, y el vídeo se ve mejor sobre negro: los colores de la piel no
+ * compiten con un fondo crema, y la fila se lee como una sala de proyección
+ * en vez de como un álbum de fotos. Lleva los mismos negros y dorados que las
+ * landings de alumnas y de la presentación.
  *
- * SOBRE EL CRISTAL. El desenfoque de fondo se usa en dos sitios y en ninguno
- * es decorativo: el botón de play y la banda del nombre van encima del vídeo,
- * que es una imagen que no controlamos y que puede ser clara, oscura o las dos
- * cosas en la misma tarjeta. Un color plano encima tapa la cara; un cristal
- * deja ver que debajo sigue habiendo vídeo y a la vez separa el texto lo justo
- * para leerlo.
+ * QUIETOS. No se deslizan solos. En ancho están todas a la vez; cuando no
+ * caben, una fila que se mueve con el dedo o con las flechas, con parada en
+ * cada tarjeta.
+ *
+ * SOBRE EL CRISTAL. El desenfoque se usa donde el texto va encima de un vídeo
+ * que no controlamos —puede ser claro u oscuro, o las dos cosas en la misma
+ * tarjeta—: un color plano tapa la cara; un cristal la deja ver y separa el
+ * texto lo justo para leerlo.
  */
 
 .zona {
-  padding: clamp(60px, 8vw, 110px) 0 clamp(66px, 9vw, 120px);
-  background: var(--azul-tint);
-  border-top: 1px solid var(--azul-line);
-  border-bottom: 1px solid var(--azul-line);
+  --negro: #0c0c0c;
+  --crema: #ede3d3;
+  --crema-2: rgba(237, 227, 211, 0.7);
+  --oro-a: #8a6a32;
+  --oro-b: #d9b47c;
+  --oro-c: #f1dfbd;
+
+  position: relative;
+  overflow: hidden;
+  padding: clamp(72px, 9vw, 130px) 0 clamp(72px, 9vw, 120px);
+  background:
+    radial-gradient(70% 55% at 50% 0%, rgba(217, 180, 124, 0.13), transparent 70%),
+    var(--negro);
+  color: var(--crema);
 }
+
+/* ---------- Cabecera ---------- */
 
 .cabeza {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.cabezaTexto {
+  display: flex;
   flex-direction: column;
   gap: 12px;
+  max-width: 560px;
+}
+
+.antetitulo {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--oro-b);
 }
 
 .titulo {
-  color: var(--ink);
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: clamp(36px, 5.6vw, 64px);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  color: var(--crema);
+}
+
+.titulo em {
+  font-style: italic;
+  background: linear-gradient(180deg, var(--oro-b), var(--oro-c));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .entradilla {
   margin: 0;
-  max-width: 460px;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 300;
-  line-height: 1.55;
-  color: var(--muted-2);
+  line-height: 1.6;
+  color: var(--crema-2);
   text-wrap: pretty;
 }
 
-/*
- * La lista. Rejilla en ancho, fila que se arrastra en estrecho.
+.flechas {
+  display: flex;
+  gap: 10px;
+}
+
+.flecha {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid rgba(237, 227, 211, 0.3);
+  background: rgba(237, 227, 211, 0.04);
+  color: var(--crema);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+}
+
+.flecha:hover:not(:disabled) {
+  border-color: var(--oro-b);
+  background: rgba(217, 180, 124, 0.14);
+  color: var(--oro-c);
+}
+
+.flecha:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* ---------- La fila ----------
  *
- * ANTES ESTO SE DESLIZABA SOLO y se ha quitado. Una fila que se mueve sola
- * obliga a perseguir la tarjeta que quieres mirar: justo cuando vas a tocarla,
- * se ha ido. En un teléfono es peor, porque además compite con el dedo que
- * está haciendo scroll. Quieta se mira; moviéndose se persigue.
- *
- * Las columnas se ajustan solas al número de testimonios que haya. Con tres
- * salen tres; el día que haya seis, salen tres y tres, sin tocar nada.
+ * Una rejilla de una sola fila: cada tarjeta mide como mínimo 210 px y, si
+ * hay sitio, se reparten el ancho por igual. Con cinco en un escritorio caben
+ * todas y no hay nada que mover; en una pantalla más estrecha, la fila se
+ * desborda y se arrastra, con parada en cada una.
  */
 .lista {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
-  gap: clamp(18px, 2.2vw, 30px);
-  margin: clamp(30px, 3.8vw, 48px) 0 0;
-  padding: 0;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(210px, 1fr);
+  gap: 16px;
+  margin: clamp(32px, 4vw, 52px) 0 0;
+  padding: 6px 2px 10px;
   list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.lista::-webkit-scrollbar {
+  display: none;
+}
+
+/* En el móvil: tarjetas más grandes, y la siguiente asomando por el borde, que
+   es lo que dice «aquí hay más». La fila sale del margen por los dos lados
+   para que la primera empiece alineada con el texto. */
+@media (max-width: 720px) {
+  .lista {
+    grid-auto-columns: min(72vw, 290px);
+    margin-left: calc(clamp(20px, 4vw, 40px) * -1);
+    margin-right: calc(clamp(20px, 4vw, 40px) * -1);
+    padding-left: clamp(20px, 4vw, 40px);
+    padding-right: clamp(20px, 4vw, 40px);
+    scroll-padding: 0 clamp(20px, 4vw, 40px);
+  }
 }
 
 .celda {
   min-width: 0;
+  scroll-snap-align: start;
 }
 
-/*
- * En estrecho, una fila que se arrastra con el dedo y para en cada tarjeta.
- *
- * Apiladas serían tres vídeos verticales uno debajo de otro: media pantalla
- * cada uno y la sección entera más larga que el resto de la portada junta.
- * Puestas en fila se ve que hay más de una y se pasa de una a otra con el
- * gesto de siempre, el mismo de las fotos del teléfono.
- *
- * Se sale del `wrap` por los dos lados con márgenes negativos para que la
- * primera empiece alineada con el texto y la última pueda asomar por el borde:
- * una tarjeta cortada por el canto es lo que dice «aquí hay más».
- */
-@media (max-width: 720px) {
-  .lista {
-    display: flex;
-    gap: 14px;
-    margin-left: calc(clamp(20px, 4vw, 40px) * -1);
-    margin-right: calc(clamp(20px, 4vw, 40px) * -1);
-    padding: 0 clamp(20px, 4vw, 40px);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    /* La barra se esconde: en un móvil no se usa y en un portátil con pantalla
-       táctil aparecería cruzando las frases. */
-    scrollbar-width: none;
-  }
+.puntos {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
 
-  .lista::-webkit-scrollbar {
-    display: none;
-  }
+.punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(237, 227, 211, 0.25);
+  transition: width 0.3s, background 0.3s;
+}
 
-  .celda {
-    flex: 0 0 auto;
-    width: min(74vw, 280px);
-    scroll-snap-align: center;
-  }
+.punto[data-activo] {
+  width: 22px;
+  background: var(--oro-b);
 }
 
 /* ==========================================================================
@@ -109,62 +185,43 @@
    ========================================================================== */
 
 .tarjeta {
-  flex: 0 0 auto;
-  width: clamp(216px, 19vw, 272px);
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
-/* El marco del vídeo: vertical, que es como se graban estas cosas con el
-   móvil. Forzar 16:9 dejaría dos franjas negras a los lados de cada cara. */
 .marco {
   position: relative;
   aspect-ratio: 9 / 16;
   overflow: hidden;
-  border-radius: 16px;
-  background: var(--inverse-bg, #141210);
-  border: 1px solid var(--line-4);
-  /* Una sombra sola y muy abierta. Levanta la tarjeta del fondo lo justo para
-     que se lea como un objeto; dos sombras y un degradado la convertirían en
-     un botón de plástico. */
-  box-shadow: 0 18px 40px -24px rgba(20, 18, 16, 0.5);
-  transition:
-    transform 0.34s cubic-bezier(0.2, 0.7, 0.3, 1),
-    box-shadow 0.34s,
-    border-color 0.34s;
+  border-radius: 22px;
+  background: #17140f;
+  /* El filo: una línea de luz muy tenue, que se vuelve dorada al abrirse. */
+  box-shadow:
+    0 0 0 1px rgba(237, 227, 211, 0.12),
+    0 24px 50px -28px rgba(0, 0, 0, 0.9);
+  transition: box-shadow 0.35s, transform 0.35s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
-/*
- * La tarjeta en la que te has parado.
- *
- * Crece poco —un 5 %— y se le cierra un filete dorado alrededor. Lo justo para
- * que quede claro cuál está sonando cuando hay cinco a la vista y todas se
- * mueven. Más crecimiento se saldría por arriba: la fila está dentro de una
- * banda con el desbordamiento cortado.
- */
+.marco:hover {
+  transform: translateY(-4px);
+}
+
+/* La que suena: filo dorado y una luz cálida alrededor. NO crece: en una fila
+   de cinco, una tarjeta más grande que las demás parece descolocada. */
 .marco[data-abierto] {
-  /* Por encima de las vecinas: al crecer se come parte del hueco de al lado, y
-     sin esto la tarjeta de la derecha —que se pinta después— le pasaría por
-     encima justo por el filo dorado. */
-  z-index: 1;
-  transform: scale(1.05);
-  border-color: var(--accent-inverse, #d9b47c);
-  box-shadow: 0 26px 56px -26px rgba(20, 18, 16, 0.62);
+  transform: translateY(-4px);
+  box-shadow:
+    0 0 0 2px var(--oro-b),
+    0 0 40px -6px rgba(217, 180, 124, 0.45),
+    0 30px 60px -26px rgba(0, 0, 0, 0.95);
 }
 
-/*
- * El botón que cubre la tarjeta entera.
- *
- * Transparente y sin nada dentro: lo que se ve es el vídeo de debajo. Está por
- * el dedo y por el teclado, que no tienen «pasar por encima». Desaparece al
- * abrirse para no robarle el clic a los controles del vídeo.
- */
 .tocar {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 3;
   display: block;
   padding: 0;
   background: none;
@@ -173,18 +230,13 @@
 }
 
 .tocar:focus-visible {
-  outline: 2px solid var(--accent-inverse, #d9b47c);
+  outline: 2px solid var(--oro-b);
   outline-offset: -4px;
+  border-radius: 22px;
 }
 
-/*
- * Lo que se ve si la carátula no carga.
- *
- * Va SIEMPRE debajo, no solo cuando falla: las carátulas de Drive se cortan
- * con más facilidad que los vídeos, y un hueco negro con un triángulo encima
- * parece una avería. Con esto, lo que queda es una tarjeta con las iniciales
- * en grande, que parece hecho a propósito.
- */
+/* Lo que se ve si la carátula no carga: unas comillas grandes en dorado, que
+   parecen hechas a propósito y no una avería. */
 .respaldo {
   position: absolute;
   inset: 0;
@@ -193,9 +245,9 @@
   justify-content: center;
   background: linear-gradient(155deg, #2a2521 0%, #17140f 62%, #241f1a 100%);
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 54px;
-  letter-spacing: 0.04em;
-  color: rgba(217, 180, 124, 0.5);
+  font-size: 120px;
+  line-height: 1;
+  color: rgba(217, 180, 124, 0.35);
 }
 
 .imagen {
@@ -204,56 +256,52 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Las carátulas vienen en 16:9 con bandas negras arriba y abajo cuando el
-     vídeo es vertical. Al recortarlas a 9:16 las bandas se van y queda la
-     cara, que es lo que hay que ver. */
-  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
-
-/*
- * El velo de abajo.
- *
- * Tiene un solo trabajo: que el nombre en blanco se lea sobre cualquier
- * fotograma, incluido uno con una pared clara justo detrás. Y tiene un solo
- * peligro: pasarse, y apagarle la cara a la persona, que es lo único que de
- * verdad hay que ver.
- *
- * Los números salen de una cuenta, no del ojo. Se calcula contra el peor
- * fotograma posible —una pared blanca justo detrás del rótulo—: el velo deja
- * ese blanco en 178, la banda de cristal al 52 % lo baja a 93, y sobre 93 el
- * nombre en blanco da 6,3 a 1 y la línea de debajo 5,3. Los dos por encima del
- * 4,5 que hace falta, con margen.
- *
- * Y de la mitad para arriba el velo es CERO. Ahí está la cara, que es lo único
- * que de verdad hay que ver; oscurecerla «para dar empaque» es el error que
- * convierte un vídeo de alguien hablando en una foto de archivo.
- */
+/* El velo de abajo: solo en la mitad de abajo, para que el nombre se lea.
+   De la mitad para arriba es cero: ahí está la cara. */
 .velo {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: linear-gradient(
     180deg,
-    rgba(20, 18, 16, 0) 0%,
-    rgba(20, 18, 16, 0) 52%,
-    rgba(20, 18, 16, 0.16) 74%,
-    rgba(20, 18, 16, 0.42) 100%
+    rgba(12, 12, 12, 0) 0%,
+    rgba(12, 12, 12, 0) 50%,
+    rgba(12, 12, 12, 0.2) 72%,
+    rgba(12, 12, 12, 0.6) 100%
   );
+  pointer-events: none;
 }
 
-/*
- * El botón de play, en cristal.
- *
- * Blanco translúcido con el fondo desenfocado: encima de una cara clara sigue
- * viéndose el círculo, y encima de una oscura sigue viéndose el triángulo. Con
- * un blanco opaco habría que elegir uno de los dos casos y fallar en el otro.
- * El filo de arriba es una línea de luz de un píxel: es lo que hace que parezca
- * un cristal y no una mancha.
- */
+/* El altavoz tachado de arriba: «esto suena, ahora está en silencio». */
+.mudo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(12, 12, 12, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: background 0.25s;
+}
+
+.marco:hover .mudo {
+  background: rgba(138, 106, 50, 0.7);
+}
+
 .play {
   position: absolute;
   top: 50%;
   left: 50%;
+  z-index: 2;
   transform: translate(-50%, -50%);
   width: 58px;
   height: 58px;
@@ -262,67 +310,44 @@
   backdrop-filter: blur(14px) saturate(1.3);
   -webkit-backdrop-filter: blur(14px) saturate(1.3);
   border: 1px solid rgba(255, 255, 255, 0.42);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 10px 28px -12px rgba(0, 0, 0, 0.6);
-  /* Blanco fijo y no var(--ink): el cristal es claro en los dos temas, así que
-     con la tinta del tema el triángulo desaparecería en el oscuro. */
   color: #fbf9f6;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* El triángulo tira a la izquierda dentro de su caja; se compensa para que
-     parezca centrado, que es lo que el ojo espera. */
   padding-left: 3px;
-  transition:
-    transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1),
-    background 0.28s,
-    border-color 0.28s;
 }
 
-.marco:hover .play {
-  transform: translate(-50%, -50%) scale(1.09);
-  background: rgba(251, 249, 246, 0.32);
-  border-color: rgba(255, 255, 255, 0.62);
-}
-
-/*
- * La banda del nombre, también en cristal y por la misma razón: va sobre un
- * fotograma que no se controla. Se despega de los bordes para que se lea como
- * una pieza apoyada encima y no como el pie de la foto.
- */
+/* La banda del nombre, en cristal. */
 .rotulo {
   position: absolute;
   left: 10px;
   right: 10px;
   bottom: 10px;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 11px 13px 12px;
-  border-radius: 11px;
-  background: rgba(16, 14, 12, 0.52);
+  padding: 11px 14px 12px;
+  border-radius: 14px;
+  background: rgba(16, 14, 12, 0.5);
   backdrop-filter: blur(16px) saturate(1.2);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .nombre {
   font-size: 14.5px;
-  /* Blanco fijo y no un token: esto va SIEMPRE sobre el cristal oscuro, que no
-     cambia con el tema. Con var(--ink) desaparecería en modo claro. */
+  font-weight: 500;
   color: #fbf9f6;
   text-wrap: pretty;
 }
 
 .detalle {
   font-size: 10.5px;
-  font-weight: 300;
-  letter-spacing: 0.13em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(251, 249, 246, 0.88);
-  text-wrap: pretty;
+  color: var(--oro-c);
 }
 
 /* ---------- Con el vídeo puesto ---------- */
@@ -334,97 +359,161 @@
   height: 100%;
   border: none;
   background: #000;
+  object-fit: cover;
+}
+
+/* Abierto, el vídeo entero sí se ve completo, con su subtítulo. */
+.marco[data-abierto] .reproductor {
   object-fit: contain;
+}
+
+.mandos {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.mandos > * {
+  pointer-events: auto;
+}
+
+.seguir {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  padding: 0 0 0 3px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 180, 124, 0.6);
+  background: rgba(12, 12, 12, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  cursor: pointer;
+}
+
+.barraMini {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(12, 12, 12, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.mini {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.mini:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--oro-c);
+}
+
+.mini:focus-visible {
+  outline: 2px solid var(--oro-b);
+}
+
+.miniTiempo {
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* La línea dorada del progreso, pegada al borde de abajo. */
+.linea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--oro-a), var(--oro-b), var(--oro-c));
+  transform-origin: left center;
+  transition: transform 0.25s linear;
+  pointer-events: none;
 }
 
 /* ---------- Lo que dijo, escrito ---------- */
 
 .pie {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  /* Tres líneas de hueco reservado aunque la frase ocupe una.
-     16 px de cuerpo × 1,34 de interlineado × 3 ≈ 64. Sin esto cada tarjeta
-     acaba a una altura distinta y la fila queda con el borde de abajo
-     dentado, que es lo primero que se ve mal de un carrusel. */
-  min-height: 64px;
+  position: relative;
+  padding: 0 4px 0 30px;
+  /* Hueco reservado para cinco líneas: así todas las tarjetas acaban a la
+     misma altura y la fila no queda con el borde de abajo dentado. */
+  min-height: 112px;
 }
 
-.iniciales {
-  flex: 0 0 auto;
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  background: var(--arcilla-tint);
-  border: 1px solid var(--arcilla-line);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
-  color: var(--arcilla-ink);
+.comillas {
+  position: absolute;
+  left: 0;
+  top: -10px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 54px;
+  line-height: 1;
+  color: var(--oro-b);
 }
 
 .frase {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 16px;
-  line-height: 1.34;
-  color: var(--ink);
+  font-style: italic;
+  font-size: 16.5px;
+  line-height: 1.36;
+  color: var(--crema);
   text-wrap: pretty;
-  /* Tres líneas y lo que sobre se corta. No es por estética: las tarjetas van
-     en fila y una frase larga estiraría la suya el doble que las demás. La
-     frase entera está en el vídeo, que es a lo que lleva el botón. */
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* Sin la fila moviéndose sola, aquí queda poco: solo quitar el crecimiento
-   de la tarjeta abierta y las transiciones, que son lo único que se mueve. */
+/* ---------- Ajustes ---------- */
+
 @media (prefers-reduced-motion: reduce) {
-  .imagen,
-  .play,
-  .marco {
+  .marco,
+  .linea,
+  .punto {
     transition: none;
   }
 
+  .marco:hover,
   .marco[data-abierto] {
     transform: none;
   }
 }
 
-/*
- * Sin desenfoque de fondo, el cristal sería un velo translúcido y el texto se
- * quedaría sobre el fotograma a pelo. Se cierran los fondos para que siga
- * habiendo contraste: vale más una banda opaca que un texto ilegible.
- */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .play {
-    background: rgba(20, 18, 16, 0.55);
+  .play,
+  .mudo,
+  .seguir {
+    background: rgba(20, 18, 16, 0.6);
   }
 
-  .rotulo {
-    background: rgba(16, 14, 12, 0.78);
-  }
-}
-
-@media (max-width: 640px) {
-  .tarjeta {
-    width: 202px;
-  }
-
-  .play {
-    width: 50px;
-    height: 50px;
-  }
-
-  .frase {
-    font-size: 15px;
-  }
-
-  .pie {
-    min-height: 60px;
+  .rotulo,
+  .barraMini {
+    background: rgba(16, 14, 12, 0.8);
   }
 }
