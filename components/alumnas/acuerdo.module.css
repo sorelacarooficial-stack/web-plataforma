@@ -1,0 +1,588 @@
+/*
+ * El acuerdo de confidencialidad, en pantalla.
+ *
+ * Es un documento que se firma, así que se comporta como un documento y no
+ * como un formulario de una web: ocupa la pantalla entera, tiene pasos, y lo
+ * que se va a firmar se ve antes de firmarlo.
+ */
+
+.llamada {
+  display: inline-flex;
+  align-items: center;
+  min-height: 54px;
+  padding: 0 32px;
+  border: none;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: inherit;
+  font-size: 12.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+
+.llamada:hover {
+  background: var(--arcilla);
+}
+
+/* ---------- La ventana ---------- */
+
+.fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(14, 12, 10, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0px, 3vw, 32px);
+}
+
+.hoja {
+  width: min(880px, 100%);
+  /* dvh y no vh: en un móvil, vh mide la ventana sin la barra del navegador,
+     así que los botones del pie quedaban por debajo de ella. */
+  height: min(92dvh, 100%);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-radius: clamp(0px, 2vw, 22px);
+  overflow: hidden;
+  box-shadow: 0 30px 80px -24px rgba(20, 18, 16, 0.5);
+}
+
+.cabecera {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px clamp(18px, 3vw, 34px);
+  border-bottom: 1px solid var(--line-2);
+  background: var(--surface);
+}
+
+.identidad {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tituloDoc {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.subtitulo {
+  font-size: 11.5px;
+  font-weight: 300;
+  color: var(--muted-2);
+}
+
+.cerrar {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--line-3);
+  background: var(--bg);
+  color: var(--muted-2);
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cerrar:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+/* ---------- Los pasos ---------- */
+
+.pasos {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 16px clamp(18px, 3vw, 34px) 0;
+  list-style: none;
+}
+
+.paso {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.pasoBarra {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-3);
+  transition: background 0.3s;
+}
+
+.paso[data-estado='ahora'] .pasoBarra,
+.paso[data-estado='hecho'] .pasoBarra {
+  background: var(--arcilla);
+}
+
+.pasoTexto {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.paso[data-estado='ahora'] .pasoTexto {
+  color: var(--ink);
+}
+
+/* ---------- El cuerpo ---------- */
+
+.cuerpo {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(20px, 3vw, 34px);
+}
+
+.titulo {
+  margin: 0 0 6px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(27px, 4vw, 38px);
+  line-height: 1.04;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+}
+
+.explica {
+  margin: 0 0 18px;
+  max-width: 62ch;
+  font-size: 14.5px;
+  font-weight: 300;
+  color: var(--muted-2);
+  text-wrap: pretty;
+}
+
+/* ---------- Campos ---------- */
+
+.campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 4px 14px;
+  margin-top: 18px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.etiqueta {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.entrada {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 12px;
+  border: 1px solid var(--line-4);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.entrada:focus-visible {
+  outline: 2px solid var(--arcilla);
+  outline-offset: 1px;
+  border-color: var(--arcilla);
+}
+
+.entrada[aria-invalid] {
+  border-color: var(--error, #9c3a2a);
+}
+
+.error {
+  min-height: 17px;
+  font-size: 12px;
+  color: var(--error, #9c3a2a);
+}
+
+/* ---------- Vista previa ---------- */
+
+.vista {
+  margin-top: 20px;
+  padding: clamp(16px, 2.4vw, 26px);
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+}
+
+.vistaRotulo {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--arcilla-ink);
+}
+
+.vistaTexto {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 300;
+  line-height: 1.68;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.hueco {
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--arcilla-tint);
+  color: var(--arcilla-ink);
+  font-weight: 400;
+}
+
+/* ---------- Cláusulas ---------- */
+
+.clausulas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clausula {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  gap: 16px;
+  align-items: start;
+  padding: clamp(16px, 2.2vw, 24px);
+  border-radius: 16px;
+  border: 1px solid var(--line-3);
+  background: var(--surface);
+  font-family: inherit;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    border-color 0.25s,
+    background 0.25s;
+}
+
+.clausula[data-si] {
+  border-color: var(--arcilla);
+  background: var(--arcilla-tint);
+}
+
+.clausulaCuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.clausulaOrden {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--arcilla-ink);
+}
+
+.clausulaTexto {
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.62;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.marca {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1.5px solid var(--line-4);
+  background: var(--bg);
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  transition: all 0.25s;
+}
+
+.clausula[data-si] .marca {
+  background: var(--arcilla);
+  border-color: var(--arcilla);
+  color: var(--bg);
+}
+
+.todas {
+  margin-top: 14px;
+  padding: 11px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--line-5);
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.todas:hover {
+  border-color: var(--arcilla);
+  color: var(--arcilla-ink);
+}
+
+/* ---------- La firma ---------- */
+
+.marco {
+  position: relative;
+  margin-top: 4px;
+  border-radius: 16px;
+  border: 1px solid var(--line-4);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.lienzo {
+  display: block;
+  width: 100%;
+  height: 230px;
+  /* Sin esto, arrastrar el dedo para firmar hace scroll en la página. */
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.pista {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 22px;
+  color: var(--muted-2);
+  pointer-events: none;
+}
+
+/* La raya sobre la que se firma, como en el papel. */
+.raya {
+  position: absolute;
+  left: 11%;
+  right: 11%;
+  bottom: 46px;
+  height: 1px;
+  background: var(--line-4);
+  pointer-events: none;
+}
+
+.firmaPie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.borrar {
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line-4);
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--muted-2);
+  cursor: pointer;
+}
+
+.borrar:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.legal {
+  margin: 20px 0 0;
+  font-size: 12.5px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--muted-2);
+  text-wrap: pretty;
+}
+
+/* ---------- Pie con los botones ---------- */
+
+.pie {
+  flex: 0 0 auto;
+  padding: 14px clamp(18px, 3vw, 34px);
+  border-top: 1px solid var(--line-2);
+  background: var(--surface);
+}
+
+.fallo {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--error, #9c3a2a);
+}
+
+.botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.atras {
+  padding: 13px 22px;
+  border-radius: 999px;
+  border: 1px solid var(--line-5);
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.avanzar {
+  padding: 13px 28px;
+  border-radius: 999px;
+  border: none;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: inherit;
+  font-size: 12.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.22s;
+}
+
+.avanzar:hover:not(:disabled) {
+  background: var(--arcilla);
+}
+
+.avanzar:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ---------- Final ---------- */
+
+.gracias {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: clamp(10px, 4vw, 40px) 0;
+}
+
+.sello {
+  margin-bottom: 14px;
+  padding: 7px 17px;
+  border-radius: 999px;
+  border: 1px solid var(--arcilla-line);
+  background: var(--arcilla-tint);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--arcilla-ink);
+}
+
+.graciasTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(32px, 5.4vw, 48px);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.graciasTexto {
+  margin: 12px 0 0;
+  max-width: 54ch;
+  font-size: 15.5px;
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.referencia {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 24px 0 0;
+  padding: 16px 22px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line-3);
+}
+
+.referencia span {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.referencia strong {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.graciasFino {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--muted-2);
+}
+
+@media (max-width: 560px) {
+  .clausula {
+    grid-template-columns: minmax(0, 1fr) 30px;
+    gap: 12px;
+  }
+
+  .botones {
+    justify-content: stretch;
+  }
+
+  .avanzar {
+    flex: 1 1 auto;
+  }
+}

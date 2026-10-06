@@ -1,0 +1,137 @@
+/* El horario de las dos jornadas. Va sobre la banda oscura. */
+
+.zona {
+  margin-top: clamp(28px, 3.6vw, 44px);
+}
+
+.dias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dia {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--line-inverse);
+  background: rgba(255, 255, 255, 0.04);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.25s,
+    border-color 0.25s;
+}
+
+.dia[data-activo] {
+  background: rgba(217, 180, 124, 0.12);
+  border-color: var(--accent-inverse);
+}
+
+.diaNum {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent-inverse);
+}
+
+.diaTitulo {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 23px;
+  color: var(--inverse-ink);
+}
+
+.resumen {
+  margin: clamp(18px, 2.4vw, 26px) 0 0;
+  max-width: 62ch;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.62;
+  color: var(--on-inverse-2);
+  text-wrap: pretty;
+}
+
+.bloques {
+  margin: clamp(18px, 2.4vw, 26px) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line-inverse);
+}
+
+.bloque {
+  border-bottom: 1px solid var(--line-inverse);
+}
+
+.cabeza {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 28px;
+  gap: 14px;
+  align-items: center;
+  padding: 16px 2px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hora {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-inverse);
+}
+
+.titulo {
+  font-size: 16px;
+  color: var(--inverse-ink);
+  text-wrap: pretty;
+}
+
+.senal {
+  justify-self: end;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid var(--line-inverse-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--on-inverse-2);
+}
+
+.bloque[data-abierto] .senal {
+  background: var(--accent-inverse);
+  border-color: var(--accent-inverse);
+  color: var(--inverse-bg);
+}
+
+.texto {
+  margin: 0 0 18px;
+  /* Alineado con el título, no con la hora: así la columna de texto es una. */
+  padding-left: 90px;
+  max-width: 68ch;
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.62;
+  color: var(--on-inverse-2);
+  text-wrap: pretty;
+}
+
+@media (max-width: 560px) {
+  .cabeza {
+    grid-template-columns: 62px minmax(0, 1fr) 26px;
+    gap: 10px;
+  }
+
+  .texto {
+    padding-left: 72px;
+  }
+}
