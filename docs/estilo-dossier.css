@@ -1,0 +1,454 @@
+/*
+ * La hoja de estilo del dossier de la formación, en PDF.
+ *
+ * Es hermana de `estilo-manual.css` y comparte con ella los tokens y las
+ * tipografías, pero no la reutiliza: un manual es un cuaderno de instrucciones
+ * de ocho páginas y esto es un documento de estudio de cuarenta, con anatomía
+ * dentro. Lo que necesita es distinto —cortinillas de sección, avisos
+ * clínicos, cifras sueltas— y mezclarlo todo en una hoja acabaría con reglas
+ * que solo valen para uno de los dos.
+ *
+ * Las fuentes se cargan del propio repositorio con una ruta de archivo: dentro
+ * de un PDF no hay red, así que una fuente de Google se quedaría sin cargar y
+ * saldría todo en Times New Roman.
+ */
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('../app/fuentes/cormorant-garamond-normal-latin.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('../app/fuentes/cormorant-garamond-italic-latin.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Jost';
+  src: url('../app/fuentes/jost-normal-latin.woff2') format('woff2');
+  font-weight: 300 600;
+  font-style: normal;
+}
+
+:root {
+  --bg: #fbf9f6;
+  --tinta: #141210;
+  --tinta-2: #3e3831;
+  --tinta-3: #4f4840;
+  --suave: #6c645a;
+  --tenue: #8d8478;
+  --oro: #8a6a32;
+  --oro-ink: #6e5327;
+  --oro-claro: #a98551;
+  --oro-tinte: #f5efe2;
+  --oro-linea: rgba(138, 106, 50, 0.35);
+  --linea: rgba(20, 18, 16, 0.1);
+  --linea-2: rgba(20, 18, 16, 0.16);
+  --superficie: #f5f2ec;
+  --oscuro: #17140f;
+}
+
+@page {
+  size: A4;
+  margin: 18mm 17mm 20mm;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--tinta-2);
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: 10.4pt;
+  line-height: 1.66;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ==========================================================================
+   Portada
+   ========================================================================== */
+
+.portada {
+  /* Alto de la caja imprimible de una A4 con estos márgenes. */
+  height: 259mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  page-break-after: always;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.marca img {
+  width: 44px;
+  height: 44px;
+}
+
+.marcaNombre {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15pt;
+  letter-spacing: 0.06em;
+  color: var(--tinta);
+  line-height: 1;
+}
+
+.marcaPie {
+  margin-top: 3px;
+  font-size: 6.6pt;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.portadaCentro {
+  padding-bottom: 20mm;
+}
+
+.sello {
+  display: inline-block;
+  margin-bottom: 9mm;
+  padding: 6px 16px;
+  border: 1px solid var(--oro-linea);
+  border-radius: 999px;
+  font-size: 7.4pt;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--oro-ink);
+}
+
+.portadaTitulo {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 54pt;
+  line-height: 0.96;
+  letter-spacing: -0.015em;
+  color: var(--tinta);
+}
+
+.portadaTitulo em {
+  display: block;
+  font-style: italic;
+  color: var(--oro);
+}
+
+.portadaEntradilla {
+  margin: 8mm 0 0;
+  max-width: 108mm;
+  font-size: 11.6pt;
+  line-height: 1.62;
+  color: var(--tinta-3);
+}
+
+.portadaPie {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 5mm;
+  border-top: 1px solid var(--linea-2);
+  font-size: 8pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+/* ==========================================================================
+   Índice
+   ========================================================================== */
+
+.indice {
+  page-break-after: always;
+}
+
+.indiceLista {
+  margin: 7mm 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.indiceLista li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.indiceNum {
+  flex: 0 0 auto;
+  width: 11mm;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13pt;
+  color: var(--oro);
+}
+
+.indiceTexto {
+  flex: 1 1 auto;
+  font-size: 11pt;
+  color: var(--tinta);
+}
+
+.indiceSub {
+  display: block;
+  margin-top: 2px;
+  font-size: 8.6pt;
+  color: var(--suave);
+}
+
+/* ==========================================================================
+   Secciones
+   ========================================================================== */
+
+/*
+ * La cortinilla que abre cada sección.
+ *
+ * Ocupa poco —no una página entera— porque en un documento de estudio una
+ * página en blanco con dos palabras se salta sin leerla y encima obliga a
+ * pasar hoja para llegar al contenido. Lo que hace falta es un alto en el
+ * camino, no un capítulo aparte.
+ */
+.seccion {
+  page-break-before: always;
+}
+
+.seccionCabeza {
+  margin-bottom: 7mm;
+  padding: 7mm 8mm;
+  background: var(--oscuro);
+  color: #f6f1e8;
+  border-radius: 3mm;
+}
+
+.seccionNum {
+  font-size: 7.2pt;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--oro-claro);
+}
+
+.seccionTitulo {
+  margin: 3mm 0 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 25pt;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+}
+
+.seccionEntradilla {
+  margin: 3mm 0 0;
+  max-width: 120mm;
+  font-size: 9.8pt;
+  line-height: 1.6;
+  color: #ddd5c9;
+}
+
+h2 {
+  margin: 8mm 0 2.5mm;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: 17pt;
+  line-height: 1.16;
+  color: var(--tinta);
+  /* Un título no se queda solo al final de una hoja con su texto en la
+     siguiente: es lo que más delata un PDF generado sin cuidado. */
+  page-break-after: avoid;
+}
+
+h2:first-child {
+  margin-top: 0;
+}
+
+h3 {
+  margin: 6mm 0 2mm;
+  font-family: 'Jost', sans-serif;
+  font-weight: 600;
+  font-size: 9.4pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--oro-ink);
+  page-break-after: avoid;
+}
+
+p {
+  margin: 0 0 3.2mm;
+  text-wrap: pretty;
+  /* Dos líneas sueltas al principio o al final de una hoja se leen como un
+     error de impresión. */
+  orphans: 2;
+  widows: 2;
+}
+
+/* ---------- Listas ---------- */
+
+.lista {
+  margin: 0 0 4mm;
+  padding: 0;
+  list-style: none;
+}
+
+.lista li {
+  position: relative;
+  padding-left: 7mm;
+  margin-bottom: 2mm;
+  page-break-inside: avoid;
+}
+
+.lista li::before {
+  content: '';
+  position: absolute;
+  left: 2mm;
+  top: 2.6mm;
+  width: 1.5mm;
+  height: 1.5mm;
+  border-radius: 50%;
+  background: var(--oro);
+}
+
+/* ---------- Destacado ---------- */
+
+.destacado {
+  margin: 5mm 0;
+  padding: 5mm 6mm;
+  background: var(--oro-tinte);
+  border-left: 2.5pt solid var(--oro);
+  border-radius: 0 2mm 2mm 0;
+  page-break-inside: avoid;
+}
+
+.destacado .rotulo {
+  display: block;
+  margin-bottom: 1.5mm;
+  font-size: 7pt;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--oro-ink);
+}
+
+.destacado p {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13.4pt;
+  line-height: 1.42;
+  color: var(--tinta);
+}
+
+/* ---------- Aviso clínico ---------- */
+
+.aviso {
+  margin: 5mm 0;
+  padding: 4.5mm 6mm;
+  background: var(--superficie);
+  border: 1px solid var(--linea-2);
+  border-radius: 2mm;
+  page-break-inside: avoid;
+}
+
+.aviso .rotulo {
+  display: block;
+  margin-bottom: 1.5mm;
+  font-size: 7pt;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--tinta);
+}
+
+.aviso p {
+  margin: 0;
+  font-size: 9.8pt;
+  color: var(--tinta-3);
+}
+
+/* ---------- Cifra suelta ---------- */
+
+.dato {
+  display: flex;
+  align-items: baseline;
+  gap: 5mm;
+  margin: 4mm 0;
+  padding: 3.5mm 0;
+  border-top: 1px solid var(--linea);
+  border-bottom: 1px solid var(--linea);
+  page-break-inside: avoid;
+}
+
+.datoRotulo {
+  flex: 0 0 38mm;
+  font-size: 7.4pt;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--oro-ink);
+}
+
+.datoTexto {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 10pt;
+}
+
+/* ==========================================================================
+   Cierre
+   ========================================================================== */
+
+.cierre {
+  page-break-before: always;
+  height: 259mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.cierreTitulo {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 40pt;
+  line-height: 1.02;
+  color: var(--tinta);
+}
+
+.cierreTitulo em {
+  font-style: italic;
+  color: var(--oro);
+}
+
+.cierreTexto {
+  margin: 7mm auto 0;
+  max-width: 110mm;
+  font-size: 10.6pt;
+  color: var(--tinta-3);
+}
+
+/*
+ * El pie de confidencialidad.
+ *
+ * No es adorno legal de relleno: este documento se entrega a quien acaba de
+ * firmar un acuerdo de no divulgación, y el propio documento tiene que
+ * recordarlo. Un dossier que circula sin decir que es confidencial se
+ * reenvía sin pensarlo.
+ */
+.confidencial {
+  margin-top: 14mm;
+  padding-top: 5mm;
+  border-top: 1px solid var(--linea-2);
+  font-size: 8pt;
+  line-height: 1.55;
+  color: var(--suave);
+}
