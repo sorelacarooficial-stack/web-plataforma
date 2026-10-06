@@ -3,15 +3,62 @@
   min-height: 100svh;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  background: var(--surface-2);
+  gap: clamp(0px, 1.6vw, 20px);
+  padding: clamp(0px, 1.6vw, 20px);
+  background:
+    radial-gradient(50% 60% at 75% 40%, rgba(217, 180, 124, 0.1), transparent 70%),
+    var(--negro, #0c0c0c);
   color: var(--ink);
 }
 
+/* La foto, con las esquinas muy redondeadas de las landings y un acercamiento
+   lento que la mantiene viva mientras se escribe. */
 .foto {
   position: relative;
   min-height: min(42vh, 360px);
   background: var(--photo-bg);
   overflow: hidden;
+  border-radius: clamp(0px, 4vw, 60px);
+}
+
+.foto img {
+  animation: accesoRespira 18s ease-in-out infinite alternate;
+}
+
+@keyframes accesoRespira {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+/* El panel entra subiendo, como los bloques de las landings. */
+.panel > * {
+  animation: accesoEntra 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) backwards;
+}
+
+.panel > *:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.panel > *:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+@keyframes accesoEntra {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .foto img,
+  .panel > * {
+    animation: none;
+  }
 }
 
 .foto img {
@@ -23,7 +70,7 @@
 }
 
 .panel {
-  background: var(--bg);
+  background: transparent;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -44,13 +91,20 @@
 }
 
 .titulo {
+  --alto-linea: 0.92em;
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(32px, 4.4vw, 52px);
-  line-height: 1.05;
-  letter-spacing: -0.012em;
-  text-wrap: pretty;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(40px, 5.6vw, 84px);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  background-image: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  background-size: 100% var(--alto-linea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .caja {
@@ -73,9 +127,11 @@
 }
 
 .campo {
-  padding: 15px 17px;
+  padding: 15px 20px;
   background: var(--surface);
-  border: 1px solid var(--line-4);
+  border: 1px solid var(--line-3);
+  border-radius: 999px;
+  transition: border-color 0.25s, box-shadow 0.25s;
   font-size: 15px;
   font-weight: 300;
   color: var(--ink);
@@ -111,9 +167,10 @@
   display: flex;
   gap: 11px;
   align-items: flex-start;
-  padding: 14px 16px;
-  background: var(--surface);
-  border: 1px solid var(--line-4);
+  padding: 16px 20px;
+  background: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
+  border: 1px solid rgba(237, 227, 211, 0.14);
+  border-radius: 24px;
   cursor: pointer;
   transition:
     border-color 0.25s,
@@ -177,19 +234,28 @@
 .enviar {
   margin-top: 6px;
   padding: 16px 28px;
-  background: var(--ink);
-  color: var(--bg);
+  background: linear-gradient(123deg, #1a1208 7%, #8a6a32 37%, #d9b47c 72%, #6e5327 100%);
+  color: #fff;
   border: none;
   border-radius: 999px;
-  font-size: 12.5px;
+  box-shadow:
+    0 4px 4px rgba(217, 180, 124, 0.25),
+    inset 4px 4px 12px #a98551;
+  outline: 2px solid #fff;
+  outline-offset: -3px;
+  font-size: 13px;
+  font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.25s;
+  transition: transform 0.25s, box-shadow 0.25s;
 }
 
 .enviar:hover {
-  background: var(--oro);
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 28px rgba(217, 180, 124, 0.35),
+    inset 4px 4px 12px #a98551;
 }
 
 /* El relleno vertical no se ve y está para que se pueda pulsar: sin él son
@@ -335,4 +401,10 @@
     opacity: 1;
     transform: none;
   }
+}
+
+.campo:focus-visible {
+  outline: none;
+  border-color: var(--oro);
+  box-shadow: 0 0 0 4px rgba(217, 180, 124, 0.16);
 }
