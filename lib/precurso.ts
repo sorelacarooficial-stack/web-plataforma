@@ -309,10 +309,10 @@ export const LAMINAS: Lamina[] = [
   },
   {
     src: '/alumnas/anatomia-ganglios.webp',
-    alt: 'Lámina de los ganglios linfáticos superficiales y profundos',
-    titulo: 'Dónde están los ganglios',
+    alt: 'Lámina de los ganglios inguinales superficiales',
+    titulo: 'Ganglios inguinales: una región clave del sistema linfático',
     texto:
-      'Agrupados por regiones: cervicales, axilares, epitrocleares, inguinales, poplíteos, y los profundos del tronco. Cada región recoge de un territorio concreto.',
+      'Los ganglios están por todo el cuerpo: cervicales, axilares, epitrocleares, poplíteos y los profundos del tronco. Los inguinales son una de las zonas principales para el éxito del tratamiento.',
   },
   {
     src: '/alumnas/anatomia-ganglio.webp',
