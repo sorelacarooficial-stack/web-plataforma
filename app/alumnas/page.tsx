@@ -6,230 +6,312 @@ import Anatomia from '@/components/alumnas/Anatomia';
 import AntesDespues from '@/components/alumnas/AntesDespues';
 import Evaluacion from '@/components/alumnas/Evaluacion';
 import Programa from '@/components/alumnas/Programa';
+import Apiladas from '@/components/landing/Apiladas';
+import { BotonBrillo, BotonContorno } from '@/components/landing/Botones';
+import Cinta from '@/components/landing/Cinta';
+import FadeIn from '@/components/landing/FadeIn';
+import Magnet from '@/components/landing/Magnet';
+import TextoRevelado from '@/components/landing/TextoRevelado';
 import Galeria from '@/components/presentacion/Galeria';
-import { PILARES, QUE_LLEVAS, RESULTADOS } from '@/lib/precurso';
-import css from './alumnas.module.css';
+import { CINTA_ALUMNAS, METODO_TEXTO, PILARES, QUE_LLEVAS, RESULTADOS } from '@/lib/precurso';
+import l from '@/components/landing/landing.module.css';
 
 /**
  * La página del Precurso, para alumnas.
  *
  * Vive en `/alumnas` y además se sirve en `alumnas.sorelacarodivine.com`, que
- * la reescribe el middleware. Las dos direcciones enseñan lo mismo a
- * propósito: esconder una solo sirve para que un día nadie sepa por qué da 404.
+ * la reescribe el middleware.
  *
- * NO LLEVA LA CABECERA NI EL PIE DE LA WEB, y es deliberado: quien llega aquí
- * viene a mirar una formación concreta y, al final, a firmar un documento. Un
- * menú con seis destinos en lo alto es seis maneras de no firmarlo.
+ * CÓMO ESTÁ HECHA. Con el mismo sistema que la presentación profesional
+ * —`components/landing/`—: portada con el titular a todo lo ancho y el retrato
+ * que sigue al ratón, cinta de fotos que se mueve con el scroll, texto que se
+ * enciende al leerlo, lista con números enormes sobre blanco, tarjetas que se
+ * apilan. Los componentes interactivos que ya tenía —horario, láminas, test,
+ * antes y después— se quedan, y se ven en oscuro porque la hoja de la landing
+ * les redefine los colores.
  *
- * LO QUE NO ESTÁ EN ESTA PÁGINA: el contenido formativo. La anatomía, el
- * protocolo, las presiones y las maniobras están en el dossier, y el dossier
- * se entrega al firmar el acuerdo de confidencialidad. Publicarlo aquí sería
- * regalar el producto y contradecir el documento que se firma dos secciones
- * más abajo. Ver la cabecera de `lib/precurso.ts`.
+ * TODO EMPUJA A UN SITIO: firmar el acuerdo. Es la única llamada principal y
+ * aparece tres veces: en la portada, a mitad y al final.
+ *
+ * LO QUE NO ESTÁ EN ESTA PÁGINA: el protocolo. Las presiones, los tiempos y
+ * las maniobras están en el dossier, que llega al firmar. Ver la cabecera de
+ * `lib/precurso.ts`.
  */
 
 export const metadata: Metadata = {
-  title: 'Precurso Técnica Divine · Formación para alumnas',
+  title: 'Precurso Técnica Divine · Juventud linfática',
   description:
     'Dos jornadas presenciales con Sorela Caro: lipodrenaje, modelado corporal y Divine Facial. Dossier, práctica con modelos reales y diploma de terapeuta Divine.',
-  /* No se indexa. Es la página de quien ya está hablando con Sorela, no una
-     puerta de entrada desde una búsqueda; y lleva el acuerdo que se firma. */
   robots: { index: false, follow: false },
 };
 
+function Carta({
+  num,
+  categoria,
+  nombre,
+  fotos,
+}: {
+  num: string;
+  categoria: string;
+  nombre: string;
+  fotos: [string, string, string];
+}) {
+  return (
+    <>
+      <div className={l.cartaCabeza}>
+        <div className={l.cartaIzq}>
+          <span className={`${l.cartaNum} ${l.degradado}`}>{num}</span>
+          <div>
+            <span className={l.cartaCategoria}>{categoria}</span>
+            <h3 className={l.cartaNombre}>{nombre}</h3>
+          </div>
+        </div>
+        <BotonContorno href="#galeria">Ver resultados</BotonContorno>
+      </div>
+      <div className={l.cartaFotos}>
+        <div className={l.cartaCol}>
+          <Image src={fotos[0]} alt="" width={700} height={500} className={`${l.cartaFoto} ${l.cartaFotoA}`} sizes="(max-width: 768px) 40vw, 460px" />
+          <Image src={fotos[1]} alt="" width={700} height={700} className={`${l.cartaFoto} ${l.cartaFotoB}`} sizes="(max-width: 768px) 40vw, 460px" />
+        </div>
+        <Image src={fotos[2]} alt="" width={900} height={1100} className={`${l.cartaFoto} ${l.cartaFotoAlta}`} sizes="(max-width: 768px) 60vw, 700px" />
+      </div>
+    </>
+  );
+}
+
 export default function Alumnas() {
   return (
-    <main className={css.pagina}>
-      {/* ---------- Portada ---------- */}
-      <header className={css.hero}>
-        <div className={`wrap ${css.heroCaja}`}>
-          <div className={css.heroTexto}>
-            {/* Esta página no lleva la cabecera de la web, así que el
-                logotipo tiene que estar aquí: sin él, la primera pantalla no
-                dice de quién es. */}
-            <Image src={logo} alt="Sorela Caro · Técnica Divine" className={css.marca} priority sizes="190px" />
-            <p className={css.sello}>Precurso oficial · plazas limitadas</p>
-            <h1 className={css.heroTitulo}>
-              Juventud
-              <em className={css.heroEnfasis}>linfática</em>
-            </h1>
-            <p className={css.heroEntradilla}>
-              Dos jornadas presenciales con Sorela Caro: lipodrenaje, modelado corporal y Divine
-              Facial. Formación limitada, impartida únicamente por la creadora del método.
-            </p>
-            <div className={css.heroAcciones}>
-              <a href="#acuerdo" className={css.heroBoton}>
-                Firmar el acuerdo
-              </a>
-              <a href="#programa" className={css.heroFino}>
-                Ver el programa
-              </a>
-            </div>
-          </div>
+    <main className={l.pagina}>
+      {/* ================= Portada ================= */}
+      <header className={l.hero} style={{ ['--hero-talla' as string]: '17vw' }}>
+        <FadeIn as="nav" y={-20} delay={0} className={l.nav}>
+          <Image src={logo} alt="Sorela Caro · Técnica Divine" className={l.navLogo} priority sizes="130px" />
+          <a href="#metodo">Método</a>
+          <a href="#programa">Programa</a>
+          <a href="#anatomia">Anatomía</a>
+          <a href="#acuerdo">Acuerdo</a>
+        </FadeIn>
 
-          <div className={css.heroFoto}>
+        <div className={l.heroTituloCaja}>
+          <FadeIn delay={0.15} y={40}>
+            <h1 className={`${l.heroTitulo} ${l.degradado}`}>Precurso</h1>
+          </FadeIn>
+        </div>
+
+        {/* La posición va en un div propio y la animación dentro. Si van en
+            el mismo elemento, el transform de la animación pisa el que
+            centra el retrato y se queda descolocado a la derecha. */}
+        <div className={l.retrato}>
+        <FadeIn delay={0.6} y={30}>
+          <Magnet margen={150} fuerza={3}>
             <Image
-              src="/alumnas/sorela.webp"
+              src="/landing/sorela-recorte.webp"
               alt="Sorela Caro, creadora de la Técnica Divine"
-              width={820}
-              height={847}
+              width={514}
+              height={598}
+              className={l.retratoFoto}
               priority
-              className={css.retrato}
+              sizes="(max-width: 640px) 270px, (max-width: 1024px) 430px, 500px"
             />
-          </div>
+          </Magnet>
+        </FadeIn>
+        </div>
+
+        <div className={l.heroPie}>
+          <FadeIn delay={0.35} y={20}>
+            <p className={l.heroLema}>
+              Juventud linfática: dos jornadas presenciales con la creadora del método
+            </p>
+          </FadeIn>
+          <FadeIn delay={0.5} y={20}>
+            <BotonBrillo href="#acuerdo">Firmar el acuerdo</BotonBrillo>
+          </FadeIn>
         </div>
       </header>
 
-      {/* ---------- Qué es ---------- */}
-      <section className={css.seccion}>
-        <div className="wrap wrap-1040">
-          <p className="antetitulo">El método</p>
-          <h2 className={css.titulo}>
-            Lo Divine no se improvisa: se siente, se vive y se recuerda.
-          </h2>
-          <p className={css.entradilla}>
-            Un método de drenaje y modelado corporal nacido de más de tres décadas en estética
-            avanzada. No es una secuencia cerrada que se aplica igual a todo el mundo: es un orden
-            de trabajo que se adapta a cada cuerpo.
-          </p>
+      {/* ================= Cinta ================= */}
+      <Cinta fotos={CINTA_ALUMNAS} />
 
-          <ul className={css.pilares}>
-            {PILARES.map((p) => (
-              <li key={p.titulo} className={css.pilar}>
-                <h3 className={css.pilarTitulo}>{p.titulo}</h3>
-                <p className={css.pilarTexto}>{p.texto}</p>
-              </li>
-            ))}
-          </ul>
+      {/* ================= El método =================
+          En las esquinas, las láminas de anatomía en medallón: lo que se va a
+          estudiar, rodeando lo que se va a aprender. */}
+      <section className={l.sobre} id="metodo">
+        <FadeIn className={`${l.esquina} ${l.esqSI}`} delay={0.1} x={-80} y={0} duration={0.9}>
+          <Image src="/alumnas/anatomia-ganglio.webp" alt="" width={300} height={300} className={`${l.esquinaFoto} ${l.esquinaRedonda}`} sizes="210px" />
+        </FadeIn>
+        <FadeIn className={`${l.esquina} ${l.esqII}`} delay={0.25} x={-80} y={0} duration={0.9}>
+          <Image src="/alumnas/anatomia-capilar.webp" alt="" width={300} height={300} className={`${l.esquinaFoto} ${l.esquinaRedonda}`} sizes="180px" />
+        </FadeIn>
+        <FadeIn className={`${l.esquina} ${l.esqSD}`} delay={0.15} x={80} y={0} duration={0.9}>
+          <Image src="/alumnas/anatomia-funcion.webp" alt="" width={300} height={300} className={`${l.esquinaFoto} ${l.esquinaRedonda}`} sizes="210px" />
+        </FadeIn>
+        <FadeIn className={`${l.esquina} ${l.esqID}`} delay={0.3} x={80} y={0} duration={0.9}>
+          <Image src="/alumnas/anatomia-vias.webp" alt="" width={300} height={300} className={`${l.esquinaFoto} ${l.esquinaRedonda}`} sizes="220px" />
+        </FadeIn>
+
+        <div className={l.sobreTexto}>
+          <FadeIn delay={0} y={40}>
+            <h2 className={`${l.gigante} ${l.degradado}`}>El método</h2>
+          </FadeIn>
+          <TextoRevelado texto={METODO_TEXTO} className={l.revelado} />
         </div>
 
-        {/* Tres fotos del trabajo real, a sangre. Entre el bloque del método y
-            el horario había dos pantallas seguidas de texto. */}
-        <ul className={css.tira}>
-          {[
-            { src: '/alumnas/manos.webp', alt: 'Trabajo manual sobre abdomen' },
-            { src: '/alumnas/camilla.webp', alt: 'Sesión de Técnica Divine' },
-            { src: '/alumnas/abdomen-2.webp', alt: 'Maniobra de drenaje abdominal' },
-          ].map((f) => (
-            <li key={f.src} className={css.tiraItem}>
-              <Image
-                src={f.src}
-                alt={f.alt}
-                width={900}
-                height={700}
-                className={css.tiraFoto}
-                sizes="(max-width: 760px) 100vw, 33vw"
-              />
-            </li>
+        <FadeIn delay={0.2}>
+          <BotonBrillo href="#acuerdo">Quiero mi plaza</BotonBrillo>
+        </FadeIn>
+      </section>
+
+      {/* Los tres pilares, en su propia franja. Dentro de la sección de las
+          esquinas empujaban el titular hacia arriba y las láminas le tapaban
+          las letras. */}
+      <section className={l.franja}>
+        <ul className={l.tres}>
+          {PILARES.map((p, i) => (
+            <FadeIn as="li" key={p.titulo} delay={i * 0.12} className={l.cuatroItem}>
+              <h3 className={l.cuatroTitulo}>{p.titulo}</h3>
+              <p className={l.tresTexto}>{p.texto}</p>
+            </FadeIn>
           ))}
         </ul>
       </section>
 
-      {/* ---------- Anatomía ---------- */}
-      <section className={css.seccionSuave} id="anatomia">
-        <div className="wrap wrap-1040">
-          <p className="antetitulo">Lo que hay que saber</p>
-          <h2 className={css.titulo}>El sistema linfático, lámina a lámina.</h2>
-          <p className={css.entradilla}>
-            La anatomía con la que se trabaja durante los dos días. Toca cada apartado para ver su
-            lámina. El protocolo —las presiones, los tiempos y las maniobras— está en el dossier,
-            detrás del acuerdo.
-          </p>
-          <Anatomia />
-        </div>
+      {/* ================= Lo que te llevas, sobre blanco ================= */}
+      <section className={l.blanca}>
+        <FadeIn y={40}>
+          <h2 className={`${l.gigante} ${l.blancaTitulo}`}>Te llevas</h2>
+        </FadeIn>
+        <ul className={l.lista}>
+          {QUE_LLEVAS.map((q, i) => (
+            <FadeIn as="li" key={q.titulo} delay={i * 0.1} className={l.item}>
+              <span className={l.itemNum}>{String(i + 1).padStart(2, '0')}</span>
+              <div className={l.itemCuerpo}>
+                <h3 className={l.itemNombre}>{q.titulo}</h3>
+                <p className={l.itemTexto}>{q.texto}</p>
+              </div>
+            </FadeIn>
+          ))}
+        </ul>
       </section>
 
-      {/* ---------- Programa ---------- */}
-      <section className={css.seccionOscura} id="programa">
-        <div className="wrap wrap-1040">
-          <p className="antetitulo" style={{ color: 'var(--accent-inverse)' }}>
-            Protocolo de formación
+      {/* ================= La parte oscura que sube ================= */}
+      <section className={l.oscura} id="resultados">
+        <FadeIn y={40}>
+          <h2 className={`${l.gigante} ${l.degradado}`}>Resultados</h2>
+        </FadeIn>
+
+        <Apiladas
+          tarjetas={[
+            <Carta
+              key="abdomen"
+              num="01"
+              categoria="Corporal"
+              nombre="Abdomen y flancos"
+              fotos={['/alumnas/resultado-2.webp', '/alumnas/resultado-1.webp', '/alumnas/resultado-3.webp']}
+            />,
+            <Carta
+              key="piernas"
+              num="02"
+              categoria="Corporal"
+              nombre="Piernas y glúteos"
+              fotos={['/alumnas/abdomen-2.webp', '/alumnas/resultado-5.webp', '/alumnas/resultado-4.webp']}
+            />,
+            <Carta
+              key="facial"
+              num="03"
+              categoria="Divine Facial"
+              nombre="Una sola sesión"
+              fotos={['/trayectoria/rostro-2.webp', '/trayectoria/rostro-6.webp', '/trayectoria/rostro-4.webp']}
+            />,
+          ]}
+        />
+
+        {/* ---- El horario, interactivo ---- */}
+        <div className={l.bloque} id="programa">
+          <span className={l.rotulo}>Protocolo de formación</span>
+          <FadeIn y={40}>
+            <h2 className={`${l.gigante} ${l.medio} ${l.degradado}`}>Dos días. Un método.</h2>
+          </FadeIn>
+          <p className={l.entrada}>
+            Toca cada bloque del horario para ver qué se trabaja. Práctica con modelos reales y
+            corrección directa de Sorela.
           </p>
-          <h2 className={css.tituloClaro}>Dos días. Un método.</h2>
-          <p className={css.entradillaClara}>
-            Toca cada bloque del horario para ver qué se trabaja. Dossier, evaluación de
-            comprensión y práctica con modelos reales, con corrección directa de Sorela.
-          </p>
-          <Programa />
+          <div className={l.interactivo}>
+            <Programa />
+          </div>
         </div>
-      </section>
 
-      {/* ---------- Evaluación ---------- */}
-      <section className={css.seccion}>
-        <div className="wrap wrap-1040">
-          <p className="antetitulo">Evaluación de comprensión</p>
-          <h2 className={css.titulo}>¿Cuánto sabes del sistema linfático?</h2>
-          <p className={css.entradilla}>
-            Igual que en la formación: responde y comprueba. No hay nota y no se guarda nada.
+        {/* ---- Las láminas, interactivas ---- */}
+        <div className={l.bloque} id="anatomia">
+          <span className={l.rotulo}>Lo que hay que saber</span>
+          <FadeIn y={40}>
+            <h2 className={`${l.gigante} ${l.medio} ${l.degradado}`}>Anatomía</h2>
+          </FadeIn>
+          <p className={l.entrada}>
+            El sistema linfático, lámina a lámina. El protocolo —presiones, tiempos y maniobras—
+            está en el dossier, detrás del acuerdo.
           </p>
-          <Evaluacion />
+          <div className={l.interactivo}>
+            <Anatomia />
+          </div>
         </div>
-      </section>
 
-      {/* ---------- Antes y después ---------- */}
-      <section className={css.seccionSuave}>
-        <div className="wrap wrap-1040">
-          <p className="antetitulo">Resultado real</p>
-          <h2 className={css.titulo}>Antes. Después.</h2>
-          <AntesDespues />
-
-          <h3 className={css.subtitulo}>Más resultados</h3>
-          <p className={css.entradilla}>
-            Procesos de distintas clientas sobre abdomen, flancos y piernas. Toca cualquiera para
-            verla entera.
-          </p>
-          <Galeria fotos={RESULTADOS} alto columnas={3} />
-          <p className={css.avisoFotos}>
+        {/* ---- Antes y después + galería ---- */}
+        <div className={l.bloque} id="galeria">
+          <span className={l.rotulo}>Resultado real</span>
+          <FadeIn y={40}>
+            <h2 className={`${l.gigante} ${l.medio} ${l.degradado}`}>Antes. Después.</h2>
+          </FadeIn>
+          <p className={l.entrada}>Arrastra la línea para comparar.</p>
+          <div className={l.interactivo}>
+            <AntesDespues />
+          </div>
+          <div className={l.interactivo}>
+            <Galeria fotos={RESULTADOS} alto columnas={3} />
+          </div>
+          <p className={l.avisoFotos}>
             Imágenes reales de clientas, cedidas con su autorización. Los resultados dependen de
             cada persona, de su punto de partida y del número de sesiones.
           </p>
         </div>
-      </section>
 
-      {/* ---------- Qué te llevas ---------- */}
-      <section className={css.seccion}>
-        <div className="wrap wrap-1040">
-          <p className="antetitulo">Qué te llevas</p>
-          <h2 className={css.titulo}>Conviértete en terapeuta Divine.</h2>
-          <ul className={css.llevas}>
-            {QUE_LLEVAS.map((q) => (
-              <li key={q.titulo} className={css.lleva}>
-                <h3 className={css.llevaTitulo}>{q.titulo}</h3>
-                <p className={css.llevaTexto}>{q.texto}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* ---------- El acuerdo ---------- */}
-      <section className={css.seccionOscura} id="acuerdo">
-        <div className="wrap wrap-820">
-          <p className="antetitulo" style={{ color: 'var(--accent-inverse)' }}>
-            Paso previo a la formación
+        {/* ---- El test ---- */}
+        <div className={l.bloque} id="test">
+          <span className={l.rotulo}>Evaluación de comprensión</span>
+          <FadeIn y={40}>
+            <h2 className={`${l.gigante} ${l.medio} ${l.degradado}`}>¿Cuánto sabes?</h2>
+          </FadeIn>
+          <p className={l.entrada}>
+            Igual que en la formación: responde y comprueba. No hay nota y no se guarda nada.
           </p>
-          <h2 className={css.tituloClaro}>Acuerdo de confidencialidad</h2>
-          <p className={css.entradillaClara}>
-            Cada alumna firma el acuerdo de confidencialidad y no divulgación de la Técnica Divine
-            antes de empezar. Se completa aquí en dos minutos: tus datos, las cláusulas y tu firma.
-            Al terminar recibes tu referencia, y Sorela te abre el dossier y tu espacio de alumna.
-          </p>
-          <div className={css.acuerdoAccion}>
-            <Acuerdo />
+          <div className={l.interactivo}>
+            <Evaluacion />
           </div>
         </div>
       </section>
 
-      <footer className={css.pie}>
-        <div className="wrap wrap-1040">
-          <Image src={logo} alt="Sorela Caro · Técnica Divine" className={css.pieLogo} sizes="150px" />
-          <p className={css.pieMarca}>Sorela Caro · Formación en estética avanzada</p>
-          <p className={css.pieLegal}>
-            Formación en técnicas manuales de estética. No sustituye el diagnóstico ni el
-            tratamiento médico. Las fotografías de resultados son reales y pueden variar según cada
-            persona.
-          </p>
-        </div>
+      {/* ================= El acuerdo, sobre papel =================
+          Fondo claro a propósito: la firma se dibuja en tinta oscura, y sobre
+          negro no se vería. */}
+      <section className={l.claro} id="acuerdo">
+        <FadeIn y={40}>
+          <h2 className={`${l.gigante} ${l.medio}`} style={{ color: '#141210' }}>
+            Firma y empieza
+          </h2>
+        </FadeIn>
+        <p className={l.claroTexto}>
+          Cada alumna firma el acuerdo de confidencialidad antes de empezar. Son dos minutos: tus
+          datos, las cláusulas y tu firma. Al terminar abres tu dossier en el momento y te llega
+          también por correo.
+        </p>
+        <Acuerdo />
+      </section>
+
+      <footer className={l.pie}>
+        <p>Sorela Caro · Formación en estética avanzada</p>
+        <p>
+          Formación en técnicas manuales de estética. No sustituye el diagnóstico ni el tratamiento
+          médico.
+        </p>
       </footer>
     </main>
   );
