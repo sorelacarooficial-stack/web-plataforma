@@ -143,34 +143,28 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#FBF9F6' },
-    { media: '(prefers-color-scheme: dark)', color: '#121110' },
+    { media: '(prefers-color-scheme: light)', color: '#0C0C0C' },
+    { media: '(prefers-color-scheme: dark)', color: '#0C0C0C' },
   ],
 };
 
 /**
- * Se ejecuta antes del primer pintado para que la página no aparezca en claro
- * y salte a oscuro. El prototipo lo hacía en componentDidMount y parpadeaba.
+ * La web entera va en oscuro, como las landings: el diseño está hecho para el
+ * negro y el dorado, y ya no hay botón para cambiarlo. Se pone antes del primer
+ * pintado para que no aparezca un instante en claro.
  */
-const TEMA_INICIAL = `
-(function(){
-  try{
-    var g = localStorage.getItem('divine-tema');
-    var t = g === 'oscuro' || g === 'claro'
-      ? g
-      : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'oscuro' : 'claro');
-    document.documentElement.setAttribute('data-tema', t);
-  }catch(e){
-    document.documentElement.setAttribute('data-tema','claro');
-  }
-})();
-`;
+const TEMA_INICIAL = `document.documentElement.setAttribute('data-tema','oscuro');`;
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${cormorant.variable} ${jost.variable}`} suppressHydrationWarning>
+    <html
+      lang="es"
+      data-tema="oscuro"
+      className={`${cormorant.variable} ${jost.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: TEMA_INICIAL }} />
       </head>

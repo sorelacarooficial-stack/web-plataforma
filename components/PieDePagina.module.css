@@ -1,5 +1,6 @@
 .pie {
-  background: var(--inverse-bg);
+  background: var(--negro, #0c0c0c);
+  border-top: 1px solid rgba(237, 227, 211, 0.1);
   color: var(--on-inverse-2);
   /* El extra de abajo reserva sitio al botón flotante del asistente, que si no
      se posa encima de la línea de copyright y de los últimos enlaces. */

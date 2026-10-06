@@ -77,13 +77,13 @@
   align-items: center;
   gap: 10px;
   padding: 8px 16px 8px 12px;
-  background: var(--surface);
+  background: rgba(12, 12, 12, 0.5);
   border: 1px solid var(--oro-line);
   border-radius: 999px;
   font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-b);
 }
 
 .selloPunto {
@@ -118,11 +118,11 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  font-size: 12px;
-  letter-spacing: 0.14em;
+  font-size: clamp(0.75rem, 1.1vw, 1.05rem);
+  font-weight: 300;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  /* Sobre la foto, el gris de la firma también se quedaba corto. */
-  color: var(--ink-3);
+  color: var(--crema);
 }
 
 .heroRaya {
@@ -144,11 +144,12 @@
 }
 
 .cita {
-  background: var(--salvia-tint);
-  border-top: 1px solid var(--salvia-line);
-  border-bottom: 1px solid var(--salvia-line);
-  padding: clamp(90px, 14vw, 190px) 0;
+  padding: clamp(90px, 14vw, 190px) 0 clamp(40px, 6vw, 80px);
   text-align: center;
+}
+
+.citaCaja {
+  margin: 0;
 }
 
 .cita > div {
@@ -161,20 +162,21 @@
 .citaTexto {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 300;
+  font-weight: 400;
   font-style: italic;
-  font-size: clamp(28px, 4.6vw, 58px);
-  line-height: 1.22;
+  font-size: clamp(30px, 5vw, 66px);
+  line-height: 1.18;
   letter-spacing: -0.01em;
-  color: var(--ink);
+  color: var(--crema);
   text-wrap: pretty;
 }
 
 .citaFirma {
-  font-size: 11.5px;
-  letter-spacing: 0.2em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: var(--salvia-ink);
+  color: var(--oro-b);
 }
 
 .datos {
@@ -257,8 +259,7 @@
    Cierre
    ========================================================================== */
 .cierre {
-  padding: clamp(80px, 12vw, 160px) 0;
-  background: var(--inverse-bg);
+  padding: clamp(100px, 14vw, 190px) 0 clamp(80px, 12vw, 160px);
   text-align: center;
 }
 
@@ -270,14 +271,15 @@
 }
 
 .cierreTitulo {
+  --alto-linea: 0.98em;
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(34px, 5.4vw, 70px);
-  line-height: 1.04;
-  letter-spacing: -0.015em;
-  color: var(--inverse-ink);
-  text-wrap: pretty;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(38px, 7vw, 110px);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 /*
@@ -530,10 +532,7 @@
 
   /* El sello y la firma repiten lo que ya dicen el logotipo de la cabecera y
      el titular, y cuestan los setenta píxeles de alto que necesita el botón. */
-  .sello,
-  .heroFirma {
-    display: none;
-  }
+
 
 }
 
@@ -616,37 +615,39 @@
 .etapa {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: clamp(24px, 3vw, 36px);
-  background: var(--bg);
-  border: 1px solid var(--line-4);
-  border-top: 3px solid var(--line-5);
+  gap: 16px;
+  padding: clamp(16px, 3vw, 40px);
 }
 
-/* La presencial se marca en oro: es la que tiene fechas y la que cuesta
-   dinero. La online es el paso previo, no el destino. */
+/* La presencial lleva el rótulo en oro: es la que tiene fechas y la que
+   cuesta dinero. La online es el paso previo, no el destino. */
 .etapaDestacada {
-  border-top-color: var(--arcilla);
+  background: radial-gradient(120% 90% at 100% 0%, rgba(217, 180, 124, 0.12), transparent 60%);
+  border-radius: 40px;
 }
 
 .etapaOrden {
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--muted);
-}
-
-.etapaDestacada .etapaOrden {
-  color: var(--arcilla);
+  color: var(--oro-b);
 }
 
 .etapaTitulo {
+  --alto-linea: 0.95em;
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(23px, 2.5vw, 31px);
-  line-height: 1.12;
-  color: var(--ink);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(36px, 6vw, 88px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  background-image: linear-gradient(180deg, #8f7650 8%, #f3e3c3 78%);
+  background-size: 100% var(--alto-linea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .etapaLista {
@@ -660,11 +661,11 @@
 
 .etapaLista li {
   position: relative;
-  padding-left: 18px;
-  font-size: 14.5px;
+  padding-left: 22px;
+  font-size: clamp(15px, 1.4vw, 18px);
   font-weight: 300;
-  line-height: 1.5;
-  color: var(--ink-3);
+  line-height: 1.55;
+  color: var(--crema);
 }
 
 .etapaLista li::before {
@@ -687,15 +688,22 @@
   justify-content: space-between;
   gap: clamp(20px, 3vw, 40px);
   margin-top: clamp(30px, 4vw, 52px);
-  padding: clamp(26px, 3.2vw, 40px);
-  background: var(--surface);
-  border-left: 3px solid var(--oro);
+  padding: clamp(28px, 3.6vw, 48px);
+  background: linear-gradient(160deg, #17140f 0%, #0f0e0c 100%);
+  border: 1px solid rgba(237, 227, 211, 0.14);
+  border-radius: clamp(28px, 4vw, 48px);
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.fechas:hover {
+  border-color: rgba(217, 180, 124, 0.55);
+  transform: translateY(-3px);
 }
 
 .fechasTitulo {
   margin: 6px 0 10px;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
+  font-weight: 600;
   font-size: clamp(24px, 2.8vw, 34px);
   line-height: 1.1;
   color: var(--ink);
@@ -783,9 +791,7 @@
   position: relative;
   overflow: hidden;
   padding: clamp(80px, 12vw, 170px) 0;
-  background: var(--inverse-bg, #141210);
-  border-top: 1px solid var(--line-inverse);
-  border-bottom: 1px solid var(--line-inverse);
+  background: var(--negro, #0c0c0c);
 }
 
 /* Un halo dorado detrás del titular. Va del centro hacia fuera y muere antes
@@ -827,11 +833,13 @@
 /* El tamaño es el mensaje. Con 12vw ocupa la pantalla de lado a lado en
    móvil y sigue siendo enorme en un monitor, sin pasarse de los 200px. */
 .lanzamientoTitulo {
+  --alto-linea: 0.86em;
   margin: 0;
   display: flex;
   flex-direction: column;
+  text-transform: uppercase;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 300;
+  font-weight: 600;
   font-size: clamp(54px, 12vw, 190px);
   line-height: 0.86;
   letter-spacing: -0.03em;
@@ -938,5 +946,121 @@
   }
   100% {
     box-shadow: 0 0 0 0 rgba(138, 106, 50, 0);
+  }
+}
+
+/* ==========================================================================
+   Portada al estilo de las landings
+   ========================================================================== */
+.portada {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding-top: var(--cabecera);
+  overflow-x: clip;
+}
+
+.portadaTituloCaja {
+  position: relative;
+  z-index: 1;
+  padding: clamp(24px, 4vw, 48px) clamp(18px, 3vw, 40px) 0;
+}
+
+.portadaTitulo {
+  --alto-linea: 0.88em;
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-align: center;
+  font-size: clamp(46px, 8.3vw, 170px);
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.portadaRetrato {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 10;
+  width: 260px;
+  transform: translateX(-50%);
+}
+
+@media (min-width: 640px) {
+  .portadaRetrato {
+    width: 340px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .portadaRetrato {
+    width: clamp(340px, 27vw, 440px);
+  }
+}
+
+.portadaRetratoFoto {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 30px 60px rgba(217, 180, 124, 0.18));
+}
+
+.portadaPie {
+  position: relative;
+  z-index: 20;
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  /* Abajo deja sitio al botón flotante del asistente, que si no tapa la
+     segunda llamada. */
+  padding: 24px clamp(18px, 3vw, 40px) calc(clamp(28px, 4vw, 44px) + 64px);
+}
+
+.portadaLema {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  max-width: 290px;
+}
+
+.centro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  text-align: center;
+}
+
+.preguntas {
+  padding-bottom: clamp(120px, 14vw, 200px);
+}
+
+/* Móvil: el retrato sube detrás del titular y el pie se apila, con un velo
+   oscuro debajo para que se sigan leyendo la firma y los botones. */
+@media (max-width: 860px) {
+  /* En el móvil el retrato entra en el flujo, justo debajo del titular y
+     montado un poco sobre él, y el pie va después: nada se tapa. */
+  .portadaRetrato {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: min(76vw, 330px);
+    margin: -18px auto 0;
+    transform: none;
+  }
+
+  .portadaPie {
+    margin-top: 0;
+    flex-direction: column;
+    align-items: stretch;
+    padding-top: 28px;
+    padding-bottom: 36px;
   }
 }
