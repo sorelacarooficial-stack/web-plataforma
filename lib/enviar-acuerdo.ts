@@ -3,6 +3,7 @@ import path from 'node:path';
 import { baseDeDatos } from './firebase-servidor';
 import { enviar, hayCorreo } from './correo';
 import { pdfDelAcuerdo, type AcuerdoGuardado } from './acuerdo-pdf';
+import { leerFirmaSorela } from './firma-sorela';
 
 /**
  * El correo que recibe quien acaba de firmar el acuerdo.
@@ -166,7 +167,7 @@ export async function enviarAcuerdo(referencia: string): Promise<ResultadoCorreo
     const a = await acuerdoGuardado(referencia);
     if (!a) return { enviado: false, via: 'ninguna', fecha, detalle: 'No existe ese acuerdo.' };
 
-    const acuerdo = await pdfDelAcuerdo(a);
+    const acuerdo = await pdfDelAcuerdo(a, { firmaSorela: await leerFirmaSorela() });
     let dossier: Buffer | null = null;
     try {
       dossier = await readFile(path.join(process.cwd(), 'docs', 'dossier.pdf'));

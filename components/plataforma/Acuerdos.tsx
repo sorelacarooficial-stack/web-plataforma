@@ -86,6 +86,8 @@ export default function Acuerdos() {
 
   return (
     <div className={css.columna}>
+      <FirmaSorela />
+
       {!fallo && (
         <div className={css.rejillaKpis}>
           <article className={css.kpi}>
@@ -176,5 +178,92 @@ export default function Acuerdos() {
         )}
       </section>
     </div>
+  );
+}
+
+/* ==========================================================================
+   La firma de Sorela
+
+   La que va en su lado de cada acuerdo. Se sube una foto —de un papel, del
+   carné— y el servidor la limpia: tinta oscura sobre fondo transparente. Lo
+   que se ve aquí es exactamente lo que sale en el PDF.
+
+   No se guarda en el código de la web, que es público, sino en la base de
+   datos. Ver `lib/firma-sorela.ts`.
+   ========================================================================== */
+
+function FirmaSorela() {
+  const [firma, setFirma] = useState<string | null | undefined>(undefined);
+  const [estado, setEstado] = useState('');
+  const [subiendo, setSubiendo] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/ajustes/firma', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((c) => setFirma(c.ok ? (c.firma as string | null) : null))
+      .catch(() => setFirma(null));
+  }, []);
+
+  async function subir(archivo: File) {
+    setSubiendo(true);
+    setEstado('');
+    try {
+      const imagen = await new Promise<string>((ok, mal) => {
+        const lector = new FileReader();
+        lector.onload = () => ok(String(lector.result));
+        lector.onerror = () => mal(lector.error);
+        lector.readAsDataURL(archivo);
+      });
+      const r = await fetch('/api/ajustes/firma', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imagen }),
+      });
+      const c = await r.json();
+      if (!c.ok) throw new Error(c.motivo);
+      setFirma(c.firma);
+      setEstado('Firma guardada. A partir de ahora sale en todos los acuerdos.');
+    } catch {
+      setEstado('No he podido leer esa imagen. Prueba con una foto más nítida, solo de la firma.');
+    } finally {
+      setSubiendo(false);
+    }
+  }
+
+  return (
+    <section className={css.tarjeta} style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center' }}>
+      <div style={{ flex: '1 1 260px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <strong style={{ fontWeight: 500 }}>Tu firma en los acuerdos</strong>
+        <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--muted)' }}>
+          {firma
+            ? 'Esta es la firma que sale en tu lado de cada acuerdo, también en los ya firmados.'
+            : 'Sube una foto de tu firma: recórtala para que solo se vea la firma, sin letras alrededor. Se limpia sola.'}
+        </span>
+        {estado && <span style={{ fontSize: 13, color: 'var(--arcilla-ink)' }}>{estado}</span>}
+      </div>
+
+      {firma && (
+        <img
+          src={firma}
+          alt="Tu firma"
+          style={{ height: 70, maxWidth: 240, objectFit: 'contain', background: '#fff', borderRadius: 10, padding: 8, border: '1px solid var(--line-2)' }}
+        />
+      )}
+
+      <label className={css.btn} style={{ cursor: subiendo ? 'default' : 'pointer', opacity: subiendo ? 0.6 : 1 }}>
+        {subiendo ? 'Guardando…' : firma ? 'Cambiar firma' : 'Subir mi firma'}
+        <input
+          type="file"
+          accept="image/*"
+          disabled={subiendo}
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) subir(f);
+            e.target.value = '';
+          }}
+        />
+      </label>
+    </section>
   );
 }

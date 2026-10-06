@@ -3,6 +3,7 @@ import { hayFirebase } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
 import { pdfDelAcuerdo } from '@/lib/acuerdo-pdf';
 import { acuerdoGuardado } from '@/lib/enviar-acuerdo';
+import { leerFirmaSorela } from '@/lib/firma-sorela';
 
 /**
  * El acuerdo firmado de una alumna, en PDF. Solo Sorela.
@@ -28,7 +29,7 @@ export async function GET(_peticion: Request, { params }: { params: Promise<{ re
   const acuerdo = await acuerdoGuardado(ref.toUpperCase());
   if (!acuerdo) return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
 
-  const pdf = await pdfDelAcuerdo(acuerdo);
+  const pdf = await pdfDelAcuerdo(acuerdo, { firmaSorela: await leerFirmaSorela() });
   return new NextResponse(new Uint8Array(pdf), {
     headers: {
       'Content-Type': 'application/pdf',
