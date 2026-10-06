@@ -44,7 +44,9 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <main>
+    // clip y no hidden: corta lo que asoma por los lados (la cinta de fotos,
+    // las esquinas) sin romper las tarjetas que se quedan pegadas al bajar.
+    <main style={{ overflowX: 'clip' }}>
       {/* ---------- Hero ----------
            Como las landings: el titular enorme en dorado, el retrato que sigue
            al ratón y, abajo, la firma a un lado y las dos llamadas al otro. */}
