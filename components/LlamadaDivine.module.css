@@ -49,14 +49,23 @@
  * banda oscura— y se arregla con `.btn-claro`, que ya existía en globals
  * para esto; lo pone el componente.
  */
+/* Sobre negro, la cita es el botón de contorno de las landings. */
 .citaClara {
-  color: var(--on-inverse-2);
-  border-bottom-color: var(--line-inverse-2);
+  min-height: 0;
+  padding: 14px 32px;
+  border: 2px solid var(--crema);
+  border-radius: 999px;
+  color: var(--crema);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  transition: background 0.2s, transform 0.25s;
 }
 
 .citaClara:hover {
-  color: var(--inverse-ink);
-  border-bottom-color: var(--accent-inverse);
+  color: var(--crema);
+  border-color: var(--crema);
+  background: rgba(237, 227, 211, 0.1);
+  transform: translateY(-1px);
 }
 
 .citaClara:focus-visible {

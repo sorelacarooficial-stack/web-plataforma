@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import logo from '@/fotos/logo-sorela.png';
-import CambiarTema from './CambiarTema';
 import MenuMovil from './MenuMovil';
 import { PLATAFORMA_URL } from '@/lib/enlaces';
 import css from './Cabecera.module.css';
@@ -33,7 +32,6 @@ export default function Cabecera() {
         </nav>
 
         <div className={css.acciones}>
-          <CambiarTema />
           <Link href={PLATAFORMA_URL} className={css.entrar}>
             Entrar
           </Link>

@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import CambiarTema from './CambiarTema';
 import logo from '@/fotos/logo-sorela.png';
 import consulta from '@/fotos/acceso-consulta.webp';
 import css from './Acceso.module.css';
@@ -42,7 +41,6 @@ export default function MarcoAcceso({ children }: { children: React.ReactNode })
           <Link href="/" className={css.volver}>
             ← Volver a la web
           </Link>
-          <CambiarTema />
         </div>
       </div>
     </div>

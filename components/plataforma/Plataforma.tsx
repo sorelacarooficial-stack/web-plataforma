@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import CambiarTema from '@/components/CambiarTema';
 import Motas from '@/components/Motas';
 import logo from '@/fotos/logo-sorela.png';
 import type { Sesion } from '@/lib/sesion-servidor';
@@ -225,7 +224,6 @@ export default function Plataforma({
               {sesion.nombre || sesion.correo}
               <span>{ETIQUETA_ROL[sesion.rol]}</span>
             </p>
-            <CambiarTema />
             <button type="button" className={css.salir} onClick={salir} disabled={saliendo}>
               {saliendo ? 'Saliendo…' : 'Salir'}
             </button>
