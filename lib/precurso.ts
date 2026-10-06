@@ -326,7 +326,7 @@ export const LAMINAS: Lamina[] = [
     alt: 'Lámina de las vías de drenaje y los territorios linfáticos',
     titulo: 'Vías y territorios',
     texto:
-      'El cuerpo está dividido en territorios, y cada uno drena hacia su grupo de ganglios. Las líneas que los separan son las que marcan por dónde se empieza.',
+      'El cuerpo está dividido en diferentes territorios linfáticos, y cada uno drena hacia determinados grupos de ganglios. Las líneas que delimitan estos territorios ayudan a identificar la dirección del drenaje y las zonas hacia las que se dirige la linfa.',
   },
   {
     src: '/alumnas/anatomia-torso.webp',
