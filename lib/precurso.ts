@@ -333,7 +333,7 @@ export const LAMINAS: Lamina[] = [
     alt: 'Lámina de los órganos linfáticos del tronco',
     titulo: 'Los órganos linfáticos',
     texto:
-      'Bazo, timo, amígdalas y médula ósea, además de la propia red de ganglios. Jalonan el trayecto de los vasos.',
+      'Bazo, timo, amígdalas y médula ósea, junto con la red de ganglios, forman parte esencial del sistema linfático y participan en la defensa inmunitaria del organismo.',
   },
   {
     src: '/alumnas/anatomia-quilo.webp',
