@@ -1,3 +1,7 @@
+> **Octubre de 2026: los correos de información ya no llevan PDF.** El archivo
+> `TECNICA-DIVINE.pdf` ya no hace falta en Drive para que esto funcione. Lo que
+> aparezca más abajo sobre él es de la versión anterior.
+
 # Cómo montar el correo automático
 
 Sorela: esto es para ti. Son unos 30 minutos y no hay que programar nada. Solo
@@ -12,7 +16,7 @@ guarda y ya está. Nadie le contesta hasta que tú entras a mirar.
 Al terminar esta guía, en cuanto alguien deje su contacto pasarán tres cosas
 solas, en el mismo minuto:
 
-1. A esa persona le llega un correo tuyo con el PDF de la Técnica Divine.
+1. A esa persona le llega un correo tuyo con la información de la Técnica Divine (sin PDF: el método solo se entrega con el acuerdo firmado).
 2. A ti te llega un aviso con sus datos y un enlace para escribirle por WhatsApp.
 3. Se apunta una fila en una hoja de cálculo, por si algún día quieres verlo
    todo junto o pasárselo a alguien.
@@ -176,8 +180,8 @@ ahorra media hora después.
 
 > **Dos propiedades más, solo si te hacen falta.** No las pongas de entrada.
 >
-> - `PDF_ID` y `HOJA_ID`: los identificadores de los dos archivos, por si algún
->   día tienes varios con el mismo nombre y quieres señalar uno concreto. Se
+> - `HOJA_ID`: el identificador de la hoja, por si algún día tienes varias con
+>   el mismo nombre y quieres señalar una concreta. Se
 >   sacan de la barra de direcciones de Drive, entre `/d/` y `/view`.
 > - `RESPONDER_A`: si quieres que las respuestas de la gente lleguen a un buzón
 >   distinto del de los avisos. Si no la pones, van a `AVISO_A`.

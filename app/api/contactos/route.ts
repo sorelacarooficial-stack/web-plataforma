@@ -570,7 +570,7 @@ export async function POST(peticion: Request) {
   }
 
   /*
-   * Y se le manda la información de la Técnica Divine, con su PDF.
+   * Y se le manda la información de la Técnica Divine (sin PDF).
    *
    * Es EXACTAMENTE el mismo correo que recibe quien deja sus datos en la
    * portada: la misma función, el mismo texto, el mismo adjunto. Apuntar a

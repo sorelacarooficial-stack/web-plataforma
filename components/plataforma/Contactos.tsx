@@ -705,7 +705,7 @@ export default function Contactos() {
         corrigiendo
           ? 'Ficha corregida.'
           : c.correo
-            ? 'Apuntado, y le acaba de salir el correo con la información y el PDF.'
+            ? 'Apuntado, y le acaba de salir el correo con la información.'
             : 'Apuntado. El correo con la información NO ha salido: escríbele tú.'
       );
       await cargar();
