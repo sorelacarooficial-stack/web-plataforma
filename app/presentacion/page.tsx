@@ -10,6 +10,7 @@ import TextoRevelado from '@/components/landing/TextoRevelado';
 import Video from '@/components/landing/Video';
 import VideoEscala from '@/components/landing/VideoEscala';
 import Galeria from '@/components/presentacion/Galeria';
+import Revista from '@/components/presentacion/Revista';
 import { WHATSAPP_SORELA } from '@/lib/contenido';
 import {
   AVISO_IMAGENES,
@@ -22,7 +23,6 @@ import {
   NOTA_EFECTOS,
   PERFIL,
   PREAMBULO_EFECTOS,
-  PRENSA,
   ROSTROS,
   SERVICIOS,
   VIDEO,
@@ -313,9 +313,7 @@ export default function Presentacion() {
             <h2 className={`${l.gigante} ${l.medio} ${l.degradado}`}>La técnica del futuro</h2>
           </FadeIn>
           <p className={l.entrada}>Reportajes publicados sobre el método. Toca cualquiera para leerlo.</p>
-          <div className={css.galeria}>
-            <Galeria fotos={PRENSA} alto columnas={3} />
-          </div>
+          <Revista />
         </div>
 
         {/* ---- Lo que hay montado ---- */}
