@@ -6,8 +6,6 @@ var WHATSAPP_SORELA = '34686154556';
 
 var PESTANA = 'Contactos';
 
-var NOMBRE_PDF = 'TECNICA-DIVINE.pdf';
-
 var NOMBRE_HOJA = 'Respaldo';
 
 /*
@@ -131,13 +129,6 @@ function doGet() {
   if (!propiedad('SECRETO')) faltan.push('SECRETO');
   if (!propiedad('AVISO_A')) faltan.push('AVISO_A');
 
-  var hayPdf = false;
-  try {
-    hayPdf = Boolean(buscarPdf());
-  } catch (falloPdf) {
-    hayPdf = false;
-  }
-
   var hayHoja = false;
   try {
     hoja();
@@ -155,9 +146,8 @@ function doGet() {
 
   return responder({
     ok: true,
-    listo: faltan.length === 0 && hayPdf,
+    listo: faltan.length === 0,
     faltan: faltan,
-    encuentraElPdf: hayPdf,
     encuentraLaHoja: hayHoja,
     correosQueQuedanHoy: quedan,
   });
@@ -248,10 +238,15 @@ function escribirALaPersona(nombre, correo, tipo, apertura, datos) {
    */
   if (tipo === 'acuerdo') return escribirPorElAcuerdo(n, correo, datos || {});
 
-  var adjunto = buscarPdf();
-
-  var texto = textoPlano(tipo, n, Boolean(adjunto), apertura);
-  var html = plantilla(tipo, n, Boolean(adjunto), apertura);
+  /*
+   * SIN ADJUNTO, a propósito. Antes iba «TECNICA-DIVINE.pdf», que trae el
+   * protocolo entero —fases, maniobras, repeticiones—, y lo recibía cualquiera
+   * que rellenara un formulario sin haber firmado nada. El método solo se
+   * entrega con el acuerdo de confidencialidad firmado (el correo del acuerdo,
+   * más arriba, sigue llevando su dossier).
+   */
+  var texto = textoPlano(tipo, n, false, apertura);
+  var html = plantilla(tipo, n, false, apertura);
 
   var mensaje = {
     to: correo,
@@ -261,12 +256,6 @@ function escribirALaPersona(nombre, correo, tipo, apertura, datos) {
     name: REMITENTE,
     replyTo: propiedad('RESPONDER_A') || propiedad('AVISO_A') || '',
   };
-
-  if (adjunto) {
-    mensaje.attachments = [adjunto];
-  } else {
-    console.warn('Va sin PDF: revisa la propiedad PDF_ID y que el archivo siga en Drive.');
-  }
 
   if (!mensaje.replyTo) delete mensaje.replyTo;
 
@@ -400,16 +389,10 @@ function asunto(tipo, n) {
  */
 var TEXTOS = {
   clienta: {
-    saludo: {
-      con: 'Gracias por pedirme la información. Va adjunta a este correo, en PDF.',
-      sin: 'Gracias por pedirme la información. El PDF se me ha quedado fuera de este correo: respóndeme y te lo mando. Mientras tanto te lo cuento aquí.',
-    },
+    saludo: 'Gracias por pedirme la información. Te la cuento aquí.',
     parrafos: [
       'La Técnica Divine es un masaje manual: mis manos, aceite y, en algunas zonas, herramientas de aluminio. Sin máquinas y sin nada invasivo.',
-      {
-        con: 'Lo que manda es el orden. Se empieza con la apertura de cinco puntos; después se trabaja la zona por partes —en el abdomen, primero la de abajo, luego la de arriba, luego los laterales— y se termina juntándolo todo. En el PDF tienes las fases completas y las zonas en las que se trabaja.',
-        sin: 'Lo que manda es el orden. Se empieza con la apertura de cinco puntos; después se trabaja la zona por partes —en el abdomen, primero la de abajo, luego la de arriba, luego los laterales— y se termina juntándolo todo. Las fases completas y las zonas en las que se trabaja van en el PDF que te mando en cuanto me respondas.',
-      },
+      'Lo que manda es el orden. Se empieza con la apertura de cinco puntos; después se trabaja la zona por partes —en el abdomen, primero la de abajo, luego la de arriba, luego los laterales— y se termina juntándolo todo.',
       'Antes de empezar hablamos. Hay situaciones en las que esta técnica no se aplica, y eso lo miramos juntas antes de que te subas a la camilla.',
       'Si quieres una sesión o te queda alguna duda, respóndeme a este correo. Lo leo yo.',
       { membresia: 'clienta' },
@@ -417,10 +400,7 @@ var TEXTOS = {
   },
 
   alumna: {
-    saludo: {
-      con: 'Gracias por interesarte por la formación. Te adjunto la información de la técnica en PDF.',
-      sin: 'Gracias por interesarte por la formación. Tengo un PDF con la información de la técnica, pero se me ha quedado fuera de este correo: respóndeme y te lo mando.',
-    },
+    saludo: 'Gracias por interesarte por la formación.',
     parrafos: [
       'La formación son dos etapas y van siempre en este orden: primero online y después presencial. Lo online te prepara; en lo presencial te corrijo la mano sobre cuerpo real.',
       'Las próximas fechas las estoy cerrando ahora mismo y te las mando en cuanto las tenga, sin que tengas que estar pendiente.',
@@ -434,10 +414,6 @@ var TEXTOS = {
     parrafos: [
       { membresia: 'comunidad' },
       'A ti te aviso antes que a nadie: tendrás el enlace en el correo horas antes de que se abra al resto.',
-      {
-        con: 'Te adjunto la información de la técnica por si quieres repasarla.',
-        sin: 'Quería adjuntarte la información de la técnica por si querías repasarla y se me ha quedado fuera del correo: respóndeme y te la mando.',
-      },
       'Cualquier duda hasta entonces, respóndeme a este correo.',
     ],
   },
@@ -445,10 +421,7 @@ var TEXTOS = {
   otro: {
     saludo: 'Gracias por escribirme.',
     parrafos: [
-      {
-        con: 'Te contesto yo en menos de 48 horas. Mientras tanto te adjunto la información de la Técnica Divine.',
-        sin: 'Te contesto yo en menos de 48 horas. Quería adjuntarte la información de la Técnica Divine y se me ha quedado fuera del correo: respóndeme y te la mando.',
-      },
+      'Te contesto yo en menos de 48 horas.',
       'Para no hacerte perder el tiempo: ¿buscas una sesión para ti, quieres formarte en la técnica, o es otra cosa? Con saber eso te mando lo que te sirve.',
       { membresia: 'otro' },
     ],
@@ -601,32 +574,6 @@ function plantilla(tipo, n, hayPdf, apertura) {
 
 function enlaceWhatsapp() {
   return 'https://wa.me/' + WHATSAPP_SORELA;
-}
-
-function buscarPdf() {
-  var id = propiedad('PDF_ID');
-  if (id) {
-    try {
-      var blob = DriveApp.getFileById(id).getBlob();
-      blob.setName(NOMBRE_PDF);
-      return blob;
-    } catch (fallo) {
-      console.error('No se pudo abrir el PDF por su identificador: ' + fallo);
-    }
-  }
-
-  try {
-    var encontrados = DriveApp.getFilesByName(NOMBRE_PDF);
-    if (encontrados.hasNext()) {
-      var blob2 = encontrados.next().getBlob();
-      blob2.setName(NOMBRE_PDF);
-      return blob2;
-    }
-    console.error('No hay ningún archivo llamado ' + NOMBRE_PDF + ' en Drive.');
-  } catch (fallo2) {
-    console.error('No se pudo buscar el PDF en Drive: ' + fallo2);
-  }
-  return null;
 }
 
 function avisarASorela(datos, nombre, correo, origen, tipo, correoEnviado, repetido) {

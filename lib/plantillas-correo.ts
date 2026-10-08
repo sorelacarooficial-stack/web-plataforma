@@ -20,8 +20,8 @@ const nombreCorto = (n: string) => (n || '').trim().split(/\s+/)[0] || '';
  * El que recibe quien deja su contacto en la web.
  *
  * OJO: en producción esto NO es lo que llega. Quien manda de verdad es el Apps
- * Script de la cuenta de Google de Sorela (`apps-script/Codigo.gs`), que además
- * adjunta el PDF y escribe distinto según de dónde venga cada persona. Esto es
+ * Script de la cuenta de Google de Sorela (`apps-script/Codigo.gs`), que escribe
+ * distinto según de dónde venga cada persona. Ninguno de los dos adjunta PDF. Esto es
  * la salida de emergencia por SMTP, para el día que no haya Apps Script.
  * Aun así dice lo mismo que aquél, porque un correo de reserva que contradiga
  * al de siempre es peor que no tener reserva.
