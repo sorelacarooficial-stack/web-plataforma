@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 /*
  * De lib/plataforma solo se trae lo que se usa.
  *
@@ -17,7 +17,6 @@ import { useEffect, useState } from 'react';
 import {
   CONVOCATORIAS,
   FILTROS_FEED,
-  PENDIENTE_BETA,
   POSTS,
   RANKING,
   type Factura,
@@ -27,18 +26,6 @@ import {
 import css from './plataforma.module.css';
 
 type Props = { rol: Rol; ir: (v: Vista) => void };
-
-/* Lo que el panel necesita de un contacto de Firestore. La lista completa,
-   con sus filtros y su exportación, vive en `Contactos.tsx`. */
-type ContactoBreve = {
-  id: string;
-  nombre: string;
-  correo: string;
-  whatsapp: string;
-  origen: string;
-  estado: string;
-  creado: string | null;
-};
 
 /* La comunidad necesita además las iniciales de quien escribe, para el avatar
    del compositor. Antes ponía «MI» a todo el mundo. */
@@ -315,123 +302,8 @@ export function Comunidad({ rol, ir, iniciales = 'D', conComunidad = false }: Pr
 }
 
 
-export function PanelSorela({ ir }: { ir: (v: Vista) => void }) {
-  const [lista, setLista] = useState<ContactoBreve[] | null>(null);
-  const [fallo, setFallo] = useState(false);
-
-  useEffect(() => {
-    let vivo = true;
-    fetch('/api/contactos')
-      .then((r) => r.json())
-      .then((c) => {
-        if (!vivo) return;
-        if (c.ok) setLista(c.contactos);
-        else {
-          setFallo(true);
-          setLista([]);
-        }
-      })
-      .catch(() => {
-        if (!vivo) return;
-        setFallo(true);
-        setLista([]);
-      });
-    // Si Sorela cambia de pantalla mientras carga, no se toca un estado que
-    // ya no está montado.
-    return () => {
-      vivo = false;
-    };
-  }, []);
-
-  const l = lista ?? [];
-  const ahora = Date.now();
-  const semana = l.filter(
-    (c) => c.creado && ahora - new Date(c.creado).getTime() < 7 * 86400000
-  ).length;
-  const sinAtender = l.filter((c) => c.estado === 'Nuevo').length;
-
-  const kpis = [
-    {
-      label: 'Sin atender',
-      valor: lista === null ? '·' : String(sinAtender),
-      nota: 'contactos que nadie ha tocado',
-    },
-    {
-      label: 'Esta semana',
-      valor: lista === null ? '·' : String(semana),
-      nota: 'han dejado sus datos en la web',
-    },
-    {
-      label: 'En total',
-      valor: lista === null ? '·' : String(l.length),
-      nota: 'desde que la web capta',
-    },
-  ];
-
-  return (
-    <>
-      <Kpis datos={kpis} />
-
-      {fallo && (
-        <p className={css.avisoFallo} role="alert">
-          No he podido leer los contactos. Comprueba la configuración de Firebase.
-        </p>
-      )}
-
-      <section className={css.tarjeta} style={{ gap: 4 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
-          <h2 className={css.rotuloSeccion}>Últimos contactos</h2>
-          {l.length > 0 && (
-            <button type="button" className={css.enlaceAccion} onClick={() => ir('leads')}>
-              Ver todos
-            </button>
-          )}
-        </div>
-
-        {lista === null ? (
-          <p className={css.vacioTexto}>Cargando…</p>
-        ) : l.length === 0 ? (
-          <p className={css.vacioTexto}>
-            Todavía no se ha apuntado nadie. En cuanto alguien deje su nombre y su correo en la
-            web, aparece aquí.
-          </p>
-        ) : (
-          l.slice(0, 5).map((c) => (
-            <div key={c.id} className={css.fila} style={{ padding: '15px 0', gap: 14 }}>
-              <span style={{ flex: '1 1 200px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={{ fontSize: 15.5, color: 'var(--ink)' }}>{c.nombre}</span>
-                <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
-                  {c.correo}
-                  {c.whatsapp && ` · ${c.whatsapp}`}
-                </span>
-              </span>
-              <span style={{ flex: '0 1 160px', fontSize: 12.5, fontWeight: 300, color: 'var(--faint)' }}>
-                {c.origen}
-              </span>
-              <span className={`${css.estado} ${CLASE_ESTADO[c.estado] ?? ''}`}>{c.estado}</span>
-            </div>
-          ))
-        )}
-      </section>
-
-      <section className={css.tarjeta} style={{ gap: 4 }}>
-        <h2 className={css.rotuloSeccion}>Lo que falta para abrir</h2>
-        {PENDIENTE_BETA.map((p) => (
-          <div key={p.que} className={css.fila} style={{ padding: '13px 0' }}>
-            <span style={{ fontSize: 14.5, fontWeight: 300, color: p.listo ? 'var(--muted)' : 'var(--ink-4)' }}>
-              {p.que}
-            </span>
-            <span
-              className={`${css.estado} ${p.listo ? css.estadoOro : css.estadoApagado}`}
-            >
-              {p.listo ? 'Hecho' : 'Pendiente'}
-            </span>
-          </div>
-        ))}
-      </section>
-    </>
-  );
-}
+/* El panel de Sorela vive en su propio fichero: PanelSorela.tsx. */
+export { PanelSorela } from './PanelSorela';
 
 /* ==========================================================================
    Formaciones (admin)

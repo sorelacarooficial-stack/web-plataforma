@@ -89,6 +89,11 @@ export const ENCARGADOS: { quien: string; para: string }[] = [
     quien: 'YouTube (en modo de privacidad mejorada)',
     para: 'Mostrar los vídeos del aula de la plataforma.',
   },
+  {
+    quien: 'Anthropic (Claude)',
+    para:
+      'Ayudar a Sorela a priorizar y redactar sus respuestas. Solo recibe tu nombre de pila, qué buscas, tu ciudad y lo que escribiste; nunca tu correo ni tu teléfono.',
+  },
 ];
 
 /**
