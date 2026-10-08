@@ -362,7 +362,7 @@ function PanelContacto({
                 un correo a una persona de verdad y no se puede deshacer. */}
             {!editando && (
               <p className={css.apunte}>
-                Al guardarlo le llega por correo la información de la Técnica Divine con el PDF,
+                Al guardarlo le llega por correo la información de la Técnica Divine,
                 el mismo que reciben quienes la piden desde la web. Si lo apuntas solo con el
                 móvil, no se le manda nada.
               </p>
@@ -694,7 +694,7 @@ export default function Contactos() {
       setModo(null);
       /*
        * Al apuntar a alguien nuevo se le manda la información de la Técnica
-       * Divine, con su PDF: el mismo correo que recibe quien la pide desde la
+       * Divine: el mismo correo que recibe quien la pide desde la
        * portada. El servidor contesta si salió, y aquí se dice, porque son dos
        * situaciones muy distintas para Sorela: si salió, esa persona ya tiene
        * la información y ella puede llamarla sabiéndolo; si no salió —porque

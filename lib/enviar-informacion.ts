@@ -15,7 +15,7 @@ import { correoAviso, correoBienvenida } from './plantillas-correo';
  *
  * Quien manda de verdad es un Apps Script en la cuenta de Google de Sorela:
  * este servidor no envía correos. El script hace tres cosas de una vez: guarda
- * la fila en la hoja de respaldo, manda el correo de bienvenida con el PDF y
+ * la fila en la hoja de respaldo, manda el correo de bienvenida y
  * le avisa a ella. El SMTP de abajo es la salida para el día en que las cien
  * diarias de Gmail se queden cortas.
  */
