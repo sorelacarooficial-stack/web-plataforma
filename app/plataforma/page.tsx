@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import Plataforma from '@/components/plataforma/Plataforma';
 import { hayFirebase } from '@/lib/firebase-servidor';
-import { accesosDe, sesionActual } from '@/lib/sesion-servidor';
+import { accesosDe, fotoDe, sesionActual } from '@/lib/sesion-servidor';
 import SinConfigurar from './SinConfigurar';
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ export default async function PaginaPlataforma() {
      resuelto. No viaja en la cookie a propósito: la cookie dura cinco días y
      los accesos cambian —alguien deja de pagar la comunidad—, así que leerlos
      en cada carga es lo que hace que quitarle uno tenga efecto al momento. */
-  const accesos = await accesosDe(sesion.uid);
+  const [accesos, foto] = await Promise.all([accesosDe(sesion.uid), fotoDe(sesion.uid)]);
 
-  return <Plataforma sesion={sesion} accesos={accesos} />;
+  return <Plataforma sesion={{ ...sesion, foto: foto ?? sesion.foto }} accesos={accesos} />;
 }
