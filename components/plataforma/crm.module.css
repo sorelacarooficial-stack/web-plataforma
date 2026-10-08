@@ -1,0 +1,475 @@
+/*
+ * El tablero de clientes.
+ *
+ * Tres columnas que cuentan en qué punto está cada persona, de izquierda a
+ * derecha. Cada tarjeta lleva solo lo que hace falta para decidir qué hacer
+ * con ella; el resto vive en la ficha.
+ */
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.buscar {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.segmentos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--line-1, rgba(0, 0, 0, 0.04));
+  box-shadow: inset 0 1px 3px rgba(60, 45, 25, 0.12);
+}
+
+.segmento {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.segmentoActivo {
+  background: #141210;
+  color: #f7f2ea;
+}
+
+.botones {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ---------- Tablero ---------- */
+
+.tablero {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 1.4vw, 18px);
+  align-items: start;
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 220px;
+  padding: 14px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid var(--line-2);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.columna[data-encima] {
+  background: rgba(217, 180, 124, 0.12);
+  border-color: var(--oro-line);
+  border-style: dashed;
+}
+
+.columnaCabeza {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 6px 8px;
+  border-bottom: 2px solid var(--line-2);
+}
+
+.columnaCabeza[data-columna='atender'] {
+  border-bottom-color: #c4573a;
+}
+
+.columnaCabeza[data-columna='hablando'] {
+  border-bottom-color: #c99a55;
+}
+
+.columnaCabeza[data-columna='cerrado'] {
+  border-bottom-color: #6f8a63;
+}
+
+.columnaTitulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.cuenta {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--line-2);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.pista {
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vacio {
+  margin: 0;
+  padding: 18px 8px;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--faint);
+}
+
+/* ---------- Tarjeta ---------- */
+
+.tarjeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--caja-fondo, #fbf9f6);
+  border: 1px solid var(--caja-borde, var(--line-2));
+  box-shadow: 0 6px 18px -10px rgba(60, 45, 25, 0.35);
+  cursor: grab;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.tarjeta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px -12px rgba(60, 45, 25, 0.45);
+}
+
+.tarjeta[data-arrastrando] {
+  opacity: 0.45;
+}
+
+.cabeza {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #6b4f24;
+  background: linear-gradient(135deg, #f4e6cc, #e6cfa4);
+}
+
+.avatar[data-tipo='clienta'] {
+  color: #4c5a48;
+  background: linear-gradient(135deg, #e7eee2, #d3dfcc);
+}
+
+.avatar[data-tipo='alumna'] {
+  color: #3f4f63;
+  background: linear-gradient(135deg, #e4ebf3, #cfdae8);
+}
+
+.avatar[data-tipo='otro'] {
+  color: #5f584e;
+  background: linear-gradient(135deg, #eeeae4, #ddd6cb);
+}
+
+.quien {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nombre {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nombre:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.meta {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mas {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.mas:hover,
+.mas[aria-expanded='true'] {
+  background: var(--line-2);
+  color: var(--ink);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  min-width: 200px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  background: #141210;
+  box-shadow: 0 18px 40px rgba(20, 16, 10, 0.35);
+}
+
+.menu button {
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #f7f2ea;
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu button:hover,
+.menu button:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  outline: none;
+}
+
+.menu .peligro {
+  color: #f0a08b;
+}
+
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fina {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line-3);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.nota {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.45;
+  color: var(--ink-3);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.iconos {
+  display: flex;
+  gap: 6px;
+}
+
+.icono {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  color: var(--ink-2);
+  transition: color 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.icono:hover {
+  color: var(--oro);
+  border-color: var(--oro-line);
+  transform: translateY(-1px);
+}
+
+.avanzar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #141210;
+  color: #f7f2ea;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.avanzar:hover {
+  transform: translateX(2px);
+  background: #2a241e;
+}
+
+/* ---------- Descartados ---------- */
+
+.descartados {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.listaDescartados {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+  opacity: 0.75;
+}
+
+/* ---------- Móvil: una columna cada vez ---------- */
+
+.pestanas {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .tablero {
+    grid-template-columns: 1fr;
+  }
+
+  .columna[data-movil-oculta] {
+    display: none;
+  }
+
+  .columnaCabeza {
+    display: none;
+  }
+
+  .columna {
+    padding: 0;
+    border: 0;
+    background: none;
+    min-height: 0;
+  }
+
+  .pestanas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: var(--line-1, rgba(0, 0, 0, 0.04));
+    box-shadow: inset 0 1px 3px rgba(60, 45, 25, 0.12);
+  }
+
+  .pestana {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 6px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .pestanaActiva {
+    background: #141210;
+    color: #f7f2ea;
+  }
+
+  .pestanaActiva .cuenta {
+    background: rgba(255, 255, 255, 0.16);
+    color: #f7f2ea;
+  }
+
+  .botones {
+    margin-left: 0;
+  }
+
+  .tarjeta {
+    cursor: default;
+  }
+}
+
+/* La tarjeta con el menú abierto va por encima de las de debajo. */
+.tarjeta[data-menu] {
+  z-index: 10;
+}
+
+@media (max-width: 900px) {
+  .segmentos {
+    flex-wrap: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .segmento {
+    white-space: nowrap;
+  }
+}

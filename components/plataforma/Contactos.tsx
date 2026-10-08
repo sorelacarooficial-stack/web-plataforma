@@ -5,6 +5,7 @@ import FichaPersona, { type Persona } from './FichaPersona';
 import { ETIQUETA_TIPO, TIPOS, comoLlego, type Tipo } from '@/lib/origenes';
 import { PERFILES } from '@/lib/captacion';
 import css from './plataforma.module.css';
+import k from './crm.module.css';
 
 /**
  * Los contactos de Sorela, dentro de la plataforma.
@@ -554,7 +555,11 @@ export default function Contactos() {
   const [lista, setLista] = useState<Contacto[] | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
-  const [filtro, setFiltro] = useState<'Todos' | Estado>('Todos');
+  const [pestana, setPestana] = useState('atender');
+  const [menu, setMenu] = useState<string | null>(null);
+  const [arrastrando, setArrastrando] = useState<string | null>(null);
+  const [encima, setEncima] = useState<string | null>(null);
+  const [verDescartados, setVerDescartados] = useState(false);
   const [tipo, setTipo] = useState<'Todos' | Tipo>('Todos');
   const [busca, setBusca] = useState('');
   // Qué ficha está abierta. Se guarda el id y no la persona entera para que,
@@ -814,28 +819,127 @@ export default function Contactos() {
     const t = busca.trim().toLowerCase();
     return (lista ?? []).filter(
       (c) =>
-        (filtro === 'Todos' || c.estado === filtro) &&
         (tipo === 'Todos' || c.tipo === tipo) &&
         (!t ||
           c.nombre.toLowerCase().includes(t) ||
           c.correo.toLowerCase().includes(t) ||
           c.ciudad.toLowerCase().includes(t))
     );
-  }, [lista, filtro, tipo, busca]);
+  }, [lista, tipo, busca]);
 
-  const resumen = useMemo(() => {
-    const l = lista ?? [];
-    const ahora = Date.now();
-    const de = (dias: number) =>
-      l.filter((c) => c.creado && ahora - new Date(c.creado).getTime() < dias * 86400000).length;
-    const porTipo = (t: Tipo) => l.filter((c) => c.tipo === t).length;
-    return [
-      { label: 'Sin atender', valor: String(l.filter((c) => c.estado === 'Nuevo').length), nota: 'nadie les ha escrito todavía' },
-      { label: 'Posibles clientas', valor: String(porTipo('clienta')), nota: 'quieren que les trates' },
-      { label: 'Posibles alumnas', valor: String(porTipo('alumna')), nota: 'quieren formarse' },
-      { label: 'Esta semana', valor: String(de(7)), nota: 'han entrado en los últimos 7 días' },
-    ];
-  }, [lista]);
+  /* El tablero: tres columnas y nada más.
+     «Hablando» junta «Contactado» y «En conversación»: para Sorela es el mismo
+     momento —ya le ha escrito y está esperando o charlando—, y separarlos en
+     dos columnas era obligarla a decidir algo que no le sirve. El estado fino
+     se sigue guardando y se ve como una etiqueta pequeña en la tarjeta. */
+  const COLUMNAS: { id: string; titulo: string; pista: string; estados: Estado[]; alSoltar: Estado }[] = [
+    { id: 'atender', titulo: 'Por atender', pista: 'Nadie les ha escrito todavía', estados: ['Nuevo'], alSoltar: 'Nuevo' },
+    { id: 'hablando', titulo: 'Hablando', pista: 'Ya les has escrito', estados: ['Contactado', 'En conversación'], alSoltar: 'Contactado' },
+    { id: 'cerrado', titulo: 'Cerrado', pista: 'Han comprado o reservado', estados: ['Cerrado'], alSoltar: 'Cerrado' },
+  ];
+
+  const siguiente = (e: Estado): Estado | null =>
+    e === 'Nuevo' ? 'Contactado' : e === 'Contactado' || e === 'En conversación' ? 'Cerrado' : null;
+
+  const descartados = visibles.filter((c) => c.estado === 'Descartado');
+  const raros = visibles.filter((c) => !(ESTADOS as readonly string[]).includes(c.estado));
+
+  const iniciales = (n: string) =>
+    n
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((t) => t[0]?.toUpperCase() ?? '')
+      .join('') || '·';
+
+  /* Una función y no un componente: definido dentro, React lo vería como un
+     componente nuevo en cada repintado y desmontaría la tarjeta a mitad de un
+     arrastre. */
+  function tarjeta(c: Contacto) {
+    const sig = siguiente(c.estado);
+    return (
+      <article
+        key={c.id}
+        className={k.tarjeta}
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer.setData('text/plain', c.id);
+          e.dataTransfer.effectAllowed = 'move';
+          setArrastrando(c.id);
+        }}
+        onDragEnd={() => setArrastrando(null)}
+        data-arrastrando={arrastrando === c.id ? '' : undefined}
+        data-menu={menu === c.id ? '' : undefined}
+      >
+        <div className={k.cabeza}>
+          <span className={k.avatar} data-tipo={c.tipo} aria-hidden="true">
+            {iniciales(c.nombre)}
+          </span>
+          <div className={k.quien}>
+            <button type="button" className={k.nombre} onClick={() => setAbierta(c.id)}>
+              {c.nombre || 'Sin nombre'}
+            </button>
+            <span className={k.meta}>
+              {[c.ciudad, cuando(c.creado)].filter(Boolean).join(' · ')}
+            </span>
+          </div>
+          <button
+            type="button"
+            className={k.mas}
+            aria-label={`Más opciones de ${c.nombre || 'este contacto'}`}
+            aria-expanded={menu === c.id}
+            onClick={() => setMenu(menu === c.id ? null : c.id)}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>
+          </button>
+          {menu === c.id && (
+            <div className={k.menu} role="menu">
+              <button type="button" role="menuitem" onClick={() => { setMenu(null); setAbierta(c.id); }}>Ver ficha y notas</button>
+              <button type="button" role="menuitem" onClick={() => { setMenu(null); setAviso(null); setModo({ que: 'editar', contacto: c }); }}>Editar datos</button>
+              {c.estado === 'Contactado' && (
+                <button type="button" role="menuitem" onClick={() => { setMenu(null); cambiarEstado(c.id, 'En conversación'); }}>Marcar «en conversación»</button>
+              )}
+              {c.estado !== 'Descartado' ? (
+                <button type="button" role="menuitem" onClick={() => { setMenu(null); cambiarEstado(c.id, 'Descartado'); }}>Descartar</button>
+              ) : (
+                <button type="button" role="menuitem" onClick={() => { setMenu(null); cambiarEstado(c.id, 'Nuevo'); }}>Recuperar</button>
+              )}
+              <button type="button" role="menuitem" className={k.peligro} onClick={() => { setMenu(null); borrar(c); }}>Borrar</button>
+            </div>
+          )}
+        </div>
+
+        <div className={k.etiquetas}>
+          <span className={css.tipoPersona} data-tipo={c.tipo}>{ETIQUETA_TIPO[c.tipo]}</span>
+          {c.estado === 'En conversación' && <span className={k.fina}>En conversación</span>}
+          {apuntadoAMano(c) && <span className={k.fina}>Apuntado a mano</span>}
+        </div>
+
+        {c.nota && <p className={k.nota}>«{c.nota}»</p>}
+
+        <div className={k.pie}>
+          <span className={k.iconos}>
+            {c.whatsapp && (
+              <a className={k.icono} href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp a ${c.nombre}`} title="WhatsApp">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.3-.4.8-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z" /></svg>
+              </a>
+            )}
+            {c.correo && (
+              <a className={k.icono} href={`mailto:${c.correo}`} aria-label={`Correo a ${c.nombre}`} title={c.correo}>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+              </a>
+            )}
+          </span>
+          {sig && (
+            <button type="button" className={k.avanzar} onClick={() => cambiarEstado(c.id, sig)}>
+              {sig === 'Contactado' ? 'Ya le escribí' : 'Cerrado'}
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          )}
+        </div>
+      </article>
+    );
+  }
 
   if (lista === null) {
     return (
@@ -845,29 +949,13 @@ export default function Contactos() {
     );
   }
 
-  return (
-    <div className={css.columna}>
-      {/* Los contadores se calculan sobre la lista, y al fallar la carga la
-          lista se queda vacía: pintarlos entonces sería enseñar cuatro ceros
-          como si fueran un dato. Cuando no se ha podido leer, no se cuenta. */}
-      {!fallo && (
-        <div className={css.rejillaKpis}>
-          {resumen.map((k) => (
-            <article key={k.label} className={css.kpi}>
-              <span className={css.kpiValor}>{k.valor}</span>
-              <span className={css.kpiLabel}>{k.label}</span>
-              <span className={css.kpiNota}>{k.nota}</span>
-            </article>
-          ))}
-        </div>
-      )}
+  const columnaMovil = COLUMNAS.find((col) => col.id === pestana) ?? COLUMNAS[0];
 
-      {/* Los contadores y el buscador trabajan sobre lo que ha llegado, no
-          sobre todo lo que hay. Si viene cortado, se dice. */}
+  return (
+    <div className={css.columna} onClick={(e) => { if (menu && !(e.target as HTMLElement).closest('[role=menu],[aria-expanded]')) setMenu(null); }}>
       {recortada && !fallo && (
         <p className={css.apunte} role="note">
-          Se muestran los 500 contactos más recientes: los contadores y el buscador solo miran
-          estos.
+          Se muestran los 500 contactos más recientes: el buscador solo mira estos.
         </p>
       )}
 
@@ -886,62 +974,29 @@ export default function Contactos() {
         </p>
       )}
 
-      {/* Primero se separa por lo que busca cada uno, y solo después por en
-          qué punto está. Son dos cortes distintos y mezclarlos en una sola
-          fila de botones hace que nadie entienda cuál está aplicado. */}
-      <div className={css.chips}>
-        {(['Todos', ...TIPOS] as const).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTipo(t)}
-            aria-pressed={tipo === t}
-            className={`${css.chip} ${tipo === t ? css.chipActivo : ''}`}
-          >
-            {t === 'Todos' ? 'Todos' : ETIQUETA_TIPO[t]}
-            {t !== 'Todos' && (
-              <span style={{ marginLeft: 7, opacity: 0.6 }}>
-                {(lista ?? []).filter((c) => c.tipo === t).length}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 10,
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <div className={css.chips}>
-          <input
-            placeholder="Buscar por nombre, correo o ciudad"
-            aria-label="Buscar contacto"
-            className={css.campoRedondo}
-            style={{ flex: '0 1 260px' }}
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-          />
-          {(['Todos', ...ESTADOS] as const).map((f) => (
+      {/* Una sola barra: buscar, qué busca la persona y los dos botones. */}
+      <div className={k.barra}>
+        <input
+          placeholder="Buscar por nombre, correo o ciudad"
+          aria-label="Buscar contacto"
+          className={`${css.campoRedondo} ${k.buscar}`}
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+        />
+        <div className={k.segmentos} role="group" aria-label="Qué busca">
+          {(['Todos', ...TIPOS.filter((t) => t !== 'otro' || (lista ?? []).some((c) => c.tipo === 'otro'))] as const).map((t) => (
             <button
-              key={f}
+              key={t}
               type="button"
-              onClick={() => setFiltro(f)}
-              aria-pressed={filtro === f}
-              className={`${css.chip} ${filtro === f ? css.chipActivo : ''}`}
+              onClick={() => setTipo(t)}
+              aria-pressed={tipo === t}
+              className={`${k.segmento} ${tipo === t ? k.segmentoActivo : ''}`}
             >
-              {f}
+              {t === 'Todos' ? 'Todos' : ETIQUETA_TIPO[t]}
             </button>
           ))}
         </div>
-        <div className={css.acciones}>
-          {/* Arriba y no al final de la lista: con los filtros puestos la
-              lista puede ser larguísima, y apuntar a alguien suele pasar con
-              el móvil en la oreja. */}
+        <div className={k.botones}>
           <button
             type="button"
             className={css.btn}
@@ -953,142 +1008,96 @@ export default function Contactos() {
             Añadir contacto
           </button>
           <button type="button" className={css.btnLinea} onClick={exportar} disabled={!visibles.length}>
-            Descargar en Excel
+            Excel
           </button>
         </div>
       </div>
 
-      <section className={css.tarjeta}>
-        {visibles.length === 0 ? (
+      {/* En el móvil no caben tres columnas: se elige cuál mirar. */}
+      <div className={k.pestanas} role="tablist">
+        {COLUMNAS.map((col) => (
+          <button
+            key={col.id}
+            type="button"
+            role="tab"
+            aria-selected={columnaMovil.id === col.id}
+            className={`${k.pestana} ${columnaMovil.id === col.id ? k.pestanaActiva : ''}`}
+            onClick={() => setPestana(col.id)}
+          >
+            {col.titulo}
+            <span className={k.cuenta}>{visibles.filter((c) => col.estados.includes(c.estado)).length}</span>
+          </button>
+        ))}
+      </div>
+
+      {lista.length === 0 && !fallo ? (
+        <section className={css.tarjeta}>
           <p className={css.vacioTexto}>
-            {/* Tres cosas distintas, y antes eran dos: si la carga ha fallado
-                no se sabe si hay alguien o no, así que no se afirma. */}
-            {fallo
-              ? 'No he podido leer los contactos, así que no puedo decirte quién hay. Pulsa «Reintentar» aquí arriba.'
-              : lista.length === 0
-                ? 'Todavía no hay nadie. En cuanto alguien deje su contacto en la web aparecerá aquí, y mientras tanto puedes apuntar tú a quien conozcas con «Añadir contacto».'
-                : 'Ningún contacto con ese filtro.'}
+            Todavía no hay nadie. En cuanto alguien deje su contacto en la web aparecerá aquí, y
+            mientras tanto puedes apuntar tú a quien conozcas con «Añadir contacto».
           </p>
-        ) : (
-          visibles.map((c) => (
-            <article key={c.id} className={css.fila} style={{ padding: '16px 0', gap: 14 }}>
-              <span
-                style={{ flex: '1 1 220px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 }}
+        </section>
+      ) : (
+        <div className={k.tablero}>
+          {COLUMNAS.map((col) => {
+            const suyos = visibles.filter((c) => col.estados.includes(c.estado));
+            return (
+              <section
+                key={col.id}
+                className={k.columna}
+                data-movil-oculta={columnaMovil.id !== col.id ? '' : undefined}
+                data-encima={encima === col.id ? '' : undefined}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (encima !== col.id) setEncima(col.id);
+                }}
+                onDragLeave={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node)) setEncima(null);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setEncima(null);
+                  setArrastrando(null);
+                  const id = e.dataTransfer.getData('text/plain');
+                  const c = lista.find((x) => x.id === id);
+                  if (c && !col.estados.includes(c.estado)) cambiarEstado(id, col.alSoltar);
+                }}
+                aria-label={col.titulo}
               >
-                {/* El nombre abre la ficha. Es donde va a pulsar cualquiera
-                    que quiera saber más de esa persona, así que mejor que sea
-                    eso a poner un botón «ver» al final de la fila. */}
-                <button
-                  type="button"
-                  onClick={() => setAbierta(c.id)}
-                  className={css.abrirFicha}
-                >
-                  {c.nombre}
-                  {c.ciudad && ` · ${c.ciudad}`}
-                </button>
-                <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
-                  {/* Se juntan solo los que existen. Antes se ponía el correo y
-                      luego « · » más el móvil, así que a quien se apuntó en una
-                      feria y solo dejó el teléfono —que es justo para lo que se
-                      hizo esto— la línea le empezaba por el separador. */}
-                  {[c.correo, c.whatsapp].filter(Boolean).join(' · ') || 'Sin correo ni móvil'}
-                </span>
-                {c.nota && (
-                  <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--ink-3)' }}>
-                    «{c.nota}»
+                <header className={k.columnaCabeza} data-columna={col.id}>
+                  <span className={k.columnaTitulo}>
+                    {col.titulo}
+                    <span className={k.cuenta}>{suyos.length}</span>
                   </span>
-                )}
-              </span>
-
-              <span style={{ flex: '0 1 200px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                {/* Qué busca, en la propia fila. Los botones de arriba filtran,
-                    pero con «Todos» puesto —que es como se mira casi siempre—
-                    hacía falta poder distinguirlos de un vistazo. */}
-                <span className={css.tipoPersona} data-tipo={c.tipo}>
-                  {ETIQUETA_TIPO[c.tipo]}
-                </span>
-                {c.perfil && (
-                  <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--ink-3)' }}>
-                    {c.perfil}
-                  </span>
-                )}
-                <span style={{ fontSize: 11.5, fontWeight: 300, color: 'var(--faint)' }}>
-                  {/* A los apuntados a mano no se les pregunta de dónde vienen:
-                      no vienen de ningún sitio, los escribió ella. A los demás
-                      se les traduce el origen, porque «cita-madrid» en crudo no
-                      se le enseña a nadie. */}
-                  {apuntadoAMano(c) ? (
-                    <span className={css.marcaMano}>Lo apuntaste tú, no vino de la web</span>
+                  <span className={k.pista}>{col.pista}</span>
+                </header>
+                <div className={k.lista}>
+                  {suyos.length === 0 ? (
+                    <p className={k.vacio}>
+                      {busca || tipo !== 'Todos' ? 'Nadie con ese filtro.' : col.id === 'atender' ? 'Todo atendido.' : 'Nadie todavía.'}
+                    </p>
                   ) : (
-                    comoLlego(c.origen)
+                    suyos.map((c) => tarjeta(c))
                   )}
-                  {' · '}
-                  {cuando(c.creado)}
-                  {c.veces > 1 && ` · ${c.veces} veces`}
-                </span>
-              </span>
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      )}
 
-              {/* `?? ''` porque el estado viene de Firestore sin comprobar: si
-                  una ficha vieja guarda uno que ya no existe, CLASE[…] sale
-                  undefined y esa palabra acababa dentro del className. */}
-              <span className={`${css.estado} ${CLASE[c.estado] ?? ''}`}>{c.estado}</span>
-
-              <span className={css.acciones}>
-                {c.whatsapp && (
-                  <a
-                    className={`${css.btn} ${css.btnSm}`}
-                    href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    WhatsApp
-                  </a>
-                )}
-                <select
-                  aria-label={`Estado de ${c.nombre}`}
-                  className={css.campoRedondo}
-                  style={{ fontSize: 13 }}
-                  value={c.estado}
-                  onChange={(e) => cambiarEstado(c.id, e.target.value as Estado)}
-                >
-                  {/* Si la ficha guarda un estado que ya no está en la lista, se
-                      añade al final en vez de dejar el desplegable enseñando
-                      otro: enseñando otro, el primer clic lo cambiaría sin que
-                      nadie hubiera querido cambiar nada. */}
-                  {((ESTADOS as readonly string[]).includes(c.estado)
-                    ? ESTADOS
-                    : [...ESTADOS, c.estado]
-                  ).map((e) => (
-                    <option key={e}>{e}</option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  className={css.enlaceAccion}
-                  /* Con el nombre dentro: en una lista larga, treinta botones
-                     que solo dicen «Editar» no le sirven a quien navega
-                     escuchando la pantalla. */
-                  aria-label={`Editar la ficha de ${c.nombre || 'este contacto'}`}
-                  onClick={() => {
-                    setAviso(null);
-                    setModo({ que: 'editar', contacto: c });
-                  }}
-                >
-                  Editar
-                </button>
-                <button
-                  type="button"
-                  className={css.enlaceAccion}
-                  aria-label={`Borrar a ${c.nombre || 'este contacto'}`}
-                  onClick={() => borrar(c)}
-                >
-                  Borrar
-                </button>
-              </span>
-            </article>
-          ))
-        )}
-      </section>
+      {(descartados.length > 0 || raros.length > 0) && (
+        <div className={k.descartados}>
+          <button type="button" className={css.enlaceAccion} onClick={() => setVerDescartados((v) => !v)}>
+            {verDescartados ? 'Ocultar descartados' : `Ver descartados (${descartados.length + raros.length})`}
+          </button>
+          {verDescartados && (
+            <div className={k.listaDescartados}>
+              {[...descartados, ...raros].map((c) => tarjeta(c))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* La ficha se busca en la lista por su id en cada repintado: así, al
           cambiarle el estado o apuntarle algo, se ve al momento y no se queda
