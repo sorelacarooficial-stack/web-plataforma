@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import FichaPersona, { type Persona } from './FichaPersona';
 import { ETIQUETA_TIPO, TIPOS, comoLlego, type Tipo } from '@/lib/origenes';
 import { PERFILES } from '@/lib/captacion';
@@ -560,6 +561,7 @@ export default function Contactos() {
   const [arrastrando, setArrastrando] = useState<string | null>(null);
   const [encima, setEncima] = useState<string | null>(null);
   const [verDescartados, setVerDescartados] = useState(false);
+  const [brillo, setBrillo] = useState<string | null>(null);
   const [tipo, setTipo] = useState<'Todos' | Tipo>('Todos');
   const [busca, setBusca] = useState('');
   // Qué ficha está abierta. Se guarda el id y no la persona entera para que,
@@ -833,13 +835,22 @@ export default function Contactos() {
      dos columnas era obligarla a decidir algo que no le sirve. El estado fino
      se sigue guardando y se ve como una etiqueta pequeña en la tarjeta. */
   const COLUMNAS: { id: string; titulo: string; pista: string; estados: Estado[]; alSoltar: Estado }[] = [
-    { id: 'atender', titulo: 'Por atender', pista: 'Nadie les ha escrito todavía', estados: ['Nuevo'], alSoltar: 'Nuevo' },
+    { id: 'atender', titulo: 'Por atender', pista: 'Nadie les ha escrito', estados: ['Nuevo'], alSoltar: 'Nuevo' },
     { id: 'hablando', titulo: 'Hablando', pista: 'Ya les has escrito', estados: ['Contactado', 'En conversación'], alSoltar: 'Contactado' },
-    { id: 'cerrado', titulo: 'Cerrado', pista: 'Han comprado o reservado', estados: ['Cerrado'], alSoltar: 'Cerrado' },
+    { id: 'cerrado', titulo: 'Cerrado', pista: 'Compraron o reservaron', estados: ['Cerrado'], alSoltar: 'Cerrado' },
   ];
 
   const siguiente = (e: Estado): Estado | null =>
     e === 'Nuevo' ? 'Contactado' : e === 'Contactado' || e === 'En conversación' ? 'Cerrado' : null;
+
+  /* Mover y celebrar: al cerrar una venta la tarjeta brilla un momento. */
+  const mover = (id: string, estado: Estado) => {
+    if (estado === 'Cerrado') {
+      setBrillo(id);
+      setTimeout(() => setBrillo((b) => (b === id ? null : b)), 1400);
+    }
+    cambiarEstado(id, estado);
+  };
 
   const descartados = visibles.filter((c) => c.estado === 'Descartado');
   const raros = visibles.filter((c) => !(ESTADOS as readonly string[]).includes(c.estado));
@@ -852,92 +863,130 @@ export default function Contactos() {
       .map((t) => t[0]?.toUpperCase() ?? '')
       .join('') || '·';
 
+  /** Días que lleva esperando alguien sin respuesta: lo que pide atención. */
+  const espera = (c: Contacto) =>
+    c.estado === 'Nuevo' && c.creado ? Math.floor((Date.now() - new Date(c.creado).getTime()) / 86400000) : 0;
+
   /* Una función y no un componente: definido dentro, React lo vería como un
      componente nuevo en cada repintado y desmontaría la tarjeta a mitad de un
      arrastre. */
   function tarjeta(c: Contacto) {
     const sig = siguiente(c.estado);
+    const dias = espera(c);
     return (
-      <article
+      <motion.div
         key={c.id}
-        className={k.tarjeta}
-        draggable
-        onDragStart={(e) => {
-          e.dataTransfer.setData('text/plain', c.id);
-          e.dataTransfer.effectAllowed = 'move';
-          setArrastrando(c.id);
-        }}
-        onDragEnd={() => setArrastrando(null)}
-        data-arrastrando={arrastrando === c.id ? '' : undefined}
+        layout
+        layoutId={`tarjeta-${c.id}`}
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+        className={k.hueco}
         data-menu={menu === c.id ? '' : undefined}
       >
-        <div className={k.cabeza}>
-          <span className={k.avatar} data-tipo={c.tipo} aria-hidden="true">
-            {iniciales(c.nombre)}
-          </span>
-          <div className={k.quien}>
-            <button type="button" className={k.nombre} onClick={() => setAbierta(c.id)}>
-              {c.nombre || 'Sin nombre'}
+        <article
+          className={k.tarjeta}
+          draggable
+          onDragStart={(e) => {
+            e.dataTransfer.setData('text/plain', c.id);
+            e.dataTransfer.effectAllowed = 'move';
+            setArrastrando(c.id);
+          }}
+          onDragEnd={() => setArrastrando(null)}
+          data-arrastrando={arrastrando === c.id ? '' : undefined}
+          data-brillo={brillo === c.id ? '' : undefined}
+          data-tipo={c.tipo}
+        >
+          <div className={k.cabeza}>
+            <span className={k.avatar} data-tipo={c.tipo} data-urgente={dias >= 2 ? '' : undefined} aria-hidden="true">
+              {iniciales(c.nombre)}
+            </span>
+            <div className={k.quien}>
+              <button type="button" className={k.nombre} onClick={() => setAbierta(c.id)}>
+                {c.nombre || 'Sin nombre'}
+              </button>
+              <span className={k.meta}>
+                <span className={k.puntoTipo} data-tipo={c.tipo} />
+                {ETIQUETA_TIPO[c.tipo]}
+                {c.ciudad && ` · ${c.ciudad}`}
+              </span>
+            </div>
+            <button
+              type="button"
+              className={k.mas}
+              aria-label={`Más opciones de ${c.nombre || 'este contacto'}`}
+              aria-expanded={menu === c.id}
+              onClick={() => setMenu(menu === c.id ? null : c.id)}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>
             </button>
-            <span className={k.meta}>
-              {[c.ciudad, cuando(c.creado)].filter(Boolean).join(' · ')}
+            <AnimatePresence>
+              {menu === c.id && (
+                <motion.div
+                  className={k.menu}
+                  role="menu"
+                  initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.16 }}
+                >
+                  <button type="button" role="menuitem" onClick={() => { setMenu(null); setAbierta(c.id); }}>Ver ficha y notas</button>
+                  <button type="button" role="menuitem" onClick={() => { setMenu(null); setAviso(null); setModo({ que: 'editar', contacto: c }); }}>Editar datos</button>
+                  {c.estado === 'Contactado' && (
+                    <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'En conversación'); }}>Marcar «en conversación»</button>
+                  )}
+                  {c.estado !== 'Nuevo' && c.estado !== 'Descartado' && (
+                    <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'Nuevo'); }}>Volver a «por atender»</button>
+                  )}
+                  {c.estado !== 'Descartado' ? (
+                    <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'Descartado'); }}>Descartar</button>
+                  ) : (
+                    <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'Nuevo'); }}>Recuperar</button>
+                  )}
+                  <button type="button" role="menuitem" className={k.peligro} onClick={() => { setMenu(null); borrar(c); }}>Borrar</button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {c.nota && <p className={k.nota}>«{c.nota}»</p>}
+
+          <div className={k.pie}>
+            <span className={k.tiempo} data-urgente={dias >= 2 ? '' : undefined}>
+              {dias >= 2 ? `Esperando ${dias} días` : cuando(c.creado)}
+              {c.estado === 'En conversación' && ' · en conversación'}
+            </span>
+            <span className={k.iconos}>
+              {c.whatsapp && (
+                <a className={k.icono} data-canal="whatsapp" href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp a ${c.nombre}`} title="WhatsApp">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.3-.4.8-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z" /></svg>
+                </a>
+              )}
+              {c.correo && (
+                <a className={k.icono} href={`mailto:${c.correo}`} aria-label={`Correo a ${c.nombre}`} title={c.correo}>
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+                </a>
+              )}
+              {sig && (
+                <button
+                  type="button"
+                  className={k.avanzar}
+                  data-a={sig}
+                  onClick={() => mover(c.id, sig)}
+                  aria-label={sig === 'Contactado' ? `Ya le escribí a ${c.nombre}` : `Cerrar a ${c.nombre}`}
+                  title={sig === 'Contactado' ? 'Ya le escribí' : 'Cerrado: compró o reservó'}
+                >
+                  <span>{sig === 'Contactado' ? 'Ya le escribí' : 'Cerrar'}</span>
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    {sig === 'Contactado' ? <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /> : <path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />}
+                  </svg>
+                </button>
+              )}
             </span>
           </div>
-          <button
-            type="button"
-            className={k.mas}
-            aria-label={`Más opciones de ${c.nombre || 'este contacto'}`}
-            aria-expanded={menu === c.id}
-            onClick={() => setMenu(menu === c.id ? null : c.id)}
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>
-          </button>
-          {menu === c.id && (
-            <div className={k.menu} role="menu">
-              <button type="button" role="menuitem" onClick={() => { setMenu(null); setAbierta(c.id); }}>Ver ficha y notas</button>
-              <button type="button" role="menuitem" onClick={() => { setMenu(null); setAviso(null); setModo({ que: 'editar', contacto: c }); }}>Editar datos</button>
-              {c.estado === 'Contactado' && (
-                <button type="button" role="menuitem" onClick={() => { setMenu(null); cambiarEstado(c.id, 'En conversación'); }}>Marcar «en conversación»</button>
-              )}
-              {c.estado !== 'Descartado' ? (
-                <button type="button" role="menuitem" onClick={() => { setMenu(null); cambiarEstado(c.id, 'Descartado'); }}>Descartar</button>
-              ) : (
-                <button type="button" role="menuitem" onClick={() => { setMenu(null); cambiarEstado(c.id, 'Nuevo'); }}>Recuperar</button>
-              )}
-              <button type="button" role="menuitem" className={k.peligro} onClick={() => { setMenu(null); borrar(c); }}>Borrar</button>
-            </div>
-          )}
-        </div>
-
-        <div className={k.etiquetas}>
-          <span className={css.tipoPersona} data-tipo={c.tipo}>{ETIQUETA_TIPO[c.tipo]}</span>
-          {c.estado === 'En conversación' && <span className={k.fina}>En conversación</span>}
-          {apuntadoAMano(c) && <span className={k.fina}>Apuntado a mano</span>}
-        </div>
-
-        {c.nota && <p className={k.nota}>«{c.nota}»</p>}
-
-        <div className={k.pie}>
-          <span className={k.iconos}>
-            {c.whatsapp && (
-              <a className={k.icono} href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp a ${c.nombre}`} title="WhatsApp">
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.3-.4.8-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z" /></svg>
-              </a>
-            )}
-            {c.correo && (
-              <a className={k.icono} href={`mailto:${c.correo}`} aria-label={`Correo a ${c.nombre}`} title={c.correo}>
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
-              </a>
-            )}
-          </span>
-          {sig && (
-            <button type="button" className={k.avanzar} onClick={() => cambiarEstado(c.id, sig)}>
-              {sig === 'Contactado' ? 'Ya le escribí' : 'Cerrado'}
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </button>
-          )}
-        </div>
-      </article>
+        </article>
+      </motion.div>
     );
   }
 
@@ -950,6 +999,8 @@ export default function Contactos() {
   }
 
   const columnaMovil = COLUMNAS.find((col) => col.id === pestana) ?? COLUMNAS[0];
+  const cuentaDe = (col: (typeof COLUMNAS)[number]) => visibles.filter((c) => col.estados.includes(c.estado)).length;
+  const activos = COLUMNAS.reduce((s, col) => s + cuentaDe(col), 0);
 
   return (
     <div className={css.columna} onClick={(e) => { if (menu && !(e.target as HTMLElement).closest('[role=menu],[aria-expanded]')) setMenu(null); }}>
@@ -968,21 +1019,73 @@ export default function Contactos() {
         </p>
       )}
 
-      {aviso && (
-        <p className={css.avisoBien} role="status">
-          {aviso}
-        </p>
-      )}
+      <AnimatePresence>
+        {aviso && (
+          <motion.p
+            className={css.avisoBien}
+            role="status"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            {aviso}
+          </motion.p>
+        )}
+      </AnimatePresence>
+
+      {/* El embudo: de un vistazo, cuántas hay en cada paso. Tocar un paso en
+          el móvil enseña esa columna. */}
+      <div className={k.embudo} role="tablist" aria-label="En qué punto están">
+        {COLUMNAS.map((col, i) => {
+          const n = cuentaDe(col);
+          return (
+            <button
+              key={col.id}
+              type="button"
+              role="tab"
+              aria-selected={columnaMovil.id === col.id}
+              className={k.paso}
+              data-columna={col.id}
+              data-activo={columnaMovil.id === col.id ? '' : undefined}
+              onClick={() => setPestana(col.id)}
+            >
+              <span className={k.pasoNumero}>
+                <motion.span key={n} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                  {n}
+                </motion.span>
+              </span>
+              <span className={k.pasoTexto}>
+                <span className={k.pasoTitulo}>{col.titulo}</span>
+                <span className={k.pasoPista}>{col.pista}</span>
+              </span>
+              <span className={k.pasoBarra} aria-hidden="true">
+                <motion.span
+                  className={k.pasoRelleno}
+                  animate={{ width: activos ? `${(n / activos) * 100}%` : '0%' }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 30 }}
+                />
+              </span>
+              {i < COLUMNAS.length - 1 && (
+                <span className={k.flecha} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
       {/* Una sola barra: buscar, qué busca la persona y los dos botones. */}
       <div className={k.barra}>
-        <input
-          placeholder="Buscar por nombre, correo o ciudad"
-          aria-label="Buscar contacto"
-          className={`${css.campoRedondo} ${k.buscar}`}
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-        />
+        <label className={k.buscar}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M16.5 16.5L21 21" strokeLinecap="round" /></svg>
+          <input
+            placeholder="Buscar por nombre, correo o ciudad"
+            aria-label="Buscar contacto"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+          />
+        </label>
         <div className={k.segmentos} role="group" aria-label="Qué busca">
           {(['Todos', ...TIPOS.filter((t) => t !== 'otro' || (lista ?? []).some((c) => c.tipo === 'otro'))] as const).map((t) => (
             <button
@@ -990,100 +1093,87 @@ export default function Contactos() {
               type="button"
               onClick={() => setTipo(t)}
               aria-pressed={tipo === t}
-              className={`${k.segmento} ${tipo === t ? k.segmentoActivo : ''}`}
+              className={k.segmento}
             >
-              {t === 'Todos' ? 'Todos' : ETIQUETA_TIPO[t]}
+              {tipo === t && <motion.span layoutId="segmento-activo" className={k.segmentoFondo} transition={{ type: 'spring', stiffness: 500, damping: 38 }} />}
+              <span className={k.segmentoTexto}>{t === 'Todos' ? 'Todos' : ETIQUETA_TIPO[t]}</span>
             </button>
           ))}
         </div>
         <div className={k.botones}>
           <button
             type="button"
-            className={css.btn}
+            className={k.nuevo}
             onClick={() => {
               setAviso(null);
               setModo({ que: 'nuevo' });
             }}
           >
-            Añadir contacto
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" strokeLinecap="round" /></svg>
+            Añadir
           </button>
-          <button type="button" className={css.btnLinea} onClick={exportar} disabled={!visibles.length}>
+          <button type="button" className={k.excel} onClick={exportar} disabled={!visibles.length} title="Descargar en Excel">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" strokeLinecap="round" strokeLinejoin="round" /></svg>
             Excel
           </button>
         </div>
-      </div>
-
-      {/* En el móvil no caben tres columnas: se elige cuál mirar. */}
-      <div className={k.pestanas} role="tablist">
-        {COLUMNAS.map((col) => (
-          <button
-            key={col.id}
-            type="button"
-            role="tab"
-            aria-selected={columnaMovil.id === col.id}
-            className={`${k.pestana} ${columnaMovil.id === col.id ? k.pestanaActiva : ''}`}
-            onClick={() => setPestana(col.id)}
-          >
-            {col.titulo}
-            <span className={k.cuenta}>{visibles.filter((c) => col.estados.includes(c.estado)).length}</span>
-          </button>
-        ))}
       </div>
 
       {lista.length === 0 && !fallo ? (
         <section className={css.tarjeta}>
           <p className={css.vacioTexto}>
             Todavía no hay nadie. En cuanto alguien deje su contacto en la web aparecerá aquí, y
-            mientras tanto puedes apuntar tú a quien conozcas con «Añadir contacto».
+            mientras tanto puedes apuntar tú a quien conozcas con «Añadir».
           </p>
         </section>
       ) : (
-        <div className={k.tablero}>
-          {COLUMNAS.map((col) => {
-            const suyos = visibles.filter((c) => col.estados.includes(c.estado));
-            return (
-              <section
-                key={col.id}
-                className={k.columna}
-                data-movil-oculta={columnaMovil.id !== col.id ? '' : undefined}
-                data-encima={encima === col.id ? '' : undefined}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  if (encima !== col.id) setEncima(col.id);
-                }}
-                onDragLeave={(e) => {
-                  if (!e.currentTarget.contains(e.relatedTarget as Node)) setEncima(null);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setEncima(null);
-                  setArrastrando(null);
-                  const id = e.dataTransfer.getData('text/plain');
-                  const c = lista.find((x) => x.id === id);
-                  if (c && !col.estados.includes(c.estado)) cambiarEstado(id, col.alSoltar);
-                }}
-                aria-label={col.titulo}
-              >
-                <header className={k.columnaCabeza} data-columna={col.id}>
-                  <span className={k.columnaTitulo}>
-                    {col.titulo}
-                    <span className={k.cuenta}>{suyos.length}</span>
-                  </span>
-                  <span className={k.pista}>{col.pista}</span>
-                </header>
-                <div className={k.lista}>
-                  {suyos.length === 0 ? (
-                    <p className={k.vacio}>
-                      {busca || tipo !== 'Todos' ? 'Nadie con ese filtro.' : col.id === 'atender' ? 'Todo atendido.' : 'Nadie todavía.'}
-                    </p>
-                  ) : (
-                    suyos.map((c) => tarjeta(c))
-                  )}
-                </div>
-              </section>
-            );
-          })}
-        </div>
+        <LayoutGroup>
+          <div className={k.tablero}>
+            {COLUMNAS.map((col) => {
+              const suyos = visibles.filter((c) => col.estados.includes(c.estado));
+              return (
+                <section
+                  key={col.id}
+                  className={k.columna}
+                  data-columna={col.id}
+                  data-movil-oculta={columnaMovil.id !== col.id ? '' : undefined}
+                  data-encima={encima === col.id ? '' : undefined}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (encima !== col.id) setEncima(col.id);
+                  }}
+                  onDragLeave={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) setEncima(null);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setEncima(null);
+                    setArrastrando(null);
+                    const id = e.dataTransfer.getData('text/plain');
+                    const c = lista.find((x) => x.id === id);
+                    if (c && !col.estados.includes(c.estado)) mover(id, col.alSoltar);
+                  }}
+                  aria-label={col.titulo}
+                >
+                  <div className={k.lista}>
+                    <AnimatePresence mode="popLayout">
+                      {suyos.map((c) => tarjeta(c))}
+                    </AnimatePresence>
+                    {suyos.length === 0 && (
+                      <p className={k.vacio}>
+                        {busca || tipo !== 'Todos'
+                          ? 'Nadie con ese filtro.'
+                          : col.id === 'atender'
+                            ? 'Todo atendido. Bien hecho.'
+                            : 'Arrastra aquí una tarjeta.'}
+                      </p>
+                    )}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        </LayoutGroup>
       )}
 
       {(descartados.length > 0 || raros.length > 0) && (

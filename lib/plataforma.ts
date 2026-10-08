@@ -97,42 +97,45 @@ export function tituloDe(vista: Vista, rol: Rol) {
   const admin = rol === 'sorela';
   const titulos: Record<Vista, string> = {
     inicio: admin ? 'Panel de Sorela' : '',
-    aula: admin ? 'Formaciones' : 'Tus clases',
-    comunidad: 'Comunidad Divine',
+    aula: admin ? 'Formaciones' : 'Mis clases',
+    comunidad: 'Comunidad',
     clases: 'Clases y material',
     clientas: 'Mis clientas',
-    leads: 'Tus clientes',
-    acuerdos: 'Acuerdos firmados',
-    formaciones: 'Formaciones y plazas',
-    pagos: 'Tus pagos',
-    contenido: 'Qué publicas en el aula',
-    facturacion: admin ? 'Ingresos y facturas' : 'Facturación',
-    perfil: 'Tu ficha en el buscador',
-    agenda: 'Tu agenda',
-    cuentas: 'Quién puede entrar',
-    suscripcion: admin ? 'Cobros' : 'Comunidad de Terapeutas Divine',
+    leads: 'Clientes',
+    acuerdos: 'Acuerdos',
+    formaciones: 'Formaciones',
+    pagos: 'Mis pagos',
+    contenido: 'Subir contenido',
+    facturacion: 'Facturación',
+    perfil: 'Mi ficha',
+    agenda: admin ? 'Agenda' : 'Mi agenda',
+    cuentas: 'Cuentas',
+    suscripcion: admin ? 'Cobros' : 'Comunidad',
   };
   return titulos[vista];
 }
 
 export function seccionDe(vista: Vista, rol: Rol) {
   const admin = rol === 'sorela';
+  /* El rótulo pequeño encima del título dice solo en qué parte se está, con
+     las mismas palabras del menú. Antes eran frases («Quién ha levantado la
+     mano», «Aula · autoría») que había que descifrar. */
   const secciones: Record<Vista, string> = {
     inicio: admin ? 'Administración' : '',
-    aula: 'Lo que has contratado',
-    comunidad: 'Lo que pasa esta semana',
-    clases: 'Aula de la comunidad',
-    clientas: 'Tu cartera',
+    aula: admin ? 'Administración' : 'Tu formación',
+    comunidad: 'Comunidad',
+    clases: 'Comunidad',
+    clientas: 'Tu negocio',
     facturacion: admin ? 'Administración' : 'Tu negocio',
-    perfil: 'Localiza tu terapeuta',
-    leads: 'Quién ha levantado la mano',
-    acuerdos: 'Alumnas · confidencialidad',
-    formaciones: 'Convocatorias',
+    perfil: 'Tu negocio',
+    leads: 'CRM',
+    acuerdos: 'Alumnas',
+    formaciones: 'Administración',
     pagos: 'Tu formación',
-    contenido: 'Aula · autoría',
-    agenda: 'Lo que tienes por delante',
+    contenido: 'Aula',
+    agenda: admin ? 'Administración' : 'Tu espacio',
     cuentas: 'Administración',
-    suscripcion: 'Comunidad en beta',
+    suscripcion: 'Comunidad',
   };
   return secciones[vista];
 }
