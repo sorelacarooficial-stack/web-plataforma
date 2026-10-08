@@ -23,6 +23,7 @@ import {
  * enseñar dentro. Hasta entonces, esos roles ven `Proximamente`.
  */
 import { Comunidad, FormacionesAdmin, PanelSorela } from './Vistas';
+import FotoPerfil from './FotoPerfil';
 import Contactos from './Contactos';
 import Acuerdos from './Acuerdos';
 import Proximamente from './Proximamente';
@@ -241,10 +242,7 @@ export default function Plataforma({
               )}
               {tituloDe(actual, rol) && <h1 className={css.titulo}>{tituloDe(actual, rol)}</h1>}
             </div>
-            <span className={css.usuario}>
-              <span className={`${css.avatar} ${css.avatarSm}`}>{iniciales}</span>
-              <span className={css.usuarioNombre}>{usuario}</span>
-            </span>
+            <FotoPerfil foto={sesion.foto} iniciales={iniciales} nombre={usuario} />
           </header>
 
           {/* Qué ve quien no es Sorela ya no depende de «ser alumna» o «ser

@@ -71,6 +71,25 @@ export async function accesosDe(uid: string): Promise<Acceso[]> {
 }
 
 /**
+ * La foto de perfil que la persona ha subido desde la plataforma.
+ *
+ * Va en su ficha de Firestore como imagen pequeña (256 px, unos 20 KB), no en
+ * la cookie: así cambiarla se ve al momento. Si no ha subido ninguna, manda la
+ * de su cuenta de Google, que es la que trae la sesión.
+ */
+export async function fotoDe(uid: string): Promise<string | null> {
+  if (!hayFirebase()) return null;
+  try {
+    const ficha = await baseDeDatos().collection(COLECCIONES.usuarios).doc(uid).get();
+    const foto = ficha.data()?.foto;
+    return typeof foto === 'string' && foto.startsWith('data:image/') ? foto : null;
+  } catch (e) {
+    console.error('[sesion] No se ha podido leer la foto:', e);
+    return null;
+  }
+}
+
+/**
  * Si a esta persona la dio de alta Sorela desde la plataforma.
  *
  * Se mira `altaPor`, que solo escribe el alta de `app/api/usuarios/route.ts`.
