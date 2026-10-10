@@ -8,6 +8,7 @@ import logo from '@/fotos/logo-sorela.png';
 import type { Sesion } from '@/lib/sesion-servidor';
 import { ETIQUETA_ROL } from '@/lib/roles';
 import { tieneMembresia, type Acceso } from '@/lib/accesos';
+
 import {
   ROLES,
   navDe,
@@ -33,6 +34,10 @@ import Agenda from './Agenda';
 import Cuentas from './Cuentas';
 import FacturacionSorela from './FacturacionSorela';
 import css from './plataforma.module.css';
+
+/* Lo que tiene la alumna que se simula con «Ver como». El nombre es el del
+   curso de las clases subidas: así el aula enseña lo mismo que verá ella. */
+const ACCESOS_DE_MUESTRA: Acceso[] = [{ tipo: 'curso', nombre: 'Formación Técnica Divine' }];
 
 /**
  * Plataforma privada.
@@ -83,8 +88,10 @@ export default function Plataforma({
 
   /* El menú depende de lo que tenga contratado, no solo del rol: sin nada
      contratado no hay aula que enseñar. Al mirar «Ver como» desde el panel de
-     Sorela se pasa false, que es el caso de alguien recién dado de alta. */
-  const menu = navDe(rol, !puedeVerComo && accesos.length > 0);
+     Sorela se simula una alumna que ha comprado la formación, que es lo que
+     Sorela quiere revisar: sus clases tal y como las verá quien pague. */
+  const accesosVistos: Acceso[] = puedeVerComo ? ACCESOS_DE_MUESTRA : accesos;
+  const menu = navDe(rol, accesosVistos.length > 0);
   // Si el rol cambia y la vista actual no existe en su menú, vuelve a Inicio.
   const actual = menu.some((n) => n.id === vista) ? vista : 'inicio';
 
@@ -247,11 +254,10 @@ export default function Plataforma({
 
           {/* Qué ve quien no es Sorela ya no depende de «ser alumna» o «ser
               miembro» —eso ya no existe— sino de lo que tenga contratado. Al
-              mirar «Ver como» desde el panel de Sorela no hay accesos que
-              enseñar, así que se pasa la lista vacía: se ve el espacio de
-              alguien recién dado de alta, que es lo que se quiere comprobar. */}
+              mirar «Ver como» desde el panel de Sorela se usa la alumna de
+              muestra, la misma que decide el menú de arriba. */}
           {!esAdmin && actual === 'inicio' && (
-            <Proximamente accesos={puedeVerComo ? [] : accesos} nombre={usuario} />
+            <Proximamente accesos={accesosVistos} nombre={usuario} />
           )}
           {!esAdmin && actual === 'aula' && <Aula correo={sesion.correo} />}
           {/* La misma pantalla que la de Sorela, y a propósito: la agenda de
