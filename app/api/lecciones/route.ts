@@ -61,6 +61,15 @@ function aLeccion(id: string, v: Record<string, unknown>): Leccion {
     orden: typeof v.orden === 'number' ? v.orden : 0,
     publicada: v.publicada !== false,
     creado: (v.creado as { toDate?: () => Date })?.toDate?.().toISOString() ?? null,
+    capitulos: Array.isArray(v.capitulos)
+      ? (v.capitulos as { t?: unknown; titulo?: unknown }[])
+          .map((c) => ({ t: Number(c?.t) || 0, titulo: String(c?.titulo ?? '').slice(0, 120) }))
+          .filter((c) => c.titulo)
+          .sort((a, z) => a.t - z.t)
+      : [],
+    duracion: typeof v.duracion === 'number' ? v.duracion : undefined,
+    modulo: typeof v.modulo === 'string' ? v.modulo : undefined,
+    portada: typeof v.portada === 'string' ? v.portada : undefined,
   };
 }
 

@@ -34,7 +34,36 @@ export type Leccion = {
    */
   publicada: boolean;
   creado: string | null;
+  /** Los momentos clave del vídeo, para saltar a ellos. Segundos desde el inicio. */
+  capitulos?: Capitulo[];
+  /** Cuánto dura, en segundos. Para el progreso y las horas vistas. */
+  duracion?: number;
+  /** El apartado dentro del curso: «Día 1 · Desbloqueo», «Facial»… */
+  modulo?: string;
+  /** Imagen de portada propia. Si no hay, se usa la de YouTube o un fondo. */
+  portada?: string;
 };
+
+export type Capitulo = { t: number; titulo: string };
+
+/** Lo que lleva visto una persona de una clase. */
+export type Progreso = { visto: number; completada: boolean; actualizado?: string | null };
+
+/**
+ * De dónde sale el vídeo. Los de YouTube guardan su identificador; los que
+ * vivan en el almacén propio de la plataforma guardan «propio:» y su ruta, y
+ * se sirven con un enlace firmado que caduca (ver app/api/lecciones/video).
+ */
+export const esVideoPropio = (video: string) => video.startsWith('propio:');
+
+/** «08:42» o «1:02:05». */
+export function minutos(segundos: number): string {
+  const s = Math.max(0, Math.floor(segundos));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const r = String(s % 60).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${r}` : `${String(m).padStart(2, '0')}:${r}`;
+}
 
 /* Lo de YouTube —sacar el identificador de un enlace y montar la dirección de
    incrustar— se fue a `lib/youtube.ts` cuando la portada empezó a enseñar
