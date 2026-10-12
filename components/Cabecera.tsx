@@ -2,7 +2,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import logo from '@/fotos/logo-sorela.png';
 import MenuMovil from './MenuMovil';
-import { PLATAFORMA_URL } from '@/lib/enlaces';
 import css from './Cabecera.module.css';
 
 const NAV = [
@@ -32,11 +31,10 @@ export default function Cabecera() {
           ))}
         </nav>
 
+        {/* Sin botón «Entrar»: la plataforma no se anuncia en la web pública.
+            Quien tiene cuenta entra por su enlace o escribiendo /entrar. */}
         <div className={css.acciones}>
-          <Link href={PLATAFORMA_URL} className={css.entrar}>
-            Entrar
-          </Link>
-          <MenuMovil enlaces={NAV} plataformaUrl={PLATAFORMA_URL} />
+          <MenuMovil enlaces={NAV} />
         </div>
       </div>
 

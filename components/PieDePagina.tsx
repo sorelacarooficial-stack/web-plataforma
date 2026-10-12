@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { INSTAGRAM, INSTAGRAM_USUARIO } from '@/lib/contenido';
-import { PLATAFORMA_URL } from '@/lib/enlaces';
 import css from './PieDePagina.module.css';
 
 const COLUMNAS = [
@@ -22,7 +21,6 @@ const COLUMNAS = [
       { href: '/sobre', texto: 'Sobre Sorela' },
       { href: '/blog', texto: 'Blog' },
       { href: '/contacto', texto: 'Contacto' },
-      { href: PLATAFORMA_URL, texto: 'Entrar en la plataforma' },
     ],
   },
   {

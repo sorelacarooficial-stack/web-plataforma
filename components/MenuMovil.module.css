@@ -87,31 +87,11 @@
     color: var(--arcilla);
   }
 
-  .entrar {
-    margin-top: clamp(24px, 6vw, 40px);
-    align-self: flex-start;
-    display: inline-flex;
-    align-items: center;
-    padding: 17px 38px;
-    background: var(--ink);
-    color: var(--bg);
-    border-radius: 999px;
-    font-size: 12.5px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    animation: divineUp 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
-    transition: background 0.25s;
-  }
 
-  .entrar:hover {
-    background: var(--arcilla);
-    color: var(--bg);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .enlace,
-  .entrar,
   .panel {
     animation: none;
   }

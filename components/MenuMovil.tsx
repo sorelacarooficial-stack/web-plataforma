@@ -14,13 +14,7 @@ import css from './MenuMovil.module.css';
  * 900 px, la cabecera solo enseña el logo y este botón: al pulsarlo se abre
  * un panel a pantalla completa con los enlaces en grande.
  */
-export default function MenuMovil({
-  enlaces,
-  plataformaUrl,
-}: {
-  enlaces: { href: string; texto: string }[];
-  plataformaUrl: string;
-}) {
+export default function MenuMovil({ enlaces }: { enlaces: { href: string; texto: string }[] }) {
   const [abierto, setAbierto] = useState(false);
   const [montado, setMontado] = useState(false);
   const ruta = usePathname();
@@ -88,13 +82,6 @@ export default function MenuMovil({
                 </Link>
               ))}
 
-              <Link
-                href={plataformaUrl}
-                className={css.entrar}
-                style={{ animationDelay: `${40 + enlaces.length * 45}ms` }}
-              >
-                Entrar
-              </Link>
             </nav>
           </div>,
           document.body
