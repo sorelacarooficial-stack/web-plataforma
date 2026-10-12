@@ -96,7 +96,20 @@ async function porResend(c: Correo): Promise<void> {
       text: c.texto,
       html: c.html,
       reply_to: c.responderA || correoDeSorela() || undefined,
-      ...(c.baja ? { headers: { 'List-Unsubscribe': `<${c.baja}>` } } : {}),
+      /* Baja en un clic desde el propio Gmail (el botón «Anular suscripción»
+         junto al remitente). Gmail y Yahoo lo EXIGEN desde 2024 a quien manda
+         correos a listas; sin esto, esos correos van a spam. Apunta a la API,
+         que acepta el POST que hacen ellos sin pasar por la página. */
+      ...(c.baja
+        ? {
+            headers: {
+              'List-Unsubscribe': `<${bajaDirecta(c.para)}>, <mailto:${correoDeSorela() ?? ''}?subject=Baja>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            },
+          }
+        : {}),
+      // Sin seguimiento de aperturas ni de clics: reescribir los enlaces y
+      // meter píxeles espía es de lo que más penaliza a un remitente nuevo.
       ...(c.adjuntos?.length
         ? { attachments: c.adjuntos.map((a) => ({ filename: a.nombre, content: a.contenido.toString('base64'), content_type: a.tipo })) }
         : {}),
@@ -238,6 +251,12 @@ export function firmaBaja(correo: string) {
 }
 
 /** El enlace de baja de una persona, firmado para que nadie dé de baja a otra. */
+/** La misma baja, pero directa a la API: para el botón de baja del propio Gmail. */
+export function bajaDirecta(correo: string) {
+  const c = Buffer.from(correo.toLowerCase()).toString('base64url');
+  return `${WEB}/api/baja?c=${c}&f=${firmaBaja(correo)}`;
+}
+
 export function enlaceBaja(correo: string) {
   const c = Buffer.from(correo.toLowerCase()).toString('base64url');
   return `${WEB}/baja?c=${c}&f=${firmaBaja(correo)}`;

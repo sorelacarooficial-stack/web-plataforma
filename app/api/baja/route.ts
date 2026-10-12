@@ -10,7 +10,13 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(peticion: Request) {
   if (!hayFirebase()) return NextResponse.json({ ok: false }, { status: 503 });
-  const cuerpo = (await peticion.json().catch(() => ({}))) as { c?: unknown; f?: unknown };
+  /* Dos formas de llegar: la página /baja manda JSON, y el botón «Anular
+     suscripción» de Gmail o Yahoo hace un POST a esta misma dirección con
+     `?c=…&f=…` en la URL (RFC 8058, «one-click»). */
+  const url = new URL(peticion.url);
+  const cuerpo = (url.searchParams.get('c')
+    ? { c: url.searchParams.get('c'), f: url.searchParams.get('f') }
+    : await peticion.json().catch(() => ({}))) as { c?: unknown; f?: unknown };
   const correo = Buffer.from(String(cuerpo.c ?? '').slice(0, 400), 'base64url').toString('utf8').toLowerCase();
   const f = Buffer.from(String(cuerpo.f ?? ''));
   const bien = Buffer.from(firmaBaja(correo));

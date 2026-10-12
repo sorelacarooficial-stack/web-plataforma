@@ -40,7 +40,7 @@ Tres cosas que hago yo y que te recomiendo:
 
 Esta semana, fíjate solo en una cosa: dónde te duele al acabar el día. Eso te dice qué parte de tu postura está trabajando de más.
 
-Te escribo el viernes que viene.`,
+Te escribo el viernes que viene. Un favor pequeño: añade **hola@sorelacarodivine.com** a tus contactos, así mis correos no se pierden en Promociones ni en spam.`,
     boton: { texto: 'Qué es la Comunidad Divine', enlace: COMUNIDAD },
   },
   {
