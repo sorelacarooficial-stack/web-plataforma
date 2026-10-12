@@ -136,6 +136,12 @@ export const COLECCIONES = {
    */
   lecciones: 'lecciones',
   /**
+   * Los enlaces de invitación que Sorela crea para que alguien se haga la
+   * cuenta con su acceso ya dado. Un documento por enlace; el id es el código
+   * del enlace. Ver lib/invitaciones.ts.
+   */
+  invitaciones: 'invitaciones',
+  /**
    * Las facturas emitidas. Una factura que ya tiene número no se borra ni se
    * edita: si está mal, se rectifica con otra. Por eso `app/api/facturas` no
    * expone DELETE.
