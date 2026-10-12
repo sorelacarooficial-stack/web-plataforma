@@ -319,7 +319,7 @@ export default function Home() {
             <BotonCaptacion
               className={`btn btn-md ${css.lanzamientoBoton}`}
               titulo="Entra en la lista de espera"
-              entradilla="Te aviso en cuanto abra la Membresía Divine, y entras con el precio fundador. No pido tarjeta y puedes salirte con un correo."
+              entradilla="Te aviso en cuanto abra la Membresía Divine. No pido tarjeta y puedes salirte con un correo."
               etiquetaVentana="Entrar en la lista de espera de la Membresía Divine"
               origen="comunidad"
             >

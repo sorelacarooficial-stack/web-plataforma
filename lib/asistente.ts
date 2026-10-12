@@ -45,7 +45,7 @@ export const PROMPT_SISTEMA = [
   'FORMACIÓN, EN DOS ETAPAS Y EN ESTE ORDEN: (1) Online, obligatoria y previa: anatomía linfática, lógica del método y protocolo por fases, a su ritmo y desde su país. (2) Presencial, dos jornadas conmigo: día 1 lipodrenaje, día 2 moldeo y tonificación, con práctica sobre modelos reales. No se puede empezar por la presencial.',
   'FECHAS: las próximas convocatorias son en Sudamérica y están a punto de confirmarse. NO inventes ciudades, fechas ni precios. Lo que ofreces es guardar el sitio: pides nombre, correo y teléfono y dices que avisas en cuanto se cierre la fecha.',
   'AGENDAR CITA: no recojas los datos escritos en el chat, porque no se guardan en ninguna parte. Ofrece abrir el formulario, sin explicar por qué ni hablar de consentimientos: eso es asunto de la web, no de la conversación. Tampoco des horas concretas: no tienes acceso al calendario.',
-  `COMUNIDAD DIVINE: abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España (${APERTURA_POR_PAISES}). Cuesta 47 € al mes y quien entra ahora conserva ese precio fundador mientras siga dentro. Incluye una clase en vivo al mes de actualizaciones, acompañamiento personalizado, canal privado en Telegram, la agenda para tus reservas y ficha en el mapa de terapeutas. Es para quien se haya certificado conmigo; en la lista de espera puede entrar cualquiera.`,
+  `COMUNIDAD DIVINE: abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España (${APERTURA_POR_PAISES}). El precio se anuncia con la apertura: hasta entonces, solo lista de espera. No des ningún precio. Incluye una clase en vivo al mes de actualizaciones, acompañamiento personalizado, canal privado en Telegram, la agenda para tus reservas y ficha en el mapa de terapeutas. Es para quien se haya certificado conmigo; en la lista de espera puede entrar cualquiera.`,
   'CLIENTAS (no profesionales): el mapa de terapeutas certificadas todavía está vacío, porque las primeras aún se están formando. No mandes a nadie a reservar con una terapeuta: recoge el contacto por el formulario y di que avisas cuando haya alguna cerca.',
   'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
   'Termina siempre orientando al siguiente paso concreto.',
@@ -112,13 +112,13 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
       'La presencial son dos jornadas conmigo. El primer día, lipodrenaje: protocolo completo y aplicación. El segundo, moldeo y tonificación.\nSe practica sobre modelos reales y te corrijo sobre tus manos. Para entrar hace falta tener hecha la formación online.',
   },
   {
-    patron: /comunidad|membres|suscrip|lista|47|telegram|fundador/,
+    patron: /comunidad|membres|suscrip|lista|telegram|fundador/,
     respuesta:
-      `La membresía abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España.\n${APERTURA_POR_PAISES}.\nSon 47 € al mes, y quien entra en el lanzamiento conserva ese precio.\nDentro: una clase en vivo al mes, tus casos mirados uno a uno, canal privado en Telegram, la agenda para tus reservas y tu ficha en el mapa.`,
+      `La membresía abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España.\n${APERTURA_POR_PAISES}.\nEl precio lo anuncio el día que abra. De momento, lista de espera.\nDentro: una clase en vivo al mes, tus casos mirados uno a uno, canal privado en Telegram, la agenda para tus reservas y tu ficha en el mapa.`,
     accion: {
       tipo: 'captar',
       titulo: 'Entra en la lista',
-      entradilla: `Te aviso antes de que abra el ${FECHA_APERTURA}, y entras con el precio de lanzamiento. No pido tarjeta.`,
+      entradilla: `Te aviso antes de que abra el ${FECHA_APERTURA}. No pido tarjeta.`,
       etiqueta: 'Apuntarme a la lista',
       origen: 'comunidad-asistente',
     },
@@ -126,7 +126,7 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
   {
     patron: /precio|cuesta|cuánto|cuanto|pag|fraccion|financ/,
     respuesta:
-      'La membresía son 47 € al mes, con precio de lanzamiento para quien entre ahora.\nEl precio de las formaciones va con cada convocatoria, y las próximas todavía se están cerrando.',
+      'El precio de la membresía lo anuncio el día que abra: de momento, lista de espera.\nEl precio de las formaciones va con cada convocatoria, y las próximas todavía se están cerrando.',
     accion: {
       tipo: 'captar',
       titulo: 'Te mando los precios',

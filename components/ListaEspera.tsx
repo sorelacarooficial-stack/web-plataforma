@@ -95,8 +95,8 @@ export default function ListaEspera() {
         <h2 className={css.exitoTitulo}>Gracias. Tu sitio está guardado.</h2>
         <p className={css.exitoTexto}>
           {conCorreo
-            ? 'Te acabo de mandar un correo para confirmártelo. Te aviso yo en cuanto abra, y entras con el precio fundador. Nada de correos cada semana.'
-            : 'Te aviso yo en cuanto abra, y entras con el precio fundador. Nada de correos cada semana.'}
+            ? 'Te acabo de mandar un correo para confirmártelo. Te aviso yo en cuanto abra. Nada de correos cada semana.'
+            : 'Te aviso yo en cuanto abra. Nada de correos cada semana.'}
         </p>
         <button
           type="button"

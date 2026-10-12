@@ -242,7 +242,7 @@ export const FAQS: Pregunta[] = [
   },
   {
     q: '¿Qué diferencia hay entre la formación y la comunidad?',
-    a: `La formación es el recorrido donde te certificas: primero online y después presencial. La comunidad es lo que viene después, para no quedarte sola con los casos raros. Abre el ${FECHA_APERTURA} y cuesta 47 € al mes.`,
+    a: `La formación es el recorrido donde te certificas: primero online y después presencial. La comunidad es lo que viene después, para no quedarte sola con los casos raros. Abre el ${FECHA_APERTURA}: de momento, lista de espera.`,
   },
   {
     q: '¿Puedo entrar en la comunidad sin haberme formado?',
@@ -272,7 +272,7 @@ export const FAQS_CURSO: Pregunta[] = [
 export const OBJECIONES: Pregunta[] = [
   {
     q: '¿Cuándo abre?',
-    a: `El ${DIA_APERTURA} a las ${HORA_ESPANA}, hora de España: ${APERTURA_POR_PAISES}. Quien esté en la lista lo sabe antes que nadie y entra con el precio fundador.`,
+    a: `El ${DIA_APERTURA} a las ${HORA_ESPANA}, hora de España: ${APERTURA_POR_PAISES}. Quien esté en la lista lo sabe antes que nadie.`,
   },
   {
     q: '¿Me compromete a algo apuntarme?',
@@ -281,10 +281,6 @@ export const OBJECIONES: Pregunta[] = [
   {
     q: '¿Tengo que estar certificada ya?',
     a: 'Para entrar el día que abra, sí. Para estar en la lista, no: si tienes plaza en una formación, apúntate igual.',
-  },
-  {
-    q: '¿Cuánto cuesta?',
-    a: '47 € al mes. Quien entra ahora conserva ese precio fundador mientras siga dentro, aunque más adelante suba.',
   },
 ];
 

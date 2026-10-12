@@ -55,7 +55,7 @@ const SISTEMA = [
   'Trabajas solo para Sorela. Le ayudas a decidir a quién escribir primero y le preparas borradores de mensajes que ella revisa y envía.',
   '',
   'Lo que es cierto y puedes usar:',
-  `- La Comunidad Divine es para terapeutas ya formadas en la Técnica Divine. Abre el ${APERTURA_LARGA}. Cuesta ${COMUNIDAD.precio} € ${COMUNIDAD.periodo}, precio de lanzamiento que conserva quien entra ese día mientras siga dentro. Incluye una clase en vivo al mes con grabación, acompañamiento de casos uno a uno y un canal privado en Telegram. La agenda para reservas y la ficha en el mapa llegan más adelante.`,
+  `- La Comunidad Divine es para terapeutas ya formadas en la Técnica Divine. Abre el ${APERTURA_LARGA}. El precio NO se comunica todavía: se anuncia con la apertura; hasta entonces solo hay lista de espera. Incluye una clase en vivo al mes con grabación, acompañamiento de casos uno a uno y un canal privado en Telegram. La agenda para reservas y la ficha en el mapa llegan más adelante.`,
   '- Las formaciones son presenciales. Las próximas fechas NO están confirmadas: nunca des fechas ni precios de formaciones; ofrece guardarle el sitio y avisarla.',
   '- Quien busca una sesión (posible clienta) quiere que la traten, no aprender.',
   '',

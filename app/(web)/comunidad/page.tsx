@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Contador from '@/components/Contador';
 import ListaEspera from '@/components/ListaEspera';
-import { FECHA_APERTURA } from '@/lib/apertura';
 import { COMUNIDAD, OBJECIONES, PIEZAS_COMUNIDAD } from '@/lib/contenido';
 import css from './comunidad.module.css';
 
@@ -42,8 +41,7 @@ export default function Comunidad() {
               tu ficha en el mapa.
             </p>
             <p className="texto max-540">
-              Abro una sola vez, y quien entre en el lanzamiento se queda con el precio de
-              fundadora.
+              Apúntate a la lista de espera y te aviso en cuanto abra.
             </p>
             <Contador />
           </div>
@@ -73,17 +71,8 @@ export default function Comunidad() {
         </div>
       </section>
 
-      <section className={`${css.precio} panel-oscuro`}>
-        <div className="wrap wrap-900">
-          <h2 className={`${css.precioTitulo} titulo-cierre`}>
-            {COMUNIDAD.precio} € {COMUNIDAD.periodo}, precio de lanzamiento.
-          </h2>
-          <p className={css.precioTexto}>
-            Quien entra el {FECHA_APERTURA} lo conserva mientras siga dentro, aunque después
-            suba. Eso sí te lo puedo prometer.
-          </p>
-        </div>
-      </section>
+      {/* Aquí iba el precio. Se retira: hasta que abra, solo se habla de la
+          lista de espera, y el precio se anuncia con la apertura. */}
 
       <section className="seccion-sm">
         <div className="wrap wrap-1000">

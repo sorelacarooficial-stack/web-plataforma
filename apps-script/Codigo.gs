@@ -456,7 +456,7 @@ function cierreMembresia(quien, apertura) {
       Cuando +
       ' abre la Membresía Divine' +
       (fuera ? ' (' + fuera + ')' : '') +
-      ': una clase en vivo al mes con lo nuevo del método, tus casos mirados uno a uno, canal privado y tu ficha en el mapa de terapeutas. Quien entra en el lanzamiento conserva el precio de fundadora mientras siga dentro.'
+      ': una clase en vivo al mes con lo nuevo del método, tus casos mirados uno a uno, canal privado y tu ficha en el mapa de terapeutas. Apúntate a la lista de espera y te aviso en cuanto abra.'
     );
   }
 
@@ -464,7 +464,7 @@ function cierreMembresia(quien, apertura) {
     return (
       'Y por si te sirve para decidirte: la formación no termina en el certificado. ' +
       Cuando +
-      ' abro la Membresía Divine, que es donde sigo enseñando después del curso: una clase en vivo al mes, tus casos mirados uno a uno y un canal privado donde preguntarme. Quien entra en el lanzamiento conserva el precio de fundadora.'
+      ' abro la Membresía Divine, que es donde sigo enseñando después del curso: una clase en vivo al mes, tus casos mirados uno a uno y un canal privado donde preguntarme. Apúntate a la lista de espera y te aviso en cuanto abra.'
     );
   }
 
