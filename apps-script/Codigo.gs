@@ -54,6 +54,12 @@ function doPost(e) {
       return responder({ ok: false, motivo: 'no-autorizado' });
     }
 
+    /* Los correos automáticos de la plataforma (accesos, invitaciones,
+       recordatorios, tu resumen de la mañana) llegan ya escritos: aquí solo
+       se envían desde tu Gmail. No pasan por la hoja ni te avisan, porque
+       quedan apuntados en la pantalla Correos de la plataforma. */
+    if (datos.accion === 'enviar') return enviarYa(datos);
+
     var correo = String(datos.correo || '').trim().toLowerCase();
     if (!pareceCorreo(correo)) return responder({ ok: false, motivo: 'datos' });
 
@@ -122,6 +128,28 @@ function doPost(e) {
     console.error(fallo);
     return responder({ ok: false, motivo: 'error' });
   }
+}
+
+function enviarYa(datos) {
+  var para = String(datos.para || '').trim().toLowerCase();
+  if (!pareceCorreo(para) || !datos.asunto || !datos.texto) {
+    return responder({ ok: false, motivo: 'datos-envio' });
+  }
+  try {
+    if (MailApp.getRemainingDailyQuota() < 3) return responder({ ok: false, motivo: 'sin-cuota' });
+  } catch (falloCuota) {
+    console.warn('No se pudo consultar la cuota de correo: ' + falloCuota);
+  }
+  var mensaje = {
+    to: para,
+    subject: String(datos.asunto).slice(0, 200),
+    body: String(datos.texto),
+    name: REMITENTE,
+  };
+  if (datos.html) mensaje.htmlBody = String(datos.html);
+  if (datos.responderA && pareceCorreo(String(datos.responderA))) mensaje.replyTo = String(datos.responderA);
+  MailApp.sendEmail(mensaje);
+  return responder({ ok: true, enviado: true });
 }
 
 function doGet() {

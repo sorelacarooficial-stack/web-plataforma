@@ -2,6 +2,8 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { baseDeDatos, COLECCIONES } from './firebase-servidor';
 import { CURSO_DIVINE, revisarAccesos, type Acceso } from './accesos';
 import { ROL_POR_DEFECTO } from './roles';
+import { after } from 'next/server';
+import { alCambiarAccesos } from './automatizar';
 
 /**
  * Los enlaces de invitación.
@@ -134,7 +136,7 @@ export async function canjear(
   const refInv = docInvitacion(codigo);
   const refUsuario = db.collection(COLECCIONES.usuarios).doc(persona.uid);
 
-  return db.runTransaction(async (t) => {
+  const r = await db.runTransaction(async (t) => {
     const [inv, usuario] = await Promise.all([t.get(refInv), t.get(refUsuario)]);
     if (!inv.exists) return { ok: false as const, motivo: 'no-existe' };
     const v = inv.data() ?? {};
@@ -164,6 +166,11 @@ export async function canjear(
     t.update(refInv, {
       usada: { uid: persona.uid, correo: persona.correo, nombre: persona.nombre, en: FieldValue.serverTimestamp() },
     });
-    return { ok: true as const, que };
+    return { ok: true as const, que, antes, accesos };
   });
+  if (!r.ok) return r;
+  // Su correo de bienvenida a lo que trae el enlace. Fuera de la transacción:
+  // si Firestore la repite, no puede salir dos veces.
+  after(() => alCambiarAccesos(persona, r.antes, r.accesos));
+  return { ok: true, que: r.que };
 }

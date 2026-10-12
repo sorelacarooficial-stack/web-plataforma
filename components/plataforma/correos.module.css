@@ -1,0 +1,546 @@
+/* La pantalla Correos. Mismo lenguaje que Métricas: tarjetas claras, cifras
+   grandes y un solo acento, el oro. El verde y el teja solo dicen bien o mal. */
+
+.correos {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2vw, 22px);
+}
+
+.cargando {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+.aviso,
+.fallo {
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.aviso {
+  background: var(--oro-tint);
+  border: 1px solid var(--oro-line);
+  color: var(--ink);
+}
+
+.fallo {
+  background: rgba(196, 92, 60, 0.1);
+  border: 1px solid rgba(196, 92, 60, 0.3);
+  color: #8f3f26;
+}
+
+/* ---------- Cómo salen ---------- */
+
+.estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  padding: clamp(18px, 2.2vw, 24px);
+  border-radius: 24px;
+  background: rgba(196, 92, 60, 0.07);
+  border: 1px solid rgba(196, 92, 60, 0.25);
+}
+
+.estado[data-bien] {
+  background: #fffdf9;
+  border-color: var(--line-1, rgba(20, 18, 16, 0.1));
+}
+
+.estadoPunto {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #c45c3c;
+  box-shadow: 0 0 0 5px rgba(196, 92, 60, 0.15);
+}
+
+.estado[data-bien] .estadoPunto {
+  background: #5f8752;
+  box-shadow: 0 0 0 5px rgba(95, 135, 82, 0.16);
+}
+
+.estadoTexto {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.estadoTexto strong {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.estadoNota {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--arcilla-ink, #6e5327);
+}
+
+.btn {
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #faf8f5;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* ---------- Cifras ---------- */
+
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(12px, 1.6vw, 18px);
+}
+
+@media (max-width: 980px) {
+  .cifras {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cifra {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: clamp(16px, 2vw, 22px);
+  border-radius: 24px;
+  background: var(--neu-base);
+  box-shadow: var(--neu-fuera-sm);
+}
+
+.cifraEtiqueta {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.cifra[data-mal] .cifraEtiqueta {
+  color: #a24a2e;
+}
+
+.cifraValor {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: clamp(30px, 3.4vw, 42px);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.cifraValorTexto {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(20px, 2vw, 25px);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.cifraValorTexto::first-letter {
+  text-transform: uppercase;
+}
+
+.cifraNota {
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--faint);
+}
+
+/* ---------- Tarjetas ---------- */
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: clamp(20px, 2.4vw, 28px);
+  border-radius: clamp(22px, 2.4vw, 30px);
+  background: #fffdf9;
+  border: 1px solid var(--line-1, rgba(20, 18, 16, 0.1));
+  box-shadow: 0 1px 2px rgba(60, 45, 25, 0.05), 0 18px 40px -28px rgba(60, 45, 25, 0.45);
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+}
+
+.cabecera h3 {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 2.2vw, 28px);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.cabecera p {
+  margin: 0;
+  flex: 1 1 280px;
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+/* ---------- Automatizaciones ---------- */
+
+.autos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.auto {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
+}
+
+.auto:first-child {
+  border-top: 0;
+}
+
+.autoTexto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.autoNombre {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.auto:not([data-activa]) .autoNombre {
+  color: var(--muted);
+}
+
+.autoCuando {
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.autoCuando b {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.autoBotones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 6px;
+}
+
+.enlace {
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--oro);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--oro-line);
+  cursor: pointer;
+}
+
+.enlace:disabled {
+  opacity: 0.6;
+}
+
+.fijo {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--oro-tint);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--oro);
+}
+
+.interruptor {
+  flex: none;
+  display: flex;
+  align-items: center;
+  width: 52px;
+  height: 30px;
+  padding: 3px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(20, 18, 16, 0.14);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.interruptor[aria-checked='true'] {
+  justify-content: flex-end;
+  background: var(--oro);
+}
+
+.bola {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(20, 18, 16, 0.25);
+}
+
+/* ---------- Historial ---------- */
+
+.filtro {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--neu-base);
+}
+
+.filtro button {
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.filtro button[aria-pressed='true'] {
+  background: #fffdf9;
+  color: var(--ink);
+  font-weight: 500;
+  box-shadow: 0 3px 10px -6px rgba(60, 45, 25, 0.5);
+}
+
+.vacio {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+.historial {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
+}
+
+.fila:first-child {
+  border-top: 0;
+}
+
+.chip {
+  flex: none;
+  min-width: 96px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.chip[data-estado='enviado'] {
+  background: rgba(95, 135, 82, 0.14);
+  color: #47663c;
+}
+
+.chip[data-estado='fallido'] {
+  background: rgba(196, 92, 60, 0.12);
+  color: #a24a2e;
+}
+
+.chip[data-estado='omitido'] {
+  background: rgba(20, 18, 16, 0.06);
+  color: var(--muted);
+}
+
+.filaTexto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.filaQue {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.filaPara {
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filaDetalle {
+  font-size: 12.5px;
+  color: #a24a2e;
+}
+
+.filaCuando {
+  flex: none;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--faint);
+}
+
+@media (max-width: 560px) {
+  .fila {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+  .chip {
+    min-width: 0;
+  }
+  .filaTexto {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .filaCuando {
+    margin-left: auto;
+  }
+  .auto {
+    gap: 12px;
+  }
+}
+
+/* ---------- Vista previa ---------- */
+
+.velo {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 18, 16, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.previa {
+  display: flex;
+  flex-direction: column;
+  width: min(680px, 100%);
+  height: min(86vh, 860px);
+  border-radius: 24px;
+  overflow: hidden;
+  background: #fffdf9;
+  box-shadow: 0 30px 80px -30px rgba(20, 18, 16, 0.6);
+}
+
+.previaCabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
+}
+
+.previaCabeza span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.previaCabeza small {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.previaCabeza strong {
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.cerrar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--neu-base);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.marco {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #f2eee9;
+}
+
+.previaNota {
+  margin: 0;
+  padding: 12px 20px;
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--muted);
+  border-top: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
+}

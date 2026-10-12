@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ETIQUETA_TIPO, QUE_QUIERE, comoLlego, tipoDeOrigen, type Tipo } from '@/lib/origenes';
+import { ETIQUETA_CORREO } from '@/lib/automatizaciones';
 import css from './plataforma.module.css';
 
 /**
@@ -40,6 +41,11 @@ export type Persona = {
   creado: string | null;
   veces: number;
   seguimiento?: { cuando: string; texto: string }[];
+  tipo?: Tipo;
+  fuente?: string | null;
+  campana?: string | null;
+  pagina?: string | null;
+  registrada?: boolean;
 };
 
 /* Mismos nombres y mismo orden que la lista y que la API. Si aquí se colara
@@ -234,6 +240,22 @@ export default function FichaPersona({
     setCopia(null);
   }, [persona?.id]);
 
+  /* Los correos que le han llegado, de la pantalla Correos. Se piden al abrir
+     la ficha y no con la lista: son 50 consultas que casi nunca se miran. */
+  const [correos, setCorreos] = useState<{ id: string; tipo: string; estado: string; cuando: string | null; detalle: string | null }[] | null>(null);
+  useEffect(() => {
+    setCorreos(null);
+    if (!persona?.correo) return;
+    let vivo = true;
+    fetch(`/api/correos?para=${encodeURIComponent(persona.correo)}`)
+      .then((r) => r.json())
+      .then((j) => vivo && setCorreos(j.ok ? j.historial : []))
+      .catch(() => vivo && setCorreos([]));
+    return () => {
+      vivo = false;
+    };
+  }, [persona?.correo]);
+
   /* El aviso de copiado se borra solo: es un «hecho», no un mensaje que haya
      que cerrar a mano. */
   useEffect(() => {
@@ -244,7 +266,8 @@ export default function FichaPersona({
 
   if (!persona) return null;
 
-  const tipo = tipoDeOrigen(persona.origen);
+  // El tipo que manda la lista (respeta si lo cambiaste a mano); si no llega, el del origen.
+  const tipo = persona.tipo ?? tipoDeOrigen(persona.origen);
   const estadoActual = persona.estado || 'Nuevo';
   /* Si en Firestore hay un estado que ya no está en la lista —uno antiguo, o
      escrito a mano—, el <select> se quedaría en blanco y el primer clic lo
@@ -417,6 +440,16 @@ export default function FichaPersona({
         <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <h3 className={css.rotuloSeccion}>Cómo llegó</h3>
           <p className={css.parrafo}>{comoLlego(persona.origen)}</p>
+          {(persona.fuente || persona.pagina) && (
+            <p className={css.parrafo}>
+              {persona.fuente &&
+                (persona.fuente === 'Directo'
+                  ? 'Entró a la web escribiendo la dirección o desde un enlace guardado'
+                  : `Llegó a la web desde ${persona.fuente}`)}
+              {persona.campana && ` (campaña «${persona.campana}»)`}
+              {persona.pagina && `${persona.fuente ? ' y' : ''} dejó sus datos en ${persona.pagina === '/' ? 'la portada' : persona.pagina}`}.
+            </p>
+          )}
           <p className={css.apunte}>
             {cuando(persona.creado) || 'Sin fecha de entrada'}
             {fechaLarga(persona.creado) && ` · ${fechaLarga(persona.creado)}`}
@@ -428,6 +461,41 @@ export default function FichaPersona({
               Ha dejado sus datos {persona.veces} veces. O le interesa de verdad, o nadie le ha
               contestado todavía.
             </p>
+          )}
+        </section>
+
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <h3 className={css.rotuloSeccion}>Correos que le han llegado</h3>
+          {correos === null ? (
+            <p className={css.apunte}>Mirando…</p>
+          ) : correos.length === 0 ? (
+            <p className={css.apunte}>
+              Ninguno apuntado. (El historial empieza con esta versión: lo de antes no consta aquí.)
+            </p>
+          ) : (
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {correos.map((c) => (
+                <li key={c.id} style={{ display: 'flex', gap: 10, alignItems: 'baseline', fontSize: 13.5 }}>
+                  <span
+                    style={{
+                      flex: 'none',
+                      fontSize: 11,
+                      fontWeight: 500,
+                      padding: '2px 8px',
+                      borderRadius: 999,
+                      background: c.estado === 'enviado' ? 'rgba(95,135,82,.14)' : c.estado === 'fallido' ? 'rgba(196,92,60,.12)' : 'rgba(20,18,16,.06)',
+                      color: c.estado === 'enviado' ? '#47663c' : c.estado === 'fallido' ? '#a24a2e' : 'var(--muted)',
+                    }}
+                  >
+                    {c.estado === 'enviado' ? 'Le llegó' : c.estado === 'fallido' ? 'No salió' : 'Omitido'}
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0 }}>{ETIQUETA_CORREO[c.tipo] ?? c.tipo}</span>
+                  <span className={css.apunte} style={{ flex: 'none' }}>
+                    {c.cuando ? new Date(c.cuando).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : ''}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
 

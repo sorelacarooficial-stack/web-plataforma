@@ -691,3 +691,113 @@
     animation: none;
   }
 }
+
+/* ---------- De dónde llegan ---------- */
+
+.procedencias {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--line-2);
+}
+
+.procedenciasFila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.procedenciasTitulo {
+  margin-right: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.pastilla,
+.pastillaFija {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 8px 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: #fffdf9;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.pastilla {
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.pastilla:hover {
+  border-color: var(--oro-line);
+  transform: translateY(-1px);
+}
+
+.pastilla[aria-pressed='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #f7f2ea;
+}
+
+.pastillaNumero {
+  min-width: 22px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--oro-tint);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--oro);
+}
+
+.pastilla[aria-pressed='true'] .pastillaNumero {
+  background: rgba(255, 255, 255, 0.16);
+  color: #f7f2ea;
+}
+
+.quitarFiltro {
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* La línea de la tarjeta que dice por dónde entró. */
+.procedencia {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--oro);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.procedencia svg {
+  flex: none;
+}
+
+.procedencia b {
+  font-weight: 600;
+}

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import FichaPersona, { type Persona } from './FichaPersona';
-import { ETIQUETA_TIPO, TIPOS, comoLlego, type Tipo } from '@/lib/origenes';
+import { ETIQUETA_TIPO, TIPOS, comoLlego, origenCorto, type Tipo } from '@/lib/origenes';
 import { PERFILES } from '@/lib/captacion';
 import css from './plataforma.module.css';
 import k from './crm.module.css';
@@ -564,6 +564,8 @@ export default function Contactos() {
   const [brillo, setBrillo] = useState<string | null>(null);
   const [tipo, setTipo] = useState<'Todos' | Tipo>('Todos');
   const [busca, setBusca] = useState('');
+  /* Por dónde entraron: la tira de «De dónde llegan» filtra por esto. */
+  const [deDonde, setDeDonde] = useState<string | null>(null);
   // Qué ficha está abierta. Se guarda el id y no la persona entera para que,
   // al cambiarle el estado o apuntarle algo, la ficha se repinte con lo nuevo
   // en vez de quedarse con la copia de cuando se abrió.
@@ -822,12 +824,33 @@ export default function Contactos() {
     return (lista ?? []).filter(
       (c) =>
         (tipo === 'Todos' || c.tipo === tipo) &&
+        (!deDonde || origenCorto(c.origen) === deDonde) &&
         (!t ||
           c.nombre.toLowerCase().includes(t) ||
           c.correo.toLowerCase().includes(t) ||
           c.ciudad.toLowerCase().includes(t))
     );
-  }, [lista, tipo, busca]);
+  }, [lista, tipo, busca, deDonde]);
+
+  /* Cuántas han entrado por cada sitio, de más a menos. Es la respuesta a «de
+     dónde me llega la gente» sin abrir ninguna ficha. */
+  const procedencias = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const c of lista ?? []) {
+      if (c.estado === 'Descartado') continue;
+      const o = origenCorto(c.origen);
+      m.set(o, (m.get(o) ?? 0) + 1);
+    }
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [lista]);
+
+  /* Y desde qué red o buscador llegaron a la web, para las que lo sabemos
+     (se apunta desde que existe esta versión: las de antes no lo tienen). */
+  const fuentes = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const c of lista ?? []) if (c.fuente) m.set(c.fuente, (m.get(c.fuente) ?? 0) + 1);
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [lista]);
 
   /* El tablero: tres columnas y nada más.
      «Hablando» junta «Contactado» y «En conversación»: para Sorela es el mismo
@@ -910,6 +933,13 @@ export default function Contactos() {
                 <span className={k.puntoTipo} data-tipo={c.tipo} />
                 {ETIQUETA_TIPO[c.tipo]}
                 {c.ciudad && ` · ${c.ciudad}`}
+              </span>
+              {/* De dónde viene, siempre a la vista: por qué formulario entró
+                  y, si se sabe, desde qué red llegó a la web. */}
+              <span className={k.procedencia} title={comoLlego(c.origen)}>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
+                {origenCorto(c.origen)}
+                {c.fuente && c.fuente !== 'Directo' && <b> · desde {c.fuente}</b>}
               </span>
             </div>
             <button
@@ -1075,6 +1105,41 @@ export default function Contactos() {
         })}
       </div>
 
+      {/* De dónde llegan: cuántas por cada puerta. Pulsar una filtra el tablero. */}
+      {procedencias.length > 0 && (
+        <section className={k.procedencias} aria-label="De dónde llegan">
+          <div className={k.procedenciasFila}>
+            <span className={k.procedenciasTitulo}>Por dónde entraron</span>
+            {procedencias.map(([o, n]) => (
+              <button
+                key={o}
+                type="button"
+                className={k.pastilla}
+                aria-pressed={deDonde === o}
+                onClick={() => setDeDonde(deDonde === o ? null : o)}
+              >
+                {o} <span className={k.pastillaNumero}>{n}</span>
+              </button>
+            ))}
+            {deDonde && (
+              <button type="button" className={k.quitarFiltro} onClick={() => setDeDonde(null)}>
+                Ver todas
+              </button>
+            )}
+          </div>
+          {fuentes.length > 0 && (
+            <div className={k.procedenciasFila}>
+              <span className={k.procedenciasTitulo}>Desde dónde llegaron a la web</span>
+              {fuentes.map(([f, n]) => (
+                <span key={f} className={k.pastillaFija}>
+                  {f} <span className={k.pastillaNumero}>{n}</span>
+                </span>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Una sola barra: buscar, qué busca la persona y los dos botones. */}
       <div className={k.barra}>
         <label className={k.buscar}>
@@ -1161,7 +1226,7 @@ export default function Contactos() {
                     </AnimatePresence>
                     {suyos.length === 0 && (
                       <p className={k.vacio}>
-                        {busca || tipo !== 'Todos'
+                        {busca || tipo !== 'Todos' || deDonde
                           ? 'Nadie con ese filtro.'
                           : col.id === 'atender'
                             ? 'Todo atendido. Bien hecho.'

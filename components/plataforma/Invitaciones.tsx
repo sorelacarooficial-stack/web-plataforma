@@ -59,6 +59,8 @@ export default function Invitaciones() {
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [creando, setCreando] = useState(false);
   const [nueva, setNueva] = useState<Invitacion | null>(null);
+  /* Si al crearla se le mandó por correo: 'enviado', 'fallido' o null (sin correo). */
+  const [envio, setEnvio] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
   const [verTodas, setVerTodas] = useState(false);
@@ -96,6 +98,7 @@ export default function Invitaciones() {
         setErrores(j.errores ?? { general: 'No he podido crear el enlace.' });
       } else {
         setNueva(j.invitacion);
+        setEnvio(j.correo ?? null);
         setLista((l) => [j.invitacion, ...(l ?? [])]);
         setNombre('');
         setCorreo('');
@@ -196,7 +199,7 @@ export default function Invitaciones() {
               type="email"
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
-              placeholder="Si lo pones, solo vale para ese correo"
+              placeholder="Si lo pones, le llega por correo y solo vale para ese correo"
               className={css.campoCaja}
             />
             {errores.correo && <span className={css.errorCampo}>{errores.correo}</span>}
@@ -220,6 +223,16 @@ export default function Invitaciones() {
             <p className={i.nuevaRotulo}>
               Enlace listo{nueva.nombre ? ` para ${nueva.nombre}` : ''} · {nueva.que.map((q) => ETIQUETA[q]).join(' + ')}
             </p>
+            {envio === 'enviado' && (
+              <p className={i.nuevaRotulo} style={{ color: '#47663c' }}>
+                Ya le ha llegado por correo a {nueva.correo}. Si quieres, mándaselo también por WhatsApp.
+              </p>
+            )}
+            {envio === 'fallido' && (
+              <p className={i.nuevaRotulo} style={{ color: '#a24a2e' }}>
+                El correo no ha salido: cópiale el enlace y mándaselo tú.
+              </p>
+            )}
             <code className={i.enlace}>{nueva.enlace}</code>
             <div className={i.nuevaAcciones}>
               {acciones(nueva)}

@@ -6,6 +6,7 @@ import { revisar, type Contacto } from '@/lib/captacion';
 import css from './Formularios.module.css';
 import InfoPrivacidad from '@/components/InfoPrivacidad';
 import { CAPA_INFORMACION } from '@/lib/privacidad';
+import { conLlegada } from '@/lib/llegada';
 
 type Estado = 'quieto' | 'enviando' | 'hecho' | 'fallo';
 type Errores = Partial<Record<keyof Contacto, string>>;
@@ -68,7 +69,7 @@ export default function ListaEspera() {
       const r = await fetch('/api/captar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datos),
+        body: JSON.stringify(conLlegada(datos)),
       });
       const cuerpo = await r.json().catch(() => ({ ok: false }));
       if (cuerpo.ok) {

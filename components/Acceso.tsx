@@ -50,7 +50,7 @@ function mensaje(codigo: string): string {
     'auth/invalid-email': 'Ese correo no parece correcto.',
     'auth/user-not-found': 'No hay ninguna cuenta con ese correo.',
     'auth/wrong-password': 'El correo o la contraseña no son correctos.',
-    'auth/user-disabled': 'Esa cuenta está desactivada.',
+    'auth/user-disabled': 'Tu acceso está en pausa. Escríbele a Sorela para volver a entrar.',
     'auth/too-many-requests': 'Demasiados intentos seguidos. Espera un momento y vuelve a probar.',
     'auth/network-request-failed': 'No hay conexión. Revisa la red y vuelve a intentarlo.',
     'auth/operation-not-allowed': 'El acceso con correo no está activado en Firebase.',

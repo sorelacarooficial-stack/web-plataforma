@@ -4,6 +4,9 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { ROL_POR_DEFECTO } from '@/lib/roles';
 import { MOTIVO_TEXTO, canjear, comprobar } from '@/lib/invitaciones';
+import { after } from 'next/server';
+import { alRegistrarse } from '@/lib/automatizar';
+import { procedenciaDe } from '@/lib/llegada-servidor';
 
 /**
  * Crearse una cuenta desde la web.
@@ -306,7 +309,9 @@ export async function POST(peticion: Request) {
            luego se registra—, volver a ponerle «Nuevo» borraría por dónde iba
            la conversación, y volver a poner la fecha de hoy le quitaría el día
            que de verdad apareció. */
-        ...(yaEstaba ? {} : { estado: 'Nuevo', veces: 1, creado: FieldValue.serverTimestamp() }),
+        ...(yaEstaba
+          ? {}
+          : { estado: 'Nuevo', veces: 1, creado: FieldValue.serverTimestamp(), ...procedenciaDe(cuerpo.llegada) }),
         /* Con enlace de invitación es que ya ha pagado: en el CRM, cerrada. */
         ...(invitacion ? { estado: 'Cerrado' } : {}),
       },
@@ -315,6 +320,9 @@ export async function POST(peticion: Request) {
   } catch (e) {
     console.error('[registro] Cuenta creada, pero sin ficha en la lista de contactos:', e);
   }
+
+  // Sin enlace no tiene acceso a nada todavía: se le dice que está recibida.
+  if (!invitacion) after(() => alRegistrarse({ uid: usuario.uid, correo, nombre, pide: quiere }));
 
   return NextResponse.json({ ok: true, correo, nombre, quiere, conInvitacion: Boolean(invitacion) });
 }

@@ -29,6 +29,7 @@ import Comunidad from './Comunidad';
 import FotoPerfil from './FotoPerfil';
 import Avisos from './Avisos';
 import Metricas from './Metricas';
+import Correos from './Correos';
 import PanelAlumna from './PanelAlumna';
 import BlogAdmin from './BlogAdmin';
 import Contactos from './Contactos';
@@ -317,6 +318,7 @@ export default function Plataforma({
           {esAdmin && actual === 'facturacion' && <FacturacionSorela />}
           {esAdmin && actual === 'cuentas' && <Cuentas />}
           {esAdmin && actual === 'metricas' && <Metricas />}
+          {esAdmin && actual === 'correos' && <Correos />}
           {esAdmin && actual === 'blog' && <BlogAdmin />}
           {/* La misma para todas: el servidor decide quién lee, quién escribe y quién modera. */}
           {actual === 'comunidad' && <Comunidad />}

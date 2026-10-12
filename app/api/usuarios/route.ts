@@ -5,6 +5,8 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { esRol, correoEsAdmin, normalizarRol, PLATAFORMA_ABIERTA, type Rol } from '@/lib/roles';
 import { revisarAccesos } from '@/lib/accesos';
+import { after } from 'next/server';
+import { alCambiarAccesos } from '@/lib/automatizar';
 import { sesionActual } from '@/lib/sesion-servidor';
 
 /**
@@ -123,6 +125,10 @@ export async function GET() {
     }),
   ]);
 
+  /* Si está bloqueada lo dice Authentication, que es quien cierra la puerta;
+     la ficha guarda una copia por si la lista de Auth no se ha podido leer. */
+  const enAuth = new Map((deAuth?.users ?? []).map((u) => [u.uid, u]));
+
   const usuarios = lista.docs.map((d) => {
     const v = d.data();
     const correo = (v.correo as string | undefined) ?? null;
@@ -130,6 +136,17 @@ export async function GET() {
       uid: d.id,
       correo,
       nombre: (v.nombre as string | undefined) ?? null,
+      bloqueada: enAuth.get(d.id)?.disabled ?? Boolean(v.bloqueada),
+      /* Cómo llegó a tener cuenta, para la línea de la lista. */
+      llego:
+        v.altaPor === 'registro'
+          ? ('registro' as const)
+          : v.altaPor === 'invitacion'
+            ? ('invitacion' as const)
+            : v.altaPor
+              ? ('tu' as const)
+              : null,
+      creado: v.creado?.toDate?.().toISOString() ?? null,
       /** Tiene ficha, así que la lista sabe de ella todo lo que hay que saber. */
       sinFicha: false,
       /*
@@ -174,6 +191,9 @@ export async function GET() {
       correo: u.email ?? null,
       nombre: u.displayName ?? null,
       sinFicha: true,
+      bloqueada: Boolean(u.disabled),
+      llego: null,
+      creado: u.metadata.creationTime ? new Date(u.metadata.creationTime).toISOString() : null,
       // De una cuenta sin ficha no se sabe ni cómo llegó ni a qué viene: esos
       // dos datos se guardan en la ficha que no existe.
       seRegistro: false,
@@ -372,6 +392,12 @@ export async function POST(peticion: Request) {
     console.error('[usuarios] Cuenta creada, pero sin enlace de contraseña:', e);
   }
 
+  /* Si le das algo al darla de alta, le llega su correo de bienvenida con el
+     botón para crear la contraseña: ya no hace falta que le pases tú el enlace. */
+  if (accesos.length) {
+    after(() => alCambiarAccesos({ uid: usuario.uid, correo, nombre, enlaceClave: enlace }, [], accesos));
+  }
+
   return NextResponse.json({
     ok: true,
     uid: usuario.uid,
@@ -392,7 +418,7 @@ export async function PATCH(peticion: Request) {
   const guardia = await exigirAdmin();
   if (guardia.error) return guardia.error;
 
-  let cuerpo: { uid?: string; rol?: string; accesos?: unknown };
+  let cuerpo: { uid?: string; rol?: string; accesos?: unknown; bloqueada?: unknown };
   try {
     cuerpo = await peticion.json();
   } catch {
@@ -411,7 +437,11 @@ export async function PATCH(peticion: Request) {
      suyo: mandar las dos a la vez también vale. */
   const cambiaRol = cuerpo.rol !== undefined;
   const cambiaAccesos = cuerpo.accesos !== undefined;
-  if (!cambiaRol && !cambiaAccesos) {
+  /* Bloquear es cerrarle la puerta sin borrar nada: no puede entrar, pero su
+     cuenta, su progreso y lo que tenga contratado siguen ahí para cuando se
+     desbloquee. Es lo que toca con un impago o una duda, antes de borrar. */
+  const cambiaBloqueo = typeof cuerpo.bloqueada === 'boolean';
+  if (!cambiaRol && !cambiaAccesos && !cambiaBloqueo) {
     return NextResponse.json({ ok: false, motivo: 'sin-cambios' }, { status: 400 });
   }
   if (cambiaRol && !esRol(cuerpo.rol)) {
@@ -442,7 +472,23 @@ export async function PATCH(peticion: Request) {
     return NextResponse.json({ ok: false, motivo: 'admin-solo-por-entorno' }, { status: 409 });
   }
 
+  if (cambiaBloqueo && cuerpo.bloqueada && correoEsAdmin(usuario.email)) {
+    return NextResponse.json({ ok: false, motivo: 'admin-protegida' }, { status: 409 });
+  }
+  if (cambiaBloqueo && cuerpo.bloqueada && uid === guardia.sesion.uid) {
+    return NextResponse.json({ ok: false, motivo: 'uno-mismo' }, { status: 409 });
+  }
+
   const ficha: Record<string, unknown> = { correo: usuario.email ?? null };
+
+  if (cambiaBloqueo) {
+    const bloquear = cuerpo.bloqueada as boolean;
+    await auth.updateUser(uid, { disabled: bloquear });
+    // Fuera en el momento: sin esto seguiría dentro hasta que caducara su sesión.
+    if (bloquear) await auth.revokeRefreshTokens(uid);
+    ficha.bloqueada = bloquear;
+    ficha.bloqueoCambiado = FieldValue.serverTimestamp();
+  }
 
   if (cambiaRol) {
     await auth.setCustomUserClaims(uid, { role: rol as Rol });
@@ -468,12 +514,27 @@ export async function PATCH(peticion: Request) {
      una consulta ordenada los documentos que no lo tienen, así que sin esta
      línea la ficha recién escrita volvería a no verse. */
   const ref = baseDeDatos().collection(COLECCIONES.usuarios).doc(uid);
-  const existe = await ref.get().then((d) => d.exists).catch(() => true);
+  const previa = await ref.get().catch(() => null);
+  const existe = previa ? previa.exists : true;
   if (!existe) ficha.ultimoAcceso = null;
 
   await ref.set(ficha, { merge: true });
 
-  return NextResponse.json({ ok: true, uid, ...(cambiaRol ? { rol } : {}), ...(accesos ? { accesos } : {}) });
+  /* Si gana la formación o la comunidad, le sale su correo de bienvenida.
+     Después de contestar: Sorela no espera a Gmail para ver el botón cambiado. */
+  if (accesos) {
+    const antes = previa?.data()?.accesos ?? [];
+    const nombre = (previa?.data()?.nombre as string | undefined) ?? usuario.displayName ?? null;
+    after(() => alCambiarAccesos({ uid, correo: usuario.email ?? null, nombre }, antes, accesos));
+  }
+
+  return NextResponse.json({
+    ok: true,
+    uid,
+    ...(cambiaRol ? { rol } : {}),
+    ...(accesos ? { accesos } : {}),
+    ...(cambiaBloqueo ? { bloqueada: cuerpo.bloqueada } : {}),
+  });
 }
 
 export async function DELETE(peticion: Request) {
@@ -536,7 +597,10 @@ export async function DELETE(peticion: Request) {
   }
 
   try {
-    await ref.delete();
+    /* Con todo lo que cuelga de ella —su progreso en las clases, su agenda—:
+       `delete()` a secas borraba la ficha y dejaba esas subcolecciones
+       sueltas en la base de datos, ocupando y sin dueña. */
+    await baseDeDatos().recursiveDelete(ref);
   } catch (e) {
     // Se avisa en vez de contestar que todo fue bien: la cuenta ya no existe
     // pero la ficha se ha quedado suelta, y esa es exactamente la avería que
