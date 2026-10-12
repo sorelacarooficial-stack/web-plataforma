@@ -35,7 +35,9 @@ export type Vista =
   | 'acuerdos'
   | 'formaciones'
   | 'contenido'
-  | 'cuentas';
+  | 'cuentas'
+  | 'metricas'
+  | 'blog';
 
 /**
  * El menú de cada rol.
@@ -52,6 +54,7 @@ export function navDe(rol: Rol, conAcceso = false): { id: Vista; label: string }
   if (rol === 'sorela')
     return [
       { id: 'inicio', label: 'Panel' },
+      { id: 'metricas', label: 'Métricas' },
       // El orden es el del día a día: primero a quién hay que llamar, después
       // qué hay en el calendario, y luego lo que se cobra.
       { id: 'leads', label: 'Clientes' },
@@ -61,6 +64,7 @@ export function navDe(rol: Rol, conAcceso = false): { id: Vista; label: string }
       { id: 'facturacion', label: 'Facturación' },
       { id: 'formaciones', label: 'Formaciones' },
       { id: 'contenido', label: 'Subir contenido' },
+      { id: 'blog', label: 'Blog' },
       { id: 'comunidad', label: 'Comunidad' },
       // Al final del menú a propósito: dar de alta a alguien se hace de vez en
       // cuando, no todos los días como llamar a una clienta o cobrar.
@@ -111,6 +115,8 @@ export function tituloDe(vista: Vista, rol: Rol) {
     agenda: admin ? 'Agenda' : 'Mi agenda',
     cuentas: 'Cuentas',
     suscripcion: admin ? 'Cobros' : 'Comunidad',
+    metricas: 'Métricas',
+    blog: 'Blog',
   };
   return titulos[vista];
 }
@@ -136,6 +142,8 @@ export function seccionDe(vista: Vista, rol: Rol) {
     agenda: admin ? 'Administración' : 'Tu espacio',
     cuentas: 'Administración',
     suscripcion: 'Comunidad',
+    metricas: 'Tu web',
+    blog: 'Tu web',
   };
   return secciones[vista];
 }

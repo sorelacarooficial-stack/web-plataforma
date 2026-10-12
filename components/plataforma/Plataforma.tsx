@@ -26,6 +26,7 @@ import {
 import { Comunidad, FormacionesAdmin, PanelSorela } from './Vistas';
 import FotoPerfil from './FotoPerfil';
 import Avisos from './Avisos';
+import Metricas from './Metricas';
 import Contactos from './Contactos';
 import Acuerdos from './Acuerdos';
 import Proximamente from './Proximamente';
@@ -287,6 +288,7 @@ export default function Plataforma({
           {esAdmin && actual === 'agenda' && <Agenda esSorela />}
           {esAdmin && actual === 'facturacion' && <FacturacionSorela />}
           {esAdmin && actual === 'cuentas' && <Cuentas />}
+          {esAdmin && actual === 'metricas' && <Metricas />}
           {esAdmin && actual === 'comunidad' && <Comunidad rol={rol} ir={ir} iniciales={iniciales} conComunidad={tieneMembresia(accesos)} />}
         </main>
       </div>

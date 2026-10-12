@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import DatosEstructurados from '@/components/DatosEstructurados';
+import Medidor from '@/components/Medidor';
 import './globals.css';
 
 /**
@@ -178,6 +179,8 @@ export default function RootLayout({
         */}
         <DatosEstructurados negocio="Organization" web />
         {children}
+        {/* Métricas propias, sin cookies. Ver components/Medidor.tsx. */}
+        <Medidor />
       </body>
     </html>
   );
