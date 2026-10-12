@@ -1,5 +1,9 @@
 import type { MetadataRoute } from 'next';
 import { TERAPEUTAS } from '@/lib/terapeutas';
+import { articulosPublicados } from '@/lib/blog';
+
+/* El mapa se rehace cada hora y al publicar en el blog (ver app/api/blog). */
+export const revalidate = 3600;
 
 /**
  * Con www, igual que en app/robots.ts y en app/layout.tsx.
@@ -30,7 +34,7 @@ const FECHAS = {
   contacto: '2026-09-23',
 } as const;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   /**
    * El orden de prioridad es el del negocio, no el del menú: primero la
    * portada, después la página que vende la formación, después la que explica
@@ -93,5 +97,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...fijas, ...terapeutas];
+  /* El blog: la portada del blog y cada artículo publicado, con la fecha de
+     su último cambio de verdad, que aquí sí se sabe. */
+  const articulos = await articulosPublicados(500);
+  const blog: MetadataRoute.Sitemap = articulos.length
+    ? [
+        { url: `${SITIO}/blog`, lastModified: articulos[0].actualizado ?? articulos[0].publicado ?? undefined, changeFrequency: 'weekly', priority: 0.7 },
+        ...articulos.map((a) => ({
+          url: `${SITIO}/blog/${a.slug}`,
+          lastModified: a.actualizado ?? a.publicado ?? undefined,
+          changeFrequency: 'monthly' as const,
+          priority: 0.6,
+        })),
+      ]
+    : [];
+
+  return [...fijas, ...blog, ...terapeutas];
 }

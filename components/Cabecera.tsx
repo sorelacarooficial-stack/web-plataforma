@@ -11,6 +11,7 @@ const NAV = [
   { href: '/comunidad', texto: 'Comunidad' },
   { href: '/terapeutas', texto: 'Terapeutas' },
   { href: '/sobre', texto: 'Sobre' },
+  { href: '/blog', texto: 'Blog' },
 ];
 
 export default function Cabecera() {

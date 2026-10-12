@@ -20,6 +20,7 @@ const COLUMNAS = [
     titulo: 'Divine',
     enlaces: [
       { href: '/sobre', texto: 'Sobre Sorela' },
+      { href: '/blog', texto: 'Blog' },
       { href: '/contacto', texto: 'Contacto' },
       { href: PLATAFORMA_URL, texto: 'Entrar en la plataforma' },
     ],
