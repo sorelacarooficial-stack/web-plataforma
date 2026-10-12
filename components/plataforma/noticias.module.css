@@ -1,0 +1,314 @@
+/* Las noticias del panel: una grande con cuenta atrás y lo último del blog. */
+
+.noticias {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+}
+
+.rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.rotulo i {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #c45c3c;
+  box-shadow: 0 0 0 0 rgba(196, 92, 60, 0.5);
+  animation: latido 1.8s ease-out infinite;
+}
+
+@keyframes latido {
+  70% {
+    box-shadow: 0 0 0 8px rgba(196, 92, 60, 0);
+  }
+}
+
+.grande {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: clamp(28px, 4.4vw, 56px) clamp(20px, 4vw, 56px);
+  border-radius: clamp(26px, 3vw, 40px);
+  text-align: center;
+  color: #efe6d8;
+  background:
+    radial-gradient(70% 90% at 50% 0%, rgba(217, 180, 124, 0.34), transparent 70%),
+    radial-gradient(60% 80% at 100% 100%, rgba(217, 180, 124, 0.12), transparent 70%),
+    #120f0c;
+  box-shadow: 0 50px 90px -60px rgba(20, 16, 10, 0.9);
+}
+
+/* Un destello que cruza despacio la tarjeta: que se note que está viva. */
+.brillo {
+  position: absolute;
+  inset: -40%;
+  background: conic-gradient(from 0deg, transparent 0 70%, rgba(240, 212, 166, 0.12) 80%, transparent 90%);
+  animation: girar 14s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brillo,
+  .rotulo i {
+    animation: none;
+  }
+}
+
+.grande > *:not(.brillo) {
+  position: relative;
+}
+
+.etiqueta {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 180, 124, 0.4);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #f0d4a6;
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(34px, 5vw, 66px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  color: #f7f0e4;
+  text-wrap: balance;
+}
+
+.cuenta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(6px, 1.4vw, 16px);
+  margin: 6px 0 2px;
+}
+
+.cifra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.cifraCaja {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(62px, 9vw, 112px);
+  height: clamp(72px, 10vw, 124px);
+  overflow: hidden;
+  border-radius: clamp(14px, 1.6vw, 22px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(217, 180, 124, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 20px 40px -26px rgba(0, 0, 0, 0.9);
+}
+
+.cifraCaja::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.cifraNumero {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: clamp(34px, 5.4vw, 68px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff6e6, #d9b47c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.cifraEtiqueta {
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(239, 230, 216, 0.6);
+}
+
+.dos {
+  padding-top: clamp(20px, 3vw, 38px);
+  font-size: clamp(22px, 3vw, 38px);
+  color: rgba(217, 180, 124, 0.5);
+}
+
+@media (max-width: 480px) {
+  .dos {
+    display: none;
+  }
+}
+
+.cuando {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0 0;
+  font-size: 15px;
+  color: #f0d4a6;
+}
+
+.cuando span {
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(239, 230, 216, 0.6);
+}
+
+.texto {
+  margin: 0;
+  max-width: 600px;
+  font-size: clamp(14px, 1.2vw, 16px);
+  font-weight: 300;
+  line-height: 1.65;
+  color: rgba(239, 230, 216, 0.8);
+}
+
+.accion {
+  margin-top: 8px;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boton {
+  padding: 18px clamp(24px, 4vw, 44px);
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(123deg, #f6e3bd 0%, #d9b47c 40%, #a57a3c 100%);
+  color: #1a1208;
+  font: inherit;
+  font-size: clamp(13px, 1.2vw, 15px);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 0 0 6px rgba(217, 180, 124, 0.12), 0 24px 40px -18px rgba(217, 180, 124, 0.6);
+}
+
+.boton:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.hecho {
+  padding: 14px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 180, 124, 0.45);
+  background: rgba(217, 180, 124, 0.12);
+  font-size: 14.5px;
+  color: #f7f0e4;
+}
+
+/* ---------- Desde el blog ---------- */
+
+.blog {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.blogRotulo {
+  margin: 4px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.blogLista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.articulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 20px;
+  background: var(--neu-base);
+  box-shadow: var(--neu-fuera-sm);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.25s;
+}
+
+.articulo:hover {
+  transform: translateY(-2px);
+}
+
+.articuloFoto {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(140deg, #efe3cf, #d9c09a);
+}
+
+.articuloFoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.articuloTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.articuloTexto em {
+  font-style: normal;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.articuloTexto strong {
+  font-family: var(--fuente-cormorant), serif;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

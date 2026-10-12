@@ -23,7 +23,7 @@ export const dynamic = 'force-dynamic';
 type Vista = 'leads' | 'cuentas' | 'acuerdos' | 'agenda' | 'comunidad';
 export type Novedad = {
   id: string;
-  tipo: 'contacto' | 'registro' | 'invitacion' | 'acuerdo' | 'cita' | 'comunidad';
+  tipo: 'contacto' | 'registro' | 'invitacion' | 'acuerdo' | 'cita' | 'comunidad' | 'quiere';
   titulo: string;
   texto: string;
   cuando: string;
@@ -81,7 +81,7 @@ export async function GET(peticion: Request) {
   for (const d of contactos?.docs ?? []) {
     const v = d.data();
     // Quien se registra ya sale abajo, como cuenta: no se avisa dos veces.
-    if (v.registrada || v.origen === 'invitacion' || ORIGENES[v.origen]) continue;
+    if (v.registrada || v.origen === 'invitacion' || v.origen === 'comunidad-plataforma' || ORIGENES[v.origen]) continue;
     novedades.push({
       id: `contacto:${d.id}`,
       tipo: 'contacto',
@@ -139,6 +139,24 @@ export async function GET(peticion: Request) {
     }
   } catch (e) {
     console.error('[novedades] invitaciones', e);
+  }
+
+  // Alumnas que pulsan «Quiero ser parte del cambio Divine» en su panel.
+  try {
+    const quieren = await db.collection(COLECCIONES.usuarios).where('quiereComunidad', '>', ts).limit(20).get();
+    for (const d of quieren.docs) {
+      const v = d.data();
+      novedades.push({
+        id: `quiere:${d.id}`,
+        tipo: 'quiere',
+        titulo: 'Quiere entrar en la Comunidad',
+        texto: `${quien(v.nombre, v.correo)} ha pulsado «Quiero ser parte del cambio Divine».`,
+        cuando: fechaDe(v.quiereComunidad) ?? desde.toISOString(),
+        ir: 'leads',
+      });
+    }
+  } catch (e) {
+    console.error('[novedades] quieren comunidad', e);
   }
 
   // La comunidad: lo que publican las terapeutas (lo de Sorela no se avisa a ella misma).

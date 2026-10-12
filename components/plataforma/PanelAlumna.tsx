@@ -6,6 +6,7 @@ import { minutos, porBloques, type Leccion, type Progreso } from '@/lib/aula';
 import { tieneMembresia, type Acceso } from '@/lib/accesos';
 import type { Vista } from '@/lib/plataforma';
 import type { ProximaClase, Publicacion } from '@/lib/comunidad-tipos';
+import Noticias from './Noticias';
 import p from './panelalumna.module.css';
 
 /**
@@ -164,6 +165,9 @@ export default function PanelAlumna({
           <img src={foto} alt="" className={p.heroFoto} />
         )}
       </motion.section>
+
+      {/* ---------- Noticias: la apertura de la comunidad, en grande ---------- */}
+      <Noticias yaEsMiembro={miembro} ir={ir} />
 
       <div className={p.rejilla}>
         {/* ---------- Clases ---------- */}

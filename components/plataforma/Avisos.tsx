@@ -20,7 +20,7 @@ import a from './avisos.module.css';
 
 type Novedad = {
   id: string;
-  tipo: 'contacto' | 'registro' | 'invitacion' | 'acuerdo' | 'cita' | 'comunidad' | 'resumen';
+  tipo: 'contacto' | 'registro' | 'invitacion' | 'acuerdo' | 'cita' | 'comunidad' | 'quiere' | 'resumen';
   titulo: string;
   texto: string;
   cuando: string;
@@ -77,6 +77,8 @@ function Icono({ tipo }: { tipo: Novedad['tipo'] }) {
       return <svg {...p}><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></svg>;
     case 'acuerdo':
       return <svg {...p}><path d="M6 3h8l4 4v14H6z" /><path d="M9 16c1.5-2 2.5 1 4-1s1.5 1 2.5 0" /></svg>;
+    case 'quiere':
+      return <svg {...p}><path d="M12 3l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.8z" /></svg>;
     case 'comunidad':
       return <svg {...p}><path d="M4 5.5h16v10H9l-5 4z" /></svg>;
     case 'cita':

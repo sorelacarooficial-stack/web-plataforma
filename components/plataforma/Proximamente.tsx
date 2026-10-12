@@ -1,4 +1,5 @@
 import { cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
+import Noticias from './Noticias';
 import css from './proximamente.module.css';
 
 /**
@@ -126,6 +127,9 @@ export default function Proximamente({
 
   return (
     <div className={css.envoltura}>
+      <div className={css.noticias}>
+        <Noticias yaEsMiembro={conComunidad} />
+      </div>
       <section className={css.centro}>
         <span className={css.sello}>
           <span className={css.selloPunto} aria-hidden="true" />

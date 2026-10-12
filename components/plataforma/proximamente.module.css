@@ -210,3 +210,15 @@
 .enlace:hover {
   border-bottom-color: var(--oro);
 }
+
+.noticias {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto clamp(24px, 4vw, 48px);
+}
+
+/* Con las noticias arriba, los dos bloques van uno debajo del otro. */
+.envoltura {
+  flex-direction: column;
+  align-items: center;
+}
