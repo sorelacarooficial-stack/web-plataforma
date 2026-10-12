@@ -1,0 +1,218 @@
+/*
+ * Confirmar y avisar (Confirmar.tsx).
+ *
+ * Contraste medido, no a ojo: el título va en #141210 sobre #fffdf9 (18:1), el
+ * texto en #3e3831 (11:1) y el botón de peligro es blanco sobre #9a2f1a (7,5:1;
+ * antes #a24a2e, 5,9:1: el mismo rojo que los errores del onboarding y del
+ * mapa, para que «peligro» sea un solo color en toda la plataforma).
+ * El anillo de foco es el oro oscuro (#8a6a32, 4,9:1 sobre el fondo), que se
+ * ve también sobre el rojo.
+ *
+ * Los avisos son una banda clara con filo de color a la izquierda (rojo si
+ * algo ha fallado, verde si ha salido bien), icono, texto fuerte en #141210
+ * (16,5:1 sobre el tinte) y un «Vale» con la misma forma que los demás
+ * botones: así no se pierde abajo de la pantalla.
+ */
+
+.velo {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 18, 16, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.dialogo {
+  width: min(440px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: clamp(22px, 3vw, 30px);
+  border-radius: 24px;
+  background: #fffdf9;
+  border: 1px solid rgba(20, 18, 16, 0.08);
+  box-shadow: 0 30px 80px -30px rgba(20, 18, 16, 0.6);
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  color: #141210;
+}
+
+.icono {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: #fbeee9;
+  color: #9a2f1a;
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: #141210;
+  text-wrap: balance;
+}
+
+.texto {
+  margin: 10px 0 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #3e3831;
+}
+
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.cancelar,
+.peligro {
+  min-height: 44px;
+  padding: 11px 22px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+
+.cancelar {
+  border: 1px solid #8c8173;
+  background: #fff;
+  color: #141210;
+}
+
+.cancelar:hover {
+  background: #f5f2ec;
+  border-color: #141210;
+}
+
+.peligro {
+  border: 1px solid #9a2f1a;
+  background: #9a2f1a;
+  color: #fff;
+}
+
+.peligro:hover {
+  background: #84271a;
+  border-color: #84271a;
+}
+
+.cancelar:focus-visible,
+.peligro:focus-visible,
+.avisoBoton:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px #fffdf9,
+    0 0 0 4px #8a6a32;
+}
+
+/* En el móvil, los dos botones a lo ancho: lo importante arriba, a mano. */
+@media (max-width: 480px) {
+  .botones {
+    flex-direction: column-reverse;
+  }
+
+  .botones button {
+    width: 100%;
+  }
+}
+
+/* ---------- Avisos ---------- */
+
+.aviso {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  z-index: 1250;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(480px, calc(100vw - 32px));
+  padding: 12px 12px 12px 14px;
+  border-radius: 16px;
+  background: #fbefe9;
+  border: 1px solid rgba(154, 47, 26, 0.35);
+  border-left: 4px solid #9a2f1a;
+  box-shadow:
+    0 2px 6px rgba(20, 18, 16, 0.08),
+    0 24px 50px -22px rgba(20, 18, 16, 0.55);
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  translate: -50% 0;
+}
+
+.aviso[data-tipo='hecho'] {
+  background: #eef3ea;
+  border-color: rgba(63, 89, 55, 0.35);
+  border-left-color: #3f5937;
+}
+
+.avisoIcono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #9a2f1a;
+  box-shadow: 0 0 0 1px rgba(154, 47, 26, 0.25);
+}
+
+.aviso[data-tipo='hecho'] .avisoIcono {
+  color: #3f5937;
+  box-shadow: 0 0 0 1px rgba(63, 89, 55, 0.25);
+}
+
+.avisoTexto {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #141210;
+}
+
+/* «Vale»: la misma forma que «Cancelar», sin mayúsculas espaciadas. */
+.avisoBoton {
+  flex: none;
+  min-height: 40px;
+  padding: 8px 18px;
+  border: 1px solid #8c8173;
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #141210;
+  cursor: pointer;
+}
+
+.avisoBoton:hover {
+  background: #f5f2ec;
+  border-color: #141210;
+}
+
+/* Encima de la barra de abajo del móvil. */
+@media (max-width: 879px) {
+  .aviso {
+    bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+}

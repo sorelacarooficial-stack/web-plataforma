@@ -6,6 +6,11 @@
  *
  * Todo el color sale de las variables del tema. Ninguna tinta escrita a mano:
  * la plataforma tiene modo oscuro y un #fff suelto lo rompería.
+ *
+ * Pulido de contraste (medido en scratchpad/contraste-p3.mjs): los números y
+ * rótulos pequeños dejan el gris más tenue (--faint) y el oro de la marca por
+ * --muted-2 y --oro-letra, que pasan de 6 a 1; nada en Jost 300 y nada por
+ * debajo de 10 px.
  */
 
 .marco {
@@ -37,19 +42,23 @@
   min-width: 0;
 }
 
+/* El mes, en la Cormorant de los títulos y en 600 como todos ellos: en 400
+   el trazo fino de la Cormorant se quedaba en un hilo. */
 .mes {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
+  font-weight: 600;
   font-size: clamp(24px, 2.8vw, 32px);
   line-height: 1;
   color: var(--ink);
 }
 
 .anio {
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  color: var(--oro);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--oro-letra, #6f5323);
 }
 
 .mandos {
@@ -69,8 +78,8 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--line-2);
+  color: var(--ink-3);
+  border: 1px solid var(--line-5);
   border-radius: 999px;
   /* Las comillas angulares se dibujan pequeñas y altas: se agrandan y se
      suben un pelo para que queden centradas en el círculo. */
@@ -86,18 +95,22 @@
 
 .flecha:hover {
   border-color: var(--oro-line);
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
   background: var(--oro-tint);
 }
 
+/* «Hoy», con la voz de los botones de la plataforma (mayúsculas en 500). Era
+   una palabra de 11,5 px en fino y gris: no parecía un botón. */
 .hoyBoton {
   padding: 7px 14px;
   background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--line-2);
+  color: var(--ink-3);
+  border: 1px solid var(--line-5);
   border-radius: 999px;
-  font-size: 11.5px;
-  font-weight: 300;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
   transition:
     border-color 0.2s,
@@ -107,12 +120,13 @@
 
 .hoyBoton:hover:not(:disabled) {
   border-color: var(--oro-line);
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
   background: var(--oro-tint);
 }
 
+/* Ya estás en el mes de hoy: el botón se retira, pero sin borrarse. */
 .hoyBoton:disabled {
-  opacity: 0.35;
+  opacity: 0.45;
   cursor: default;
 }
 
@@ -133,10 +147,11 @@
 
 .inicial {
   text-align: center;
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted-2);
 }
 
 /* Al pasar de mes la cuadrícula entra con un desplazamiento mínimo. Es lo que
@@ -190,6 +205,10 @@
   border-radius: 8px;
 }
 
+.celda:focus-visible .disco {
+  box-shadow: 0 0 0 3px var(--foco-halo, rgba(217, 180, 124, 0.5));
+}
+
 /*
  * El número vive dentro de un disco. Así lo que se enciende al pasar por encima
  * o al marcar un día es un círculo del tamaño del número, y no el rectángulo
@@ -217,7 +236,7 @@
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  font-size: 14.5px;
+  font-size: 15px;
   line-height: 1;
   color: var(--ink-3);
 }
@@ -225,14 +244,17 @@
 /* Sábado y domingo, un punto más apagados: sin pintarlos de otro color, la
    semana laboral se distingue sola. */
 .finde .numero {
-  color: var(--muted);
+  color: var(--muted-2);
 }
 
 /* Los días del mes anterior y del siguiente se dejan puestos —si no, la
-   semana se vería partida— pero retirados, para que no compitan. */
+   semana se vería partida— pero retirados, para que no compitan. Retirados,
+   no borrados: al 55 % quedaban en 2,1 a 1 y no se leían; al 80 % se quedan
+   en 3,2, claramente detrás de los del mes pero legibles. */
 .fuera .numero {
   color: var(--faint);
-  opacity: 0.55;
+  opacity: 0.8;
+  font-weight: 400;
 }
 
 .fuera .punto,
@@ -240,14 +262,15 @@
   opacity: 0.4;
 }
 
-/* Hoy: número en oro y un anillo finísimo. Ni relleno ni negrita, que ese
-   sitio lo ocupa el día marcado. */
+/* Hoy: número en oro y un anillo fino. Ni relleno ni negrita, que ese sitio
+   lo ocupa el día marcado. El anillo, en el oro entero y no al 35 %: así se
+   encuentra el día de hoy sin buscarlo (4,4 a 1 contra el papel). */
 .hoy .disco {
-  border-color: var(--oro-line);
+  border-color: var(--oro);
 }
 
 .hoy .numero {
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 /* El día marcado. Es el único elemento sólido de la cuadrícula: con dos
@@ -302,9 +325,10 @@
 
 .mas {
   margin-left: 1px;
-  font-size: 8.5px;
+  font-size: 10px;
+  font-weight: 500;
   line-height: 1;
-  color: var(--faint);
+  color: var(--muted-2);
 }
 
 /* ==========================================================================
@@ -318,10 +342,11 @@
   align-items: center;
   gap: 5px;
   padding-top: 12px;
-  border-top: 1px solid var(--line-1);
-  font-size: 11px;
-  font-weight: 300;
-  color: var(--faint);
+  border-top: 1px solid var(--line-2);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--muted-2);
 }
 
 /*
@@ -404,7 +429,7 @@
 
 .conPendiente .numero {
   color: #2a1d0c;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .conPendiente:hover .disco {
@@ -418,18 +443,19 @@
 
 .cuenta {
   position: absolute;
-  top: -5px;
-  right: -7px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
+  top: -6px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   display: grid;
   place-items: center;
   border-radius: 999px;
   background: var(--ink);
   color: var(--bg);
-  font-size: 9.5px;
-  font-weight: 600;
+  font-size: 10.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
   box-shadow: 0 0 0 2px var(--bg);
 }
@@ -445,9 +471,11 @@
   color: var(--bg);
 }
 
+/* La burbuja sobre el día marcado, en el oro claro de la plataforma y no en
+   el bronce: el número oscuro encima pasa de 4,8 a 9,4 a 1. */
 .marcado .cuenta {
-  background: var(--oro-claro);
-  color: #2a1d0c;
+  background: #d9b47c;
+  color: #17140f;
 }
 
 .fuera.conPendiente .disco {
@@ -467,5 +495,5 @@
 
 .muestraHecho {
   background: var(--surface-2);
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--line-4);
 }

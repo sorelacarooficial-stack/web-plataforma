@@ -12,8 +12,20 @@ import css from './InfoPrivacidad.module.css';
  *
  * Los textos salen de `lib/privacidad.ts`, igual que la política completa:
  * los dos dicen lo mismo porque leen lo mismo.
+ *
+ * `destinatarios` cambia la línea de a quién llegan los datos. Casi todos los
+ * formularios no los ceden a nadie; la ficha del mapa los PUBLICA, y decir ahí
+ * «no se ceden a nadie» sería falso justo donde más importa.
  */
-export default function InfoPrivacidad({ capa, claro }: { capa: PrimeraCapa; claro?: boolean }) {
+export default function InfoPrivacidad({
+  capa,
+  claro,
+  destinatarios,
+}: {
+  capa: PrimeraCapa;
+  claro?: boolean;
+  destinatarios?: string;
+}) {
   return (
     <details className={css.caja} data-claro={claro ? '' : undefined}>
       <summary className={css.resumen}>
@@ -41,8 +53,8 @@ export default function InfoPrivacidad({ capa, claro }: { capa: PrimeraCapa; cla
         <div>
           <dt>Destinatarios</dt>
           <dd>
-            No se ceden a nadie salvo obligación legal. Los guardan y envían por encargo de Sorela
-            Google y Vercel.
+            {destinatarios ??
+              'No se ceden a nadie salvo obligación legal. Los guardan y envían por encargo de Sorela Google y Vercel.'}
           </dd>
         </div>
         <div>

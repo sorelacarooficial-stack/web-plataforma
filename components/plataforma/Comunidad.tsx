@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as TeclaReact, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import {
   CATEGORIAS_COMUNIDAD,
   SOBRE_CATEGORIA,
@@ -12,7 +12,9 @@ import {
   type Publicacion,
   type Respuesta,
 } from '@/lib/comunidad-tipos';
+import { PUNTOS, formatoPuntos } from '@/lib/puntos-tipos';
 import Bienvenida from './Bienvenida';
+import { useAviso, useConfirmar, type OpcionesConfirmar } from './Confirmar';
 import css from './plataforma.module.css';
 import c from './comunidad.module.css';
 import { verPerfil } from '@/lib/navegar';
@@ -27,17 +29,52 @@ import { leerRespuesta, prepararImagen } from '@/lib/imagen-cliente';
  * antes de dar el paso. Ver app/api/comunidad.
  */
 
+type FilaRanking = { uid: string; nombre: string; puntos: number; nivel?: { n: number; nombre: string } | null };
+
 type Datos = {
   puedeEscribir: boolean;
   modera: boolean;
-  yo: { uid: string; nombre: string; foto: string | null };
+  /* Quién eres y cómo vas este mes en el ranking. Sorela no puntúa: le llega
+     `puntua: false` y no se le enseña la fila «Tú». */
+  yo: { uid: string; nombre: string; foto: string | null; puntua?: boolean; puesto?: number | null; puntos?: number };
   publicaciones: Publicacion[];
-  ranking: { uid: string; nombre: string; puntos: number }[];
+  ranking: FilaRanking[];
   proximaClase: ProximaClase;
   sorela: { nombre: string; foto: string | null };
 };
 
 type Filtro = 'Todo' | CategoriaComunidad | 'Sin responder';
+
+type Confirmar = (o: OpcionesConfirmar) => Promise<boolean>;
+type Avisar = (texto: string) => void;
+
+/* Una foto subida al borrador y luego descartada se borra del almacén al
+   momento: si no, se quedaba ahí para siempre (una foto de una clienta sin
+   publicación). No se espera la respuesta, y `keepalive` la deja salir aunque
+   se esté cerrando la página. */
+const quitarDelAlmacen = (ruta: string) => {
+  fetch(`/api/comunidad/imagen?ruta=${encodeURIComponent(ruta)}`, { method: 'DELETE', keepalive: true }).catch(() => {});
+};
+
+/** Un hueco vacío que se entiende: icono, qué pasa y qué se puede hacer. */
+function Vacio({ icono, titulo, children }: { icono: ReactNode; titulo: string; children?: ReactNode }) {
+  return (
+    <div className={c.vacio}>
+      <span className={c.vacioIcono} aria-hidden="true">
+        {icono}
+      </span>
+      <strong className={c.vacioTitulo}>{titulo}</strong>
+      {children && <div className={c.vacioTexto}>{children}</div>}
+    </div>
+  );
+}
+
+const ICONO_CHARLA = (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round">
+    <path d="M4 5.5h16v10H9l-5 4z" />
+    <path d="M8.5 10.5h7" strokeLinecap="round" />
+  </svg>
+);
 
 function hace(iso: string | null) {
   if (!iso) return '';
@@ -131,7 +168,7 @@ function Visor({ fotos, inicio, cerrar }: { fotos: string[]; inicio: number; cer
 
 /* ---------- Escribir ---------- */
 
-function Escribir({ yo, modera, alPublicar }: { yo: Datos['yo']; modera: boolean; alPublicar: () => void }) {
+function Escribir({ yo, modera, alPublicar, confirmar }: { yo: Datos['yo']; modera: boolean; alPublicar: () => void; confirmar: Confirmar }) {
   const [abierto, setAbierto] = useState(false);
   const [categoria, setCategoria] = useState<CategoriaComunidad>('Caso');
   const [titulo, setTitulo] = useState('');
@@ -141,11 +178,39 @@ function Escribir({ yo, modera, alPublicar }: { yo: Datos['yo']; modera: boolean
   const [enviando, setEnviando] = useState(false);
   const [errores, setErrores] = useState<Record<string, string>>({});
   const input = useRef<HTMLInputElement>(null);
+  /* Cada borrador descartado sube este número: una foto que termina de subir
+     DESPUÉS de cancelar ya no es de nadie y se borra en cuanto llega. */
+  const borrador = useRef(0);
+  const fotosVivas = useRef(fotos);
+  const publicando = useRef(false);
+
+  useEffect(() => {
+    fotosVivas.current = fotos;
+  }, [fotos]);
+
+  /* Si se sale de la comunidad (o se cierra la pestaña) con fotos en el
+     borrador, el borrador se pierde: sus fotos también se borran. Durante la
+     publicación no, que ya son de la publicación. */
+  useEffect(() => {
+    const limpiar = () => {
+      if (!publicando.current) fotosVivas.current.forEach((f) => quitarDelAlmacen(f.ruta));
+      fotosVivas.current = [];
+    };
+    const alSalir = (e: PageTransitionEvent) => {
+      if (!e.persisted) limpiar();
+    };
+    window.addEventListener('pagehide', alSalir);
+    return () => {
+      window.removeEventListener('pagehide', alSalir);
+      limpiar();
+    };
+  }, []);
 
   const categorias = CATEGORIAS_COMUNIDAD.filter((x) => modera || x !== 'Anuncio');
 
   async function subir(lista: FileList | null) {
     if (!lista) return;
+    const deEste = borrador.current;
     setSubiendo(true);
     for (const f of [...lista].slice(0, 4 - fotos.length)) {
       try {
@@ -153,8 +218,9 @@ function Escribir({ yo, modera, alPublicar }: { yo: Datos['yo']; modera: boolean
         // Reducida aquí: una foto de móvil pasa del límite de 4,5 MB de Vercel.
         fd.append('archivo', await prepararImagen(f));
         const j = await leerRespuesta<{ ruta: string; url: string }>(await fetch('/api/comunidad/imagen', { method: 'POST', body: fd }));
-        if (j.ok) setFotos((x) => [...x, { ruta: j.ruta, url: j.url }]);
-        else setErrores({ fotos: j.texto || 'No he podido subir la foto.' });
+        if (!j.ok) setErrores({ fotos: j.texto || 'No he podido subir la foto.' });
+        else if (deEste !== borrador.current) quitarDelAlmacen(j.ruta);
+        else setFotos((x) => [...x, { ruta: j.ruta, url: j.url }]);
       } catch (e) {
         setErrores({ fotos: (e as Error).message || 'No hay conexión.' });
       }
@@ -162,9 +228,37 @@ function Escribir({ yo, modera, alPublicar }: { yo: Datos['yo']; modera: boolean
     setSubiendo(false);
   }
 
+  function quitarFoto(ruta: string) {
+    setFotos((x) => x.filter((y) => y.ruta !== ruta));
+    quitarDelAlmacen(ruta);
+  }
+
+  /* Cancelar descarta el borrador entero, con sus fotos. Si había algo
+     escrito o subido, antes se pregunta: es fácil darle sin querer. */
+  async function cancelar() {
+    const hayAlgo = Boolean(titulo.trim() || texto.trim() || fotos.length);
+    if (
+      hayAlgo &&
+      !(await confirmar({
+        titulo: '¿Descartar el borrador?',
+        texto: fotos.length ? 'Se pierde lo que has escrito y se borran las fotos que has subido.' : 'Se pierde lo que has escrito.',
+        boton: 'Descartar',
+      }))
+    )
+      return;
+    borrador.current++;
+    fotos.forEach((f) => quitarDelAlmacen(f.ruta));
+    setFotos([]);
+    setTitulo('');
+    setTexto('');
+    setErrores({});
+    setAbierto(false);
+  }
+
   async function publicar() {
     setEnviando(true);
     setErrores({});
+    publicando.current = true;
     try {
       const j = await (
         await fetch('/api/comunidad', {
@@ -175,6 +269,8 @@ function Escribir({ yo, modera, alPublicar }: { yo: Datos['yo']; modera: boolean
       ).json();
       if (!j.ok) setErrores(j.errores ?? { general: 'No se ha podido publicar.' });
       else {
+        // Las fotos ya son de la publicación: el borrador las suelta sin borrarlas.
+        fotosVivas.current = [];
         setTitulo('');
         setTexto('');
         setFotos([]);
@@ -185,6 +281,7 @@ function Escribir({ yo, modera, alPublicar }: { yo: Datos['yo']; modera: boolean
     } catch {
       setErrores({ general: 'No hay conexión.' });
     }
+    publicando.current = false;
     setEnviando(false);
   }
 
@@ -209,18 +306,20 @@ function Escribir({ yo, modera, alPublicar }: { yo: Datos['yo']; modera: boolean
             </div>
           </LayoutGroup>
           <p className={c.ayuda}>{SOBRE_CATEGORIA[categoria].ayuda}</p>
-          <input className={c.campoTitulo} placeholder="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={140} autoFocus />
+          <input className={c.campoTitulo} placeholder="Título" aria-label="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={140} autoFocus />
           {errores.titulo && <span className={c.error}>{errores.titulo}</span>}
-          <textarea className={c.campoTexto} placeholder="Cuéntalo con detalle: qué tenía, qué hiciste, qué notaste…" value={texto} onChange={(e) => setTexto(e.target.value)} rows={5} maxLength={5000} />
+          <textarea className={c.campoTexto} placeholder="Cuéntalo con detalle: qué tenía, qué hiciste, qué notaste…" aria-label="Texto de la publicación" value={texto} onChange={(e) => setTexto(e.target.value)} rows={5} maxLength={5000} />
           {errores.texto && <span className={c.error}>{errores.texto}</span>}
           {fotos.length > 0 && (
             <div className={c.fotosNuevas}>
-              {fotos.map((f) => (
+              {fotos.map((f, i) => (
                 <span key={f.ruta}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={f.url} alt="" />
-                  <button type="button" onClick={() => setFotos((x) => x.filter((y) => y.ruta !== f.ruta))} aria-label="Quitar foto">
-                    ✕
+                  <button type="button" onClick={() => quitarFoto(f.ruta)} aria-label={`Quitar la foto ${i + 1}`} title="Quitar foto">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </svg>
                   </button>
                 </span>
               ))}
@@ -235,7 +334,7 @@ function Escribir({ yo, modera, alPublicar }: { yo: Datos['yo']; modera: boolean
               {subiendo ? 'Subiendo…' : fotos.length ? `Fotos (${fotos.length}/4)` : 'Añadir fotos'}
             </button>
             <span className={c.hueco} />
-            <button type="button" className={css.enlaceAccion} onClick={() => setAbierto(false)}>
+            <button type="button" className={c.botonCancelar} onClick={cancelar} disabled={enviando}>
               Cancelar
             </button>
             <button type="button" className={css.btn} onClick={publicar} disabled={enviando || subiendo}>
@@ -249,6 +348,126 @@ function Escribir({ yo, modera, alPublicar }: { yo: Datos['yo']; modera: boolean
   );
 }
 
+/* ---------- El menú «···» de una publicación ---------- */
+
+type Opcion = 'fijar' | 'resolver' | 'borrar';
+
+/**
+ * Menú de verdad: se cierra al tocar fuera o con Escape, se recorre con las
+ * flechas y lo anuncia el lector de pantalla. La autora ve SIEMPRE «Borrar»
+ * en lo suyo (aunque ya no tenga la Comunidad); marcar resuelta, solo si
+ * todavía escribe; fijar, solo Sorela.
+ */
+function MenuPublicacion({ p, modera, puedeEscribir, elegir }: { p: Publicacion; modera: boolean; puedeEscribir: boolean; elegir: (o: Opcion) => void }) {
+  const [abierto, setAbierto] = useState(false);
+  const caja = useRef<HTMLSpanElement>(null);
+  const boton = useRef<HTMLButtonElement>(null);
+  const lista = useRef<HTMLDivElement>(null);
+  const id = useId();
+  const reducir = useReducedMotion();
+
+  useEffect(() => {
+    if (!abierto) return;
+    // Al abrir, el foco va a la primera opción, como en cualquier menú.
+    lista.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
+    const fuera = (e: PointerEvent) => {
+      if (caja.current && !caja.current.contains(e.target as Node)) setAbierto(false);
+    };
+    const tecla = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setAbierto(false);
+      boton.current?.focus();
+    };
+    document.addEventListener('pointerdown', fuera);
+    document.addEventListener('keydown', tecla);
+    return () => {
+      document.removeEventListener('pointerdown', fuera);
+      document.removeEventListener('keydown', tecla);
+    };
+  }, [abierto]);
+
+  function mover(e: TeclaReact<HTMLDivElement>) {
+    const items = [...(lista.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [])];
+    if (!items.length) return;
+    const i = items.indexOf(document.activeElement as HTMLButtonElement);
+    const destino =
+      e.key === 'ArrowDown' ? (i + 1) % items.length : e.key === 'ArrowUp' ? (i - 1 + items.length) % items.length : e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : -1;
+    if (e.key === 'Tab') setAbierto(false);
+    if (destino < 0) return;
+    e.preventDefault();
+    items[destino].focus();
+  }
+
+  const opcion = (o: Opcion) => {
+    setAbierto(false);
+    // El foco vuelve al «···»: si se abre la pregunta de borrar, al cerrarla vuelve ahí.
+    boton.current?.focus();
+    elegir(o);
+  };
+
+  return (
+    <span className={c.menuEnvoltura} ref={caja}>
+      <button
+        ref={boton}
+        type="button"
+        className={c.menuBoton}
+        onClick={() => setAbierto((m) => !m)}
+        aria-label="Opciones de la publicación"
+        aria-haspopup="menu"
+        aria-expanded={abierto}
+        aria-controls={abierto ? id : undefined}
+        data-on={abierto ? '' : undefined}
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+          <circle cx="5.5" cy="12" r="1.7" />
+          <circle cx="12" cy="12" r="1.7" />
+          <circle cx="18.5" cy="12" r="1.7" />
+        </svg>
+      </button>
+      <AnimatePresence>
+        {abierto && (
+          <motion.div
+            ref={lista}
+            id={id}
+            role="menu"
+            aria-label="Opciones de la publicación"
+            className={c.menu}
+            onKeyDown={mover}
+            initial={reducir ? { opacity: 0 } : { opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={reducir ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
+            transition={{ duration: reducir ? 0 : 0.16 }}
+          >
+            {modera && (
+              <button type="button" role="menuitem" onClick={() => opcion('fijar')}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
+                  <path d="M9 4h6l-1 6 3 3H7l3-3zM12 13v7" />
+                </svg>
+                {p.fijada ? 'Quitar de arriba' : 'Fijar arriba'}
+              </button>
+            )}
+            {(modera || puedeEscribir) && (
+              <button type="button" role="menuitem" onClick={() => opcion('resolver')}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+                {p.resuelta ? 'Marcar sin resolver' : 'Marcar como resuelta'}
+              </button>
+            )}
+            {(modera || puedeEscribir) && <span className={c.menuRaya} role="separator" />}
+            <button type="button" role="menuitem" className={c.peligro} onClick={() => opcion('borrar')}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+              </svg>
+              Borrar publicación
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </span>
+  );
+}
+
 /* ---------- Una publicación ---------- */
 
 function Tarjeta({
@@ -258,6 +477,10 @@ function Tarjeta({
   alternar,
   refrescar,
   verFotos,
+  confirmar,
+  avisar,
+  borrar,
+  cambiar,
 }: {
   p: Publicacion;
   datos: Datos;
@@ -265,9 +488,15 @@ function Tarjeta({
   alternar: () => void;
   refrescar: () => void;
   verFotos: (fotos: string[], i: number) => void;
+  confirmar: Confirmar;
+  avisar: Avisar;
+  /** Borra la publicación (de la lista al momento; vuelve si falla). */
+  borrar: (p: Publicacion) => void;
+  /** Cambia la publicación en la lista sin esperar a recargar. */
+  cambiar: (id: string, f: (p: Publicacion) => Publicacion) => void;
 }) {
+  const reducir = useReducedMotion();
   const [larga, setLarga] = useState(false);
-  const [menu, setMenu] = useState(false);
   const [mg, setMg] = useState({ dado: p.loHeDado, n: p.meGusta });
   const [respuestas, setRespuestas] = useState<Respuesta[] | null>(null);
   const [texto, setTexto] = useState('');
@@ -306,11 +535,47 @@ function Tarjeta({
     }
   }
 
-  async function moderar(a: 'fijar' | 'resolver' | 'borrar') {
-    setMenu(false);
-    if (a === 'borrar' && !window.confirm('¿Borrar esta publicación y sus respuestas?')) return;
+  async function moderar(a: Opcion) {
+    if (a === 'borrar') {
+      const si = await confirmar({
+        titulo: '¿Borrar esta publicación?',
+        texto: 'Se borran también sus respuestas y sus fotos. Se restan los puntos que dio.',
+        boton: 'Borrar publicación',
+      });
+      if (si) borrar(p);
+      return;
+    }
     const j = await accion({ accion: a });
     if (j.ok) refrescar();
+    else avisar('No se ha podido cambiar. Inténtalo otra vez.');
+  }
+
+  /* Borrar una respuesta: sale del hilo al momento y, si el servidor dice que
+     no, vuelve a su sitio con un aviso. Si ya no existía, se da por borrada. */
+  async function borrarRespuesta(r: Respuesta) {
+    const si = await confirmar({
+      titulo: '¿Borrar esta respuesta?',
+      texto: r.esMia ? 'Se restan los puntos que te dio.' : `Es de ${r.autora.nombre}. Se le restan los puntos que le dio.`,
+      boton: 'Borrar respuesta',
+    });
+    if (!si) return;
+    const sitio = respuestas?.findIndex((x) => x.id === r.id) ?? -1;
+    setRespuestas((l) => l?.filter((x) => x.id !== r.id) ?? l);
+    cambiar(p.id, (x) => ({ ...x, respuestas: Math.max(0, x.respuestas - 1) }));
+    const j = await accion({ accion: 'borrar', rid: r.id });
+    if (j.ok || j.motivo === 'no-existe') {
+      window.dispatchEvent(new Event('divine:logros'));
+      refrescar();
+      return;
+    }
+    setRespuestas((l) => {
+      if (!l || l.some((x) => x.id === r.id)) return l;
+      const n = [...l];
+      n.splice(sitio < 0 ? n.length : Math.min(sitio, n.length), 0, r);
+      return n;
+    });
+    cambiar(p.id, (x) => ({ ...x, respuestas: x.respuestas + 1 }));
+    avisar(j.motivo === 'sin-permiso' ? 'Esta respuesta no la puedes borrar.' : 'No se ha podido borrar la respuesta. Revisa la conexión e inténtalo otra vez.');
   }
 
   const corto = p.texto.length > 420 && !larga;
@@ -329,22 +594,7 @@ function Tarjeta({
           {p.fijada && <span className={c.selloFijada}>📌 Fijada</span>}
           {p.resuelta && <span className={c.selloResuelta}>✓ Resuelta</span>}
         </span>
-        {(datos.modera || p.esMia) && (
-          <span className={c.menuEnvoltura}>
-            <button type="button" className={c.menuBoton} onClick={() => setMenu((m) => !m)} aria-label="Opciones">
-              ···
-            </button>
-            <AnimatePresence>
-              {menu && (
-                <motion.div className={c.menu} initial={{ opacity: 0, y: -4, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}>
-                  {datos.modera && <button type="button" onClick={() => moderar('fijar')}>{p.fijada ? 'Quitar de arriba' : 'Fijar arriba'}</button>}
-                  <button type="button" onClick={() => moderar('resolver')}>{p.resuelta ? 'Marcar sin resolver' : 'Marcar como resuelta'}</button>
-                  <button type="button" className={c.peligro} onClick={() => moderar('borrar')}>Borrar</button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </span>
-        )}
+        {(datos.modera || p.esMia) && <MenuPublicacion p={p} modera={datos.modera} puedeEscribir={datos.puedeEscribir} elegir={moderar} />}
       </header>
 
       <h3 className={c.titulo}>{p.titulo}</h3>
@@ -384,44 +634,46 @@ function Tarjeta({
           <motion.div className={c.hilo} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
             <div className={c.hiloDentro}>
               {respuestas === null && <p className={c.cargando}>Cargando respuestas…</p>}
-              {respuestas?.map((r) => (
-                <div key={r.id} className={c.respuesta} data-sorela={r.autora.esSorela ? '' : undefined}>
-                  <Avatar a={r.autora} tam={32} />
-                  <div className={c.respuestaCuerpo}>
-                    <div className={c.respuestaCabecera}>
-                      <Nombre a={r.autora} />
-                      <span className={c.cuando}>{hace(r.creado)}</span>
-                    </div>
-                    <p>{r.texto}</p>
-                    <div className={c.respuestaPie}>
-                      <Corazon
-                        dado={r.loHeDado}
-                        cuenta={r.meGusta}
-                        alPulsar={async () => {
-                          setRespuestas((l) => l?.map((x) => (x.id === r.id ? { ...x, loHeDado: !x.loHeDado, meGusta: x.meGusta + (x.loHeDado ? -1 : 1) } : x)) ?? l);
-                          await accion({ accion: 'meGusta', rid: r.id });
-                        }}
-                      />
-                      {(r.esMia || datos.modera) && (
-                        <button
-                          type="button"
-                          className={c.borrarRespuesta}
-                          onClick={async () => {
-                            if (!window.confirm('¿Borrar esta respuesta?')) return;
-                            const j = await accion({ accion: 'borrar', rid: r.id });
-                            if (j.ok) {
-                              setRespuestas((l) => l?.filter((x) => x.id !== r.id) ?? l);
-                              refrescar();
-                            }
+              {/* Al borrar una, sale y las de debajo suben sin saltos. */}
+              <AnimatePresence initial={false} mode="popLayout">
+                {respuestas?.map((r) => (
+                  <motion.div
+                    key={r.id}
+                    layout={reducir ? false : 'position'}
+                    className={c.respuesta}
+                    data-sorela={r.autora.esSorela ? '' : undefined}
+                    exit={reducir ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
+                    transition={{ duration: reducir ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <Avatar a={r.autora} tam={32} />
+                    <div className={c.respuestaCuerpo}>
+                      <div className={c.respuestaCabecera}>
+                        <Nombre a={r.autora} />
+                        <span className={c.cuando}>{hace(r.creado)}</span>
+                      </div>
+                      <p>{r.texto}</p>
+                      <div className={c.respuestaPie}>
+                        <Corazon
+                          dado={r.loHeDado}
+                          cuenta={r.meGusta}
+                          alPulsar={async () => {
+                            setRespuestas((l) => l?.map((x) => (x.id === r.id ? { ...x, loHeDado: !x.loHeDado, meGusta: x.meGusta + (x.loHeDado ? -1 : 1) } : x)) ?? l);
+                            await accion({ accion: 'meGusta', rid: r.id });
                           }}
-                        >
-                          Borrar
-                        </button>
-                      )}
+                        />
+                        {(r.esMia || datos.modera) && (
+                          <button type="button" className={c.borrarRespuesta} onClick={() => borrarRespuesta(r)}>
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
+                              <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+                            </svg>
+                            Borrar
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
               {datos.puedeEscribir ? (
                 <div className={c.responder}>
                   <Avatar a={{ nombre: datos.yo.nombre || 'Tú', foto: datos.yo.foto, esSorela: datos.modera }} tam={32} />
@@ -429,6 +681,7 @@ function Tarjeta({
                     value={texto}
                     onChange={(e) => setTexto(e.target.value)}
                     placeholder={datos.modera ? 'Responde como Sorela…' : 'Escribe tu respuesta…'}
+                    aria-label="Tu respuesta"
                     rows={2}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) responder();
@@ -522,19 +775,103 @@ function Clase({ clase, modera, puedeEntrar, guardado }: { clase: ProximaClase; 
   );
 }
 
+/* ---------- Más activas este mes ---------- */
+
+/**
+ * El ranking del mes: barras que crecen en proporción a la primera, oro,
+ * plata y bronce para el podio, el nivel de cada una y, debajo, cómo vas tú.
+ * Así se entiende de un vistazo quién lleva cuánto y qué hace falta para
+ * entrar.
+ */
+function Ranking({ filas, yo }: { filas: FilaRanking[]; yo: Datos['yo'] | null }) {
+  const reducir = useReducedMotion();
+  const max = Math.max(1, filas[0]?.puntos ?? 0);
+  const mio = yo?.puntua ? { puesto: yo.puesto ?? null, puntos: Math.max(0, yo.puntos ?? 0) } : null;
+
+  return (
+    <section className={c.ladoTarjeta} aria-labelledby="ranking-titulo">
+      <h2 id="ranking-titulo" className={c.ladoRotulo}>
+        Más activas este mes
+      </h2>
+      {filas.length === 0 ? (
+        <p className={c.ladoTexto}>Suma quien publica casos, responde a las demás y termina clases. Todavía no hay nadie: la primera se lleva el oro.</p>
+      ) : (
+        <ol className={c.ranking}>
+          {filas.map((r, i) => (
+            <li key={r.uid} data-yo={yo && r.uid === yo.uid ? '' : undefined}>
+              {/* El puesto ya lo dice la lista ordenada al lector de pantalla. */}
+              <span className={c.puesto} data-p={i} aria-hidden="true">
+                {i + 1}
+              </span>
+              <div className={c.rankingCuerpo}>
+                <div className={c.rankingLinea}>
+                  <button type="button" className={c.rankingNombre} onClick={() => verPerfil(r.uid)} title={`Ver el perfil de ${r.nombre}`}>
+                    {r.nombre}
+                  </button>
+                  <span className={c.puntos}>
+                    {formatoPuntos(r.puntos)} <small>pts</small>
+                  </span>
+                </div>
+                <span className={c.rankingPista} aria-hidden="true">
+                  <motion.span
+                    className={c.rankingRelleno}
+                    data-p={i}
+                    initial={reducir ? false : { width: '0%' }}
+                    animate={{ width: `${Math.max(4, (r.puntos / max) * 100)}%` }}
+                    transition={reducir ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 17, delay: 0.15 + i * 0.09 }}
+                  />
+                </span>
+                {r.nivel && (
+                  <span className={c.chipNivel}>
+                    <span className={c.chipNumero} aria-hidden="true">
+                      {r.nivel.n}
+                    </span>
+                    <span className={c.soloLector}>Nivel {r.nivel.n}: </span>
+                    {r.nivel.nombre}
+                  </span>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+      {mio && (filas.length > 0 || mio.puntos > 0) && (
+        <p className={c.rankingYo}>
+          <b>Tú</b>
+          <span aria-hidden="true">·</span>
+          {mio.puesto ? `puesto ${mio.puesto}` : 'aún sin puesto'}
+          <span aria-hidden="true">·</span>
+          <span>
+            <b>{formatoPuntos(mio.puntos)} pts</b> este mes
+          </span>
+        </p>
+      )}
+      <p className={c.rankingComo}>
+        Publicar <b>+{PUNTOS.publicacion}</b> · Responder a otra <b>+{PUNTOS.respuesta}</b> · Cada «me gusta» que recibes{' '}
+        <b>+{PUNTOS.meGusta}</b> · Terminar una clase <b>+{PUNTOS.clase}</b>
+      </p>
+    </section>
+  );
+}
+
 export default function Comunidad() {
   const [datos, setDatos] = useState<Datos | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
   const [filtro, setFiltro] = useState<Filtro>('Todo');
   const [abierta, setAbierta] = useState<string | null>(null);
   const [visor, setVisor] = useState<{ fotos: string[]; i: number } | null>(null);
+  const [confirmar, dialogo] = useConfirmar();
+  const [avisar, aviso] = useAviso();
+  /* Lo que se está borrando no vuelve a salir aunque la recarga de cada
+     minuto llegue antes que la respuesta del servidor. */
+  const borrando = useRef(new Set<string>());
 
   const cargar = useCallback(async () => {
     try {
       const r = await fetch('/api/comunidad');
       const j = await r.json();
       if (j.ok) {
-        setDatos(j);
+        setDatos({ ...j, publicaciones: (j.publicaciones as Publicacion[]).filter((x) => !borrando.current.has(x.id)) });
         setFallo(null);
       } else setFallo(j.motivo === 'sin-acceso' ? 'La comunidad es para quien tiene la Comunidad Divine o un curso.' : 'No he podido cargar la comunidad.');
     } catch {
@@ -548,6 +885,44 @@ export default function Comunidad() {
     return () => clearInterval(t);
   }, [cargar]);
 
+  const cambiar = useCallback(
+    (id: string, f: (p: Publicacion) => Publicacion) =>
+      setDatos((d) => (d ? { ...d, publicaciones: d.publicaciones.map((x) => (x.id === id ? f(x) : x)) } : d)),
+    []
+  );
+
+  /* Borrar una publicación: sale de la lista al momento. Si el servidor dice
+     que no, vuelve a su sitio y se avisa. Si ya no existía, se da por borrada. */
+  const borrar = useCallback(
+    async (p: Publicacion) => {
+      const sitio = datos?.publicaciones.findIndex((x) => x.id === p.id) ?? -1;
+      borrando.current.add(p.id);
+      setDatos((d) => (d ? { ...d, publicaciones: d.publicaciones.filter((x) => x.id !== p.id) } : d));
+      setAbierta((x) => (x === p.id ? null : x));
+      const j = await (
+        await fetch('/api/comunidad', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accion: 'borrar', id: p.id }) }).catch(
+          () => new Response('{}')
+        )
+      )
+        .json()
+        .catch(() => ({ ok: false }));
+      if (j.ok || j.motivo === 'no-existe') {
+        window.dispatchEvent(new Event('divine:logros'));
+        cargar(); // el ranking y los contadores, al día
+        return;
+      }
+      borrando.current.delete(p.id);
+      setDatos((d) => {
+        if (!d || d.publicaciones.some((x) => x.id === p.id)) return d;
+        const l = [...d.publicaciones];
+        l.splice(sitio < 0 ? 0 : Math.min(sitio, l.length), 0, p);
+        return { ...d, publicaciones: l };
+      });
+      avisar(j.motivo === 'sin-permiso' ? 'Esta publicación no la puedes borrar.' : 'No se ha podido borrar la publicación. Revisa la conexión e inténtalo otra vez.');
+    },
+    [datos, cargar, avisar]
+  );
+
   const sinResponder = useMemo(
     () => (datos?.publicaciones ?? []).filter((p) => !p.resuelta && !p.respondioSorela && !p.autora.esSorela),
     [datos]
@@ -560,14 +935,22 @@ export default function Comunidad() {
     return ps.filter((p) => p.categoria === filtro);
   }, [datos, filtro, sinResponder]);
 
-  if (fallo && !datos) return <p className={c.vacio}>{fallo}</p>;
+  if (fallo && !datos)
+    return (
+      <Vacio icono={ICONO_CHARLA} titulo="No se ha podido abrir la comunidad">
+        <p>{fallo}</p>
+        <button type="button" className={c.vacioBoton} onClick={cargar}>
+          Reintentar
+        </button>
+      </Vacio>
+    );
 
   const filtros: Filtro[] = ['Todo', ...CATEGORIAS_COMUNIDAD, ...(datos?.modera ? (['Sin responder'] as Filtro[]) : [])];
 
   return (
     <div className={c.comunidad}>
       <div className={c.centro}>
-        {datos?.puedeEscribir && <Escribir yo={datos.yo} modera={datos.modera} alPublicar={cargar} />}
+        {datos?.puedeEscribir && <Escribir yo={datos.yo} modera={datos.modera} alPublicar={cargar} confirmar={confirmar} />}
         {datos && !datos.puedeEscribir && (
           <section className={c.visita}>
             <strong>Estás de visita.</strong> Puedes leerlo todo y dar «me gusta». Para publicar y responder hace falta la Comunidad
@@ -612,21 +995,36 @@ export default function Comunidad() {
                 alternar={() => setAbierta((x) => (x === p.id ? null : p.id))}
                 refrescar={cargar}
                 verFotos={(fotos, i) => setVisor({ fotos, i })}
+                confirmar={confirmar}
+                avisar={avisar}
+                borrar={borrar}
+                cambiar={cambiar}
               />
             ))}
           </AnimatePresence>
         </motion.div>
 
         {datos && lista.length === 0 && (
-          <div className={c.vacio}>
-            {datos.publicaciones.length === 0
-              ? datos.puedeEscribir
-                ? 'Todavía no ha publicado nadie más. Preséntate y abre la conversación.'
-                : 'Todavía no ha publicado nadie más.'
-              : filtro === 'Sin responder'
-                ? '¡Todo respondido! No queda nadie esperando.'
-                : 'Nada en esta sección todavía.'}
-          </div>
+          datos.publicaciones.length === 0 ? (
+            <Vacio icono={ICONO_CHARLA} titulo="Todavía no hay conversación">
+              <p>{datos.puedeEscribir ? 'Preséntate y abre tú la conversación: quién eres, dónde trabajas, qué te trae aquí.' : 'Cuando alguien publique, lo verás aquí.'}</p>
+            </Vacio>
+          ) : filtro === 'Sin responder' ? (
+            <Vacio
+              icono={
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+              }
+              titulo="Todo respondido"
+            >
+              <p>No queda nadie esperando tu respuesta.</p>
+            </Vacio>
+          ) : (
+            <Vacio icono={ICONO_CHARLA} titulo="Nada en esta sección todavía">
+              <p>{datos.puedeEscribir ? 'Puedes ser la primera en publicar aquí, o mirar en «Todo».' : 'Mira en «Todo» para ver lo último.'}</p>
+            </Vacio>
+          )
         )}
       </div>
 
@@ -653,22 +1051,7 @@ export default function Comunidad() {
           </section>
         )}
 
-        <section className={c.ladoTarjeta}>
-          <p className={c.ladoRotulo}>Más activas este mes</p>
-          {!datos || datos.ranking.length === 0 ? (
-            <p className={c.ladoTexto}>Suma quien publica casos y responde a las demás. Todavía no hay nadie: la primera se lleva el oro.</p>
-          ) : (
-            <ol className={c.ranking}>
-              {datos.ranking.map((r, i) => (
-                <li key={r.uid}>
-                  <span className={c.puesto} data-p={i}>{i + 1}</span>
-                  <span className={c.rankingNombre}>{r.nombre}</span>
-                  <span className={c.puntos}>{r.puntos} pts</span>
-                </li>
-              ))}
-            </ol>
-          )}
-        </section>
+        <Ranking filas={datos?.ranking ?? []} yo={datos?.yo ?? null} />
 
         <section className={c.ladoTarjeta}>
           <p className={c.ladoRotulo}>Cómo funciona</p>
@@ -682,6 +1065,8 @@ export default function Comunidad() {
       </aside>
 
       <AnimatePresence>{visor && <Visor fotos={visor.fotos} inicio={visor.i} cerrar={() => setVisor(null)} />}</AnimatePresence>
+      {dialogo}
+      {aviso}
     </div>
   );
 }

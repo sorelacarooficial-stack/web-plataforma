@@ -1,4 +1,9 @@
-/* El blog en el panel: lista de artículos y editor con vista previa. */
+/* El blog en el panel: lista de artículos y editor con vista previa.
+
+   Letra y color como el resto del panel (medidos en scratchpad/contraste-p3.mjs):
+   rótulos en mayúsculas Jost 500 con 0,08–0,1 em en el oro tostado, lo que se
+   escribe en Jost 400 a 16 px, notas en --muted-2, y cada campo con su borde
+   visible y el anillo dorado al entrar. */
 
 /* ---------- Lista ---------- */
 
@@ -26,20 +31,26 @@
 
 .ayuda {
   margin: 4px 0 0;
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted-2);
 }
 
 .ayuda a {
-  color: var(--oro);
+  font-weight: 500;
+  color: var(--oro-letra, #6f5323);
+  text-underline-offset: 3px;
 }
 
 .error {
-  font-size: 12.5px;
-  color: #a24a2e;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--peligro-letra, #8f3f26);
 }
 
+/* Todavía no hay artículos: el destello de los vacíos, título corto en la
+   letra de los títulos, la frase útil en tinta y el botón. */
 .vacio {
   display: flex;
   flex-direction: column;
@@ -47,23 +58,40 @@
   gap: 12px;
   padding: clamp(24px, 3vw, 40px);
   border-radius: 28px;
-  border: 1px dashed var(--oro-line);
+  border: 1.5px dashed var(--oro-line);
   background: var(--oro-tint);
   max-width: 640px;
 }
 
-.vacio p {
-  margin: 0;
-  font-weight: 300;
-  line-height: 1.6;
-  color: var(--ink-3);
+.vacio::before {
+  content: '';
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0c.5 3.2 2.3 5 5.5 6-3.2 1-5 2.8-5.5 6-.5-3.2-2.3-5-5.5-6 3.2-1 5-2.8 5.5-6z' fill='%238a6a32'/%3E%3C/svg%3E")
+      center / 17px 17px no-repeat,
+    #fffdf9;
+  box-shadow: inset 0 0 0 1px var(--oro-line);
 }
 
-.vacioTitulo {
-  font-family: var(--fuente-cormorant), serif;
-  font-size: 28px !important;
-  font-weight: 600 !important;
-  color: var(--ink) !important;
+.vacio p {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 15.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* Más específico que «.vacio p», sin !important. */
+.vacio .vacioTitulo {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
 }
 
 .rejilla {
@@ -116,12 +144,12 @@
   left: 12px;
   padding: 5px 11px;
   border-radius: 999px;
-  font-size: 10.5px;
+  font-size: 11.5px;
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: rgba(255, 253, 249, 0.92);
-  color: var(--faint);
+  background: rgba(255, 253, 249, 0.94);
+  color: var(--ink-3);
 }
 
 .estadoTarjeta[data-estado='publicado'] {
@@ -145,9 +173,9 @@
 }
 
 .tarjetaTexto span {
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 .tarjetaAcciones {
@@ -186,27 +214,33 @@
   border: 0;
   background: none;
   font: inherit;
-  font-size: 13px;
-  color: var(--muted, #5f574e);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted-2);
   cursor: pointer;
+}
+
+.volver:hover {
+  color: var(--ink);
 }
 
 .estado {
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 11.5px;
+  font-size: 12px;
+  font-weight: 500;
   background: var(--surface-2);
-  color: var(--faint);
+  color: var(--muted-2);
 }
 
 .estado[data-estado='sucio'] {
   background: rgba(196, 92, 60, 0.12);
-  color: #a24a2e;
+  color: var(--peligro-letra, #8f3f26);
 }
 
 .estado[data-estado='publicado'] {
   background: rgba(111, 138, 99, 0.16);
-  color: #4f6b44;
+  color: var(--bien-letra, #3d5a33);
 }
 
 .acciones {
@@ -217,21 +251,55 @@
   margin-left: auto;
 }
 
+/* «¡Publicado!» y «Falta el título…»: las bandas de aviso de la plataforma,
+   verde con ✓ o teja con !, el texto en tinta y en 500. Antes la frase iba
+   en el mismo color que la banda y en pequeño (13,5 px): se leía como una
+   nota más del editor. */
 .avisoBien,
 .avisoMal {
-  padding: 12px 16px;
+  position: relative;
+  min-height: 50px;
+  padding: 13px 16px 13px 50px;
   border-radius: 14px;
-  font-size: 13.5px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.avisoBien::before,
+.avisoMal::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 13px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
 }
 
 .avisoBien {
-  background: rgba(111, 138, 99, 0.14);
-  color: #3f5a35;
+  background: #edf1e6;
+  border: 1px solid rgba(71, 102, 60, 0.3);
+}
+
+.avisoBien::before {
+  background-color: var(--bien, #47663c);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3.4 7.3l2.4 2.4 4.8-5' fill='none' stroke='%23fff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 .avisoMal {
-  background: rgba(196, 92, 60, 0.12);
-  color: #8c3d24;
+  background: #f9ebe4;
+  border: 1px solid rgba(162, 74, 46, 0.32);
+}
+
+.avisoMal::before {
+  background-color: var(--peligro, #a24a2e);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M7 3v4.6' stroke='%23fff' stroke-width='1.9' stroke-linecap='round'/%3E%3Ccircle cx='7' cy='10.6' r='1.1' fill='%23fff'/%3E%3C/svg%3E");
 }
 
 .pestanas {
@@ -261,14 +329,16 @@
     border-radius: 999px;
     background: transparent;
     font: inherit;
-    font-size: 13px;
-    color: var(--muted, #5f574e);
+    font-size: 13.5px;
+    font-weight: 400;
+    color: var(--muted-2);
     cursor: pointer;
   }
 
   .pestanas button[aria-selected='true'] {
     background: #fffdf9;
     color: var(--ink);
+    font-weight: 500;
     box-shadow: 0 4px 12px -6px rgba(60, 45, 25, 0.5);
   }
 
@@ -289,39 +359,53 @@
   min-width: 0;
 }
 
+/* El título del artículo, escrito sobre una línea. La línea era al 12 % y
+   no se veía dónde escribir; ahora lleva el gris de los bordes de campo y al
+   entrar se vuelve dorada y un punto más gruesa. */
 .titulo {
   width: 100%;
   padding: 6px 0;
   border: 0;
-  border-bottom: 1px solid var(--line-2, rgba(20, 18, 16, 0.12));
+  border-bottom: 1px solid var(--borde-campo, #8f8579);
   background: transparent;
-  font-family: var(--fuente-cormorant), serif;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-size: clamp(30px, 3vw, 42px);
   font-weight: 600;
   line-height: 1.1;
   color: var(--ink);
   outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.titulo::placeholder {
+  color: var(--ejemplo-campo, #7b7266);
+  opacity: 1;
 }
 
 .titulo:focus {
-  border-bottom-color: var(--oro);
+  border-bottom-color: var(--oro, #8a6a32);
+  box-shadow: 0 1px 0 var(--oro, #8a6a32);
 }
 
 .titulo[aria-invalid='true'] {
-  border-bottom-color: #c45c3c;
+  border-bottom-color: var(--peligro, #a24a2e);
 }
 
+/* El rótulo de cada campo, el mismo que en el resto de la plataforma: antes
+   era oro de la marca a 11 px con 0,16 em, y se leía como puntos sueltos. */
 .etiqueta {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
+/* Lo que se escribe: Jost 400 a 16 px, nunca en fino. Borde que se ve (3,6 a
+   1) y el anillo dorado de la plataforma al entrar. */
 .resumen,
 .texto,
 .cita,
@@ -329,19 +413,28 @@
 .subtitulo {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.12));
+  border: 1px solid var(--borde-campo, #8f8579);
   border-radius: 14px;
   background: #fffdf9;
   font: inherit;
-  font-size: 15px;
-  font-weight: 300;
+  font-size: 16px;
+  font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
-  line-height: 1.6;
+  line-height: 1.55;
   color: var(--ink);
   resize: none;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.resumen::placeholder,
+.texto::placeholder,
+.cita::placeholder,
+.campo::placeholder,
+.subtitulo::placeholder {
+  color: var(--ejemplo-campo, #7b7266);
+  opacity: 1;
 }
 
 .resumen:focus,
@@ -349,33 +442,38 @@
 .cita:focus,
 .campo:focus,
 .subtitulo:focus {
-  border-color: var(--oro);
-  box-shadow: 0 0 0 3px rgba(201, 154, 85, 0.15);
+  border-color: var(--oro, #8a6a32);
+  box-shadow: 0 0 0 3px var(--foco-halo, rgba(217, 180, 124, 0.5));
 }
 
 .subtitulo {
-  font-family: var(--fuente-cormorant), serif;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-size: 22px;
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .cita {
-  font-family: var(--fuente-cormorant), serif;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-style: italic;
   font-size: 20px;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .contador {
   align-self: flex-end;
-  font-size: 11px;
-  font-weight: 300;
+  font-size: 13px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--faint);
+  color: var(--muted-2);
 }
 
 .contador[data-largo] {
-  color: #a24a2e;
+  font-weight: 500;
+  color: var(--peligro-letra, #8f3f26);
 }
 
 .chips {
@@ -387,10 +485,11 @@
 .chip {
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.12));
+  border: 1px solid var(--line-4);
   background: #fffdf9;
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
   color: var(--ink-3);
@@ -398,10 +497,15 @@
   transition: all 0.2s;
 }
 
+.chip:hover {
+  border-color: var(--oro-line);
+}
+
 .chip[data-on] {
   border-color: var(--oro);
   background: var(--oro-tint);
   color: var(--ink);
+  font-weight: 500;
 }
 
 .soltar,
@@ -419,7 +523,8 @@
   flex-direction: column;
   padding: 26px;
   border-radius: 18px;
-  border: 1.5px dashed var(--oro-line);
+  /* El borde punteado es lo que dice «suelta aquí»: al 35 % casi no se veía. */
+  border: 1.5px dashed rgba(138, 106, 50, 0.6);
   background: var(--oro-tint);
   transition: background 0.2s, border-color 0.2s;
 }
@@ -487,7 +592,7 @@
   user-select: none;
   font-size: 14px;
   letter-spacing: -2px;
-  color: var(--faint);
+  color: var(--muted-2);
   padding: 2px 6px;
 }
 
@@ -496,11 +601,11 @@
 }
 
 .bloqueTipo {
-  font-size: 10.5px;
+  font-size: 11.5px;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .bloqueMandos {
@@ -515,7 +620,7 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--faint);
+  color: var(--muted-2);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
@@ -540,7 +645,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .quitarItem,
@@ -548,14 +653,19 @@
   border: 0;
   background: none;
   font: inherit;
-  font-size: 12.5px;
-  color: var(--faint);
+  font-size: 13.5px;
+  color: var(--muted-2);
   cursor: pointer;
+}
+
+.quitarItem:hover {
+  color: var(--peligro-letra, #8f3f26);
 }
 
 .masItem {
   align-self: flex-start;
-  color: var(--oro);
+  font-weight: 500;
+  color: var(--oro-letra, #6f5323);
 }
 
 .miniatura {
@@ -576,10 +686,11 @@
 }
 
 .anadir > span {
-  font-size: 11px;
-  letter-spacing: 0.16em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted-2);
 }
 
 .anadir button {
@@ -588,10 +699,11 @@
   gap: 6px;
   padding: 9px 14px;
   border-radius: 999px;
-  border: 1px solid var(--oro-line);
+  border: 1px solid rgba(138, 106, 50, 0.5);
   background: #fffdf9;
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 400;
   color: var(--ink);
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
@@ -604,7 +716,7 @@
 
 .anadir i {
   font-style: normal;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 /* ---------- Vista previa ---------- */
@@ -629,10 +741,11 @@
 
 .verRotulo {
   margin: 0 0 18px;
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted-2);
 }
 
 .previa {
@@ -649,11 +762,15 @@
   text-align: center;
 }
 
+/* La vista previa imita el artículo publicado, pero la letra pequeña va en
+   los tonos legibles del panel: el oro de la marca, a 11 px o en la Cormorant
+   cursiva, se quedaba en 4,7 a 1 sobre este papel. */
 .previaCategoria {
-  font-size: 11px;
-  letter-spacing: 0.24em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .previaTitulo {
@@ -671,13 +788,14 @@
   font-family: var(--fuente-cormorant), serif;
   font-style: italic;
   font-size: 20px;
+  font-weight: 500;
   line-height: 1.4;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .previaMeta {
-  font-size: 12px;
-  color: var(--faint);
+  font-size: 13px;
+  color: var(--muted-2);
 }
 
 .previaPortada {

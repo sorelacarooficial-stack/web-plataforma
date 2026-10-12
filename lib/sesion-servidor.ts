@@ -72,21 +72,40 @@ export async function accesosDe(uid: string): Promise<Acceso[]> {
 }
 
 /**
- * La foto de perfil que la persona ha subido desde la plataforma.
+ * Lo que la plataforma necesita saber de la persona al entrar, en UNA lectura
+ * de su ficha (antes eran dos, una para los accesos y otra para la foto):
  *
- * Va en su ficha de Firestore como imagen pequeña (256 px, unos 20 KB), no en
- * la cookie: así cambiarla se ve al momento. Si no ha subido ninguna, manda la
- * de su cuenta de Google, que es la que trae la sesión.
+ *   · accesos: lo que tiene contratado (ver `accesosDe`).
+ *   · foto: la que ha subido desde la plataforma. Va en la ficha como imagen
+ *     pequeña (256 px, unos 20 KB), no en la cookie: así cambiarla se ve al
+ *     momento. Si no ha subido ninguna, null, y manda la de Google.
+ *   · onboarding: si ya terminó o saltó la bienvenida (no se vuelve a abrir sola).
+ *   · actividad: su racha tal como está, para que `registrarActividad` no
+ *     tenga que leer la ficha otra vez.
+ *
+ * Si Firestore no contesta, se entra igual con lo mínimo: sin accesos y sin
+ * abrir la bienvenida, que es lo prudente cuando no se sabe.
  */
-export async function fotoDe(uid: string): Promise<string | null> {
-  if (!hayFirebase()) return null;
+export async function entradaDe(uid: string): Promise<{
+  accesos: Acceso[];
+  foto: string | null;
+  onboarding: { completado: boolean; saltado: boolean } | null;
+  actividad: Record<string, unknown> | null;
+}> {
+  if (!hayFirebase()) return { accesos: [], foto: null, onboarding: null, actividad: null };
   try {
-    const ficha = await baseDeDatos().collection(COLECCIONES.usuarios).doc(uid).get();
-    const foto = ficha.data()?.foto;
-    return typeof foto === 'string' && foto.startsWith('data:image/') ? foto : null;
+    const v = (await baseDeDatos().collection(COLECCIONES.usuarios).doc(uid).get()).data() ?? {};
+    const foto = v.foto;
+    const ob = (v.onboarding ?? {}) as { completado?: unknown; saltado?: unknown };
+    return {
+      accesos: revisarAccesos(v.accesos),
+      foto: typeof foto === 'string' && foto.startsWith('data:image/') ? foto : null,
+      onboarding: { completado: Boolean(ob.completado), saltado: Boolean(ob.saltado) },
+      actividad: v.actividad && typeof v.actividad === 'object' ? (v.actividad as Record<string, unknown>) : {},
+    };
   } catch (e) {
-    console.error('[sesion] No se ha podido leer la foto:', e);
-    return null;
+    console.error('[sesion] No se ha podido leer la ficha al entrar:', e);
+    return { accesos: [], foto: null, onboarding: null, actividad: null };
   }
 }
 

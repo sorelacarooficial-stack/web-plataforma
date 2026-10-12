@@ -1,72 +1,285 @@
-/* Logros: anillo de progreso, insignias que brillan al conseguirse y la celebración. */
+/*
+ * Logros: arriba, en negro, los puntos y el nivel con el progreso del curso;
+ * debajo, las insignias, que brillan al conseguirse. Y la celebración.
+ *
+ * Contraste medido (WCAG): en el negro #17140f, texto #f7f2ea 16,5:1,
+ * secundario #cfc6b8 10,9:1 y oro #d9b47c 9,4:1. En el papel claro, el oro
+ * pequeño va oscurecido (#6f5323, 6,3:1) y el texto secundario es --muted-2
+ * (6,3:1); el oro de la marca queda para lo grande y para las barras.
+ * Si no cargan, un aviso en banda: filo rojo #9a2f1a, icono, texto fuerte en
+ * #141210 (16,5:1 sobre el tinte) y el botón con borde #8c8173.
+ */
 
 .logros {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 24px;
 }
 
+/* No se han podido cargar: banda clara con icono, texto fuerte y botón. */
 .vacio {
-  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(154, 47, 26, 0.35);
+  border-left: 4px solid #9a2f1a;
+  background: #fbefe9;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #3e3831;
+}
+
+.vacioIcono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #9a2f1a;
+  box-shadow: 0 0 0 1px rgba(154, 47, 26, 0.25);
+}
+
+.vacioTexto {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.vacio strong {
+  font-weight: 600;
+  color: #141210;
+}
+
+.reintentar {
+  flex: none;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid #8c8173;
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
   font-size: 14px;
-  color: var(--muted);
+  font-weight: 600;
+  color: #141210;
+  cursor: pointer;
+}
+
+.reintentar:hover {
+  border-color: #141210;
+}
+
+.reintentar:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 3px;
 }
 
 .esqueleto {
-  height: 260px;
-  border-radius: 24px;
-  background: linear-gradient(90deg, rgba(20, 18, 16, 0.04), rgba(20, 18, 16, 0.08), rgba(20, 18, 16, 0.04));
+  height: 320px;
+  border-radius: 26px;
+  background: linear-gradient(90deg, #1d1a15 0%, #26221b 50%, #1d1a15 100%);
+  background-size: 200% 100%;
+  animation: cargando 1.3s linear infinite;
 }
 
+@keyframes cargando {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- El bloque negro: puntos, nivel y curso ---------- */
+
 .resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: clamp(20px, 2.6vw, 28px);
+  border-radius: 26px;
+  background:
+    radial-gradient(90% 70% at 100% 0%, rgba(217, 180, 124, 0.18), transparent 60%),
+    #17140f;
+  color: #f7f2ea;
+  box-shadow: 0 30px 60px -36px rgba(20, 16, 10, 0.85);
+}
+
+.puntos {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.puntosCabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.rotuloOscuro {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+.total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 6px 0 0;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: clamp(40px, 5vw, 54px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: #f7f2ea;
+}
+
+.total small {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: #cfc6b8;
+}
+
+/* La moneda del nivel, en grande. */
+.moneda {
+  flex: none;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #fbf1dc 0%, #e6c890 38%, #c49a5a 70%, #8a6a32 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.35),
+    inset 0 -4px 8px rgba(70, 48, 16, 0.35),
+    0 0 0 6px rgba(217, 180, 124, 0.12),
+    0 14px 30px -12px rgba(217, 180, 124, 0.7);
+  color: #17140f;
+  line-height: 1;
+}
+
+.moneda small {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.moneda b {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.barraAjena {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nivelLinea {
+  margin: 0;
+  font-size: 13px;
+  color: #cfc6b8;
+}
+
+.nivelLinea span {
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 11.5px;
+}
+
+.nivelLinea strong {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #f7f2ea;
+}
+
+.faltaAjena {
+  margin: 0;
+  font-size: 14.5px;
+  color: #f7f2ea;
+}
+
+.deDonde {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.curso {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 22px;
-  padding: 20px 22px;
-  border-radius: 24px;
-  background: linear-gradient(140deg, #201b14, #14110d);
-  color: #f7f2ea;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .anillo {
-  --p: 0%;
   flex: none;
-  display: grid;
-  place-items: center;
   width: 118px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: conic-gradient(#d9b47c var(--p), rgba(255, 255, 255, 0.1) 0);
+  height: 118px;
 }
 
-.anillo span {
-  display: grid;
-  place-items: center;
-  width: 92px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #17140f;
-  text-align: center;
-  line-height: 1.1;
+.anilloFondo {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 9;
 }
 
-.anillo b {
+.anilloValor {
+  fill: none;
+  stroke: #d9b47c;
+  stroke-width: 9;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 60px 60px;
+  filter: drop-shadow(0 0 6px rgba(217, 180, 124, 0.45));
+}
+
+.anilloNumero {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 26px;
-  color: #f3e3c3;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  fill: #f7f2ea;
 }
 
-.anillo small {
-  font-size: 11px;
-  color: rgba(247, 242, 234, 0.6);
+.anilloTexto {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 11.5px;
+  fill: #cfc6b8;
 }
 
 .datos {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 14.5px;
-  color: rgba(247, 242, 234, 0.82);
+  gap: 8px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #cfc6b8;
 }
 
 .datos p {
@@ -74,7 +287,10 @@
 }
 
 .datos b {
-  color: #f3e3c3;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #f7f2ea;
 }
 
 .fuego {
@@ -102,41 +318,47 @@
   border-radius: 999px;
   background: linear-gradient(135deg, #f3e3c3, #d9b47c);
   color: #17140f;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   text-decoration: none;
 }
 
+.certificado:focus-visible {
+  outline: 2px solid #d9b47c;
+  outline-offset: 3px;
+}
+
+/* ---------- Las insignias ---------- */
+
 .familia h4 {
-  margin: 0 0 10px;
-  font-size: 11px;
+  margin: 0 0 12px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 24px;
   font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--oro);
+  line-height: 1.1;
+  color: var(--ink);
 }
 
 .rejilla {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px;
 }
 
 .insignia {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   padding: 16px;
   border-radius: 20px;
-  background: var(--neu-base);
-  border: 1px solid transparent;
-  opacity: 0.78;
+  background: #fffdf9;
+  border: 1px solid rgba(20, 18, 16, 0.1);
+  box-shadow: 0 10px 24px -20px rgba(60, 45, 25, 0.5);
 }
 
 .insignia[data-hecho] {
-  opacity: 1;
   background: linear-gradient(160deg, #fffaf0, #f5ead3);
-  border-color: rgba(217, 180, 124, 0.6);
+  border-color: rgba(176, 138, 76, 0.55);
   box-shadow: 0 14px 30px -20px rgba(138, 106, 50, 0.7);
 }
 
@@ -144,7 +366,7 @@
   font-size: 30px;
   line-height: 1;
   filter: grayscale(1);
-  opacity: 0.45;
+  opacity: 0.5;
 }
 
 .insignia[data-hecho] .icono {
@@ -153,38 +375,57 @@
 }
 
 .insignia strong {
-  font-size: 14.5px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
   color: var(--ink);
 }
 
 .insignia small {
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.progreso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .barra {
+  flex: 1;
   height: 6px;
-  margin-top: 4px;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(20, 18, 16, 0.08);
+  background: rgba(20, 18, 16, 0.1);
 }
 
 .barra span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #d9b47c, #8a6a32);
+  background: linear-gradient(90deg, #8a6a32, #d9b47c);
+  transform-origin: left center;
+}
+
+.cuantos {
+  flex: none;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-2);
 }
 
 .hecho {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: #6f5323;
 }
 
 /* ---------- Celebración ---------- */
@@ -196,7 +437,7 @@
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(12, 10, 9, 0.55);
+  background: rgba(12, 10, 9, 0.6);
   backdrop-filter: blur(6px);
 }
 
@@ -214,7 +455,7 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  width: min(380px, 100%);
+  width: min(390px, 100%);
   padding: 30px 26px 24px;
   border-radius: 28px;
   background: linear-gradient(170deg, #fffaf0, #f3e3c3);
@@ -242,43 +483,184 @@
 
 .etiqueta {
   margin-top: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: #6f5323;
 }
 
 .tarjetaLogro h3 {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 30px;
+  font-size: 32px;
   font-weight: 600;
+  line-height: 1.1;
   color: #17140f;
 }
 
 .tarjetaLogro p {
   margin: 0;
-  font-size: 14.5px;
-  color: #4e463d;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #3e3831;
+}
+
+.masPuntos {
+  margin-top: 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #17140f;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #f3e3c3;
 }
 
 .seguir {
-  margin-top: 10px;
-  padding: 12px 28px;
+  margin-top: 12px;
+  min-width: 150px;
+  padding: 13px 28px;
   border: 0;
   border-radius: 999px;
   background: #17140f;
   color: #faf8f5;
   font: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
 }
 
+.seguir:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 3px;
+}
+
+/* La subida de nivel: en negro y oro, más grande que un logro. */
+.tarjetaNivel {
+  width: min(420px, 100%);
+  padding: 34px 28px 26px;
+  background:
+    radial-gradient(90% 60% at 50% 0%, rgba(217, 180, 124, 0.28), transparent 65%),
+    #17140f;
+  border: 1px solid rgba(217, 180, 124, 0.35);
+  color: #f7f2ea;
+}
+
+.tarjetaNivel h3 {
+  font-size: clamp(34px, 6vw, 42px);
+  color: #f7f2ea;
+}
+
+.tarjetaNivel p {
+  color: #cfc6b8;
+}
+
+.tarjetaNivel .seguir {
+  background: linear-gradient(135deg, #f3e3c3, #d9b47c);
+  color: #17140f;
+}
+
+.tarjetaNivel .seguir:focus-visible {
+  outline-color: #d9b47c;
+}
+
+.nivelMoneda {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #fffaf0 0%, #ecd2a2 34%, #c99a55 68%, #8a6a32 100%);
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 255, 255, 0.4),
+    inset 0 -6px 12px rgba(70, 48, 16, 0.35),
+    0 0 0 8px rgba(217, 180, 124, 0.14),
+    0 20px 50px -14px rgba(217, 180, 124, 0.9);
+  color: #17140f;
+  line-height: 1;
+  animation: brilloNivel 2.4s ease-in-out infinite;
+}
+
+.nivelMoneda small {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.nivelMoneda b {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 44px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes brilloNivel {
+  50% {
+    box-shadow:
+      inset 0 0 0 3px rgba(255, 255, 255, 0.4),
+      inset 0 -6px 12px rgba(70, 48, 16, 0.35),
+      0 0 0 14px rgba(217, 180, 124, 0.08),
+      0 20px 60px -8px rgba(243, 227, 195, 1);
+  }
+}
+
+.etiquetaNivel {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+.tarjetaNivel .nivelNombre {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #f3e3c3;
+}
+
+.tarjetaNivel .nivelTotal {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 4px;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #f7f2ea;
+}
+
+.nivelTotal small {
+  font-size: 13px;
+  font-weight: 500;
+  color: #cfc6b8;
+}
+
+.nivelBarra {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+  text-align: left;
+}
+
+.tarjetaNivel .nivelBarra p {
+  font-size: 14px;
+  color: #f7f2ea;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .medalla,
-  .fuego[data-viva] {
+  .nivelMoneda,
+  .fuego[data-viva],
+  .esqueleto {
     animation: none;
   }
 }

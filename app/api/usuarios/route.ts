@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'node:crypto';
 import { getAuth } from 'firebase-admin/auth';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldPath, FieldValue } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { esRol, correoEsAdmin, normalizarRol, PLATAFORMA_ABIERTA, type Rol } from '@/lib/roles';
 import { revisarAccesos } from '@/lib/accesos';
 import { after } from 'next/server';
 import { alCambiarAccesos } from '@/lib/automatizar';
 import { sesionActual } from '@/lib/sesion-servidor';
+import { COLECCION_ACTIVIDAD, mesDe } from '@/lib/actividad';
+import { borrarFicha, despublicarFicha } from '@/lib/fichas';
 
 /**
  * Gestión de personas y roles. Solo para Sorela.
@@ -520,6 +523,13 @@ export async function PATCH(peticion: Request) {
 
   await ref.set(ficha, { merge: true });
 
+  /* Bloquearla también la quita del mapa público: una cuenta con la puerta
+     cerrada no puede seguir anunciándose con el nombre de Sorela. Al
+     desbloquearla no se vuelve a publicar sola; la publica ella cuando entre. */
+  if (cambiaBloqueo && cuerpo.bloqueada) {
+    await despublicarFicha(uid, 'bloqueada').catch((e) => console.error('[usuarios] no se ha podido quitar la ficha del mapa', e));
+  }
+
   /* Si gana la formación o la comunidad, le sale su correo de bienvenida.
      Después de contestar: Sorela no espera a Gmail para ver el botón cambiado. */
   if (accesos) {
@@ -609,5 +619,58 @@ export async function DELETE(peticion: Request) {
     return NextResponse.json({ ok: false, motivo: 'ficha-suelta', uid }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, uid });
+  /*
+   * Y lo demás que era suyo: su perfil con la galería, sus fotos en el
+   * almacén (las del perfil y las que subió a la comunidad), su ficha del mapa
+   * —que además quita la página pública— y su entrada en el ranking del mes.
+   * Sus publicaciones de la comunidad se quedan, como avisa la pantalla (sin
+   * las fotos, que se borran).
+   *
+   * La cuenta ya no existe, así que nada de esto debe hacer que la respuesta
+   * diga que ha fallado: lo que no se pueda limpiar se apunta y se devuelve en
+   * `pendiente`, para saber qué mirar.
+   */
+  const pendiente: string[] = [];
+  const intentar = async (que: string, hacer: () => Promise<unknown>) => {
+    try {
+      await hacer();
+    } catch (e) {
+      console.error(`[usuarios] Cuenta borrada pero no se ha podido limpiar ${que}:`, e);
+      pendiente.push(que);
+    }
+  };
+  const almacen = getStorage(aplicacion()).bucket(process.env.FIREBASE_ALMACEN || `${process.env.FIREBASE_PROYECTO_ID}.firebasestorage.app`);
+  /*
+   * Sus publicaciones se quedan, pero sin las fotos: los archivos se borran
+   * justo al lado, y una dirección firmada se genera aunque el archivo ya no
+   * exista, así que la publicación saldría a todas con imágenes rotas para
+   * siempre. Se quitan las referencias por tandas (límite de un lote).
+   */
+  const quitarImagenesComunidad = async () => {
+    const db = baseDeDatos();
+    const suyas = await db.collection('comunidad_posts').where('autor', '==', uid).get();
+    const conFotos = suyas.docs.filter((d) => Array.isArray(d.get('imagenes')) && d.get('imagenes').length > 0);
+    for (let i = 0; i < conFotos.length; i += 450) {
+      const lote = db.batch();
+      for (const d of conFotos.slice(i, i + 450)) lote.update(d.ref, { imagenes: [] });
+      await lote.commit();
+    }
+  };
+  await Promise.all([
+    intentar('perfil', () => baseDeDatos().recursiveDelete(baseDeDatos().collection('perfiles').doc(uid))),
+    intentar('fotos-perfil', () => almacen.deleteFiles({ prefix: `perfiles/${uid}/` })),
+    intentar('fotos-comunidad', () => almacen.deleteFiles({ prefix: `comunidad/${uid}/` })),
+    intentar('imagenes-comunidad', quitarImagenesComunidad),
+    intentar('ficha-mapa', () => borrarFicha(uid)),
+    intentar('ranking', () =>
+      baseDeDatos()
+        .collection(COLECCION_ACTIVIDAD)
+        .doc(mesDe())
+        .update(new FieldPath(uid), FieldValue.delete())
+        // Si no tenía puntos este mes (o no hay ranking aún), no hay nada que quitar.
+        .catch((e: { code?: number }) => (e?.code === 5 ? null : Promise.reject(e)))
+    ),
+  ]);
+
+  return NextResponse.json({ ok: true, uid, ...(pendiente.length ? { pendiente } : {}) });
 }

@@ -237,3 +237,96 @@
 .ficha[data-abajo] {
   transform: translate(-50%, 24px);
 }
+
+/* La cabeza de la ficha: foto (o iniciales) y nombre al lado. */
+.fichaCabeza {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 26px 10px 0;
+}
+
+.fichaCabeza h3 {
+  margin: 0 0 3px;
+}
+
+.fichaCabeza .fichaCiudad {
+  margin: 0;
+}
+
+/* Foto real o iniciales, nunca una foto de archivo. */
+.avatar {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  background: #f1e7d4;
+  box-shadow: 0 0 0 1px rgba(138, 106, 50, 0.35);
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #6e5327;
+}
+
+/* Varias terapeutas en el mismo punto (las que no enseñan su dirección
+   comparten el centro de su ciudad): una lista con su nombre y su centro. */
+.fichaLista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 196px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fichaLista button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #141210;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.fichaLista button:hover,
+.fichaLista button:focus-visible {
+  background: rgba(138, 106, 50, 0.1);
+}
+
+.fichaLista button:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: -2px;
+}
+
+.fichaLista span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fichaLista b {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.fichaLista em {
+  font-style: normal;
+  font-size: 13px;
+  color: #4f4840;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

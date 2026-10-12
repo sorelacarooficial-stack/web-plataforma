@@ -1,6 +1,11 @@
 /*
  * Las métricas. Un solo tono —el oro de la marca— en distintas intensidades:
  * aquí se compara cuánto, no qué, así que no hace falta un color por cosa.
+ *
+ * El oro vivo se queda en las barras; la letra pequeña en dorado va en el oro
+ * tostado (--oro-letra, 6,2 a 1) y la gris en --muted-2 (6,3 a 1). Las cifras,
+ * en Jost 500: la fuente se sirve hasta ahí. Medido con
+ * scratchpad/contraste-p3.mjs.
  */
 
 .metricas {
@@ -30,8 +35,9 @@
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 13px;
-  color: var(--muted, #5f574e);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--muted-2, #5e564c);
   cursor: pointer;
 }
 
@@ -55,26 +61,46 @@
 .prueba {
   padding: 5px 12px;
   border-radius: 999px;
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   background: rgba(196, 92, 60, 0.12);
-  color: #a24a2e;
+  color: var(--peligro-letra, #8f3f26);
 }
 
+/* El aviso de «desde cuándo se mide»: la banda informativa de la plataforma,
+   con su «i» en oro. Antes era un recuadro sin icono con la letra en fino. */
 .aviso {
-  padding: 16px 20px;
-  border-radius: 18px;
+  position: relative;
+  padding: 14px 20px 14px 52px;
+  border-radius: 16px;
   background: var(--oro-tint);
   border: 1px solid var(--oro-line);
-  font-size: 14px;
-  font-weight: 300;
+  font-size: 15px;
+  font-weight: 400;
   line-height: 1.55;
-  color: var(--ink-3, #3b342c);
+  color: var(--ink-2, #3e3831);
+  text-wrap: pretty;
+}
+
+.aviso::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 15px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Ccircle cx='7' cy='3.9' r='1.1' fill='%23fff'/%3E%3Cpath d='M7 6.4v4.4' stroke='%23fff' stroke-width='1.9' stroke-linecap='round'/%3E%3C/svg%3E")
+      center / 14px 14px no-repeat,
+    var(--oro, #8a6a32);
 }
 
 .aviso strong {
-  font-weight: 600;
+  font-weight: 500;
+  color: var(--ink);
 }
 
 /* ---------- Cifras ---------- */
@@ -102,25 +128,28 @@
 }
 
 .cifraEtiqueta {
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .cifraValor {
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: clamp(32px, 3.6vw, 46px);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
 
 .cifraNota {
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted-2);
 }
 
 .cambioSube,
@@ -128,26 +157,27 @@
 .cambioIgual,
 .cambioNuevo {
   margin-right: 4px;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .cambioSube {
   background: rgba(111, 138, 99, 0.16);
-  color: #4f6b44;
+  color: var(--bien-letra, #3d5a33);
 }
 
 .cambioBaja {
   background: rgba(196, 92, 60, 0.12);
-  color: #a24a2e;
+  color: var(--peligro-letra, #8f3f26);
 }
 
 .cambioIgual,
 .cambioNuevo {
   background: var(--oro-tint);
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 /* ---------- Tarjetas ---------- */
@@ -195,35 +225,72 @@
 
 .subtitulo {
   margin: 8px 0 0;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .nota {
   margin: 0;
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted-2);
 }
 
+/* «Todavía no hay…» en lugar de la gráfica: el destello de los vacíos a la
+   izquierda y la frase en tinta. Antes, una línea gris fina que se confundía
+   con las notas de la tarjeta. El icono va fuera del flujo para que la frase
+   (y el «Reintentar» cuando lo hay) se lea seguida. */
 .vacio {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  min-height: 64px;
   margin: 0;
-  padding: 18px 0;
-  font-size: 13.5px;
-  font-weight: 300;
-  color: var(--faint);
+  padding: 12px 0 12px 52px;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.vacio::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0c.5 3.2 2.3 5 5.5 6-3.2 1-5 2.8-5.5 6-.5-3.2-2.3-5-5.5-6 3.2-1 5-2.8 5.5-6z' fill='%238a6a32'/%3E%3C/svg%3E")
+      center / 14px 14px no-repeat,
+    var(--oro-tint);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
 }
 
 .enlace {
+  padding: 0;
   border: 0;
   background: none;
   font: inherit;
-  color: var(--oro);
+  font-weight: 500;
+  color: var(--oro-letra, #6f5323);
   text-decoration: underline;
+  text-decoration-color: var(--oro-line);
+  text-underline-offset: 3px;
   cursor: pointer;
+}
+
+.enlace:hover {
+  text-decoration-color: currentColor;
 }
 
 .esqueleto {
@@ -283,12 +350,16 @@
   filter: brightness(0.82);
 }
 
+/* Las fechas del eje: 12 px y no 13 como el resto de notas, porque van una
+   por columna y a 13 se pisan en el periodo de 30 días; el gris sí es el de
+   las notas (7,1 a 1). */
 .graficaPie {
   display: grid;
   gap: 3px;
   margin-top: 8px;
-  font-size: 11px;
-  color: var(--faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-2);
 }
 
 .graficaPie span {
@@ -307,7 +378,7 @@
   border-radius: 12px;
   background: #1c1915;
   color: #f7f2ea;
-  font-size: 12px;
+  font-size: 13px;
   white-space: nowrap;
   pointer-events: none;
   box-shadow: 0 12px 26px -12px rgba(0, 0, 0, 0.6);
@@ -338,7 +409,8 @@
 
 .barraEtiqueta {
   min-width: 0;
-  font-size: 13.5px;
+  font-size: 14px;
+  font-weight: 400;
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
@@ -346,7 +418,7 @@
 }
 
 .barraValor {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
@@ -355,8 +427,9 @@
 .barraValor em {
   margin-left: 4px;
   font-style: normal;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 .barraPista {
@@ -389,14 +462,17 @@
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--surface-2);
-  font-size: 12.5px;
-  color: var(--ink-3, #3b342c);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--ink-3, #4f4840);
 }
 
 .chip b {
   margin-left: 4px;
-  font-weight: 600;
-  color: var(--oro);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--oro-letra, #6f5323);
 }
 
 /* ---------- Dispositivos y horas ---------- */
@@ -436,7 +512,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 13px;
+  font-size: 13.5px;
   color: var(--ink);
 }
 
@@ -453,7 +529,9 @@
 }
 
 .leyenda b {
-  font-weight: 600;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 
 .horas {
@@ -486,8 +564,9 @@
 .horasPie {
   display: flex;
   justify-content: space-between;
-  font-size: 10.5px;
-  color: var(--faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-2);
 }
 
 /* ---------- Vídeos ---------- */
@@ -508,15 +587,16 @@
 
 .filaTitulo {
   padding-top: 0;
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted-2);
 }
 
 .fila {
-  border-top: 1px solid var(--line-1);
-  font-size: 13.5px;
+  border-top: 1px solid var(--line-2);
+  font-size: 14px;
   color: var(--ink);
 }
 
@@ -536,14 +616,14 @@
 
 .videoNombre em {
   font-style: normal;
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 .grande {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
@@ -577,17 +657,21 @@
   background: linear-gradient(180deg, #e2c08a, #b98a45);
 }
 
+/* Las letras bajo cada pozo: 11 px es lo que cabe en una columna de 22 px;
+   lo que falta de tamaño se compensa con el gris oscuro y el 500. */
 .embudo em {
   font-style: normal;
-  font-size: 9.5px;
-  color: var(--faint);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted-2);
 }
 
 .embudo b {
   margin-left: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--oro);
+  font-variant-numeric: tabular-nums;
+  color: var(--oro-letra, #6f5323);
 }
 
 @media (max-width: 760px) {
@@ -636,15 +720,15 @@
 }
 
 .lecciones strong {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 500;
   color: var(--ink);
 }
 
 .lecciones span {
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 .alumnas li {
@@ -663,7 +747,7 @@
   height: 34px;
   border-radius: 999px;
   background: var(--oro-tint);
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
   font-family: var(--fuente-cormorant), serif;
   font-size: 17px;
   font-weight: 600;
@@ -676,7 +760,7 @@
 }
 
 .alumnaTexto strong {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 500;
   color: var(--ink);
   overflow: hidden;
@@ -686,9 +770,9 @@
 
 .alumnaTexto em {
   font-style: normal;
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 .alumnaBarra {
@@ -706,8 +790,9 @@
 }
 
 .alumnas b {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 13.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   text-align: right;
   color: var(--ink);
 }
@@ -755,9 +840,9 @@
 }
 
 .semanaNumero {
-  min-height: 15px;
-  font-size: 11.5px;
-  font-weight: 600;
+  min-height: 16px;
+  font-size: 12px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
@@ -787,17 +872,18 @@
 }
 
 .semanaFecha {
-  font-size: 10.5px;
+  font-size: 11.5px;
   white-space: nowrap;
-  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-2);
 }
 
 .leyenda {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 16px;
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 13px;
+  color: var(--muted-2);
 }
 
 .leyenda span::before {
@@ -830,6 +916,6 @@
   }
   .periodo button {
     padding: 9px 12px;
-    font-size: 12.5px;
+    font-size: 13px;
   }
 }

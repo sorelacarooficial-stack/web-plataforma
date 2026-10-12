@@ -1,4 +1,12 @@
-/* El perfil: portada, foto que la pisa, datos, pestañas y cuadrícula de fotos. */
+/* El perfil: portada, foto que la pisa, datos, nivel, pestañas y cuadrícula de fotos.
+
+   Letra: Cormorant para el nombre, los títulos del editor y de los vacíos;
+   Jost para todo lo demás, a 400 como mínimo en lo que se lee. Contraste
+   medido: texto en --ink (18:1) o --ink-2 (11:1) sobre #fffdf9, secundario en
+   --muted-2 (7,1:1; 6,3:1 sobre el papel) y el oro pequeño en #6f5323 (7:1);
+   el --oro de la marca (#8a6a32) se reserva para tamaños grandes y el anillo
+   de foco. Campos con borde #8c8173 (3,8:1) y marcador #7d7468 (4,6:1);
+   errores y borrar en #9a2f1a (7,4:1), el rojo de toda la plataforma. */
 
 .perfil {
   display: flex;
@@ -7,30 +15,73 @@
   max-width: 960px;
 }
 
-.fallo,
-.vacio {
-  margin: 0;
-  padding: 24px 0;
-  font-size: 14.5px;
-  font-weight: 300;
-  color: var(--muted);
-}
-
 .esqueleto {
   height: 420px;
   border-radius: 28px;
   background: linear-gradient(90deg, rgba(20, 18, 16, 0.04), rgba(20, 18, 16, 0.08), rgba(20, 18, 16, 0.04));
 }
 
+/* Vacío: icono, un título corto y una frase útil. */
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 30px 24px 32px;
+  border-radius: 24px;
+  background: #fffdf9;
+  border: 1px solid var(--line-2);
+  text-align: center;
+}
+
+.vacioIcono {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--oro-tint);
+  color: #6f5323;
+}
+
+.vacioTitulo {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.vacioTexto {
+  max-width: 420px;
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+/* Para los lectores de pantalla: se lee, no se ve. */
+.soloLector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .cabeza {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-bottom: 18px;
+  gap: 14px;
+  padding-bottom: 22px;
   border-radius: 28px;
   overflow: hidden;
   background: #fffdf9;
-  border: 1px solid var(--line-1, rgba(20, 18, 16, 0.1));
+  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.1));
   box-shadow: 0 1px 2px rgba(60, 45, 25, 0.05), 0 24px 50px -32px rgba(60, 45, 25, 0.5);
 }
 
@@ -48,19 +99,36 @@
   background-position: center;
 }
 
-.cambiarPortada {
+.portadaAcciones {
   position: absolute;
+  /* Por encima de .identidad (z-index 1), que sube 52 px sobre la portada:
+     sin esto la franja de abajo tapaba los botones y no se podían pulsar. */
+  z-index: 2;
   right: 14px;
   bottom: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.botonPortada {
   padding: 9px 15px;
-  border: 0;
+  border: 1px solid rgba(247, 242, 234, 0.28);
   border-radius: 999px;
-  background: rgba(23, 20, 15, 0.62);
+  background: rgba(23, 20, 15, 0.72);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   color: #f7f2ea;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
+  transition: background 0.18s;
+}
+
+.botonPortada:hover:not(:disabled) {
+  background: rgba(23, 20, 15, 0.9);
 }
 
 .identidad {
@@ -83,7 +151,7 @@
   overflow: hidden;
   border: 4px solid #fffdf9;
   background: linear-gradient(160deg, #f5efe2, #e8dcc4);
-  color: var(--oro);
+  color: #6f5323;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-size: 38px;
   font-weight: 600;
@@ -113,7 +181,7 @@
   align-items: baseline;
   gap: 4px 12px;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(26px, 3vw, 34px);
+  font-size: clamp(28px, 3vw, 36px);
   font-weight: 600;
   line-height: 1.1;
   color: var(--ink);
@@ -121,104 +189,315 @@
 
 .sello {
   font-family: var(--fuente-jost), system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--oro);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #6f5323;
 }
 
 .sub {
   margin: 4px 0 0;
-  font-size: 14px;
-  color: var(--muted);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.acciones {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 6px;
 }
 
 .btnEditar,
 .btnLinea,
-.btnOscuro {
+.btnOscuro,
+.btnFicha {
   flex: none;
+  min-height: 42px;
   padding: 10px 18px;
   border-radius: 999px;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
+  line-height: 1.2;
   cursor: pointer;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
 }
 
 .btnEditar,
-.btnLinea {
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.16));
+.btnLinea,
+.btnFicha {
+  border: 1px solid #8c8173;
   background: #fff;
   color: var(--ink);
 }
 
+.btnEditar:hover,
+.btnLinea:hover,
+.btnFicha:hover {
+  background: #f5f2ec;
+  border-color: #141210;
+}
+
+.btnFicha {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnFicha svg {
+  color: #6f5323;
+}
+
 .btnOscuro {
-  border: 0;
+  border: 1px solid var(--ink);
   background: var(--ink);
   color: #faf8f5;
+}
+
+.btnOscuro:hover:not(:disabled) {
+  background: #2a2620;
+}
+
+.btnOscuro:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btnEditar:focus-visible,
+.btnLinea:focus-visible,
+.btnOscuro:focus-visible,
+.btnFicha:focus-visible,
+.botonPortada:focus-visible,
+.celdaVer:focus-visible,
+.celdaBorrar:focus-visible,
+.subirFoto:focus-visible,
+.pestanas button:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+/* Estado de la ficha del mapa, en pequeño junto al botón. */
+.estadoFicha {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f0ebe2;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4f4840;
+}
+
+.estadoFicha::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #8f877c;
+}
+
+.estadoFicha[data-estado='publicada'] {
+  background: #e9efe4;
+  color: #3f5937;
+}
+
+.estadoFicha[data-estado='publicada']::before {
+  background: #4f8a43;
+}
+
+.estadoFicha[data-estado='oculta'] {
+  background: #fbeee9;
+  color: #8f3f26;
+}
+
+.estadoFicha[data-estado='oculta']::before {
+  background: #a24a2e;
+}
+
+/* ---------- Nivel: la barra dorada y lo que falta ---------- */
+
+.nivel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 460px;
+  padding: 0 clamp(18px, 3vw, 28px);
+  color: var(--ink);
+}
+
+.nivelTexto {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.nivelTexto b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 
 .cifras {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 26px;
+  align-items: center;
+  gap: 8px 24px;
   padding: 0 clamp(18px, 3vw, 28px);
-  font-size: 14px;
-  color: var(--muted);
+  font-size: 14.5px;
+  font-weight: 400;
+  color: var(--ink-3);
 }
 
 .cifras b {
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
+}
+
+.chipNivel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 12px 3px 3px;
+  border-radius: 999px;
+  background: var(--oro-tint);
+  border: 1px solid var(--oro-line);
+  font-size: 13px;
+  font-weight: 500;
+  color: #6f5323;
+}
+
+.chipNumero {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #fbf1dc 0%, #e6c890 40%, #c49a5a 100%);
+  box-shadow: inset 0 -1px 2px rgba(70, 48, 16, 0.3);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #17140f;
 }
 
 .bio {
   margin: 0;
   padding: 0 clamp(18px, 3vw, 28px);
   max-width: 640px;
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 15.5px;
+  font-weight: 400;
+  line-height: 1.55;
   white-space: pre-line;
-  color: var(--ink);
+  color: var(--ink-2);
 }
 
 .instagram {
-  padding: 0 clamp(18px, 3vw, 28px);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--oro);
+  align-self: flex-start;
+  margin: 0 clamp(18px, 3vw, 28px);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #6f5323;
   text-decoration: none;
 }
 
-.pista {
-  margin: 0 clamp(18px, 3vw, 28px);
-  padding: 12px 16px;
-  border-radius: 14px;
+.instagram:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* «Completa tu perfil · +100 pts»: banda clara con icono, texto fuerte y un
+   botón que se ve. */
+.completa {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 2px clamp(18px, 3vw, 28px) 0;
+  padding: 14px 16px;
+  border-radius: 18px;
   background: var(--oro-tint);
-  font-size: 13.5px;
-  line-height: 1.5;
+  border: 1px solid var(--oro-line);
+}
+
+.completaIcono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #17140f;
+  color: #d9b47c;
+}
+
+.completaTexto {
+  flex: 1;
+  min-width: 0;
+}
+
+.completaTexto strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 15.5px;
+  font-weight: 600;
   color: var(--ink);
 }
+
+.completaTexto p {
+  margin: 3px 0 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.completaPuntos {
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: #17140f;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #e6c890;
+}
+
+/* ---------- Pestañas ---------- */
 
 .pestanas {
   display: flex;
   justify-content: center;
-  gap: clamp(20px, 6vw, 60px);
-  border-bottom: 1px solid var(--line-2, rgba(20, 18, 16, 0.12));
+  gap: clamp(28px, 8vw, 72px);
+  border-bottom: 1px solid rgba(20, 18, 16, 0.18);
 }
 
 .pestanas button {
   position: relative;
-  padding: 12px 4px;
+  padding: 13px 4px;
   border: 0;
   background: none;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--muted-2);
   cursor: pointer;
+}
+
+.pestanas button:hover {
+  color: var(--ink);
 }
 
 .pestanas button[aria-current='page'] {
@@ -246,27 +525,89 @@
 .subirFoto {
   position: relative;
   aspect-ratio: 1;
-  padding: 0;
-  border: 0;
   overflow: hidden;
-  cursor: pointer;
+  border-radius: 6px;
 }
 
 .celda {
   background: var(--neu-base);
-  border-radius: 6px;
 }
 
-.celda img {
+.celdaVer {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.celdaVer img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease, filter 0.3s;
+  transition:
+    transform 0.4s ease,
+    filter 0.3s;
 }
 
-.celda:hover img {
+.celda:hover .celdaVer img {
   transform: scale(1.04);
-  filter: brightness(0.92);
+  filter: brightness(0.9);
+}
+
+/* La papelera: aparece al pasar por encima (o al llegar con el teclado).
+   En pantallas táctiles no hay «pasar por encima»: se ve siempre. */
+.celdaBorrar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 50%;
+  background: rgba(20, 16, 10, 0.72);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    opacity 0.18s,
+    transform 0.18s,
+    background 0.18s;
+}
+
+.celda:hover .celdaBorrar,
+.celdaBorrar:focus-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.celdaBorrar:hover {
+  background: #9a2f1a;
+  border-color: #9a2f1a;
+}
+
+@media (hover: none) {
+  .celdaBorrar {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celdaVer img,
+  .celdaBorrar {
+    transition: none;
+  }
+
+  .celda:hover .celdaVer img {
+    transform: none;
+  }
 }
 
 .subirFoto {
@@ -275,71 +616,24 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border: 1.5px dashed var(--oro-line);
-  border-radius: 6px;
+  padding: 0;
+  border: 1.5px dashed rgba(111, 83, 35, 0.55);
   background: var(--oro-tint);
   font: inherit;
-  font-size: 12.5px;
-  color: var(--oro);
+  font-size: 14px;
+  font-weight: 600;
+  color: #6f5323;
+  cursor: pointer;
+}
+
+.subirFoto:hover:not(:disabled) {
+  background: #efe5d2;
 }
 
 .subirFoto span {
   font-size: 30px;
+  font-weight: 400;
   line-height: 1;
-}
-
-.rejilla .vacio {
-  grid-column: 1 / -1;
-}
-
-/* ---------- Recorrido ---------- */
-
-.linea {
-  margin: 0;
-  padding: 6px 0 0 18px;
-  list-style: none;
-  border-left: 2px solid var(--oro-line);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.hito {
-  position: relative;
-  display: flex;
-  gap: 16px;
-}
-
-.hito::before {
-  content: '';
-  position: absolute;
-  left: -25px;
-  top: 4px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--oro);
-  box-shadow: 0 0 0 4px var(--oro-tint);
-}
-
-.anio {
-  flex: none;
-  width: 52px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--oro);
-}
-
-.hito strong {
-  font-size: 15.5px;
-  color: var(--ink);
-}
-
-.hito p {
-  margin: 4px 0 0;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--muted);
 }
 
 /* ---------- Visor ---------- */
@@ -351,7 +645,7 @@
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(12, 10, 9, 0.88);
+  background: rgba(12, 10, 9, 0.9);
 }
 
 .visor figure {
@@ -376,34 +670,50 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
-  font-size: 14px;
+  padding: 10px 12px 10px 16px;
+  font-size: 15px;
   color: var(--ink);
 }
 
-.visor figcaption button {
-  border: 0;
-  background: none;
+.visorBorrar {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: 1px solid rgba(154, 47, 26, 0.45);
+  border-radius: 999px;
+  background: #fff;
   font: inherit;
-  font-size: 13px;
-  color: #a24a2e;
-  text-decoration: underline;
+  font-size: 14px;
+  font-weight: 500;
+  color: #9a2f1a;
+  cursor: pointer;
+}
+
+.visorBorrar:hover {
+  background: #fbeee9;
+}
+
+.izq,
+.der,
+.visorCerrar {
+  position: fixed;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 26px;
   cursor: pointer;
 }
 
 .izq,
 .der {
-  position: fixed;
   top: 50%;
   translate: 0 -50%;
-  width: 44px;
-  height: 44px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
-  font-size: 26px;
-  cursor: pointer;
 }
 
 .izq {
@@ -412,6 +722,12 @@
 
 .der {
   right: 14px;
+}
+
+.visorCerrar {
+  top: 14px;
+  right: 14px;
+  font-size: 16px;
 }
 
 /* ---------- Editor ---------- */
@@ -424,6 +740,7 @@
   place-items: center;
   padding: 16px;
   background: rgba(20, 18, 16, 0.45);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 
@@ -438,6 +755,11 @@
   box-shadow: 0 30px 80px -30px rgba(20, 18, 16, 0.6);
 }
 
+/* Recibe el foco al abrirse solo para que el lector de pantalla entre en él. */
+.editor:focus {
+  outline: none;
+}
+
 .editorCabeza,
 .editorPie {
   display: flex;
@@ -448,64 +770,109 @@
 }
 
 .editorCabeza {
-  border-bottom: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
+  border-bottom: 1px solid var(--line-2, rgba(20, 18, 16, 0.1));
 }
 
-.editorCabeza strong {
+.editorCabeza h2 {
+  margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
 }
 
 .editorPie {
   justify-content: flex-end;
-  border-top: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
+  border-top: 1px solid var(--line-2, rgba(20, 18, 16, 0.1));
 }
 
 .cerrar {
-  width: 34px;
-  height: 34px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
   border: 0;
   border-radius: 50%;
   background: var(--neu-base);
-  font-size: 20px;
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1;
   cursor: pointer;
+}
+
+.cerrar:hover {
+  background: #ebe4d8;
+}
+
+.cerrar:focus-visible,
+.visorBorrar:focus-visible,
+.instagram:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
 }
 
 .editorCuerpo {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px 20px;
+  gap: 16px;
+  padding: 20px;
   overflow-y: auto;
 }
 
+/* Etiqueta encima, en Jost 500 y color pleno: se lee sin forzar. */
 .campo {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
+  gap: 7px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--ink);
 }
 
+/* Una nota bajo el campo (no la etiqueta): más pequeña, pero legible. */
+.campo .campoNota {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
 .campo small {
   align-self: flex-end;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-2);
 }
 
 .campo input,
-.campo textarea,
-.hitoEditor input {
+.campo textarea {
   width: 100%;
   padding: 11px 14px;
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.16));
+  border: 1px solid #8c8173;
   border-radius: 14px;
   background: #fff;
   font: inherit;
-  font-size: 14.5px;
+  font-size: 15px;
+  font-weight: 400;
   color: var(--ink);
+  outline: none;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+
+.campo input::placeholder,
+.campo textarea::placeholder {
+  color: #7d7468;
+  opacity: 1;
+}
+
+.campo input:focus,
+.campo textarea:focus {
+  border-color: #8a6a32;
+  box-shadow: 0 0 0 3px rgba(217, 180, 124, 0.45);
 }
 
 .campo textarea {
@@ -519,86 +886,87 @@
   gap: 12px;
 }
 
+/* La ficha del mapa, dentro del editor: se edita aparte (en el onboarding). */
+.fichaCaja {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 14px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--oro-tint);
+  border: 1px solid var(--oro-line);
+}
+
+.fichaIcono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fffdf9;
+  color: #6f5323;
+}
+
+.fichaTexto {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.fichaTexto strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.fichaTexto p {
+  margin: 3px 0 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.error {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #9a2f1a;
+}
+
 @media (max-width: 560px) {
   .dos {
     grid-template-columns: 1fr;
   }
+
   .identidad {
     flex-wrap: wrap;
   }
+
   .nombreBloque {
     flex-basis: 100%;
   }
-  .btnEditar {
-    width: 100%;
+
+  .acciones {
+    flex-basis: 100%;
+    justify-content: stretch;
   }
-}
 
-.rotulo {
-  margin: 6px 0 0;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--oro);
-}
+  .acciones > button {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
 
-.hitoEditor {
-  display: grid;
-  grid-template-columns: 76px 1fr 30px;
-  gap: 8px;
-  align-items: start;
-}
+  .completa {
+    flex-wrap: wrap;
+  }
 
-.hitoEditor > div {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.quitar {
-  width: 30px;
-  height: 30px;
-  margin-top: 6px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--neu-base);
-  cursor: pointer;
-}
-
-.anadir {
-  align-self: flex-start;
-  padding: 8px 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--oro);
-  cursor: pointer;
-}
-
-/* Aviso flotante (una subida que falla): en lugar del alert del navegador. */
-.aviso {
-  position: fixed;
-  left: 50%;
-  bottom: calc(24px + env(safe-area-inset-bottom));
-  z-index: 1200;
-  width: min(440px, calc(100vw - 32px));
-  margin: 0;
-  padding: 14px 18px;
-  border-radius: 16px;
-  background: #17140f;
-  color: #f7f2ea;
-  font-size: 14px;
-  line-height: 1.45;
-  text-align: center;
-  box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.6);
-  translate: -50% 0;
-}
-
-@media (max-width: 879px) {
-  .aviso {
-    bottom: calc(96px + env(safe-area-inset-bottom));
+  .completa > button {
+    width: 100%;
   }
 }

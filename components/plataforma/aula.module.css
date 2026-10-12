@@ -4,6 +4,12 @@
  * Dos columnas: a la izquierda lo que se está viendo (vídeo, capítulos,
  * módulos, clases) y a la derecha cómo va (el anillo de progreso y el camino
  * del curso). El vídeo es lo único oscuro de la pantalla: es donde se mira.
+ *
+ * Letra: los títulos de cada tarjeta en Cormorant (la línea de la marca) y
+ * todo lo demás en Jost 400–600. Contraste medido sobre #fffdf9: metadatos en
+ * --muted-2 (7,1:1; antes --muted, 5,7:1, y a 11–12 px), el oro pequeño en
+ * --arcilla-ink (7:1; el #8a6a32 se quedaba en 4,9:1 y en 4,3:1 sobre los
+ * tintes dorados) y el buscador con borde #8c8173 (3,8:1) y foco dorado.
  */
 
 .aula {
@@ -57,16 +63,20 @@
 
 .rotulo {
   margin: 0;
-  font-size: 15px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 23px;
   font-weight: 600;
+  line-height: 1.15;
   color: var(--ink);
 }
 
 .subrotulo {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--ink-2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--arcilla-ink);
 }
 
 /* ---------- Reproductor ---------- */
@@ -165,7 +175,8 @@
 
 .modulo {
   font-size: 12px;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #d9b47c;
 }
@@ -174,7 +185,7 @@
   margin: 0;
   font-family: var(--fuente-cormorant), Georgia, serif;
   font-size: clamp(24px, 2.6vw, 34px);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.1;
   color: #f7f2ea;
 }
@@ -182,10 +193,10 @@
 .descripcion {
   margin: 0;
   max-width: 64ch;
-  font-size: 14.5px;
-  font-weight: 300;
-  line-height: 1.6;
-  color: #cfc6b8;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: #d6cec2;
 }
 
 .marcarVista,
@@ -203,7 +214,7 @@
 }
 
 .marcarVista {
-  border: 1px solid rgba(237, 227, 211, 0.25);
+  border: 1px solid rgba(237, 227, 211, 0.4);
   background: transparent;
   color: #f7f2ea;
   cursor: pointer;
@@ -212,6 +223,11 @@
 
 .marcarVista:hover {
   background: rgba(255, 255, 255, 0.08);
+}
+
+.marcarVista:focus-visible {
+  outline: 2px solid #d9b47c;
+  outline-offset: 3px;
 }
 
 .vista {
@@ -257,14 +273,15 @@
 }
 
 .tiempo {
-  font-size: 13px;
-  font-weight: 500;
-  color: #8a6a32;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--arcilla-ink);
   font-variant-numeric: tabular-nums;
 }
 
 .capituloTitulo {
-  font-size: 14.5px;
+  font-size: 15px;
+  font-weight: 400;
 }
 
 .irA {
@@ -274,12 +291,13 @@
   height: 28px;
   border-radius: 50%;
   background: rgba(201, 154, 85, 0.14);
-  color: #8a6a32;
+  color: var(--arcilla-ink);
   opacity: 0;
   transition: opacity 0.2s;
 }
 
-.capitulo:hover .irA {
+.capitulo:hover .irA,
+.capitulo:focus-visible .irA {
   opacity: 1;
 }
 
@@ -297,7 +315,7 @@
   gap: 12px;
   padding: 14px;
   border-radius: 18px;
-  border: 1px solid rgba(20, 18, 16, 0.06);
+  border: 1px solid rgba(20, 18, 16, 0.12);
   background: #fffdf9;
   font: inherit;
   text-align: left;
@@ -322,9 +340,9 @@
   height: 42px;
   flex: none;
   border-radius: 14px;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: #8a6a32;
+  color: var(--arcilla-ink);
   background: rgba(201, 154, 85, 0.16);
 }
 
@@ -345,20 +363,42 @@
 
 .moduloTexto {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
 }
 
 .moduloNombre {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 500;
+  line-height: 1.3;
   color: var(--ink);
 }
 
 .moduloCuenta {
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 13px;
+  color: var(--muted-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lo que lleva hecho de cada módulo, de un vistazo. */
+.moduloBarra {
+  display: block;
+  width: 100%;
+  min-width: 96px;
+  height: 5px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background: rgba(20, 18, 16, 0.1);
+  overflow: hidden;
+}
+
+.moduloBarra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8a6a32, #d9b47c);
 }
 
 /* ---------- Lista de clases ---------- */
@@ -375,12 +415,21 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 38px;
-  padding: 0 14px;
+  height: 42px;
+  padding: 0 16px;
   border-radius: 999px;
-  border: 1px solid var(--line-2);
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #8c8173;
+  color: var(--muted-2);
+  background: #ffffff;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+
+/* Foco: borde de oro y un anillo claro, como el resto de campos. */
+.buscar:focus-within {
+  border-color: #8a6a32;
+  box-shadow: 0 0 0 3px rgba(217, 180, 124, 0.45);
 }
 
 .buscar input {
@@ -388,9 +437,14 @@
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 13.5px;
+  font-size: 15px;
   color: var(--ink);
   outline: none;
+}
+
+.buscar input::placeholder {
+  color: #7d7468;
+  opacity: 1;
 }
 
 .clases {
@@ -423,7 +477,8 @@
 }
 
 .clase[data-actual] {
-  background: rgba(201, 154, 85, 0.1);
+  background: rgba(201, 154, 85, 0.12);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
 }
 
 .miniatura {
@@ -470,14 +525,15 @@
 }
 
 .claseTitulo {
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 500;
+  line-height: 1.3;
   color: var(--ink);
 }
 
 .claseMeta {
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 13px;
+  color: var(--muted-2);
   font-variant-numeric: tabular-nums;
 }
 
@@ -489,16 +545,18 @@
 }
 
 .pct {
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-2);
   font-variant-numeric: tabular-nums;
 }
 
 .barra {
+  display: block;
   width: 70px;
   height: 5px;
   border-radius: 999px;
-  background: var(--line-2);
+  background: rgba(20, 18, 16, 0.1);
   overflow: hidden;
 }
 
@@ -506,7 +564,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #b98d4c, #e2c38f);
+  background: linear-gradient(90deg, #8a6a32, #d9b47c);
 }
 
 .hecha {
@@ -522,8 +580,50 @@
 .nada {
   padding: 18px;
   text-align: center;
-  font-size: 13.5px;
-  color: var(--faint);
+  font-size: 15px;
+  color: var(--ink-3);
+}
+
+/* Vacío: todavía no hay clases. Icono, un título corto y una frase útil. */
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 30px 24px 32px;
+  border-radius: 24px;
+  background: #fffdf9;
+  border: 1px solid var(--line-2);
+  text-align: center;
+}
+
+.vacioIcono {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--oro-tint);
+  color: var(--arcilla-ink);
+}
+
+.vacioTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.vacioTexto {
+  max-width: 420px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-3);
 }
 
 @media (max-width: 640px) {
@@ -543,8 +643,8 @@
 
 .ruta {
   margin: -8px 0 0;
-  font-size: 12.5px;
-  color: var(--muted);
+  font-size: 13.5px;
+  color: var(--muted-2);
 }
 
 .anillo {
@@ -577,14 +677,15 @@
 
 .anilloTexto {
   font-size: 11px;
-  fill: var(--muted);
+  font-weight: 500;
+  fill: var(--muted-2);
 }
 
 .cuenta {
   margin: 0;
   text-align: center;
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 14px;
+  color: var(--ink-3);
 }
 
 .seguir {
@@ -603,6 +704,11 @@
 
 .seguir:hover {
   transform: translateY(-1px);
+}
+
+.seguir:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 3px;
 }
 
 .camino {
@@ -626,7 +732,7 @@
   border-bottom: 1px solid var(--line-2);
   background: none;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   text-align: left;
   color: var(--ink-2);
   cursor: pointer;
@@ -649,7 +755,7 @@
   height: 20px;
   flex: none;
   border-radius: 50%;
-  border: 1.5px solid var(--line-3);
+  border: 1.5px solid var(--line-5);
 }
 
 .paso[data-estado='hecha'] .pasoIcono {
@@ -659,7 +765,7 @@
 }
 
 .paso[data-estado='actual'] {
-  color: #8a6a32;
+  color: var(--arcilla-ink);
   font-weight: 600;
 }
 
@@ -682,7 +788,7 @@
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 10px;
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--ink-2);
 }
 
@@ -694,9 +800,9 @@
 }
 
 .datos .datoTexto {
-  font-size: 13px;
-  font-weight: 500;
-  color: #8a6a32;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--arcilla-ink);
 }
 
 .datoIcono {
@@ -705,7 +811,7 @@
   width: 30px;
   height: 30px;
   border-radius: 10px;
-  color: #8a6a32;
+  color: var(--arcilla-ink);
   background: rgba(201, 154, 85, 0.14);
 }
 

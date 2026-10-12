@@ -4,6 +4,13 @@
    Una sola columna estrecha, centrada, sin cajas ni botones que no llevan a
    ningún sitio. Lo único que se permite de adorno es el halo dorado del
    fondo, y va detrás del texto: la pantalla tiene que leerse, no brillar.
+
+   Letra y contraste (medidos sobre el papel #f4efe7): la entradilla en Jost
+   400 y --ink-2 (10,1:1; antes Jost 300 en --muted-2), las descripciones en
+   --ink-3 (7,9:1; antes 300 en --muted, 5,1:1), los rótulos en mayúsculas a
+   11,5 px, peso 600 y espaciado 0,1em (antes 10 px, 400 y 0,2em en --faint,
+   4,7:1) y el oro pequeño oscurecido a --arcilla-ink (6,2:1; el --oro se
+   quedaba en 4,4:1).
    ========================================================================== */
 .envoltura {
   position: relative;
@@ -49,10 +56,10 @@
   border: 1px solid var(--oro-line);
   border-radius: 999px;
   background: var(--oro-tint);
-  color: var(--oro);
-  font-size: 10.5px;
-  font-weight: 400;
-  letter-spacing: 0.2em;
+  color: var(--arcilla-ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -113,10 +120,10 @@
 .entradilla {
   margin: 0;
   max-width: 52ch;
-  font-size: clamp(15px, 1.5vw, 17px);
-  font-weight: 300;
-  line-height: 1.65;
-  color: var(--muted-2);
+  font-size: clamp(15.5px, 1.5vw, 17px);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-2);
   text-wrap: pretty;
 }
 
@@ -129,11 +136,11 @@
 
 .rotulo {
   margin: 0;
-  font-size: 10.5px;
-  font-weight: 400;
-  letter-spacing: 0.2em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted-2);
 }
 
 /* ---------- Lo que va a haber ---------- */
@@ -152,7 +159,7 @@
   align-items: baseline;
   gap: 10px 20px;
   padding: 17px 0;
-  border-bottom: 1px solid var(--line-1);
+  border-bottom: 1px solid var(--line-3);
 }
 
 .item:last-child {
@@ -169,46 +176,52 @@
 
 .itemTitulo {
   font-family: var(--fuente-cormorant), Georgia, serif;
-  font-size: 21px;
-  font-weight: 400;
+  font-size: 22px;
+  font-weight: 600;
   line-height: 1.2;
-  color: var(--ink-4);
+  color: var(--ink);
 }
 
 .itemTexto {
-  font-size: 13.5px;
-  font-weight: 300;
-  line-height: 1.55;
-  color: var(--muted);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-3);
   text-wrap: pretty;
 }
 
+/* «Pronto», «En preparación»: una pastilla, no un susurro gris. */
 .itemEstado {
   flex: 0 0 auto;
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.16em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--oro-line);
+  background: var(--oro-tint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--arcilla-ink);
 }
 
 .pie {
   margin: 10px 0 0;
-  font-size: 13.5px;
-  font-weight: 300;
-  line-height: 1.6;
-  color: var(--muted);
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted-2);
 }
 
 .enlace {
-  color: var(--oro);
+  font-weight: 600;
+  color: var(--arcilla-ink);
   text-decoration: none;
   border-bottom: 1px solid var(--oro-line);
   padding-bottom: 1px;
 }
 
 .enlace:hover {
-  border-bottom-color: var(--oro);
+  border-bottom-color: var(--arcilla-ink);
 }
 
 .noticias {

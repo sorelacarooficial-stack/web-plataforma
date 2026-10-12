@@ -94,6 +94,42 @@ function Destello() {
   );
 }
 
+/**
+ * El dibujo del vacío de la lista: dos personas cuando solo estás tú, y una
+ * exclamación cuando la lista no se ha podido leer. Trazo fino y del color
+ * del texto, para que lo pinte el círculo que lo envuelve (.vacioIcono).
+ */
+function IconoVacio({ tipo }: { tipo: 'personas' | 'fallo' }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {tipo === 'personas' ? (
+        <>
+          <circle cx="9" cy="8.5" r="3.2" />
+          <path d="M3.5 19c.6-3.1 2.8-5 5.5-5s4.9 1.9 5.5 5" />
+          <path d="M15.5 5.6a3 3 0 0 1 0 5.8M17.6 14.3c1.6.6 2.6 2.2 2.9 4.7" />
+        </>
+      ) : (
+        <>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 7.6v5.2" />
+          <path d="M12 16.3v.1" strokeWidth="2.2" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 export default function Cuentas() {
   const [lista, setLista] = useState<Cuenta[] | null>(null);
   const [yo, setYo] = useState<string | null>(null);
@@ -406,15 +442,26 @@ export default function Cuentas() {
         {/* Tres casos distintos, y antes eran uno: si la carga ha fallado no se
             sabe nada de la lista, así que no se afirma nada sobre ella. */}
         {fallo ? (
-          <p className={css.vacioTexto}>
-            No he podido leer las cuentas, así que no puedo decirte quién hay. Pulsa «Reintentar»
-            aquí arriba.
-          </p>
+          <div className={css.vacio}>
+            <span className={`${css.vacioIcono} ${css.vacioIconoFallo}`} aria-hidden="true">
+              <IconoVacio tipo="fallo" />
+            </span>
+            <p className={css.vacioTitulo}>No he podido leer las cuentas</p>
+            <p className={css.vacioFrase}>
+              Así que no puedo decirte quién hay. Pulsa «Reintentar» aquí arriba.
+            </p>
+          </div>
         ) : soloYo ? (
-          <p className={css.vacioTexto}>
-            Ahora mismo solo está tu cuenta. Cuando alguien use su enlace de invitación, aparecerá
-            aquí con lo que tenga contratado y la última vez que entró.
-          </p>
+          <div className={css.vacio}>
+            <span className={css.vacioIcono} aria-hidden="true">
+              <IconoVacio tipo="personas" />
+            </span>
+            <p className={css.vacioTitulo}>Ahora mismo solo estás tú</p>
+            <p className={css.vacioFrase}>
+              Cuando alguien use su enlace de invitación, aparecerá aquí con lo que tenga contratado
+              y la última vez que entró.
+            </p>
+          </div>
         ) : (
           lista.map((c) => {
             const rolActual: Rol = c.rol ?? 'miembro';
@@ -437,9 +484,7 @@ export default function Cuentas() {
                     {c.uid === yo && ' · tú'}
                     {c.bloqueada && <span className={css.bloqueada}>Bloqueada</span>}
                   </span>
-                  <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
-                    {c.correo || 'sin correo'}
-                  </span>
+                  <span className={css.cuentaCorreo}>{c.correo || 'sin correo'}</span>
                   {/* Cómo llegó a tener cuenta: la misma pregunta que en el CRM. */}
                   {c.llego && (
                     <span className={css.llego}>
@@ -467,7 +512,7 @@ export default function Cuentas() {
                     </span>
                   )}
                   {c.sinFicha && (
-                    <span style={{ fontSize: 12, fontWeight: 300, color: 'var(--arcilla)' }}>
+                    <span className={css.cuentaSinFicha}>
                       Puede entrar, pero no tiene ficha: no sé qué ha contratado. Si no sabes de
                       dónde sale, bórrala.
                     </span>
@@ -494,7 +539,7 @@ export default function Cuentas() {
                 </span>
 
                 <span style={{ flex: '0 1 180px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  <span style={{ fontSize: 11.5, fontWeight: 300, color: 'var(--faint)' }}>
+                  <span className={css.cuentaCuando}>
                     {/* Sin fecha de acceso es que la cuenta está dada de alta y
                         no se ha estrenado. Es un dato, no un hueco. */}
                     {c.ultimoAcceso ? `Entró ${cuando(c.ultimoAcceso)}` : 'No ha entrado todavía'}
@@ -597,10 +642,12 @@ export default function Cuentas() {
             <ul>
               <li>su cuenta y su contraseña: no podrá volver a entrar;</li>
               <li>lo que tenga contratado (formación, comunidad);</li>
-              <li>su progreso en las clases y su agenda.</li>
+              <li>su progreso en las clases y su agenda;</li>
+              <li>su perfil, sus fotos y su ficha del mapa.</li>
             </ul>
             <p>
-              Se quedan su ficha en <strong>Clientes</strong> (con tus notas) y lo que haya escrito en la comunidad. Si
+              Se quedan su ficha en <strong>Clientes</strong> (con tus notas) y lo que haya escrito en la comunidad, sin
+              las fotos. Si
               solo quieres que no entre por un tiempo, mejor <strong>bloquear la entrada</strong>.
             </p>
             <div className={css.dialogoBotones}>

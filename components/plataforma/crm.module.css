@@ -5,6 +5,12 @@
  * que mirar para saber cómo va. Debajo, las tarjetas en sus columnas. Las
  * tarjetas son claras y ligeras; el color se reserva para lo que pide atención
  * (alguien que lleva días esperando) y para la acción de cada una.
+ *
+ * Letra y color, medidos (scratchpad/contraste-p3.mjs): lo que se lee va en
+ * Jost 400 —nunca 300 en pequeño— y los grises y dorados pequeños en los tonos
+ * oscurecidos de la plataforma (--muted-2, --oro-letra, --peligro-letra), que
+ * pasan de 6 a 1. Cada valor lleva su copia de respaldo porque los mismos
+ * colores se usan también fuera de .pantalla.
  */
 
 /* ---------- El embudo ---------- */
@@ -15,8 +21,13 @@
   gap: clamp(10px, 1.4vw, 18px);
 }
 
+/* Cada paso tiene dos colores: --color, vivo, para la barra y el borde, y
+   --tinta, el mismo tono oscurecido, para la cifra. La cifra iba en el color
+   vivo y el ocre de «Hablando» se quedaba en 2,2 a 1: se veía la barra pero
+   no el número, que es lo único que hay que mirar. */
 .paso {
   --color: #c4573a;
+  --tinta: #9a3f22;
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -37,12 +48,16 @@
 
 .paso[data-columna='hablando'] {
   --color: #c99a55;
+  --tinta: var(--oro-letra, #6f5323);
 }
 
 .paso[data-columna='cerrado'] {
   --color: #6f8a63;
+  --tinta: var(--bien-letra, #3d5a33);
 }
 
+/* En 500 y no en 600: la Jost se sirve hasta 500 y por encima el navegador
+   engorda el trazo a mano, que en una cifra grande se nota borroso. */
 .pasoNumero {
   grid-row: 1;
   display: grid;
@@ -51,10 +66,10 @@
   height: 54px;
   padding: 0 10px;
   border-radius: 18px;
-  background: color-mix(in srgb, var(--color) 12%, transparent);
-  color: var(--color);
+  background: color-mix(in srgb, var(--tinta) 10%, transparent);
+  color: var(--tinta);
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   overflow: hidden;
 }
@@ -67,15 +82,16 @@
 }
 
 .pasoTitulo {
-  font-size: 15px;
+  font-size: 15.5px;
   font-weight: 500;
   color: var(--ink);
 }
 
 .pasoPista {
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--muted-2);
 }
 
 .pasoBarra {
@@ -105,8 +121,8 @@
   margin-top: -12px;
   border-radius: 50%;
   background: var(--bg, #f4efe7);
-  border: 1px solid var(--line-2);
-  color: var(--muted);
+  border: 1px solid var(--line-4);
+  color: var(--muted-2);
 }
 
 /* ---------- La barra ---------- */
@@ -127,26 +143,35 @@
   padding: 0 16px;
   height: 44px;
   border-radius: 999px;
-  border: 1px solid var(--line-2);
+  /* El borde de los campos de la plataforma (3,5 a 1 aquí): con la línea de
+     antes, al 10 %, el buscador no se distinguía del fondo. */
+  border: 1px solid var(--borde-campo, #8f8579);
   background: rgba(255, 255, 255, 0.7);
-  color: var(--muted);
+  color: var(--muted-2);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .buscar:focus-within {
-  border-color: var(--oro-line);
-  box-shadow: 0 0 0 4px rgba(201, 154, 85, 0.14);
+  border-color: var(--oro, #8a6a32);
+  box-shadow: 0 0 0 3px var(--foco-halo, rgba(217, 180, 124, 0.5));
 }
 
+/* 16 px: por debajo, Safari en el iPhone acerca la pantalla al enfocar. */
 .buscar input {
   flex: 1;
   min-width: 0;
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 400;
   color: var(--ink);
   outline: none;
+}
+
+.buscar input::placeholder {
+  color: var(--ejemplo-campo, #7b7266);
+  opacity: 1;
 }
 
 .segmentos {
@@ -154,7 +179,7 @@
   gap: 2px;
   padding: 4px;
   border-radius: 999px;
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--line-4);
   background: rgba(255, 255, 255, 0.5);
 }
 
@@ -164,11 +189,16 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--muted);
+  color: var(--muted-2);
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 400;
   white-space: nowrap;
   cursor: pointer;
+}
+
+.segmento[aria-pressed='true'] .segmentoTexto {
+  font-weight: 500;
 }
 
 .segmento[aria-pressed='true'] {
@@ -201,8 +231,10 @@
   padding: 0 18px;
   border-radius: 999px;
   font: inherit;
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -219,14 +251,18 @@
 }
 
 .excel {
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--line-5);
   background: rgba(255, 255, 255, 0.6);
-  color: var(--ink-2);
+  color: var(--ink);
+}
+
+.excel:hover:not(:disabled) {
+  border-color: var(--ink-3);
 }
 
 .excel:disabled {
-  opacity: 0.4;
-  cursor: default;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ---------- El tablero ---------- */
@@ -259,13 +295,36 @@
   gap: 10px;
 }
 
+/* La columna sin tarjetas. Era una línea gris clara y fina flotando en el
+   hueco; ahora es un hueco con su borde punteado —se ve que ahí cabe una
+   tarjeta—, el destello de los vacíos de la plataforma y la frase en tinta. */
 .vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   margin: 0;
-  padding: 28px 10px;
+  padding: 22px 14px;
+  border: 1.5px dashed var(--line-4);
+  border-radius: 18px;
   text-align: center;
-  font-size: 13px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.vacio::before {
+  content: '';
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0c.5 3.2 2.3 5 5.5 6-3.2 1-5 2.8-5.5 6-.5-3.2-2.3-5-5.5-6 3.2-1 5-2.8 5.5-6z' fill='%238a6a32'/%3E%3C/svg%3E")
+      center / 13px 13px no-repeat,
+    var(--oro-tint);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
 }
 
 /* ---------- La tarjeta ---------- */
@@ -345,24 +404,26 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 500;
-  color: #6b4f24;
+  color: #5c421b;
   background: linear-gradient(135deg, #f6ead3, #e8d2a8);
 }
 
+/* Las iniciales, un tono más oscuras que antes: medidas sobre el extremo más
+   oscuro de cada degradado, todas por encima de 6 a 1. */
 .avatar[data-tipo='clienta'] {
-  color: #47593f;
+  color: #3a4a33;
   background: linear-gradient(135deg, #eaf1e4, #d2e0c9);
 }
 
 .avatar[data-tipo='alumna'] {
-  color: #3d4f66;
+  color: #33445a;
   background: linear-gradient(135deg, #e7eef6, #cddaea);
 }
 
 .avatar[data-tipo='otro'] {
-  color: #5f584e;
+  color: #4f4840;
   background: linear-gradient(135deg, #f0ece6, #ddd6cb);
 }
 
@@ -409,16 +470,16 @@
 }
 
 .nombre:hover {
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .meta {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -451,7 +512,7 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--faint);
+  color: var(--muted-2);
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.2s, background 0.2s, color 0.2s;
@@ -497,15 +558,22 @@
   background: transparent;
   color: #f7f2ea;
   font: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
+  font-weight: 400;
   text-align: left;
   cursor: pointer;
 }
 
 .menu button:hover,
 .menu button:focus-visible {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   outline: none;
+}
+
+/* Con el teclado, además del fondo, un filete dorado: el fondo solo, al 10 %
+   sobre el negro, no basta para saber dónde estás. */
+.menu button:focus-visible {
+  box-shadow: inset 0 0 0 1px #d9b47c;
 }
 
 .menu .peligro {
@@ -517,8 +585,8 @@
   padding: 9px 12px;
   border-radius: 12px;
   background: rgba(20, 18, 16, 0.035);
-  font-size: 13px;
-  font-weight: 300;
+  font-size: 13.5px;
+  font-weight: 400;
   line-height: 1.45;
   color: var(--ink-3);
   display: -webkit-box;
@@ -535,14 +603,16 @@
 }
 
 .tiempo {
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
   white-space: nowrap;
 }
 
+/* El teja vivo de antes (#c4573a) daba 4,3 a 1 en una letra de 12 px: el aviso
+   de «lleva días esperando» era lo que peor se leía de la tarjeta. */
 .tiempo[data-urgente] {
-  color: #c4573a;
+  color: var(--peligro-letra, #8f3f26);
   font-weight: 500;
 }
 
@@ -566,12 +636,12 @@
 .icono:hover {
   transform: translateY(-1px);
   background: rgba(201, 154, 85, 0.16);
-  color: #8a6a32;
+  color: var(--oro-letra, #6f5323);
 }
 
 .icono[data-canal='whatsapp']:hover {
   background: rgba(37, 211, 102, 0.14);
-  color: #1d8a4a;
+  color: #187a41;
 }
 
 .avanzar {
@@ -585,7 +655,8 @@
   background: #141210;
   color: #f7f2ea;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
 }
@@ -595,8 +666,11 @@
   box-shadow: 0 8px 16px -8px rgba(20, 18, 16, 0.6);
 }
 
+/* El verde de «Cerrar», el de la plataforma: el salvia claro de antes dejaba
+   la palabra en 3,4 a 1. */
 .avanzar[data-a='Cerrado'] {
-  background: #6f8a63;
+  background: var(--bien, #47663c);
+  color: #fff;
 }
 
 /* ---------- Descartados ---------- */
@@ -613,7 +687,8 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 10px;
-  opacity: 0.7;
+  /* Retirados, pero legibles: al 70 % el gris de la fecha bajaba a 3,5 a 1. */
+  opacity: 0.85;
 }
 
 /* ---------- Móvil: el embudo hace de pestañas ---------- */
@@ -648,7 +723,7 @@
   }
 
   .pasoTitulo {
-    font-size: 12.5px;
+    font-size: 13px;
   }
 
   .pasoPista,
@@ -713,11 +788,11 @@
 
 .procedenciasTitulo {
   margin-right: 4px;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .pastilla,
@@ -727,10 +802,11 @@
   gap: 7px;
   padding: 7px 8px 7px 13px;
   border-radius: 999px;
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--line-4);
   background: #fffdf9;
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 400;
   color: var(--ink);
 }
 
@@ -756,10 +832,10 @@
   border-radius: 999px;
   background: var(--oro-tint);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   text-align: center;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .pastilla[aria-pressed='true'] .pastillaNumero {
@@ -772,11 +848,15 @@
   border: 0;
   background: none;
   font: inherit;
-  font-size: 12.5px;
-  color: var(--muted);
+  font-size: 13px;
+  color: var(--muted-2);
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
+}
+
+.quitarFiltro:hover {
+  color: var(--ink);
 }
 
 /* La línea de la tarjeta que dice por dónde entró. */
@@ -785,9 +865,9 @@
   align-items: center;
   gap: 5px;
   margin-top: 3px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 400;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -799,5 +879,5 @@
 }
 
 .procedencia b {
-  font-weight: 600;
+  font-weight: 500;
 }

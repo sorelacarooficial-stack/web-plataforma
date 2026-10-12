@@ -2,6 +2,30 @@
    Armazón
    ========================================================================== */
 .pantalla {
+  /*
+   * Los colores para escribir dentro de la plataforma, medidos y no a ojo
+   * (el script y las cifras van en el informe del pulido).
+   *
+   * El oro de la marca (#8a6a32) da 4,38 a 1 sobre el papel: se queda en
+   * rellenos, filetes, iconos y letra grande. Todo lo pequeño en dorado
+   * —rótulos, etiquetas de campo, estados— va en este oro tostado, que da
+   * 6,25 y sigue leyéndose como oro. El rojo y el verde, igual: los de los
+   * avisos y errores, oscurecidos lo justo para pasar de 6 a 1.
+   *
+   * El borde de los campos, 3,16 a 1: el mínimo para que se vea dónde está un
+   * control (WCAG 1.4.11). Antes los campos no tenían borde, solo la sombra
+   * hundida, y en una pantalla con poco brillo desaparecían. El texto de
+   * ejemplo, 4,13: se distingue de lo escrito sin quedarse en un susurro.
+   */
+  --oro-letra: #6f5323;
+  --peligro: #a24a2e;
+  --peligro-letra: #8f3f26;
+  --bien: #47663c;
+  --bien-letra: #3d5a33;
+  --borde-campo: #8f8579;
+  --ejemplo-campo: #7b7266;
+  --foco-halo: rgba(217, 180, 124, 0.5);
+
   min-height: 100vh;
   background:
     radial-gradient(50% 40% at 80% 0%, rgba(217, 180, 124, 0.08), transparent 70%),
@@ -63,10 +87,11 @@
 
 .navTitulo {
   margin: 0 0 8px 10px;
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted);
 }
 
 .navBoton {
@@ -115,7 +140,7 @@
 .navTexto {
   font-size: 12.5px;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted-2);
 }
@@ -135,10 +160,11 @@
 
 .pieTitulo {
   margin: 0 0 2px 2px;
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted);
 }
 
 .roles {
@@ -154,8 +180,8 @@
   color: var(--muted-2);
   border: 1px solid var(--line-3);
   border-radius: 8px;
-  font-size: 12.5px;
-  font-weight: 300;
+  font-size: 13px;
+  font-weight: 400;
   cursor: pointer;
   text-align: left;
   transition:
@@ -177,9 +203,9 @@
   background: none;
   border: none;
   text-align: left;
-  font-size: 13px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted-2);
   cursor: pointer;
 }
 
@@ -205,13 +231,16 @@
   gap: 16px;
 }
 
+/* El antetítulo de cada pantalla. Con 0,26 em de espaciado las letras se
+   separaban tanto que la palabra dejaba de leerse de un golpe; con 0,12 em
+   sigue siendo un rótulo y se lee como una palabra. */
 .seccion {
   margin: 0;
   font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--oro-b, var(--oro));
+  color: var(--oro-letra);
 }
 
 /* El titular de cada pantalla, enorme y en el dorado de las landings. */
@@ -251,8 +280,8 @@
 }
 
 .usuarioNombre {
-  font-size: 13px;
-  font-weight: 300;
+  font-size: 13.5px;
+  font-weight: 400;
   color: var(--ink-4);
 }
 
@@ -294,28 +323,46 @@
   padding: clamp(22px, 2.8vw, 34px);
 }
 
+/*
+ * La escala de letra de la plataforma, la misma en todas las pantallas:
+ *
+ *   rótulo        Jost 500, 11,5–12 px, mayúsculas, 0,1 em, oro tostado
+ *   título        Cormorant 600 (pantalla, sección y tarjeta)
+ *   lectura       Jost 400, 15,5 px, interlineado 1,55, tinta 3 (7,9 a 1)
+ *   secundario    Jost 400, 13–13,5 px, gris 2 (6,3 a 1)
+ *
+ * El peso 300 se queda fuera de todo lo que mida menos de 18 px: la Jost fina
+ * en pequeño y en gris sobre el papel beige era lo que hacía que la pantalla
+ * pareciera borrosa aunque el color pasara la medida. Y nada en 600 en la
+ * Jost: la fuente se sirve hasta 500 (app/layout.tsx) y por encima el
+ * navegador se inventa la negrita engordando el trazo, que es lo contrario de
+ * una letra limpia.
+ */
 .rotulo {
   margin: 0;
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 .rotuloSeccion {
   margin: 0;
-  font-size: 11px;
-  letter-spacing: 0.2em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 .h2 {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-weight: 600;
-  font-size: clamp(22px, 2.4vw, 30px);
+  font-size: clamp(23px, 2.4vw, 30px);
   line-height: 1.12;
+  color: var(--ink);
   text-wrap: pretty;
 }
 
@@ -323,36 +370,39 @@
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-weight: 600;
-  font-size: clamp(20px, 2.1vw, 26px);
+  font-size: clamp(21px, 2.1vw, 26px);
   line-height: 1.14;
+  color: var(--ink);
   text-wrap: pretty;
 }
 
 .parrafo {
   margin: 0;
-  font-size: 14.5px;
-  font-weight: 300;
-  line-height: 1.6;
+  font-size: 15.5px;
+  font-weight: 400;
+  line-height: 1.55;
   color: var(--ink-3);
   text-wrap: pretty;
 }
 
+/* La nota pequeña: antes en el gris más claro y en fino (4,65 a 1 sobre el
+   papel, y a 12,5 px con el trazo de 300 parecía 3). */
 .apunte {
   margin: 0;
-  font-size: 12.5px;
-  font-weight: 300;
-  line-height: 1.55;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted-2);
   text-wrap: pretty;
 }
 
 .intro {
   margin: 0;
   max-width: 640px;
-  font-size: 15px;
-  font-weight: 300;
-  line-height: 1.6;
-  color: var(--muted-2);
+  font-size: 15.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-3);
   text-wrap: pretty;
 }
 
@@ -387,22 +437,28 @@
 }
 
 .filaNombre {
-  font-size: 15px;
-  font-weight: 300;
-  color: var(--ink-4);
+  font-size: 15.5px;
+  font-weight: 500;
+  color: var(--ink);
 }
 
 .filaTipo {
   font-size: 11.5px;
-  letter-spacing: 0.12em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--muted-2);
 }
 
-/* Botones */
+/* Botones
+   El degradado de antes ponía el centro del botón —justo donde cae la
+   palabra— sobre el oro claro #d9b47c, y el blanco ahí da 1,95 a 1. Ahora el
+   oro claro queda solo en la punta, donde no hay letra: bajo el texto el fondo
+   va del bronce (#6e5327, 7,2 a 1) al oro (#8a6a32, 5 a 1). Sigue brillando
+   y la palabra se lee entera. */
 .btn {
   padding: 13px 30px;
-  background: linear-gradient(123deg, #1a1208 7%, #8a6a32 37%, #d9b47c 72%, #6e5327 100%);
+  background: linear-gradient(123deg, #1a1208 0%, #6e5327 34%, #8a6a32 86%, #c9a46b 100%);
   color: #fff;
   border: none;
   border-radius: 999px;
@@ -411,10 +467,11 @@
     inset 4px 4px 12px #a98551;
   outline: 2px solid #fff;
   outline-offset: -3px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  text-shadow: 0 1px 1px rgba(26, 18, 8, 0.3);
   cursor: pointer;
   transition:
     transform 0.25s,
@@ -429,14 +486,15 @@
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   transform: none;
+  cursor: not-allowed;
 }
 
 .btnSm {
   padding: 10px 20px;
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
 }
 
 .btnLinea {
@@ -445,8 +503,9 @@
   color: var(--crema, var(--ink));
   border: 2px solid var(--crema, var(--line-5));
   border-radius: 999px;
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
   transition: border-color 0.2s;
@@ -462,8 +521,9 @@
   color: var(--ink);
   border: none;
   border-radius: 999px;
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
   transition:
@@ -472,13 +532,16 @@
 }
 
 .btnClaro:hover {
-  background: var(--oro);
-  color: var(--surface);
+  background: #6e5327;
+  color: #fff;
 }
 
+/* Centrados en vertical: una etiqueta de estado junto a un botón más alto se
+   estiraba hasta su altura y dejaba la palabra pegada arriba. */
 .acciones {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 
@@ -493,11 +556,11 @@
 .chip {
   padding: 10px 18px;
   background: var(--surface);
-  color: var(--muted-2);
+  color: var(--ink-3);
   border: 1px solid var(--line-3);
   border-radius: 999px;
-  font-size: 12.5px;
-  font-weight: 300;
+  font-size: 13.5px;
+  font-weight: 400;
   cursor: pointer;
   transition:
     background 0.2s,
@@ -523,7 +586,8 @@
   justify-content: center;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-size: 15px;
-  color: var(--oro);
+  font-weight: 600;
+  color: var(--oro-letra);
 }
 
 .avatarSm {
@@ -543,15 +607,17 @@
   flex: 0 0 auto;
   padding: 6px 12px;
   border-radius: 999px;
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .estadoOro {
   background: var(--oro-tint);
-  color: var(--oro);
+  color: var(--oro-letra);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
 }
 
 .estadoTinta {
@@ -561,12 +627,13 @@
 
 .estadoNeutro {
   background: var(--surface);
-  color: var(--muted-2);
+  color: var(--ink-3);
+  box-shadow: inset 0 0 0 1px var(--line-3);
 }
 
 .estadoApagado {
   background: var(--oro-tint);
-  color: var(--muted);
+  color: var(--muted-2);
 }
 
 /* Barras de progreso */
@@ -613,10 +680,11 @@
 }
 
 .kpiLabel {
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 .kpiValor {
@@ -631,19 +699,24 @@
 }
 
 .kpiNota {
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
-/* Campos */
+/* Campos
+   16 px exactos en todos, también en el redondo: por debajo, Safari en el
+   iPhone hace zoom al enfocar y descoloca la pantalla (ver .campo en
+   globals.css). El borde, el foco y el texto de ejemplo van más abajo, en
+   «Campos legibles», para ganar al bloque del neumorfismo. */
 .campo {
   padding: 13px 18px;
   background: var(--surface);
   border: 1px solid var(--line-3);
   border-radius: 16px;
-  font-size: 15px;
-  font-weight: 300;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
   color: var(--ink);
   width: 100%;
 }
@@ -653,8 +726,8 @@
   background: var(--surface);
   border: 1px solid var(--line-3);
   border-radius: 999px;
-  font-size: 13.5px;
-  font-weight: 300;
+  font-size: 16px;
+  font-weight: 400;
   color: var(--ink);
   min-width: 0;
 }
@@ -664,25 +737,32 @@
   background: var(--surface-2);
   border: 1px solid var(--line-3);
   border-radius: 16px;
-  font-size: 15px;
-  font-weight: 300;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
   color: var(--ink);
   width: 100%;
 }
 
+/* El rótulo de cada campo. Era oro claro a 10,5 px con 0,18 em entre letras:
+   en la captura de Cuentas se leía como una fila de puntos dorados. Ahora es
+   un rótulo de verdad, del mismo oro tostado que el resto, y pegado al campo
+   que nombra. */
 .etiquetaCampo {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 .etiquetaCampo input,
 .etiquetaCampo textarea {
   letter-spacing: 0;
+  text-transform: none;
 }
 
 /* ==========================================================================
@@ -743,29 +823,31 @@
 }
 
 .cursoEtiqueta {
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 .cursoTitulo {
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 21px;
+  font-weight: 600;
+  font-size: 22px;
   line-height: 1.14;
   color: var(--ink);
 }
 
 .cursoMeta {
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 .cursoProgreso {
-  font-size: 11.5px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
 }
 
 /* Lecciones */
@@ -787,37 +869,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11.5px;
+  font-size: 12px;
+  font-weight: 500;
   background: var(--surface);
-  color: var(--faint);
+  color: var(--muted-2);
 }
 
 .leccionVista {
   background: var(--oro-tint);
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 .leccionNombre {
   flex: 1 1 220px;
   min-width: 0;
   font-size: 15.5px;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ink-4);
 }
 
 .leccionDuracion {
   flex: 0 0 auto;
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 .leccionEstado {
   flex: 0 0 auto;
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 /* Comunidad */
@@ -854,10 +938,13 @@
   align-items: flex-start;
 }
 
+/* La nota informativa (no un fallo ni un «hecho»): una banda un punto más
+   clara que el papel con filete dorado. Punteada se confundía con la caja de
+   «aquí no hay nada todavía». */
 .aviso {
-  background: var(--bg);
-  border: 1px dashed var(--oro-line);
-  border-radius: 12px;
+  background: #fffdf9;
+  border: 1px solid var(--oro-line);
+  border-radius: 14px;
   padding: clamp(18px, 2.2vw, 24px);
   display: flex;
   flex-wrap: wrap;
@@ -888,38 +975,41 @@
 }
 
 .postAutor {
-  font-size: 14.5px;
+  font-size: 15px;
+  font-weight: 500;
   color: var(--ink);
 }
 
 .postCuando {
-  font-size: 11.5px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
 }
 
 .postEtiqueta {
   margin-left: auto;
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 .postTitulo {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(20px, 2.1vw, 27px);
+  font-weight: 600;
+  font-size: clamp(21px, 2.1vw, 27px);
   line-height: 1.14;
+  color: var(--ink);
   text-wrap: pretty;
 }
 
 .postTexto {
   margin: 0;
-  font-size: 15px;
-  font-weight: 300;
-  line-height: 1.62;
+  font-size: 15.5px;
+  font-weight: 400;
+  line-height: 1.55;
   color: var(--ink-3);
   text-wrap: pretty;
 }
@@ -936,25 +1026,26 @@
   padding: 0;
   background: none;
   border: none;
-  font-size: 12.5px;
-  font-weight: 300;
+  font-size: 13.5px;
+  font-weight: 400;
   color: var(--muted-2);
   cursor: pointer;
 }
 
 .postAccion:hover {
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 .postActivo {
-  color: var(--oro);
+  color: var(--oro-letra);
+  font-weight: 500;
 }
 
 .postUltima {
   margin-left: auto;
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
 }
 
 .rankingFila {
@@ -970,22 +1061,22 @@
   width: 18px;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-size: 16px;
-  color: var(--oro-claro);
+  color: var(--oro-letra);
 }
 
 .rankingNombre {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: 14px;
-  font-weight: 300;
+  font-size: 14.5px;
+  font-weight: 400;
   color: var(--ink-4);
 }
 
 .rankingPuntos {
   flex: 0 0 auto;
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 /* CRM */
@@ -1010,9 +1101,9 @@
   gap: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--line-2);
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 /* Facturas */
@@ -1028,8 +1119,8 @@
 .facturaNum {
   flex: 0 0 auto;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12px;
-  color: var(--faint);
+  font-size: 12.5px;
+  color: var(--muted-2);
 }
 
 .facturaCliente {
@@ -1045,23 +1136,33 @@
   min-width: 86px;
   text-align: right;
   font-size: 15px;
+  font-weight: 500;
   color: var(--ink);
 }
 
+/* El botón que se pinta como enlace. Con un subrayado fino en oro: sin él,
+   una palabra en mayúsculas suelta en una fila no se sabía si se podía
+   pulsar. */
 .enlaceAccion {
   flex: 0 0 auto;
-  padding: 0;
+  padding: 2px 0;
   background: none;
   border: none;
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
+  border-bottom: 1px solid var(--oro-line);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra);
   cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
 }
 
 .enlaceAccion:hover {
   color: var(--ink);
+  border-bottom-color: currentColor;
 }
 
 /* Agenda */
@@ -1089,10 +1190,11 @@
 }
 
 .diaDow {
-  font-size: 11px;
-  letter-spacing: 0.16em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 .diaNum {
@@ -1125,36 +1227,40 @@
 }
 
 .citaHora {
-  font-size: 11.5px;
-  letter-spacing: 0.1em;
-  opacity: 0.75;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
 }
 
 .citaCliente {
-  font-size: 14.5px;
+  font-size: 15px;
+  font-weight: 500;
   line-height: 1.25;
 }
 
 .citaMotivo {
-  font-size: 12.5px;
-  font-weight: 300;
-  line-height: 1.35;
-  opacity: 0.8;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  opacity: 0.85;
 }
 
 .citaEstado {
   margin-top: 2px;
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.9;
 }
 
 .libre {
   padding: 12px 4px;
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
 }
 
 .leyenda {
@@ -1168,8 +1274,8 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 12px;
-  font-weight: 300;
+  font-size: 13px;
+  font-weight: 400;
   color: var(--muted-2);
 }
 
@@ -1187,8 +1293,8 @@
   background: var(--bg);
   border: 1px solid var(--line-2);
   border-radius: 999px;
-  font-size: 13px;
-  font-weight: 300;
+  font-size: 13.5px;
+  font-weight: 400;
   color: var(--ink-4);
 }
 
@@ -1370,19 +1476,43 @@
 .quienEres {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   margin: 0 0 4px;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
   line-height: 1.35;
   color: var(--inverse-ink, var(--ink));
   overflow-wrap: anywhere;
 }
 
 .quienEres span {
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--oro);
+}
+
+/* Sus puntos (el marcador de components/plataforma/Puntos.tsx). En escritorio
+   van en el pie de la lateral, bajo su nombre; en el móvil, en la barra de
+   arriba junto al menú. Nunca los dos a la vez: el marcador anuncia los puntos
+   ganados a los lectores de pantalla, y dos marcadores visibles lo dirían dos
+   veces (el cajón cerrado sigue en la página, solo se aparta). */
+.marcadorLateral {
+  display: flex;
+  margin: 0 0 6px;
+}
+
+.marcadorMovil {
+  display: flex;
+  margin-left: auto;
+  min-width: 0;
+}
+
+@media (max-width: 880px) {
+  .marcadorLateral {
+    display: none;
+  }
 }
 
 /* ==========================================================================
@@ -1395,14 +1525,18 @@
 }
 
 /* Estado vacío y avisos. El vacío se escribe entero, no con un «sin datos»:
-   cuando de verdad no hay nadie apuntado, hay que decir qué va a pasar. */
+   cuando de verdad no hay nadie apuntado, hay que decir qué va a pasar.
+   Antes era gris claro y en fino con mucho aire alrededor: una tarjeta casi
+   en blanco que parecía rota. Ahora es tinta legible, y cuando el párrafo es
+   lo único que hay en la tarjeta se centra bajo un icono (ver «Vacíos», más
+   abajo). */
 .vacioTexto {
   margin: 0;
-  padding: clamp(24px, 3vw, 40px) 0;
-  font-size: 15px;
-  font-weight: 300;
-  line-height: 1.6;
-  color: var(--muted);
+  padding: clamp(10px, 1.6vw, 18px) 0;
+  font-size: 15.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-3);
   text-wrap: pretty;
 }
 
@@ -1412,18 +1546,64 @@
   padding: 0;
 }
 
-.avisoFallo {
+/*
+ * Los avisos: una banda con icono, texto en tinta y el botón a la derecha.
+ *
+ * Antes eran un filete de color a la izquierda sobre un fondo casi igual al
+ * papel, con el texto en fino: «La cuenta de X está borrada. VALE» se perdía
+ * en la pantalla y el «Vale» parecía parte de la frase. Ahora el color de la
+ * banda dice qué ha pasado (terracota, algo ha fallado o pide atención;
+ * verde, hecho) y el icono lo repite para quien no distingue esos colores.
+ *
+ * El icono es un pseudoelemento y no marcado: así lo llevan todos los avisos
+ * de todas las pantallas sin tocar cada componente. Va en posición absoluta,
+ * fuera del flujo, para no convertirse en un elemento más de la fila.
+ */
+.avisoFallo,
+.avisoBien {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 10px 16px;
   margin: 0;
-  padding: 12px 16px;
-  background: var(--oro-tint);
-  border-left: 3px solid var(--arcilla);
-  font-size: 13.5px;
-  font-weight: 300;
-  color: var(--ink-2);
+  padding: 14px 16px 14px 50px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.avisoFallo::before,
+.avisoBien::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  /* A la altura de la primera línea y no centrado en la banda: en el móvil
+     el botón cae a una segunda fila y un icono centrado quedaba entre las
+     dos, sin acompañar a ninguna. El botón de dentro es bajo (ver abajo) para
+     que, cuando sí cabe en la misma fila, la frase no se mueva de esa altura. */
+  top: 15px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+}
+
+.avisoFallo {
+  background: #f9ebe4;
+  border: 1px solid rgba(162, 74, 46, 0.32);
+}
+
+/* Una exclamación blanca sobre el círculo terracota. */
+.avisoFallo::before {
+  background-color: var(--peligro, #a24a2e);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M7 3v4.6' stroke='%23fff' stroke-width='1.9' stroke-linecap='round'/%3E%3Ccircle cx='7' cy='10.6' r='1.1' fill='%23fff'/%3E%3C/svg%3E");
 }
 
 /* ==========================================================================
@@ -1517,19 +1697,20 @@
 
 .fichaEtiqueta {
   flex: 0 0 126px;
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted-2);
 }
 
 .fichaValor {
   flex: 1 1 170px;
   min-width: 0;
-  font-size: 14.5px;
-  font-weight: 300;
+  font-size: 15px;
+  font-weight: 400;
   line-height: 1.55;
-  color: var(--ink-3);
+  color: var(--ink-2);
   /* Un correo largo no puede ensanchar el cajón y sacar el resto de la vista. */
   overflow-wrap: anywhere;
 }
@@ -1542,7 +1723,7 @@
 }
 
 .fichaEnlace:hover {
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 @keyframes fichaEntra {
@@ -1613,16 +1794,40 @@
    Facturación de Sorela
    ========================================================================== */
 
-/* Aviso de que algo ha salido bien. El de fallo ya existía arriba; este es su
-   pareja y se distingue por el color del filete, no por un icono. */
+/* Aviso de que algo ha salido bien. Es la pareja del de fallo (la forma
+   común está arriba, con el icono): verde y con una marca de hecho. Antes se
+   distinguía solo por un filete gris sobre un fondo casi igual al papel. */
 .avisoBien {
-  margin: 0;
-  padding: 12px 16px;
-  background: var(--salvia-tint);
-  border-left: 3px solid var(--salvia);
-  font-size: 13.5px;
-  font-weight: 300;
-  color: var(--ink-2);
+  background: #edf1e6;
+  border: 1px solid rgba(71, 102, 60, 0.3);
+}
+
+.avisoBien::before {
+  background-color: var(--bien);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3.4 7.3l2.4 2.4 4.8-5' fill='none' stroke='%23fff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* El botón de dentro de un aviso («Vale», «Reintentar», «Abrir su ficha»).
+   El botón en relieve del resto de la plataforma, sobre una banda de color,
+   se quedaba con la sombra flotando en el aire; aquí es una pastilla clara
+   con borde, pegada a la derecha. */
+.avisoFallo .btnLinea,
+.avisoBien .btnLinea {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 6px 16px;
+  line-height: 1.2;
+  background: #fffdf9;
+  border: 1px solid var(--line-5);
+  box-shadow: none;
+  color: var(--ink);
+}
+
+.avisoFallo .btnLinea:hover,
+.avisoBien .btnLinea:hover {
+  background: #ffffff;
+  border-color: var(--ink-3);
+  box-shadow: none;
 }
 
 /* Texto a la izquierda y botones a la derecha, que caen debajo si no caben. */
@@ -1662,8 +1867,8 @@
      texto del botón para no repetirlo en el escritorio, donde no cabe. */
   .quitarLinea::after {
     content: ' Quitar';
-    font-size: 13px;
-    font-weight: 300;
+    font-size: 14px;
+    font-weight: 400;
   }
 }
 
@@ -1716,8 +1921,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  font-size: 12.5px;
-  font-weight: 300;
+  font-size: 13px;
+  font-weight: 400;
   color: var(--muted-2);
 }
 
@@ -1759,7 +1964,9 @@
   color: #1a1613;
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 13.5px;
-  font-weight: 300;
+  /* 400 y no 300: impresa en una láser de oficina, la Jost fina se queda en
+     gris y se come las comas de los importes. */
+  font-weight: 400;
   line-height: 1.55;
 }
 
@@ -1793,10 +2000,11 @@
 
 .hojaRotulo {
   display: block;
-  font-size: 10px;
-  letter-spacing: 0.2em;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #8a7f6f;
+  color: #6b6154;
 }
 
 .hojaLineas {
@@ -1824,9 +2032,9 @@
 .hojaTabla th {
   padding: 8px 6px;
   border-bottom: 1px solid #1a1613;
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.14em;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   text-align: right;
   color: #6b6154;
@@ -1874,9 +2082,9 @@
   margin-top: 26px;
   padding-top: 14px;
   border-top: 1px solid #e6e0d6;
-  font-size: 10.5px;
+  font-size: 11px;
   line-height: 1.5;
-  color: #8a7f6f;
+  color: #6b6154;
 }
 
 @media print {
@@ -1927,7 +2135,7 @@
   border: none;
   font-family: inherit;
   font-size: 15.5px;
-  font-weight: 300;
+  font-weight: 500;
   text-align: left;
   color: var(--ink);
   cursor: pointer;
@@ -1938,7 +2146,7 @@
 .abrirFicha:hover,
 .abrirFicha:focus-visible {
   border-bottom-color: var(--oro-line);
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 /* Qué busca cada persona, en su fila de la lista de clientes. Un color por
@@ -1949,17 +2157,18 @@
   padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid var(--line-3);
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--muted-2);
   white-space: nowrap;
 }
 
 .tipoPersona[data-tipo='clienta'] {
   border-color: var(--oro-line);
   background: var(--oro-tint);
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 .tipoPersona[data-tipo='alumna'] {
@@ -2018,13 +2227,15 @@
    desincroniza en cuanto se toca uno. Deshace las versalitas de
    .etiquetaCampo, que envuelve el campo entero: sin esto el error se leería
    como otro rótulo en mayúsculas y no como lo que es. */
+/* En el rojo de los avisos y no en oro: el error salía del mismo color que
+   los rótulos y se leía como uno más (y a 4,38 a 1, por debajo del mínimo). */
 .errorCampo {
-  font-size: 12px;
-  font-weight: 300;
+  font-size: 13px;
+  font-weight: 500;
   line-height: 1.45;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--arcilla);
+  color: var(--peligro-letra, #8f3f26);
   text-wrap: pretty;
 }
 
@@ -2036,19 +2247,19 @@
 .marcaMano {
   padding-left: 7px;
   border-left: 2px solid var(--oro-line);
-  color: var(--muted);
+  color: var(--muted-2);
 }
 
 /* Quien se ha registrado en la web y todavía no tiene nada. Lleva el color de
    aviso y no el neutro a propósito: es algo que hay que atender, no un dato
    más de la fila. */
 .esperando {
-  padding-left: 7px;
+  padding-left: 8px;
   border-left: 2px solid var(--arcilla);
-  font-size: 12.5px;
-  font-weight: 300;
+  font-size: 13px;
+  font-weight: 500;
   line-height: 1.5;
-  color: var(--arcilla);
+  color: var(--oro-letra);
   text-wrap: pretty;
 }
 
@@ -2098,9 +2309,10 @@
   /* Un degradado muy corto, del tinte al fondo: le da el brillo de una chapa
      sin que parezca un botón que se pueda pulsar. */
   background: linear-gradient(135deg, var(--oro-tint), var(--bg));
-  color: var(--oro);
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
+  color: var(--oro-letra);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -2110,10 +2322,10 @@
   align-items: center;
   padding: 4px 11px;
   border-radius: 999px;
-  border: 1px solid var(--line-3);
-  color: var(--muted-2);
-  font-size: 11px;
-  font-weight: 300;
+  border: 1px solid var(--line-4);
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 400;
   max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2122,14 +2334,19 @@
 
 /* El botón de dar la comunidad. Es el único de la fila con color: quitarla es
    una acción de deshacer y usa el enlace normal. */
+/* Mismo tamaño y misma letra que el botón de línea con el que se alterna
+   («Dar comunidad» / «Quitar comunidad»): antes uno era pequeño y en
+   minúsculas y el otro grande y en mayúsculas, en el mismo hueco. */
 .btnComunidad {
-  padding: 7px 14px;
+  padding: 11px 22px;
   border-radius: 999px;
-  border: 1px solid var(--oro-line);
+  border: 1px solid var(--oro);
   background: var(--oro-tint);
-  color: var(--oro-ink);
+  color: var(--oro-letra);
   font-size: 12px;
-  font-weight: 300;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
   transition:
@@ -2138,8 +2355,8 @@
 }
 
 .btnComunidad:hover {
-  background: var(--bg);
-  border-color: var(--oro);
+  background: #fffdf9;
+  border-color: var(--oro-letra);
 }
 
 /* ---------- En el formulario de alta ---------- */
@@ -2197,10 +2414,11 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 /*
@@ -2215,7 +2433,9 @@
 .etiquetaCampo .apunte {
   text-transform: none;
   letter-spacing: 0;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 /* ==========================================================================
@@ -2333,22 +2553,23 @@
 .claseNumero {
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-variant-numeric: lining-nums;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  color: var(--oro);
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  color: var(--oro-letra);
 }
 
 .claseTitulo {
-  font-size: 14.5px;
+  font-size: 15px;
+  font-weight: 500;
   line-height: 1.32;
   color: var(--ink);
 }
 
 .claseTexto {
-  font-size: 12.5px;
-  font-weight: 300;
+  font-size: 13px;
+  font-weight: 400;
   line-height: 1.5;
-  color: var(--muted);
+  color: var(--muted-2);
   /* Dos líneas y a otra cosa: en una rejilla, una descripción larga descuadra
      las tarjetas de al lado. */
   display: -webkit-box;
@@ -2362,8 +2583,9 @@
   border-color: var(--oro);
 }
 
+/* Era var(--oro-ink), que no existe: el título no cambiaba de color. */
 .claseAbierta .claseTitulo {
-  color: var(--oro-ink);
+  color: var(--oro-letra);
 }
 
 /* ---------- La pantalla de Sorela ---------- */
@@ -2447,11 +2669,14 @@
   color: var(--arcilla);
 }
 
+/* Las tarjetas llevan además un filete casi invisible. Solo con la pareja de
+   sombras, en una pantalla con poco brillo o mucha luz alrededor la tarjeta
+   se fundía con el papel y los apartados dejaban de verse como apartados. */
 .tarjeta,
 .kpi,
 .tarjetaOro {
   background: var(--neu-base);
-  border-color: transparent;
+  border-color: var(--line-1);
   box-shadow: var(--neu-fuera);
 }
 
@@ -2463,7 +2688,7 @@
 
 .tarjeta:hover,
 .kpi:hover {
-  border-color: transparent;
+  border-color: var(--line-1);
   box-shadow: var(--neu-fuera-hover);
 }
 
@@ -2476,6 +2701,18 @@
   box-shadow: var(--neu-fuera-sm);
 }
 
+/* El botón de línea y los filtros, con un borde fino además del relieve: se
+   tiene que ver que son botones también donde la sombra no se aprecia. */
+.btnLinea {
+  border-width: 1px;
+  border-color: var(--line-4);
+}
+
+.chip,
+.rol {
+  border-color: var(--line-3);
+}
+
 .btnLinea:hover {
   background: var(--neu-base);
   box-shadow: var(--neu-fuera);
@@ -2484,7 +2721,9 @@
 .chipActivo,
 .rolActivo {
   background: var(--neu-base);
-  color: var(--arcilla);
+  color: var(--oro-letra);
+  font-weight: 500;
+  border-color: var(--oro-line);
   box-shadow: var(--neu-dentro-sm);
 }
 
@@ -2492,7 +2731,7 @@
 .campoRedondo,
 .campoCaja {
   background: var(--neu-base);
-  border-color: transparent;
+  border-color: var(--borde-campo);
   box-shadow: var(--neu-dentro-sm);
 }
 
@@ -2526,15 +2765,18 @@
 
 /* ---------- 1. El menú lateral, en negro ---------- */
 .lateral {
+  /* Los grises, un escalón más claros que antes: el halo dorado de arriba
+     aclara el fondo, y ahí el más tenue (#8f877b) se quedaba en 4,33 a 1. */
   --ink: #f7f2ea;
   --ink-2: #ded6c9;
   --ink-3: #cfc6b8;
   --ink-4: #ebe4d9;
-  --muted-2: #b9b0a3;
-  --muted: #a39a8e;
-  --faint: #8f877b;
+  --muted-2: #cfc6b8;
+  --muted: #b9b0a3;
+  --faint: #a39a8e;
   --arcilla: #d9b47c;
   --oro: #d9b47c;
+  --oro-letra: #d9b47c;
   --oro-claro: #e8cc9a;
   --line-2: rgba(237, 227, 211, 0.12);
   --line-3: rgba(237, 227, 211, 0.16);
@@ -2571,13 +2813,15 @@
 }
 
 /* ---------- 2. Números limpios ---------- */
+/* 500 y no 600: la Jost se sirve hasta 500, y una cifra de 50 px con la
+   negrita inventada por el navegador sale con los bordes empastados. */
 .kpiValor {
   margin-top: 4px;
   font-family: var(--fuente-jost), system-ui, sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   font-size: clamp(36px, 3.4vw, 52px);
   line-height: 1;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.03em;
   color: var(--ink);
   background: none;
   -webkit-text-fill-color: currentColor;
@@ -2587,9 +2831,9 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.1em;
   color: var(--muted-2);
 }
 
@@ -2602,14 +2846,14 @@
 }
 
 .kpiNota {
-  font-size: 12.5px;
-  color: var(--muted);
+  font-size: 13px;
+  color: var(--muted-2);
 }
 
 .diaNum,
 .rankingPos {
   font-family: var(--fuente-jost), system-ui, sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
@@ -2696,7 +2940,7 @@
 
 .totalVivoCifra {
   font-family: var(--fuente-jost), system-ui, sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 28px;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
@@ -2704,7 +2948,7 @@
 
 .claseNumero {
   font-family: var(--fuente-jost), system-ui, sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2765,16 +3009,16 @@
   padding: 2px 9px;
   border-radius: 999px;
   background: rgba(196, 92, 60, 0.12);
-  color: #a24a2e;
-  font-size: 11px;
+  color: var(--peligro-letra, #8f3f26);
+  font-size: 11.5px;
   font-weight: 500;
   vertical-align: 2px;
 }
 
 .llego {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 400;
-  color: var(--oro);
+  color: var(--oro-letra);
 }
 
 .gestionar {
@@ -2816,20 +3060,20 @@
 }
 
 .gestionarMenu strong {
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 500;
   color: var(--ink);
 }
 
 .gestionarMenu small {
-  font-size: 12px;
-  font-weight: 300;
+  font-size: 13px;
+  font-weight: 400;
   line-height: 1.4;
-  color: var(--muted);
+  color: var(--muted-2);
 }
 
 .gestionarMenu button[data-peligro] strong {
-  color: #a24a2e;
+  color: var(--peligro-letra, #8f3f26);
 }
 
 .gestionarMenu button[data-peligro]:hover {
@@ -2853,10 +3097,10 @@
   border-radius: 24px;
   background: #fffdf9;
   box-shadow: 0 30px 80px -30px rgba(20, 18, 16, 0.6);
-  font-size: 14.5px;
-  font-weight: 300;
+  font-size: 15px;
+  font-weight: 400;
   line-height: 1.55;
-  color: var(--ink);
+  color: var(--ink-2);
 }
 
 .dialogoBorrar h3 {
@@ -2865,6 +3109,7 @@
   font-size: 26px;
   font-weight: 600;
   line-height: 1.15;
+  color: var(--ink);
 }
 
 .dialogoBorrar p {
@@ -2877,7 +3122,8 @@
 }
 
 .dialogoBorrar strong {
-  font-weight: 600;
+  font-weight: 500;
+  color: var(--ink);
 }
 
 .dialogoBotones {
@@ -2888,20 +3134,24 @@
   margin-top: 18px;
 }
 
+/* En mayúsculas como el resto de botones: al lado de «Cancelar», uno en
+   versalitas y otro en minúsculas parecían de dos pantallas distintas. */
 .btnPeligro {
-  padding: 11px 18px;
+  padding: 12px 22px;
   border: 0;
   border-radius: 999px;
-  background: #a24a2e;
+  background: var(--peligro, #a24a2e);
   color: #fff;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
 }
 
 .btnPeligro:hover {
-  background: #8f3f26;
+  background: var(--peligro-letra, #8f3f26);
 }
 
 /* En el móvil el botón cae a la izquierda: el menú se abre hacia la derecha. */
@@ -2965,12 +3215,16 @@
   border-radius: 999px;
   background: transparent;
   font: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
-  color: var(--muted);
+  color: var(--muted-2);
   cursor: pointer;
   transition: color 0.2s;
+}
+
+.pestanas button:hover {
+  color: var(--ink);
 }
 
 .pestanas button[aria-current='page'] {
@@ -2986,7 +3240,12 @@
   inset: 0;
   border-radius: 999px;
   background: #fffdf9;
-  box-shadow: 0 6px 16px -8px rgba(60, 45, 25, 0.5), 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  /* Un filete fino además de la sombra: la pestaña elegida tiene que verse
+     elegida también en una pantalla que no pinta las sombras suaves. */
+  box-shadow:
+    0 6px 16px -8px rgba(60, 45, 25, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 0 0 1px var(--line-2);
 }
 
 /* La barra de abajo, solo en el móvil. */
@@ -3025,9 +3284,10 @@
     border-radius: 20px;
     background: transparent;
     font: inherit;
-    font-size: 10.5px;
+    font-size: 11.5px;
+    font-weight: 500;
     letter-spacing: 0.02em;
-    color: rgba(247, 242, 234, 0.62);
+    color: rgba(247, 242, 234, 0.8);
     cursor: pointer;
   }
 
@@ -3052,4 +3312,172 @@
   .principal {
     padding-bottom: calc(110px + env(safe-area-inset-bottom));
   }
+}
+
+/* ==========================================================================
+   Legibilidad
+   ==========================================================================
+   Lo que se añadió en el pulido de contraste y no tenía sitio arriba: el
+   borde y el foco de los campos, los vacíos con icono y las piezas de la
+   lista de Cuentas. Va al final para ganar al bloque del neumorfismo sin
+   tener que subir la especificidad.
+   ========================================================================== */
+
+/* ---------- Campos legibles ---------- */
+
+.campo::placeholder,
+.campoRedondo::placeholder,
+.campoCaja::placeholder {
+  color: var(--ejemplo-campo);
+  /* Firefox le baja la opacidad al texto de ejemplo por su cuenta: con eso el
+     4,13 a 1 medido se quedaba en menos de 3. */
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .campo:hover:not(:focus):not(:disabled),
+  .campoRedondo:hover:not(:focus):not(:disabled),
+  .campoCaja:hover:not(:focus):not(:disabled) {
+    border-color: var(--muted);
+  }
+}
+
+/* El foco: el borde pasa al oro (4,38 a 1, de sobra para marcar un control) y
+   un halo dorado claro alrededor. Con :focus y no :focus-visible: en un campo
+   de texto el foco siempre importa, también cuando se llega con el ratón, y
+   el contorno general de globals.css (separado 3 px de un borde redondeado)
+   se veía como un segundo recuadro torcido. */
+.campo:focus,
+.campoRedondo:focus,
+.campoCaja:focus {
+  outline: none;
+  border-color: var(--oro);
+  box-shadow:
+    var(--neu-dentro-sm),
+    0 0 0 3px var(--foco-halo);
+}
+
+.campo:disabled,
+.campoRedondo:disabled,
+.campoCaja:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Apartados ---------- */
+
+/* La primera fila de una lista dentro de una tarjeta no lleva filete: arriba
+   ya está el borde de la tarjeta, y la raya suelta parecía un hueco. */
+.tarjeta > .fila:first-child {
+  border-top: 0;
+}
+
+/* ---------- Vacíos ----------
+   Cuando una tarjeta solo tiene su párrafo de «todavía no hay nada», el
+   párrafo se centra bajo un icono. Se hace desde aquí con :only-child para
+   que todas las pantallas que ya lo usan lo tengan igual sin tocarlas. Display
+   block y no flex: el párrafo puede llevar algo en negrita dentro, y en un
+   flex cada trozo se iría a su propia línea. */
+.tarjeta > .vacioTexto:only-child,
+.punteada > .vacioTexto:only-child {
+  margin: 0 auto;
+  max-width: 54ch;
+  padding: clamp(12px, 2.2vw, 24px) 0;
+  text-align: center;
+}
+
+/* En la caja punteada el aire ya lo pone la caja. */
+.punteada > .vacioTexto:only-child {
+  padding: 0;
+}
+
+.tarjeta > .vacioTexto:only-child::before,
+.punteada > .vacioTexto:only-child::before {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 14px;
+  border-radius: 999px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0c.5 3.2 2.3 5 5.5 6-3.2 1-5 2.8-5.5 6-.5-3.2-2.3-5-5.5-6 3.2-1 5-2.8 5.5-6z' fill='%238a6a32'/%3E%3C/svg%3E")
+      center / 16px 16px no-repeat,
+    var(--oro-tint);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
+}
+
+/* El vacío escrito entero, con su título: icono, una frase corta en la letra
+   de los títulos y lo que va a pasar. Lo usa Cuentas; sirve para cualquiera. */
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: clamp(8px, 1.8vw, 20px) 12px;
+  text-align: center;
+}
+
+.vacioIcono {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+  border-radius: 999px;
+  background: var(--oro-tint);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
+  color: var(--oro);
+}
+
+.vacioIconoFallo {
+  background: #f9ebe4;
+  box-shadow: inset 0 0 0 1px rgba(162, 74, 46, 0.32);
+  color: var(--peligro, #a24a2e);
+}
+
+.vacioTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: clamp(22px, 2.2vw, 26px);
+  line-height: 1.15;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.vacioFrase {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 15.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+/* ---------- Cuentas: los datos de cada fila ----------
+   Antes iban como estilos sueltos en el componente, en fino y en los grises
+   más claros: el correo a 12,5 px en 300 y «Entró hace…» a 11,5 px en el gris
+   más tenue. */
+.cuentaCorreo {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--muted-2);
+  overflow-wrap: anywhere;
+}
+
+.cuentaCuando {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
+}
+
+.cuentaSinFicha {
+  padding-left: 8px;
+  border-left: 2px solid var(--peligro, #a24a2e);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--peligro-letra, #8f3f26);
+  text-wrap: pretty;
 }

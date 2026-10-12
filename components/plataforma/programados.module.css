@@ -1,11 +1,42 @@
-/* Avisos y programados: mismo lenguaje que la pantalla Correos. */
+/* Avisos y programados: mismo lenguaje que la pantalla Correos.
 
-.cargando,
-.vacio {
+   El editor se abre en un portal sobre el body, fuera de .pantalla: por eso
+   cada color de la plataforma lleva aquí su copia de respaldo. */
+
+.cargando {
   margin: 0;
-  font-size: 14px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--muted-2);
+}
+
+/* «Todavía no has escrito ninguno»: el destello de los vacíos y la frase en
+   tinta. Era una línea gris fina que parecía un pie de página. */
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: clamp(14px, 2.4vw, 24px) 12px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.vacio::before {
+  content: '';
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0c.5 3.2 2.3 5 5.5 6-3.2 1-5 2.8-5.5 6-.5-3.2-2.3-5-5.5-6 3.2-1 5-2.8 5.5-6z' fill='%238a6a32'/%3E%3C/svg%3E")
+      center / 16px 16px no-repeat,
+    var(--oro-tint);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
 }
 
 .tarjeta {
@@ -40,23 +71,28 @@
 .cabecera p,
 .grupoCabeza p {
   margin: 6px 0 0;
-  font-size: 13.5px;
-  font-weight: 300;
+  font-size: 14px;
+  font-weight: 400;
   line-height: 1.5;
-  color: var(--muted);
+  color: var(--muted-2);
   max-width: 640px;
 }
 
+/* Los botones, con la voz de los de la plataforma: mayúsculas en 500 y un
+   espaciado que se lee como palabra. El de línea, con un borde que se ve
+   (antes al 10 %, casi el color del papel). */
 .btn,
 .btnLinea {
   flex: none;
-  padding: 11px 18px;
+  padding: 11px 20px;
   border-radius: 999px;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s;
+  transition: transform 0.15s ease, opacity 0.15s, border-color 0.15s;
 }
 
 .btn {
@@ -66,7 +102,7 @@
 }
 
 .btnLinea {
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.16));
+  border: 1px solid var(--line-5, rgba(20, 18, 16, 0.26));
   background: transparent;
   color: var(--ink);
 }
@@ -76,20 +112,45 @@
   transform: translateY(-1px);
 }
 
+.btnLinea:hover {
+  border-color: var(--ink-3, #4f4840);
+}
+
 .btn:disabled,
 .btnLinea:disabled {
   opacity: 0.55;
   cursor: progress;
 }
 
+/* El aviso de lo que acaba de pasar: banda con icono, como en Correos. Mezcla
+   buenas y malas noticias, así que es informativo (oro) y no verde. */
 .aviso {
+  position: relative;
   margin: 0;
-  padding: 12px 16px;
+  min-height: 50px;
+  padding: 13px 16px 13px 50px;
   border-radius: 14px;
   background: var(--oro-tint);
   border: 1px solid var(--oro-line);
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
   color: var(--ink);
+  text-wrap: pretty;
+}
+
+.aviso::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 13px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Ccircle cx='7' cy='3.9' r='1.1' fill='%23fff'/%3E%3Cpath d='M7 6.4v4.4' stroke='%23fff' stroke-width='1.9' stroke-linecap='round'/%3E%3C/svg%3E")
+      center / 14px 14px no-repeat,
+    var(--oro, #8a6a32);
 }
 
 .grupo {
@@ -110,11 +171,11 @@
 
 .grupoCabeza h4 {
   margin: 0;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .lista {
@@ -143,9 +204,11 @@
   background: var(--oro-tint);
 }
 
+/* Las que ya pasaron se retiran un paso, no hasta desaparecer: al 72 % la
+   línea de detalle bajaba a 2,9 a 1. */
 .fila[data-estado='enviada'],
 .fila[data-estado='caducada'] {
-  opacity: 0.72;
+  opacity: 0.86;
 }
 
 .fecha {
@@ -162,17 +225,19 @@
 .fecha b {
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
 
 .fecha small {
-  margin-top: 3px;
-  font-size: 10.5px;
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--muted);
+  color: var(--muted-2);
 }
 
 .texto {
@@ -184,11 +249,11 @@
 }
 
 .etiqueta {
-  font-size: 10.5px;
+  font-size: 11.5px;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .asunto {
@@ -196,8 +261,9 @@
   border: 0;
   background: none;
   font: inherit;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 15.5px;
+  font-weight: 500;
+  line-height: 1.35;
   text-align: left;
   color: var(--ink);
   cursor: pointer;
@@ -209,9 +275,9 @@
 }
 
 .meta {
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 .chip {
@@ -219,28 +285,29 @@
   justify-self: end;
   padding: 5px 10px;
   border-radius: 999px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
   background: rgba(20, 18, 16, 0.06);
-  color: var(--muted);
+  color: var(--muted-2);
 }
 
 .chip[data-estado='programada'] {
   background: var(--oro-tint);
-  color: var(--oro);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
+  color: var(--oro-letra, #6f5323);
 }
 
 .chip[data-estado='enviada'] {
   background: rgba(95, 135, 82, 0.14);
-  color: #47663c;
+  color: var(--bien-letra, #3d5a33);
 }
 
 .chip[data-estado='caducada'],
 .chip[data-estado='pausada'],
 .chip[data-estado='falta'] {
   background: rgba(196, 92, 60, 0.1);
-  color: #a24a2e;
+  color: var(--peligro-letra, #8f3f26);
 }
 
 .acciones {
@@ -256,9 +323,9 @@
   border: 0;
   background: none;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 500;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-color: var(--oro-line);
@@ -266,8 +333,13 @@
 }
 
 .enlacePeligro {
-  color: #a24a2e;
-  text-decoration-color: rgba(196, 92, 60, 0.35);
+  color: var(--peligro-letra, #8f3f26);
+  text-decoration-color: rgba(162, 74, 46, 0.4);
+}
+
+.enlace:hover,
+.enlacePeligro:hover {
+  text-decoration-color: currentColor;
 }
 
 @media (max-width: 560px) {
@@ -319,8 +391,9 @@
 
 .editorCabeza strong {
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 600;
+  line-height: 1.1;
   color: var(--ink);
 }
 
@@ -369,20 +442,40 @@
   min-width: 0;
 }
 
+/*
+ * Cada campo del editor. El nombre del campo es un rótulo como los de toda la
+ * plataforma (mayúsculas en 500, 0,08 em, oro tostado) y no una línea en tinta
+ * casi del tamaño del texto: así se distingue de un vistazo qué es nombre y
+ * qué es lo que has escrito. El «(opcional)» vuelve a minúscula.
+ *
+ * Las cajas: borde de 1 px que se ve (3,6 a 1; antes al 10 %, 1,2) y, al
+ * entrar, el anillo dorado de la plataforma. Letra de 16 px: por debajo, Safari
+ * en el iPhone acerca la pantalla al enfocar.
+ */
 .campo {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-size: 14px;
+  font-weight: 400;
   color: var(--ink);
 }
 
-.campo small {
-  font-weight: 300;
-  color: var(--muted);
+.campo > span {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--oro-letra, #6f5323);
+}
+
+.campo > span small {
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted-2, #5e564c);
 }
 
 .campo input,
@@ -390,14 +483,16 @@
 .campo select {
   width: 100%;
   padding: 11px 14px;
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.16));
+  border: 1px solid var(--borde-campo, #8f8579);
   border-radius: 14px;
   background: #fff;
   font: inherit;
-  font-size: 14.5px;
+  font-size: 16px;
   font-weight: 400;
+  line-height: 1.4;
   letter-spacing: 0;
   color: var(--ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .campo textarea {
@@ -405,31 +500,51 @@
   line-height: 1.55;
 }
 
+.campo input::placeholder,
+.campo textarea::placeholder {
+  color: var(--ejemplo-campo, #7b7266);
+  opacity: 1;
+}
+
 .campo input:focus,
 .campo textarea:focus,
 .campo select:focus {
   outline: none;
-  border-color: var(--oro-line);
-  box-shadow: 0 0 0 4px rgba(201, 154, 85, 0.14);
+  border-color: var(--oro, #8a6a32);
+  box-shadow: 0 0 0 3px var(--foco-halo, rgba(217, 180, 124, 0.5));
+}
+
+/* De solo lectura (un correo ya enviado): se lee igual, en tinta, sobre un
+   fondo un punto más tostado para que se note que no se puede tocar. */
+.campos:disabled input,
+.campos:disabled textarea,
+.campos:disabled select {
+  background: #faf6ef;
+  color: var(--ink-3, #4f4840);
+  opacity: 1;
 }
 
 .campo em,
 .error {
   font-style: normal;
-  font-size: 12.5px;
-  font-weight: 400;
-  color: #a24a2e;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--peligro-letra, #8f3f26);
 }
 
 .ayuda {
-  font-size: 12px;
-  font-weight: 300;
+  font-size: 13px;
+  font-weight: 400;
   line-height: 1.5;
-  color: var(--muted);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted-2, #5e564c);
 }
 
 .ayuda b {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
 }
 
@@ -453,11 +568,12 @@
 }
 
 .previaRotulo {
-  padding: 10px 20px 0;
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
+  padding: 12px 20px 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .marco {

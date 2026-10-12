@@ -46,7 +46,7 @@ export const PROMPT_SISTEMA = [
   'FECHAS: las próximas convocatorias son en Sudamérica y están a punto de confirmarse. NO inventes ciudades, fechas ni precios. Lo que ofreces es guardar el sitio: pides nombre, correo y teléfono y dices que avisas en cuanto se cierre la fecha.',
   'AGENDAR CITA: no recojas los datos escritos en el chat, porque no se guardan en ninguna parte. Ofrece abrir el formulario, sin explicar por qué ni hablar de consentimientos: eso es asunto de la web, no de la conversación. Tampoco des horas concretas: no tienes acceso al calendario.',
   `COMUNIDAD DIVINE: abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España (${APERTURA_POR_PAISES}). Ese día la presento en una masterclass en directo por Zoom en la que hablo de mi técnica y del alto impacto de lo digital en las terapeutas; el enlace llega por correo a quien esté en la lista de espera. El precio se anuncia con la apertura: hasta entonces, solo lista de espera. No des ningún precio. NO CUENTES QUÉ INCLUYE (ni clases, ni acompañamiento, ni canal, ni agenda, ni mapa): se cuenta en la masterclass y en ningún otro sitio. Si preguntan, di que lo enseño ese día en directo y ofrece apuntarse a la lista. Es para quien se haya certificado conmigo; en la lista de espera puede entrar cualquiera.`,
-  'CLIENTAS (no profesionales): el mapa de terapeutas certificadas todavía está vacío, porque las primeras aún se están formando. No mandes a nadie a reservar con una terapeuta: recoge el contacto por el formulario y di que avisas cuando haya alguna cerca.',
+  'CLIENTAS (no profesionales): en Localiza tu terapeuta (/terapeutas) están las terapeutas certificadas en Técnica Divine, cada una con su ficha y su contacto. La cita se pide escribiendo directamente a la terapeuta, por WhatsApp o Instagram desde su ficha: tú no reservas por ella, no das horas suyas ni dices quién hay en una ciudad, porque no ves el mapa. Si en su zona todavía no hay ninguna, ofrece el formulario y di que avisas en cuanto haya una cerca.',
   'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
   'Termina siempre orientando al siguiente paso concreto.',
 ].join('\n');
@@ -143,12 +143,16 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
   },
   {
     patron: /clienta|cliente|terapeuta|cerca|mapa|sesión|sesion/,
+    /* Vale con el mapa lleno y con el mapa vacío: el asistente corre en el
+       navegador y no sabe quién hay publicado, así que no dice ni que no hay
+       nadie ni que hay alguien en tal ciudad. Manda al buscador y ofrece el
+       aviso para quien no encuentre a nadie cerca. */
     respuesta:
-      'Todavía no hay terapeutas en el mapa: las primeras entrarán en cuanto terminen su formación.\nDime dónde estás y te aviso en cuanto haya una cerca de ti.',
+      'En Localiza tu terapeuta están las terapeutas certificadas en Técnica Divine: buscas tu ciudad, abres su ficha y le escribes directamente por WhatsApp o Instagram.\nSi todavía no hay ninguna cerca de ti, déjame tu contacto y te aviso en cuanto haya una.',
     accion: {
       tipo: 'captar',
       titulo: 'Te aviso cuando haya una cerca',
-      entradilla: 'Déjame tu contacto y te escribo en cuanto se certifique una terapeuta en tu zona.',
+      entradilla: 'Déjame tu contacto y tu ciudad, y te escribo en cuanto haya una terapeuta certificada en tu zona.',
       etiqueta: 'Dejar mi contacto',
       // Busca terapeuta cerca: quiere que la traten.
       origen: 'terapeutas',

@@ -250,7 +250,10 @@ export const FAQS: Pregunta[] = [
   },
   {
     q: 'Soy clienta, no profesional. ¿Puedo reservar una sesión?',
-    a: 'Sí. En Localiza tu terapeuta tienes el mapa con las certificadas; reservas directamente con la que te encaje y ella te confirma.',
+    // Antes decía «reservas directamente y ella te confirma»: no hay reserva
+    // en la web. Desde la ficha de cada una se le escribe a ella, sin
+    // intermediarios, y la cita se cierra en esa conversación.
+    a: 'Sí. En Localiza tu terapeuta están las terapeutas certificadas en Técnica Divine, cada una con su ficha: eliges la que te encaje y escribes directamente a la terapeuta por WhatsApp o Instagram. Si todavía no hay ninguna cerca de ti, déjame tu ciudad y te aviso.',
   },
 ];
 

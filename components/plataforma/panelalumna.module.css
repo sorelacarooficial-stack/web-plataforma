@@ -1,4 +1,12 @@
-/* El panel de inicio de alumnas y miembros. */
+/*
+ * El panel de inicio de alumnas y miembros.
+ *
+ * Letra de lectura en Jost 400 (nunca 300 en tamaños pequeños) y contraste
+ * medido: en el negro, el texto secundario no baja de 8:1; en el papel claro,
+ * el oro pequeño va oscurecido (#6f5323, 6,3:1) y los metadatos en --muted-2
+ * (6,3:1; antes --muted, 5,1:1, y a 12,5 px). Lo que se dice cuando una
+ * tarjeta está vacía va en --ink-3 (7,9:1): es lo único que hay que leer.
+ */
 
 .panel {
   display: flex;
@@ -42,6 +50,15 @@
   box-shadow: 0 0 0 2px #141210, 0 0 0 3.5px #cfa25e;
 }
 
+/* En móvil la foto va arriba a la derecha: el saludo deja su hueco para no
+   pasar por debajo de ella con un nombre largo. */
+@media (max-width: 860px) {
+  .fecha,
+  .saludo {
+    padding-right: 56px;
+  }
+}
+
 @media (min-width: 861px) {
   .heroFoto {
     display: none;
@@ -56,8 +73,9 @@
 }
 
 .fecha {
-  font-size: 11px;
-  letter-spacing: 0.2em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #d9b47c;
 }
@@ -75,10 +93,10 @@
 .frase {
   margin: 0;
   max-width: 520px;
-  font-size: clamp(14.5px, 1.2vw, 16px);
-  font-weight: 300;
-  line-height: 1.6;
-  color: rgba(239, 230, 216, 0.78);
+  font-size: clamp(15px, 1.2vw, 16px);
+  font-weight: 400;
+  line-height: 1.55;
+  color: rgba(239, 230, 216, 0.88);
 }
 
 .seguir {
@@ -144,8 +162,9 @@
 }
 
 .seguirRotulo {
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #d9b47c;
 }
@@ -159,9 +178,9 @@
 }
 
 .seguirMeta {
-  font-size: 12px;
-  font-weight: 300;
-  color: rgba(239, 230, 216, 0.65);
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(239, 230, 216, 0.8);
 }
 
 .barra {
@@ -223,15 +242,17 @@
 .datos {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 12.5px;
-  font-weight: 300;
-  color: rgba(239, 230, 216, 0.72);
+  gap: 5px;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: rgba(239, 230, 216, 0.82);
 }
 
 .datos b {
   margin-right: 4px;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: #f0d4a6;
 }
 
@@ -288,14 +309,32 @@
 }
 
 .enlace {
+  flex: none;
   border: 0;
   background: none;
   font: inherit;
   font-size: 12px;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: #6f5323;
   cursor: pointer;
+}
+
+.enlace:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.enlace:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 3px;
+}
+
+.oscura .enlace:focus-visible,
+.seguir:focus-visible {
+  outline: 2px solid #d9b47c;
+  outline-offset: 3px;
 }
 
 .oscura .enlace {
@@ -305,14 +344,14 @@
 .vacio,
 .vacioClaro {
   margin: 0;
-  font-size: 13.5px;
-  font-weight: 300;
-  line-height: 1.55;
-  color: var(--faint);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-3);
 }
 
 .vacioClaro {
-  color: rgba(239, 230, 216, 0.7);
+  color: rgba(239, 230, 216, 0.84);
 }
 
 .esqueleto {
@@ -390,7 +429,7 @@
 
 .claseTexto strong,
 .eventoTexto strong {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 500;
   color: var(--ink);
   overflow: hidden;
@@ -401,9 +440,9 @@
 .claseTexto em,
 .eventoTexto em {
   font-style: normal;
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 .estado {
@@ -411,11 +450,12 @@
   min-width: 42px;
   padding: 4px 8px;
   border-radius: 999px;
-  font-size: 11.5px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   text-align: center;
   background: var(--oro-tint);
-  color: var(--oro);
+  color: #6f5323;
 }
 
 .estado[data-hecha] {
@@ -462,7 +502,7 @@
 }
 
 .dossier strong {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 500;
   line-height: 1.3;
   color: var(--ink);
@@ -470,8 +510,8 @@
 
 .dossier em {
   font-style: normal;
-  font-size: 11px;
-  color: var(--faint);
+  font-size: 13px;
+  color: var(--muted-2);
 }
 
 .eventos li {
@@ -503,10 +543,11 @@
 
 .eventoDia em {
   font-style: normal;
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: #6f5323;
 }
 
 .claseVivo {
@@ -520,8 +561,9 @@
 }
 
 .claseVivo span {
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #d9b47c;
 }
@@ -535,8 +577,8 @@
 
 .claseVivo em {
   font-style: normal;
-  font-size: 12.5px;
-  color: rgba(239, 230, 216, 0.75);
+  font-size: 13px;
+  color: rgba(239, 230, 216, 0.84);
 }
 
 .posts button {
@@ -550,14 +592,86 @@
 }
 
 .posts strong {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 500;
   color: #f7f0e4;
 }
 
 .posts em {
   font-style: normal;
-  font-size: 12px;
-  font-weight: 300;
-  color: rgba(239, 230, 216, 0.6);
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(239, 230, 216, 0.8);
+}
+
+/* ---------- Tu nivel ---------- */
+
+.nivel {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: start;
+  gap: clamp(18px, 2.6vw, 34px);
+  background:
+    radial-gradient(70% 120% at 0% 0%, rgba(217, 180, 124, 0.18), transparent 60%),
+    #17140f;
+  color: #f7f2ea;
+}
+
+@media (max-width: 960px) {
+  .nivel {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nivelIzquierda {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.nivelTotal {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: clamp(26px, 2.6vw, 32px);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #f7f2ea;
+}
+
+.nivelTotal small {
+  font-size: 13px;
+  font-weight: 500;
+  color: #cfc6b8;
+}
+
+.nivelNota {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #cfc6b8;
+}
+
+.esqueletoOscuro {
+  height: 76px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #1f1b15 0%, #2b261e 50%, #1f1b15 100%);
+  background-size: 200% 100%;
+  animation: brillar 1.3s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto,
+  .esqueletoOscuro {
+    animation: none;
+  }
+  .seguir,
+  .dossier img {
+    transition: none;
+  }
 }

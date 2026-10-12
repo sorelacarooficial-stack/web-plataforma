@@ -9,30 +9,71 @@
 
 .cargando {
   margin: 0;
-  font-size: 14px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
+/*
+ * Los avisos, como los de toda la plataforma: una banda con icono y el texto
+ * en tinta y en 500. Antes eran un recuadro casi del color del papel con la
+ * letra en el mismo tono que el fondo; ahora el icono dice qué es —«i» en oro
+ * para lo que te cuento, «!» en teja para lo que ha fallado— y la frase se lee
+ * entera (16 a 1). El aviso de arriba mezcla buenas y malas noticias («te he
+ * mandado la prueba», «la prueba no ha salido»), por eso es informativo y no
+ * verde.
+ *
+ * El icono va en un pseudoelemento, fuera del flujo: así no hay que tocar el
+ * marcado y no se convierte en un trozo más de la frase.
+ */
 .aviso,
 .fallo {
+  position: relative;
   margin: 0;
-  padding: 14px 18px;
-  border-radius: 16px;
-  font-size: 14px;
-  line-height: 1.5;
+  min-height: 50px;
+  padding: 13px 16px 13px 50px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.aviso::before,
+.fallo::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  /* Alineado con la primera línea: si la frase ocupa dos, el icono se queda
+     arriba, junto a donde empieza a leerse. */
+  top: 13px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
 }
 
 .aviso {
   background: var(--oro-tint);
   border: 1px solid var(--oro-line);
-  color: var(--ink);
+}
+
+.aviso::before {
+  background-color: var(--oro, #8a6a32);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Ccircle cx='7' cy='3.9' r='1.1' fill='%23fff'/%3E%3Cpath d='M7 6.4v4.4' stroke='%23fff' stroke-width='1.9' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 .fallo {
-  background: rgba(196, 92, 60, 0.1);
-  border: 1px solid rgba(196, 92, 60, 0.3);
-  color: #8f3f26;
+  background: #f9ebe4;
+  border: 1px solid rgba(162, 74, 46, 0.32);
+}
+
+.fallo::before {
+  background-color: var(--peligro, #a24a2e);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M7 3v4.6' stroke='%23fff' stroke-width='1.9' stroke-linecap='round'/%3E%3Ccircle cx='7' cy='10.6' r='1.1' fill='%23fff'/%3E%3C/svg%3E");
 }
 
 /* ---------- Cómo salen ---------- */
@@ -73,39 +114,48 @@
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-  font-size: 14px;
-  font-weight: 300;
+  font-size: 15px;
+  font-weight: 400;
   line-height: 1.55;
-  color: var(--muted);
+  color: var(--ink-3);
 }
 
 .estadoTexto strong {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 16.5px;
+  font-weight: 500;
   color: var(--ink);
 }
 
 .estadoNota {
   margin-top: 6px;
-  font-size: 13px;
-  color: var(--arcilla-ink, #6e5327);
+  font-size: 13.5px;
+  color: var(--oro-letra, #6f5323);
 }
 
+/* Los botones, con la voz de los de la plataforma: mayúsculas en 500 y un
+   espaciado que se lee como palabra (0,08 em), no como letras sueltas. */
 .btn {
-  padding: 12px 20px;
+  padding: 12px 22px;
   border: 0;
   border-radius: 999px;
   background: var(--ink);
   color: #faf8f5;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .btn:hover {
   transform: translateY(-1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--oro, #8a6a32);
+  outline-offset: 3px;
 }
 
 .btn:disabled {
@@ -133,21 +183,25 @@
 }
 
 .cifraEtiqueta {
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .cifra[data-mal] .cifraEtiqueta {
-  color: #a24a2e;
+  color: var(--peligro-letra, #8f3f26);
 }
 
+/* En 500, como las cifras del resto del panel: la Jost llega hasta ahí y lo
+   de encima es negrita inventada por el navegador. */
 .cifraValor {
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: clamp(30px, 3.4vw, 42px);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
@@ -165,9 +219,9 @@
 }
 
 .cifraNota {
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 /* ---------- Tarjetas ---------- */
@@ -204,9 +258,10 @@
 .cabecera p {
   margin: 0;
   flex: 1 1 280px;
-  font-size: 13.5px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted-2);
 }
 
 /* ---------- Automatizaciones ---------- */
@@ -241,19 +296,19 @@
 
 .autoNombre {
   font-size: 15.5px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
 }
 
 .auto:not([data-activa]) .autoNombre {
-  color: var(--muted);
+  color: var(--muted-2);
 }
 
 .autoCuando {
-  font-size: 13px;
-  font-weight: 300;
+  font-size: 14px;
+  font-weight: 400;
   line-height: 1.5;
-  color: var(--muted);
+  color: var(--muted-2);
 }
 
 .autoCuando b {
@@ -273,13 +328,17 @@
   border: 0;
   background: none;
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 500;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-color: var(--oro-line);
   cursor: pointer;
+}
+
+.enlace:hover {
+  text-decoration-color: currentColor;
 }
 
 .enlace:disabled {
@@ -291,11 +350,14 @@
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--oro-tint);
-  font-size: 11.5px;
+  box-shadow: inset 0 0 0 1px var(--oro-line);
+  font-size: 12px;
   font-weight: 500;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
+/* Apagado, el carril era un gris al 14 % (1,35 a 1): no se veía que hubiera
+   un interruptor. Ahora se ve el carril y la bola blanca encima (3,1 a 1). */
 .interruptor {
   flex: none;
   display: flex;
@@ -305,9 +367,14 @@
   padding: 3px;
   border: 0;
   border-radius: 999px;
-  background: rgba(20, 18, 16, 0.14);
+  background: #9a9083;
   cursor: pointer;
   transition: background 0.2s ease;
+}
+
+.interruptor:focus-visible {
+  outline: 2px solid var(--oro, #8a6a32);
+  outline-offset: 3px;
 }
 
 .interruptor[aria-checked='true'] {
@@ -339,8 +406,9 @@
   border-radius: 999px;
   background: transparent;
   font: inherit;
-  font-size: 12.5px;
-  color: var(--muted);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--muted-2);
   cursor: pointer;
 }
 
@@ -351,11 +419,33 @@
   box-shadow: 0 3px 10px -6px rgba(60, 45, 25, 0.5);
 }
 
+/* El historial vacío: el destello de los vacíos de la plataforma y la frase
+   en tinta, centrada. Antes era una línea gris fina pegada al título. */
 .vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   margin: 0;
-  font-size: 14px;
-  font-weight: 300;
-  color: var(--muted);
+  padding: clamp(14px, 2.4vw, 26px) 12px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+
+.vacio::before {
+  content: '';
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0c.5 3.2 2.3 5 5.5 6-3.2 1-5 2.8-5.5 6-.5-3.2-2.3-5-5.5-6 3.2-1 5-2.8 5.5-6z' fill='%238a6a32'/%3E%3C/svg%3E")
+      center / 16px 16px no-repeat,
+    var(--oro-tint);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
 }
 
 .historial {
@@ -383,24 +473,24 @@
   min-width: 96px;
   padding: 5px 10px;
   border-radius: 999px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
   text-align: center;
 }
 
 .chip[data-estado='enviado'] {
   background: rgba(95, 135, 82, 0.14);
-  color: #47663c;
+  color: var(--bien-letra, #3d5a33);
 }
 
 .chip[data-estado='fallido'] {
   background: rgba(196, 92, 60, 0.12);
-  color: #a24a2e;
+  color: var(--peligro-letra, #8f3f26);
 }
 
 .chip[data-estado='omitido'] {
   background: rgba(20, 18, 16, 0.06);
-  color: var(--muted);
+  color: var(--muted-2);
 }
 
 .filaTexto {
@@ -412,30 +502,31 @@
 }
 
 .filaQue {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--ink);
 }
 
 .filaPara {
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--muted-2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .filaDetalle {
-  font-size: 12.5px;
-  color: #a24a2e;
+  font-size: 13px;
+  color: var(--peligro-letra, #8f3f26);
 }
 
 .filaCuando {
   flex: none;
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-2);
 }
 
 @media (max-width: 560px) {
@@ -499,14 +590,16 @@
 }
 
 .previaCabeza small {
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .previaCabeza strong {
-  font-size: 15px;
+  font-size: 15.5px;
+  font-weight: 500;
   color: var(--ink);
 }
 
@@ -533,8 +626,8 @@
 .previaNota {
   margin: 0;
   padding: 12px 20px;
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
   border-top: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
 }

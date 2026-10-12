@@ -1,4 +1,10 @@
-/* Las noticias del panel: una grande con cuenta atrás y lo último del blog. */
+/* Las noticias del panel: una grande con cuenta atrás y lo último del blog.
+
+   Contraste medido: en el negro #120f0c, el texto va en rgba(239,230,216,0.88)
+   (12:1; antes 0,8 en Jost 300) y lo secundario en 0,82 (10,5:1; antes 0,6,
+   6:1). Sobre el papel, los rótulos dorados pasan de --oro (4,4:1) a
+   --arcilla-ink (6,2:1). Rótulos en mayúsculas: 11,5 px, peso 600 y 0,1em
+   de espaciado (antes 10,5–11 px con 0,2em, que los deshilachaba). */
 
 .noticias {
   display: flex;
@@ -15,11 +21,11 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.22em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--arcilla-ink);
 }
 
 .rotulo i {
@@ -84,9 +90,10 @@
 .etiqueta {
   padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(217, 180, 124, 0.4);
-  font-size: 10.5px;
-  letter-spacing: 0.22em;
+  border: 1px solid rgba(217, 180, 124, 0.45);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #f0d4a6;
 }
@@ -153,10 +160,11 @@
 }
 
 .cifraEtiqueta {
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(239, 230, 216, 0.6);
+  color: rgba(239, 230, 216, 0.82);
 }
 
 .dos {
@@ -181,18 +189,18 @@
 }
 
 .cuando span {
-  font-size: 12px;
-  font-weight: 300;
-  color: rgba(239, 230, 216, 0.6);
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(239, 230, 216, 0.82);
 }
 
 .texto {
   margin: 0;
   max-width: 600px;
-  font-size: clamp(14px, 1.2vw, 16px);
-  font-weight: 300;
-  line-height: 1.65;
-  color: rgba(239, 230, 216, 0.8);
+  font-size: clamp(15px, 1.2vw, 16px);
+  font-weight: 400;
+  line-height: 1.55;
+  color: rgba(239, 230, 216, 0.88);
 }
 
 .accion {
@@ -212,10 +220,15 @@
   font: inherit;
   font-size: clamp(13px, 1.2vw, 15px);
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
   box-shadow: 0 0 0 6px rgba(217, 180, 124, 0.12), 0 24px 40px -18px rgba(217, 180, 124, 0.6);
+}
+
+.boton:focus-visible {
+  outline: 2px solid #f0d4a6;
+  outline-offset: 4px;
 }
 
 .boton:disabled {
@@ -242,10 +255,11 @@
 
 .blogRotulo {
   margin: 4px 0 0;
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted-2);
 }
 
 .blogLista {
@@ -295,10 +309,11 @@
 
 .articuloTexto em {
   font-style: normal;
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--arcilla-ink);
 }
 
 .articuloTexto strong {

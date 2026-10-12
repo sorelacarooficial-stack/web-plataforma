@@ -1,20 +1,19 @@
 import type { MetadataRoute } from 'next';
-import { TERAPEUTAS } from '@/lib/terapeutas';
 import { articulosPublicados } from '@/lib/blog';
+import { listarFichasPublicas } from '@/lib/fichas-publicas';
+import { SITIO, xml } from '@/lib/sitio';
+import { ciudadesDe } from '@/lib/terapeutas';
 
-/* El mapa se rehace cada hora y al publicar en el blog (ver app/api/blog). */
+/* El mapa se rehace cada hora, al publicar en el blog (ver app/api/blog) y al
+   publicar, cambiar o quitar una ficha de terapeuta (ver lib/fichas.ts). */
 export const revalidate = 3600;
 
-/**
- * Con www, igual que en app/robots.ts y en app/layout.tsx.
- *
- * Un mapa del sitio escrito sin www listaría ocho direcciones que contestan
- * 308 y redirigen a otras ocho: el buscador acabaría en las buenas, pero
- * gastando el doble de visitas y con la sospecha de que el sitio no sabe cuál
- * es su propia dirección. La constante se repite en los tres ficheros porque
- * no hay un sitio común donde ponerla; si se crea uno, que sea el único.
+/*
+ * `SITIO` (con www) sale ahora de lib/sitio.ts, el sitio común que pedía este
+ * comentario. Un mapa del sitio escrito sin www listaría direcciones que
+ * contestan 308 y redirigen: el buscador acabaría en las buenas, pero
+ * gastando el doble de visitas.
  */
-const SITIO = 'https://www.sorelacarodivine.com';
 
 /**
  * Fecha del último cambio real de cada página. Se escribe a mano.
@@ -25,11 +24,11 @@ const SITIO = 'https://www.sorelacarodivine.com';
  * ya no se lo cree. Al tocar el texto de una página, sube SOLO su fecha.
  */
 const FECHAS = {
-  portada: '2026-09-23',
+  portada: '2026-10-12',
   metodo: '2026-09-23',
   formaciones: '2026-09-23',
   comunidad: '2026-09-23',
-  terapeutas: '2026-09-23',
+  terapeutas: '2026-10-12',
   sobre: '2026-09-23',
   contacto: '2026-09-23',
 } as const;
@@ -88,14 +87,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // desde su propia cabecera. Pedirle a Google que indexe en el mapa lo que la
   // página le prohíbe indexar es mandarle dos órdenes contrarias.
 
-  // Mientras TERAPEUTAS esté vacío esto no añade ninguna dirección: el listado
-  // sigue en el mapa, pero sin fichas que no existen.
-  const terapeutas: MetadataRoute.Sitemap = TERAPEUTAS.map((t) => ({
+  /* Las fichas de las terapeutas, cada una con la fecha de su último cambio
+     de verdad y su foto (la de Google Imágenes es otra puerta de entrada).
+     Y una página por ciudad con al menos una ficha, con la fecha de la ficha
+     más reciente de esa ciudad. Sin fichas, ni una dirección de más: nada de
+     mandar a Google a páginas que dan 404. */
+  const fichas = await listarFichasPublicas();
+  const terapeutas: MetadataRoute.Sitemap = fichas.map((t) => ({
     url: `${SITIO}/terapeutas/${t.slug}`,
-    lastModified: FECHAS.terapeutas,
-    changeFrequency: 'monthly',
+    lastModified: t.actualizado || undefined,
+    changeFrequency: 'monthly' as const,
     priority: 0.5,
+    // Escapada: la dirección de la foto lleva un `&` (ver `xml` en lib/sitio).
+    ...(t.foto ? { images: [xml(t.foto)] } : {}),
   }));
+  const ultima = (lista: typeof fichas) =>
+    lista.reduce<string | undefined>((m, t) => (t.actualizado && (!m || t.actualizado > m) ? t.actualizado : m), undefined);
+  const ciudades: MetadataRoute.Sitemap = ciudadesDe(fichas).map((c) => ({
+    url: `${SITIO}/terapeutas/en/${c.ciudadSlug}`,
+    lastModified: ultima(fichas.filter((t) => t.ciudadSlug === c.ciudadSlug)),
+    changeFrequency: 'weekly' as const,
+    priority: 0.6,
+  }));
+  /* El listado cambia cuando cambia cualquiera de sus fichas. */
+  const ultimaFicha = ultima(fichas);
+  const fijasConMapa = fijas.map((f) =>
+    f.url === `${SITIO}/terapeutas` && ultimaFicha && ultimaFicha > FECHAS.terapeutas ? { ...f, lastModified: ultimaFicha } : f
+  );
 
   /* El blog: la portada del blog y cada artículo publicado, con la fecha de
      su último cambio de verdad, que aquí sí se sabe. */
@@ -112,5 +130,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ]
     : [];
 
-  return [...fijas, ...blog, ...terapeutas];
+  return [...fijasConMapa, ...blog, ...ciudades, ...terapeutas];
 }

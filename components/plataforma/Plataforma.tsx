@@ -2,13 +2,13 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Motas from '@/components/Motas';
 import logo from '@/fotos/logo-sorela.png';
 import type { Sesion } from '@/lib/sesion-servidor';
 import { ETIQUETA_ROL } from '@/lib/roles';
-import { CURSO_DIVINE, type Acceso } from '@/lib/accesos';
+import { CURSO_DIVINE, tieneMembresia, type Acceso } from '@/lib/accesos';
 
 import {
   ROLES,
@@ -36,6 +36,9 @@ import Buzon from './Buzon';
 import IconoNav from './IconoNav';
 import Perfil from './Perfil';
 import Celebracion from './Celebracion';
+import Onboarding from './Onboarding';
+import FichasMapa from './FichasMapa';
+import { MarcadorPuntos } from './Puntos';
 import PanelAlumna from './PanelAlumna';
 import BlogAdmin from './BlogAdmin';
 import Contactos from './Contactos';
@@ -70,11 +73,14 @@ const ACCESOS_DE_MUESTRA: Acceso[] = [{ tipo: 'curso', nombre: CURSO_DIVINE }];
 export default function Plataforma({
   sesion,
   accesos,
+  bienvenidaPendiente = false,
   vistaInicial = null,
 }: {
   sesion: Sesion;
   /** Qué tiene contratado: lo lee el servidor y llega ya resuelto. */
   accesos: Acceso[];
+  /** Si la bienvenida (perfil y ficha del mapa) tiene que abrirse sola al entrar. */
+  bienvenidaPendiente?: boolean;
   /** La pantalla que pedía la dirección (?v=…). Se comprueba contra el menú. */
   vistaInicial?: string | null;
 }) {
@@ -89,12 +95,42 @@ export default function Plataforma({
      te deja en Cuentas si estabas en Cuentas, no otra vez en Clientes. */
   const [ultimaDe, setUltimaDe] = useState<Record<string, Vista>>({});
   const [menuAbierto, setMenuAbierto] = useState(false);
+  /* Su avatar vive aquí y no en el de la cabecera: la cabecera se vuelve a
+     montar con cada pantalla y, si lo guardara ella, al cambiar de pantalla
+     volvería la foto que leyó el servidor al entrar. */
+  const [foto, setFoto] = useState(sesion.foto);
+
+  // La bienvenida también sube el avatar y avisa con `divine:foto`.
+  useEffect(() => {
+    const alCambiarFoto = (e: Event) => {
+      const d = (e as CustomEvent<unknown>).detail;
+      setFoto(typeof d === 'string' && d.startsWith('data:image/') ? d : null);
+    };
+    window.addEventListener('divine:foto', alCambiarFoto);
+    return () => window.removeEventListener('divine:foto', alCambiarFoto);
+  }, []);
+
+  /* En el móvil el menú es un cajón. Cerrado, solo se aparta con un
+     transform: sin `inert`, sus botones seguían en el orden del tabulador y en
+     lo que lee el lector de pantalla, invisibles. Mismo corte que el CSS. */
+  const [esMovil, setEsMovil] = useState(false);
+  const hamburguesa = useRef<HTMLButtonElement>(null);
+  const cajon = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const m = window.matchMedia('(max-width: 880px)');
+    const ver = () => setEsMovil(m.matches);
+    ver();
+    m.addEventListener('change', ver);
+    return () => m.removeEventListener('change', ver);
+  }, []);
 
   // Con el cajón abierto, la página de detrás no se desplaza.
   useEffect(() => {
     if (!menuAbierto) return;
     const previo = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    // El foco entra en el cajón (su primer botón)…
+    cajon.current?.querySelector<HTMLElement>('button:not([disabled]), a[href]')?.focus({ preventScroll: true });
     const alPulsar = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMenuAbierto(false);
     };
@@ -102,6 +138,9 @@ export default function Plataforma({
     return () => {
       document.body.style.overflow = previo;
       window.removeEventListener('keydown', alPulsar);
+      // …y al cerrarse vuelve a la hamburguesa, si se había quedado dentro (o perdido).
+      const a = document.activeElement;
+      if (!a || a === document.body || cajon.current?.contains(a)) hamburguesa.current?.focus({ preventScroll: true });
     };
   }, [menuAbierto]);
 
@@ -196,6 +235,12 @@ export default function Plataforma({
       <Motas className={css.motas} />
       {/* Los logros que se van ganando, con confeti. Solo para quien aprende. */}
       {!puedeVerComo && <Celebracion />}
+      {/* La bienvenida: foto, perfil y, si es miembro, su ficha del mapa. Se
+          abre sola la primera vez y, después, con «Completa tu perfil». Nunca
+          para Sorela, tampoco cuando mira «Ver como»: no es su perfil. */}
+      {!puedeVerComo && (
+        <Onboarding inicial={bienvenidaPendiente} nombre={sesion.nombre ?? ''} esMiembro={tieneMembresia(accesos)} />
+      )}
       {/* Los avisos flotantes, solo para Sorela. Pulsar uno la devuelve a su
           vista de administradora aunque esté mirando «Ver como». */}
       {puedeVerComo && (
@@ -212,7 +257,14 @@ export default function Plataforma({
         <span className={css.logo}>
           <Image src={logo} alt="Sorela Caro · Técnica Divine" sizes="160px" priority />
         </span>
+        {/* Sus puntos, siempre a la vista: en el móvil van aquí, junto al menú. */}
+        {!puedeVerComo && (
+          <span className={css.marcadorMovil}>
+            <MarcadorPuntos compacto puedePublicar={tieneMembresia(accesos)} />
+          </span>
+        )}
         <button
+          ref={hamburguesa}
           type="button"
           onClick={() => setMenuAbierto((a) => !a)}
           aria-expanded={menuAbierto}
@@ -240,8 +292,10 @@ export default function Plataforma({
         )}
 
         <aside
+          ref={cajon}
           id="menu-plataforma"
           className={`${css.lateral} ${menuAbierto ? css.lateralAbierta : ''}`}
+          inert={esMovil && !menuAbierto}
         >
           <span className={css.logo}>
             <Image src={logo} alt="Sorela Caro · Técnica Divine" sizes="200px" priority />
@@ -304,6 +358,12 @@ export default function Plataforma({
               {sesion.nombre || sesion.correo}
               <span>{ETIQUETA_ROL[sesion.rol]}</span>
             </p>
+            {/* En escritorio, sus puntos bajo su nombre (en el móvil van arriba). */}
+            {!puedeVerComo && (
+              <div className={css.marcadorLateral}>
+                <MarcadorPuntos puedePublicar={tieneMembresia(accesos)} />
+              </div>
+            )}
             <button type="button" className={css.salir} onClick={salir} disabled={saliendo}>
               {saliendo ? 'Saliendo…' : 'Salir'}
             </button>
@@ -334,7 +394,7 @@ export default function Plataforma({
               )}
               {tituloDe(actual, rol) && <h1 className={css.titulo}>{tituloDe(actual, rol)}</h1>}
             </div>
-            <FotoPerfil foto={sesion.foto} iniciales={iniciales} nombre={usuario} verPerfil={() => ir('perfil')} />
+            <FotoPerfil foto={foto} iniciales={iniciales} nombre={usuario} verPerfil={() => ir('perfil')} alCambiar={setFoto} />
           </header>
 
           {/* Las pestañas del grupo: lo que antes eran apartados sueltos del menú. */}
@@ -363,7 +423,7 @@ export default function Plataforma({
           {/* Con algo contratado, su panel; sin nada, la pantalla de «a punto». */}
           {!esAdmin && actual === 'inicio' &&
             (accesosVistos.length > 0 ? (
-              <PanelAlumna nombre={usuario} foto={sesion.foto} accesos={accesosVistos} ir={ir} />
+              <PanelAlumna nombre={usuario} foto={foto} accesos={accesosVistos} ir={ir} muestra={puedeVerComo} />
             ) : (
               <Proximamente accesos={accesosVistos} nombre={usuario} />
             ))}
@@ -379,6 +439,7 @@ export default function Plataforma({
               de leads inventados con nombres y notas de mentira. */}
           {esAdmin && actual === 'leads' && <Contactos />}
           {esAdmin && actual === 'acuerdos' && <Acuerdos />}
+          {esAdmin && actual === 'fichas' && <FichasMapa />}
           {esAdmin && actual === 'formaciones' && <FormacionesAdmin />}
           {esAdmin && actual === 'contenido' && <SubirClases />}
           {esAdmin && actual === 'agenda' && <Agenda esSorela />}

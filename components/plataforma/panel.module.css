@@ -4,6 +4,12 @@
  * La asistente va arriba y en negro: es lo único de la pantalla que propone
  * algo, y tiene que distinguirse de las cifras, que solo informan. El oro se
  * reserva para lo que se puede tocar y para lo que pide atención.
+ *
+ * Letra y contraste (medidos con script): todo el texto de lectura en Jost
+ * 400 (antes 300, que en negro y a 13–15 px se deshacía); en el negro #141210
+ * el secundario #cfc6b8 da 11:1 y el oro #d9b47c 9,6:1. En el papel, los
+ * metadatos pasan de --muted/--faint (5,1 y 4,7:1) a --muted-2 (6,3:1) y el
+ * oro pequeño a --arcilla-ink (6,2:1; el --oro se quedaba en 4,4:1).
  */
 
 /* ---------- La asistente ---------- */
@@ -78,8 +84,9 @@
 
 .asistenteRotulo {
   margin: 0;
-  font-size: 11px;
-  letter-spacing: 0.2em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--a-oro, var(--oro));
 }
@@ -87,7 +94,7 @@
 .asistenteTitulo {
   margin: 4px 0 0;
   font-family: var(--fuente-cormorant), Georgia, serif;
-  font-weight: 500;
+  font-weight: 600;
   font-size: clamp(24px, 2.6vw, 32px);
   line-height: 1.05;
   color: var(--a-ink);
@@ -97,8 +104,8 @@
   margin: 0;
   max-width: 68ch;
   font-size: 15px;
-  font-weight: 300;
-  line-height: 1.6;
+  font-weight: 400;
+  line-height: 1.55;
   color: var(--a-ink-2);
 }
 
@@ -111,9 +118,9 @@
   padding: 0 20px;
   border-radius: 999px;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
@@ -133,9 +140,15 @@
 }
 
 .botonClaro {
-  border: 1px solid var(--a-linea, var(--line-2));
+  border: 1px solid rgba(237, 227, 211, 0.32);
   color: inherit;
   background: rgba(255, 255, 255, 0.04);
+}
+
+.botonDorado:focus-visible,
+.botonClaro:focus-visible {
+  outline: 2px solid #d9b47c;
+  outline-offset: 3px;
 }
 
 .botonClaro:hover {
@@ -147,7 +160,7 @@
   align-items: center;
   gap: 12px;
   font-size: 15px;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--a-ink-2);
 }
 
@@ -226,7 +239,8 @@
   border-radius: 50%;
   border: 1px solid rgba(217, 180, 124, 0.5);
   color: var(--a-oro);
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -240,19 +254,22 @@
 .prioridadNombre {
   margin: 0;
   font-size: 15.5px;
+  font-weight: 500;
   color: var(--a-ink);
 }
 
 .prioridadPorque {
   margin: 0;
-  font-size: 13.5px;
-  font-weight: 300;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
   color: var(--a-ink-2);
 }
 
 .prioridadAccion {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--a-oro);
 }
 
@@ -266,7 +283,7 @@
 .prioridadBotones .botonClaro {
   min-height: 36px;
   padding: 0 14px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 @media (max-width: 640px) {
@@ -282,9 +299,10 @@
 .consejo {
   margin: 0;
   padding-top: 12px;
-  border-top: 1px dashed var(--a-linea);
-  font-size: 14px;
-  font-weight: 300;
+  border-top: 1px dashed rgba(237, 227, 211, 0.22);
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.5;
   color: var(--a-ink-2);
 }
 
@@ -372,8 +390,9 @@
 }
 
 .graficoTotal {
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted-2);
   font-variant-numeric: tabular-nums;
 }
 
@@ -392,8 +411,9 @@
   position: absolute;
   top: 0;
   left: 0;
-  font-size: 11px;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-2);
   font-variant-numeric: tabular-nums;
 }
 
@@ -455,8 +475,9 @@
 .ejeX {
   display: flex;
   justify-content: space-between;
-  font-size: 11.5px;
-  color: var(--faint);
+  font-size: 13px;
+  color: var(--muted-2);
+  font-variant-numeric: tabular-nums;
 }
 
 .tiras {
@@ -477,7 +498,7 @@
 
 .tiraNombre {
   color: var(--ink-2);
-  font-weight: 300;
+  font-weight: 400;
 }
 
 .tiraValor {
@@ -567,9 +588,9 @@
 }
 
 .meta {
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 .acciones {
@@ -585,7 +606,7 @@
   height: 36px;
   padding: 0;
   border-radius: 50%;
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--line-4);
   background: var(--caja-fondo, transparent);
   color: var(--ink-2);
   cursor: pointer;
@@ -594,7 +615,7 @@
 
 .accion:hover {
   transform: translateY(-2px);
-  color: var(--oro);
+  color: var(--arcilla-ink);
   border-color: var(--oro-line);
 }
 
@@ -614,14 +635,16 @@
   background: none;
   font: inherit;
   font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: var(--arcilla-ink);
   cursor: pointer;
 }
 
 .accionTexto:hover {
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .girando {
@@ -657,8 +680,9 @@
 }
 
 .faltaCuenta {
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted-2);
   font-variant-numeric: tabular-nums;
 }
 
@@ -722,7 +746,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid var(--a-linea);
+  border: 1px solid rgba(237, 227, 211, 0.3);
   background: transparent;
   color: var(--a-ink);
   cursor: pointer;
@@ -732,17 +756,27 @@
   width: 100%;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid var(--a-linea);
+  border: 1px solid rgba(237, 227, 211, 0.3);
   background: rgba(255, 255, 255, 0.05);
   color: var(--a-ink);
   font: inherit;
   font-size: 15px;
   line-height: 1.55;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
 }
 
+.campo::placeholder {
+  color: rgba(247, 242, 234, 0.6);
+  opacity: 1;
+}
+
+/* Foco: el borde se enciende en oro y un anillo claro alrededor. */
 .campo:focus {
-  outline: 2px solid rgba(217, 180, 124, 0.6);
-  outline-offset: 1px;
+  outline: none;
+  border-color: #d9b47c;
+  box-shadow: 0 0 0 3px rgba(217, 180, 124, 0.3);
 }
 
 .area {
@@ -751,7 +785,8 @@
 
 .borradorNota {
   margin: 0;
-  font-size: 12.5px;
+  font-size: 13px;
+  line-height: 1.45;
   color: var(--a-ink-2);
 }
 

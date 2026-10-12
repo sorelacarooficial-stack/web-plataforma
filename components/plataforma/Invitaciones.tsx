@@ -218,20 +218,23 @@ export default function Invitaciones() {
             <p className={i.nuevaRotulo}>
               Enlace listo{nueva.nombre ? ` para ${nueva.nombre}` : ''} · {nueva.que.map((q) => ETIQUETA[q]).join(' + ')}
             </p>
+            {/* Frases enteras, en minúscula y en los verdes y tejas claros que
+                se leen sobre el negro: los de la plataforma, pensados para el
+                papel, aquí se quedaban en 2,7 a 1. */}
             {envio === 'enviado' && (
-              <p className={i.nuevaRotulo} style={{ color: '#47663c' }}>
+              <p className={i.nuevaBien}>
                 Ya le ha llegado por correo a {nueva.correo}. Si quieres, mándaselo también por WhatsApp.
               </p>
             )}
             {envio === 'fallido' && (
-              <p className={i.nuevaRotulo} style={{ color: '#a24a2e' }}>
+              <p className={i.nuevaMal}>
                 El correo no ha salido: cópiale el enlace y mándaselo tú.
               </p>
             )}
             <code className={i.enlace}>{nueva.enlace}</code>
             <div className={i.nuevaAcciones}>
               {acciones(nueva)}
-              <button type="button" className={css.enlaceAccion} onClick={() => setNueva(null)}>
+              <button type="button" className={i.nuevaCerrar} onClick={() => setNueva(null)}>
                 Cerrar
               </button>
             </div>

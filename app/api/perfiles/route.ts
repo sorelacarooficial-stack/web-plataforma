@@ -5,14 +5,19 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { aplicacion, baseDeDatos, COLECCIONES, hayFirebase } from '@/lib/firebase-servidor';
 import { accesosDe, sesionActual, type Sesion } from '@/lib/sesion-servidor';
+import { nivelDe } from '@/lib/puntos-tipos';
 
 /**
  * Los perfiles, tipo Instagram, SOLO dentro de la plataforma.
  *
- *   GET    ?uid=           → el perfil (sin uid, el propio)
- *   PATCH  { bio, especialidad, ciudad, instagram, recorrido }   → el propio
+ *   GET    ?uid=           → el perfil (sin uid, el propio), con sus puntos y nivel
+ *   PATCH  { bio?, especialidad?, ciudad?, instagram? }        → el propio; solo lo que llega
  *   POST   multipart { tipo: 'portada'|'foto', archivo, pie? }  → el propio
- *   DELETE ?foto=id[&uid=]  → borrar una foto (la propia; Sorela, cualquiera)
+ *   DELETE ?foto=id[&uid=]     → borrar una foto (la propia; Sorela, cualquiera)
+ *   DELETE ?portada=1[&uid=]   → quitar la portada (la propia; Sorela, cualquiera)
+ *
+ * Los puntos que se enseñan aquí son la foto fija que guarda lib/logros.ts
+ * (`usuarios.puntosTotal`): el desglose completo lo da /api/logros.
  *
  * Quién ve qué: cada una ve siempre el suyo. Los de las demás, solo quien
  * tiene algo contratado (o Sorela): son terapeutas enseñando su trabajo a
@@ -75,6 +80,7 @@ export async function GET(peticion: Request) {
   const p = perfil.data() ?? {};
 
   const foto = typeof u.foto === 'string' && u.foto.startsWith('data:image/') ? u.foto : null;
+  const puntosTotal = typeof u.puntosTotal === 'number' ? Math.max(0, Math.round(u.puntosTotal)) : 0;
   const listaFotos = await Promise.all(
     fotos.docs.map(async (d) => ({ id: d.id, url: await firmar(d.get('ruta')), pie: String(d.get('pie') ?? ''), creado: d.get('creado')?.toDate?.().toISOString() ?? null }))
   );
@@ -94,43 +100,40 @@ export async function GET(peticion: Request) {
         especialidad: String(p.especialidad ?? ''),
         ciudad: String(p.ciudad ?? ''),
         instagram: String(p.instagram ?? ''),
-        recorrido: Array.isArray(p.recorrido) ? p.recorrido : [],
         desde: u.creado?.toDate?.().toISOString() ?? null,
       },
       fotos: listaFotos.filter((f) => f.url),
       publicaciones: publicaciones?.data().count ?? 0,
+      puntos: { total: puntosTotal, nivel: nivelDe(puntosTotal) },
     },
     { headers: { 'Cache-Control': 'private, no-store' } }
   );
 }
 
+/* Lo que se puede cambiar del perfil y su largo máximo. */
+const CAMPOS = { bio: 400, especialidad: 80, ciudad: 80, instagram: 40 } as const;
+
+/**
+ * Cambia SOLO las claves que llegan. El onboarding y la ficha del mapa guardan
+ * trozos sueltos (la ciudad, la bio) y no deben borrar lo demás por no
+ * mandarlo. Para vaciar un campo se manda vacío.
+ */
 export async function PATCH(peticion: Request) {
   const g = await exigirSesion();
   if (g.error) return g.error;
-  const c = (await peticion.json().catch(() => ({}))) as Record<string, unknown>;
-  const recorrido = (Array.isArray(c.recorrido) ? c.recorrido : [])
-    .slice(0, 20)
-    .map((r) => {
-      const x = (r ?? {}) as Record<string, unknown>;
-      return { anio: texto(x.anio, 12), titulo: texto(x.titulo, 90), texto: texto(x.texto, 400) };
-    })
-    .filter((r) => r.titulo);
-  const instagram = texto(c.instagram, 40).replace(/^@/, '').replace(/[^A-Za-z0-9._]/g, '');
+  const crudo: unknown = await peticion.json().catch(() => null);
+  const c = (crudo && typeof crudo === 'object' ? crudo : {}) as Record<string, unknown>;
+  const cambios: Record<string, string> = {};
+  for (const [campo, max] of Object.entries(CAMPOS)) {
+    if (!(campo in c)) continue;
+    cambios[campo] = campo === 'instagram' ? texto(c[campo], max).replace(/^@/, '').replace(/[^A-Za-z0-9._]/g, '') : texto(c[campo], max);
+  }
+  if (!Object.keys(cambios).length) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
   await baseDeDatos()
     .collection(COLECCION)
     .doc(g.sesion.uid)
-    .set(
-      {
-        bio: texto(c.bio, 400),
-        especialidad: texto(c.especialidad, 80),
-        ciudad: texto(c.ciudad, 80),
-        instagram,
-        recorrido,
-        actualizado: FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    );
-  return NextResponse.json({ ok: true });
+    .set({ ...cambios, actualizado: FieldValue.serverTimestamp() }, { merge: true });
+  return NextResponse.json({ ok: true, perfil: cambios });
 }
 
 export async function POST(peticion: Request) {
@@ -186,10 +189,25 @@ export async function DELETE(peticion: Request) {
   if (g.error) return g.error;
   const q = new URL(peticion.url).searchParams;
   const uid = texto(q.get('uid'), 128) || g.sesion.uid;
-  const foto = texto(q.get('foto'), 128);
-  if (!ID.test(uid) || !ID.test(foto)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
+  if (!ID.test(uid)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
   // La propia, o Sorela moderando.
   if (uid !== g.sesion.uid && g.sesion.rol !== 'sorela') return NextResponse.json({ ok: false, motivo: 'sin-permiso' }, { status: 403 });
+
+  /* Quitar la portada: primero se quita del perfil y después el archivo, para
+     que el perfil nunca apunte a una imagen que ya no existe. Sin portada no
+     es un error: lo que se quería es que no la hubiera. */
+  if (q.get('portada') === '1') {
+    const ref = baseDeDatos().collection(COLECCION).doc(uid);
+    const anterior = (await ref.get()).get('portada');
+    if (anterior) {
+      await ref.set({ portada: FieldValue.delete(), actualizado: FieldValue.serverTimestamp() }, { merge: true });
+      await bucket().file(String(anterior)).delete().catch(() => null);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  const foto = texto(q.get('foto'), 128);
+  if (!ID.test(foto)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
   const ref = baseDeDatos().collection(COLECCION).doc(uid).collection('fotos').doc(foto);
   const d = await ref.get();
   if (!d.exists) return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });

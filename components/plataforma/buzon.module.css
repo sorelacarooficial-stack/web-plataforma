@@ -1,4 +1,9 @@
-/* El buzón: lista a la izquierda, lectura a la derecha. En el móvil, una cosa cada vez. */
+/* El buzón: lista a la izquierda, lectura a la derecha. En el móvil, una cosa cada vez.
+
+   Letra y color como en el resto del panel (medidos en scratchpad/contraste-p3.mjs):
+   lo que se lee en Jost 400, los grises pequeños en --muted-2 y los dorados
+   pequeños en --oro-letra. La ventana de escribir va en un portal, fuera de
+   .pantalla: por eso los colores de la plataforma llevan copia de respaldo. */
 
 .buzon {
   display: flex;
@@ -33,9 +38,10 @@
   border-radius: 999px;
   background: transparent;
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 400;
   white-space: nowrap;
-  color: var(--muted);
+  color: var(--muted-2);
   cursor: pointer;
 }
 
@@ -46,45 +52,63 @@
   box-shadow: 0 4px 12px -6px rgba(60, 45, 25, 0.5);
 }
 
+/* Blanco sobre el oro tostado (7,2 a 1): sobre el oro de la marca, a 11 px,
+   el número de correos sin leer se quedaba justo. */
 .contador {
   min-width: 20px;
   padding: 1px 7px;
   border-radius: 999px;
-  background: var(--oro);
+  background: var(--oro-letra, #6f5323);
   color: #fff;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 11.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   text-align: center;
 }
 
+/* El buscador, con el borde y el foco de todos los campos de la plataforma.
+   16 px: por debajo, Safari en el iPhone acerca la pantalla al enfocar. */
 .buscar {
   flex: 1 1 180px;
   min-width: 0;
-  height: 40px;
+  height: 42px;
   padding: 0 16px;
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.16));
+  border: 1px solid var(--borde-campo, #8f8579);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.7);
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 400;
   color: var(--ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.buscar::placeholder {
+  color: var(--ejemplo-campo, #7b7266);
+  opacity: 1;
 }
 
 .buscar:focus {
   outline: none;
-  border-color: var(--oro-line);
+  border-color: var(--oro, #8a6a32);
+  box-shadow: 0 0 0 3px var(--foco-halo, rgba(217, 180, 124, 0.5));
 }
 
+/* Los botones, con la voz de los de la plataforma: mayúsculas en 500 y un
+   espaciado que se lee como palabra. */
 .btnOscuro,
 .btnLinea,
 .btnPeligro {
-  padding: 10px 18px;
+  padding: 10px 20px;
   border-radius: 999px;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
 }
 
 .btnOscuro {
@@ -98,23 +122,64 @@
 }
 
 .btnLinea {
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.16));
+  border: 1px solid var(--line-5, rgba(20, 18, 16, 0.26));
   background: transparent;
   color: var(--ink);
 }
 
-.btnPeligro {
-  border: 1px solid rgba(196, 92, 60, 0.3);
-  background: transparent;
-  color: #a24a2e;
+.btnLinea:hover {
+  border-color: var(--ink-3, #4f4840);
 }
 
+.btnPeligro {
+  border: 1px solid rgba(162, 74, 46, 0.45);
+  background: transparent;
+  color: var(--peligro-letra, #8f3f26);
+}
+
+.btnPeligro:hover {
+  background: #f9ebe4;
+}
+
+/*
+ * Los avisos, como los de toda la plataforma: una banda con icono y el texto
+ * en tinta y en 500. El de arriba es informativo (oro, «i»): dice tanto
+ * «Enviado» como «No se ha podido borrar». El de fallo, en teja con «!», y el
+ * «Reintentar» pasa a ser un botón de verdad a la derecha, no un subrayado
+ * metido en la frase.
+ */
 .aviso,
 .fallo {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
   margin: 0;
-  padding: 12px 16px;
+  min-height: 50px;
+  padding: 13px 16px 13px 50px;
   border-radius: 14px;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.aviso::before,
+.fallo::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
 }
 
 .aviso {
@@ -122,19 +187,40 @@
   border: 1px solid var(--oro-line);
 }
 
+.aviso::before {
+  background-color: var(--oro, #8a6a32);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Ccircle cx='7' cy='3.9' r='1.1' fill='%23fff'/%3E%3Cpath d='M7 6.4v4.4' stroke='%23fff' stroke-width='1.9' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
 .fallo {
-  background: rgba(196, 92, 60, 0.1);
-  border: 1px solid rgba(196, 92, 60, 0.3);
-  color: #8f3f26;
+  background: #f9ebe4;
+  border: 1px solid rgba(162, 74, 46, 0.32);
+}
+
+.fallo::before {
+  background-color: var(--peligro, #a24a2e);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M7 3v4.6' stroke='%23fff' stroke-width='1.9' stroke-linecap='round'/%3E%3Ccircle cx='7' cy='10.6' r='1.1' fill='%23fff'/%3E%3C/svg%3E");
 }
 
 .fallo button {
-  border: 0;
-  background: none;
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 8px 18px;
+  border: 1px solid var(--line-5, rgba(20, 18, 16, 0.26));
+  border-radius: 999px;
+  background: #fffdf9;
   font: inherit;
-  text-decoration: underline;
-  color: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
   cursor: pointer;
+}
+
+.fallo button:hover {
+  background: #fff;
+  border-color: var(--ink-3, #4f4840);
 }
 
 /* ---------- Panel ---------- */
@@ -193,8 +279,8 @@
   place-items: center;
   border-radius: 50%;
   background: linear-gradient(160deg, #f5efe2, #e8dcc4);
-  color: var(--oro);
-  font-weight: 600;
+  color: var(--oro-letra, #6f5323);
+  font-weight: 500;
 }
 
 .avatar {
@@ -221,41 +307,47 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-size: 13.5px;
-  color: var(--muted);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
+/* Leído: el nombre en tinta pero en 400, el asunto en gris. Sin leer: los
+   dos en tinta y en 500, más el punto dorado. Antes el «sin leer» iba en 700,
+   que la Jost no trae: el navegador engordaba la letra a mano y salía
+   emborronada. 400 contra 500 en tinta ya se distingue. */
 .filaArriba strong {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--ink);
 }
 
 .filaArriba time {
   flex: none;
-  font-size: 12px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 
 .filaAsunto {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 13.5px;
+  color: var(--muted-2);
 }
 
 .fila:not([data-leido]) .filaArriba strong,
 .fila:not([data-leido]) .filaAsunto {
-  font-weight: 700;
+  font-weight: 500;
   color: var(--ink);
 }
 
 .respondido {
   margin-right: 5px;
-  color: var(--oro);
+  color: var(--oro-letra, #6f5323);
 }
 
 .punto {
@@ -263,7 +355,7 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--oro);
+  background: var(--oro, #8a6a32);
 }
 
 .esqueleto {
@@ -273,11 +365,31 @@
   background: linear-gradient(90deg, rgba(20, 18, 16, 0.04), rgba(20, 18, 16, 0.08), rgba(20, 18, 16, 0.04));
 }
 
+/* La carpeta vacía: el destello de los vacíos de la plataforma y la frase en
+   tinta, como en el resto del panel. */
 .vacio {
-  padding: 30px 16px;
-  font-size: 14px;
-  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 34px 16px;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-3);
   text-align: center;
+}
+
+.vacio::before {
+  content: '';
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0c.5 3.2 2.3 5 5.5 6-3.2 1-5 2.8-5.5 6-.5-3.2-2.3-5-5.5-6 3.2-1 5-2.8 5.5-6z' fill='%238a6a32'/%3E%3C/svg%3E")
+      center / 16px 16px no-repeat,
+    var(--oro-tint);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
 }
 
 .masCorreos {
@@ -286,10 +398,17 @@
   border: 0;
   background: none;
   font: inherit;
-  font-size: 13px;
-  color: var(--oro);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--oro-letra, #6f5323);
   text-decoration: underline;
+  text-decoration-color: var(--oro-line);
+  text-underline-offset: 3px;
   cursor: pointer;
+}
+
+.masCorreos:hover {
+  text-decoration-color: currentColor;
 }
 
 /* ---------- Lectura ---------- */
@@ -325,8 +444,9 @@
   border: 0;
   background: none;
   font: inherit;
-  font-size: 13px;
-  color: var(--oro);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--oro-letra, #6f5323);
   cursor: pointer;
 }
 
@@ -341,9 +461,10 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  font-size: 13px;
-  color: var(--muted);
+  gap: 2px;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--muted-2);
 }
 
 .remite div span {
@@ -352,14 +473,15 @@
 }
 
 .remite strong {
-  font-size: 15px;
+  font-size: 15.5px;
+  font-weight: 500;
   color: var(--ink);
 }
 
 .remite time {
   flex: none;
-  font-size: 12px;
-  color: var(--faint);
+  font-size: 13px;
+  color: var(--muted-2);
 }
 
 .acciones {
@@ -382,13 +504,15 @@
   padding: 8px 12px;
   border-radius: 12px;
   background: var(--neu-base);
-  font-size: 13px;
+  box-shadow: inset 0 0 0 1px var(--line-3);
+  font-size: 13.5px;
   color: var(--ink);
   text-decoration: none;
 }
 
 .adjunto small {
-  color: var(--faint);
+  font-size: 12.5px;
+  color: var(--muted-2);
 }
 
 .cuerpo {
@@ -399,19 +523,37 @@
   background: #fff;
 }
 
+/* Ningún correo abierto. Era un sobre al 50 % y una frase en el gris más
+   tenue en mitad del panel blanco: parecía que algo no había cargado. Ahora el
+   sobre va en el círculo dorado de los vacíos y la frase en tinta. */
 .nada {
   flex: 1;
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: 8px;
-  color: var(--faint);
-  font-size: 14px;
+  gap: 12px;
+  padding: 24px;
+  color: var(--ink-3);
+  font-size: 15.5px;
+  font-weight: 400;
+  text-align: center;
+}
+
+.nada p {
+  margin: 0;
 }
 
 .nada span {
-  font-size: 34px;
-  opacity: 0.5;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: var(--oro-tint);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--oro, #8a6a32);
 }
 
 @media (max-width: 860px) {
@@ -473,8 +615,10 @@
 
 .redactarCabeza strong {
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
 }
 
 .cerrar {
@@ -483,23 +627,42 @@
   border: 0;
   border-radius: 50%;
   background: var(--neu-base);
+  color: var(--ink);
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
 }
 
+/*
+ * «Para» y «Asunto»: una línea con su rótulo delante, como en un correo. La
+ * línea de debajo era al 8 % y no se veía dónde escribir; ahora lleva el gris
+ * de los bordes de campo (3,6 a 1) y al entrar se vuelve dorada. El rótulo,
+ * como los de toda la plataforma.
+ */
 .campo {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--borde-campo, #8f8579);
   font-size: 13px;
-  color: var(--muted);
+  color: var(--muted-2);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.campo:focus-within {
+  border-bottom-color: var(--oro, #8a6a32);
+  box-shadow: 0 1px 0 var(--oro, #8a6a32);
 }
 
 .campo span {
-  width: 54px;
+  flex: none;
+  width: 66px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--oro-letra, #6f5323);
 }
 
 .campo input {
@@ -509,7 +672,8 @@
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 400;
   color: var(--ink);
 }
 
@@ -517,35 +681,54 @@
   outline: none;
 }
 
+.campo input::placeholder,
+.texto::placeholder {
+  color: var(--ejemplo-campo, #7b7266);
+  opacity: 1;
+}
+
 .texto {
   flex: 1;
   min-height: 260px;
   padding: 12px 14px;
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.16));
+  border: 1px solid var(--borde-campo, #8f8579);
   border-radius: 14px;
   background: #fff;
   font: inherit;
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 400;
   line-height: 1.55;
   resize: vertical;
   color: var(--ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .texto:focus {
   outline: none;
-  border-color: var(--oro-line);
+  border-color: var(--oro, #8a6a32);
+  box-shadow: 0 0 0 3px var(--foco-halo, rgba(217, 180, 124, 0.5));
 }
 
 .nota {
   margin: 0;
-  font-size: 12.5px;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted-2);
 }
 
 .error {
   font-style: normal;
-  font-size: 12.5px;
-  color: #a24a2e;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--peligro-letra, #8f3f26);
+}
+
+/* La negrita de la Jost llega hasta 500: lo de encima lo inventa el
+   navegador engordando el trazo. */
+.nota b {
+  font-weight: 500;
+  color: var(--ink);
 }
 
 .redactarPie {
@@ -562,9 +745,10 @@
   border-radius: 26px;
   background: #fffdf9;
   border: 1px solid var(--line-1, rgba(20, 18, 16, 0.1));
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--ink);
+  font-size: 15.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-3);
 }
 
 .configurar h3 {
@@ -572,6 +756,8 @@
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
   font-size: 28px;
   font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
 }
 
 .configurar ol {
@@ -582,9 +768,22 @@
   margin-bottom: 8px;
 }
 
+.configurar li::marker {
+  font-weight: 500;
+  color: var(--oro-letra, #6f5323);
+}
+
+.configurar strong,
+.configurar b {
+  font-weight: 500;
+  color: var(--ink);
+}
+
 .configurar code {
   padding: 2px 7px;
   border-radius: 6px;
   background: var(--oro-tint);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
   font-size: 14px;
+  color: var(--ink);
 }

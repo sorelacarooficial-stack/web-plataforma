@@ -154,7 +154,9 @@ function Privacidad({ id }: { id: Identidad | null }) {
 
       <Apartado titulo="A quién se comunican">
         <P>
-          Tus datos no se venden ni se ceden a terceros, salvo obligación legal. Para que la web
+          Tus datos no se venden ni se ceden a terceros, salvo obligación legal. La única excepción
+          la decides tú: si publicas tu ficha en «Localiza tu terapeuta», los datos que pones en ella
+          se ven en la web, a la vista de cualquiera, hasta que la quitas. Para que la web
           funcione, estos proveedores los tratan por encargo de Sorela Caro y siguiendo sus
           instrucciones:
         </P>
