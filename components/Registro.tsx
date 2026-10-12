@@ -9,6 +9,7 @@ import { auth, hayAuth } from '@/lib/firebase-navegador';
 import css from './Acceso.module.css';
 import InfoPrivacidad from '@/components/InfoPrivacidad';
 import { CAPA_CUENTA } from '@/lib/privacidad';
+import { llegada } from '@/lib/llegada';
 
 /**
  * Crearse una cuenta.
@@ -143,6 +144,7 @@ export default function Registro({ invitacion }: { invitacion?: string }) {
           consentimiento: acepta,
           empresa,
           invitacion: inv ? invitacion : undefined,
+          llegada: llegada() ?? undefined,
         }),
       });
       const c = await r.json().catch(() => ({ ok: false }));

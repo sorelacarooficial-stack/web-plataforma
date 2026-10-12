@@ -5,6 +5,7 @@ import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
 import {
   CODIGO,
+  ETIQUETA_QUE_DA,
   QUE_DA,
   aInvitacion,
   caducaDentroDe,
@@ -12,6 +13,7 @@ import {
   estadoDe,
   type QueDa,
 } from '@/lib/invitaciones';
+import { alCrearInvitacion } from '@/lib/automatizar';
 
 /**
  * Los enlaces de invitación, del lado de Sorela.
@@ -85,9 +87,22 @@ export async function POST(peticion: Request) {
     anulada: false,
   });
   const d = await docInvitacion(codigo).get();
+  const invitacion = aInvitacion(codigo, d.data() ?? {});
+  const enlace = enlaceDe(peticion, codigo);
+  /* Con correo, el enlace le sale por correo directamente. Se espera a saber
+     si ha salido para que la pantalla diga «enviado» solo si es verdad. */
+  const envio = await alCrearInvitacion({
+    codigo,
+    correo,
+    nombre,
+    que: que.map((q) => ETIQUETA_QUE_DA[q]),
+    caduca: invitacion.caduca,
+    enlace,
+  });
   return NextResponse.json({
     ok: true,
-    invitacion: { ...aInvitacion(codigo, d.data() ?? {}), enlace: enlaceDe(peticion, codigo) },
+    invitacion: { ...invitacion, enlace },
+    correo: envio ? envio.estado : null,
   });
 }
 

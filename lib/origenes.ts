@@ -19,10 +19,13 @@
 export const TIPOS = ['clienta', 'alumna', 'comunidad', 'otro'] as const;
 export type Tipo = (typeof TIPOS)[number];
 
+/* Lo que QUIERE, con un verbo: «Terapeuta certificada» afirmaba algo que
+   nadie ha comprobado —apuntarse a la lista de espera no certifica a nadie—
+   y obligaba a traducir la etiqueta a lo que de verdad importa al llamar. */
 export const ETIQUETA_TIPO: Record<Tipo, string> = {
-  clienta: 'Posible clienta',
-  alumna: 'Posible alumna',
-  comunidad: 'Terapeuta certificada',
+  clienta: 'Quiere tratarse',
+  alumna: 'Quiere formarse',
+  comunidad: 'Quiere la Comunidad',
   otro: 'Sin clasificar',
 };
 
@@ -30,7 +33,7 @@ export const ETIQUETA_TIPO: Record<Tipo, string> = {
 export const QUE_QUIERE: Record<Tipo, string> = {
   clienta: 'Quiere que le traten. Busca una sesión, no aprender la técnica.',
   alumna: 'Quiere formarse en la Técnica Divine.',
-  comunidad: 'Ya es terapeuta y quiere entrar en la comunidad.',
+  comunidad: 'Quiere entrar en la Comunidad Divine: espera a la apertura.',
   otro: 'No se sabe qué busca: hay que preguntárselo.',
 };
 
@@ -73,7 +76,37 @@ export const COMO_LLEGO: Record<string, string> = {
   'formacion-asistente': 'Preguntó al asistente por las fechas de formación',
   'formacion-precio': 'Preguntó al asistente por el precio de la formación',
   'comunidad-asistente': 'Preguntó al asistente por la comunidad',
+  'comunidad-plataforma': 'Pulsó «Quiero ser parte del cambio Divine» dentro de la plataforma',
+  invitacion: 'Entró con un enlace de invitación que le mandaste',
+  acuerdo: 'Firmó el acuerdo de la formación',
 };
+
+/**
+ * La versión corta, para la tarjeta del tablero: dos o tres palabras que se
+ * leen de un vistazo. La frase larga de arriba sale en la ficha.
+ */
+export function origenCorto(origen: string | undefined | null): string {
+  const o = (origen || '').toLowerCase().trim();
+  if (!o) return 'Sin dato';
+  if (o.startsWith('lista-comunidad')) return 'Lista de espera';
+  if (o === 'comunidad') return 'Página Comunidad';
+  if (o === 'comunidad-plataforma') return 'Desde la plataforma';
+  if (o.endsWith('-registro')) return 'Se registró';
+  if (o === 'invitacion') return 'Con tu invitación';
+  if (o === 'acuerdo') return 'Acuerdo firmado';
+  if (o.endsWith('-a-mano') || o === 'a-mano') return 'La apuntaste tú';
+  if (o.endsWith('-asistente') || o === 'asistente') return 'Asistente de la web';
+  if (o.startsWith('avisar-ciudad')) return 'Aviso de su ciudad';
+  if (o === 'web' || o === 'informacion') return 'Portada';
+  if (o === 'expo' || o.startsWith('qr')) return 'QR de la expo';
+  if (o.startsWith('formacion')) return 'Formaciones';
+  if (o === 'contacto') return 'Formulario de contacto';
+  if (o === 'terapeutas') return 'Buscador de terapeutas';
+  if (o.startsWith('cita-')) return 'Pidió cita';
+  if (o === 'metodo') return 'Página del método';
+  if (o === 'sobre') return 'Página «Sobre Sorela»';
+  return o;
+}
 
 /**
  * De qué tipo es alguien, según por dónde entró.

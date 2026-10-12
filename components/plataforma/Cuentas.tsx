@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { ETIQUETA_ROL, ROL_POR_DEFECTO, type Rol } from '@/lib/roles';
 import { clave } from '@/lib/aula';
 import { CURSO_DIVINE, cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
@@ -53,6 +54,11 @@ type Cuenta = {
   seRegistro: boolean;
   /** A qué dijo que venía al registrarse. Null si la diste de alta tú. */
   pide: 'comunidad' | 'curso' | null;
+  /** No puede entrar: la bloqueaste. Su cuenta y lo que tenga siguen ahí. */
+  bloqueada?: boolean;
+  /** Cómo llegó a tener cuenta. */
+  llego?: 'registro' | 'invitacion' | 'tu' | null;
+  creado?: string | null;
 };
 
 /** Lo que devuelve el alta y hay que enseñar hasta que se dé por leído. */
@@ -111,6 +117,11 @@ export default function Cuentas() {
   const [lista, setLista] = useState<Cuenta[] | null>(null);
   const [yo, setYo] = useState<string | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
+  /* El menú «Gestionar» abierto (uid), la cuenta que se está a punto de
+     borrar y el aviso de lo último que se ha hecho. */
+  const [gestion, setGestion] = useState<string | null>(null);
+  const [aBorrar, setABorrar] = useState<Cuenta | null>(null);
+  const [hecho, setHecho] = useState<string | null>(null);
 
   /* Si la plataforma deja entrar a alguien más que a las administradoras.
      Se pregunta al servidor en vez de importar PLATAFORMA_ABIERTA aquí, que
@@ -366,17 +377,56 @@ export default function Cuentas() {
     }
   }
 
-  async function borrar(cuenta: Cuenta) {
-    const quien = cuenta.nombre || cuenta.correo || 'esta cuenta';
-    // Se pregunta porque esto no tiene papelera y se lleva las dos mitades:
-    // la cuenta de acceso y su ficha.
+  /** Quitarle todo lo que tiene (formación y comunidad) sin tocar su cuenta. */
+  async function quitarTodo(c: Cuenta) {
+    const quien = c.nombre || c.correo || 'esta persona';
     if (
       !window.confirm(
-        `¿Borrar la cuenta de ${quien}? Perderá el acceso y no se puede deshacer.`
+        `¿Quitar todo el acceso a ${quien}? Dejará de ver las clases y la comunidad, pero su cuenta sigue: podrá entrar y verá que no tiene nada abierto. Se puede volver a dar cuando quieras.`
       )
-    ) {
+    )
       return;
+    await guardarAccesos(c, []);
+    setHecho(`${quien} ya no tiene acceso a nada.`);
+  }
+
+  /**
+   * Bloquear o desbloquear la entrada. Bloqueada no puede entrar ni con su
+   * contraseña, y si estaba dentro se la saca; no se borra nada.
+   */
+  async function bloquear(c: Cuenta, bloqueada: boolean) {
+    const quien = c.nombre || c.correo || 'esta persona';
+    if (
+      bloqueada &&
+      !window.confirm(
+        `¿Bloquear la entrada a ${quien}? No podrá entrar en la plataforma (si está dentro, la saca ahora). No se borra nada: lo desbloqueas cuando quieras y todo sigue como estaba.`
+      )
+    )
+      return;
+    setLista((l) => l?.map((x) => (x.uid === c.uid ? { ...x, bloqueada } : x)) ?? l);
+    try {
+      const r = await fetch('/api/usuarios', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: c.uid, bloqueada }),
+      });
+      const j = await r.json().catch(() => ({ ok: false }));
+      if (!j.ok) throw new Error(j.motivo);
+      setFallo(null);
+      setHecho(bloqueada ? `${quien} ya no puede entrar.` : `${quien} puede volver a entrar.`);
+    } catch (e) {
+      setLista((l) => l?.map((x) => (x.uid === c.uid ? { ...x, bloqueada: !bloqueada } : x)) ?? l);
+      setFallo(
+        (e as Error).message === 'admin-protegida'
+          ? 'A una administradora no se la puede bloquear.'
+          : 'No se ha podido cambiar. Vuelve a intentarlo.'
+      );
     }
+  }
+
+  async function borrar(cuenta: Cuenta) {
+    const quien = cuenta.nombre || cuenta.correo || 'esta cuenta';
+    setABorrar(null);
 
     /* Se guarda la fila y su sitio, no la lista entera: al fallar se vuelve a
        meter donde estaba, sin tocar lo demás. */
@@ -389,6 +439,7 @@ export default function Cuentas() {
       const c = await r.json().catch(() => ({ ok: false }));
       if (!c.ok) throw new Error(c.motivo);
       setFallo(null);
+      setHecho(`La cuenta de ${quien} está borrada.`);
     } catch (e) {
       const motivo = (e as Error).message;
       setLista((l) => {
@@ -559,6 +610,15 @@ export default function Cuentas() {
         </p>
       )}
 
+      {hecho && (
+        <p className={css.avisoBien} role="status">
+          {hecho}{' '}
+          <button type="button" className={css.btnLinea} onClick={() => setHecho(null)}>
+            Vale
+          </button>
+        </p>
+      )}
+
       <section className={css.tarjeta}>
         {/* Tres casos distintos, y antes eran uno: si la carga ha fallado no se
             sabe nada de la lista, así que no se afirma nada sobre ella. */}
@@ -592,10 +652,22 @@ export default function Cuentas() {
                   <span className={css.filaNombre}>
                     {c.nombre || 'Sin nombre'}
                     {c.uid === yo && ' · tú'}
+                    {c.bloqueada && <span className={css.bloqueada}>Bloqueada</span>}
                   </span>
                   <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
                     {c.correo || 'sin correo'}
                   </span>
+                  {/* Cómo llegó a tener cuenta: la misma pregunta que en el CRM. */}
+                  {c.llego && (
+                    <span className={css.llego}>
+                      {c.llego === 'registro'
+                        ? 'Se creó la cuenta ella desde la web'
+                        : c.llego === 'invitacion'
+                          ? 'Entró con un enlace de invitación tuyo'
+                          : 'La diste de alta tú'}
+                      {c.creado && ` · ${new Date(c.creado).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                    </span>
+                  )}
                   {/* Quien se ha registrado sola todavía no ha pagado —o no
                       lo has comprobado—, así que se dice en su línea y se dice
                       a qué viene. Es la diferencia entre «esta ya está dentro»
@@ -682,18 +754,42 @@ export default function Cuentas() {
                       Quitar admin
                     </button>
                   )}
+                  {/* Lo que corta el acceso, junto y de menos a más: quitar lo
+                      contratado, bloquear la entrada, borrar la cuenta. */}
                   {sePuedeBorrar && (
-                    <button
-                      type="button"
-                      className={css.enlaceAccion}
-                      /* Con el nombre dentro: en una lista de veinte filas,
-                         veinte botones que solo dicen «Borrar» no le sirven a
-                         quien navega escuchando la pantalla. */
-                      aria-label={`Borrar la cuenta de ${c.nombre || c.correo || 'esta persona'}`}
-                      onClick={() => borrar(c)}
-                    >
-                      Borrar
-                    </button>
+                    <span className={css.gestionar}>
+                      <button
+                        type="button"
+                        className={css.btnLinea}
+                        aria-expanded={gestion === c.uid}
+                        aria-label={`Gestionar el acceso de ${c.nombre || c.correo || 'esta persona'}`}
+                        onClick={() => setGestion(gestion === c.uid ? null : c.uid)}
+                      >
+                        Gestionar acceso ▾
+                      </button>
+                      {gestion === c.uid && (
+                        <span className={css.gestionarMenu} role="menu">
+                          {c.accesos.length > 0 && (
+                            <button type="button" role="menuitem" onClick={() => { setGestion(null); quitarTodo(c); }}>
+                              <strong>Quitar todo el acceso</strong>
+                              <small>Pierde la formación y la comunidad. Su cuenta sigue.</small>
+                            </button>
+                          )}
+                          <button type="button" role="menuitem" onClick={() => { setGestion(null); bloquear(c, !c.bloqueada); }}>
+                            <strong>{c.bloqueada ? 'Desbloquear la entrada' : 'Bloquear la entrada'}</strong>
+                            <small>
+                              {c.bloqueada
+                                ? 'Puede volver a entrar con su contraseña.'
+                                : 'No puede entrar. No se borra nada; se deshace cuando quieras.'}
+                            </small>
+                          </button>
+                          <button type="button" role="menuitem" data-peligro="" onClick={() => { setGestion(null); setABorrar(c); }}>
+                            <strong>Borrar la cuenta</strong>
+                            <small>Para siempre: cuenta, accesos y progreso.</small>
+                          </button>
+                        </span>
+                      )}
+                    </span>
                   )}
                 </span>
               </article>
@@ -701,6 +797,41 @@ export default function Cuentas() {
           })
         )}
       </section>
+
+      {/* Borrar pide una confirmación de verdad, que diga qué se pierde y qué no. */}
+      {aBorrar &&
+        createPortal(
+        <div className={css.veloBorrar} role="presentation" onClick={() => setABorrar(null)}>
+          <div
+            className={css.dialogoBorrar}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="borrar-titulo"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="borrar-titulo">¿Borrar la cuenta de {aBorrar.nombre || aBorrar.correo}?</h3>
+            <p>Se borra para siempre, y no se puede deshacer:</p>
+            <ul>
+              <li>su cuenta y su contraseña: no podrá volver a entrar;</li>
+              <li>lo que tenga contratado (formación, comunidad);</li>
+              <li>su progreso en las clases y su agenda.</li>
+            </ul>
+            <p>
+              Se quedan su ficha en <strong>Clientes</strong> (con tus notas) y lo que haya escrito en la comunidad. Si
+              solo quieres que no entre por un tiempo, mejor <strong>bloquear la entrada</strong>.
+            </p>
+            <div className={css.dialogoBotones}>
+              <button type="button" className={css.btnLinea} onClick={() => setABorrar(null)} autoFocus>
+                Cancelar
+              </button>
+              <button type="button" className={css.btnPeligro} onClick={() => borrar(aBorrar)}>
+                Sí, borrar para siempre
+              </button>
+            </div>
+          </div>
+        </div>,
+          document.body
+        )}
 
       <section className={css.punteada}>
         <form onSubmit={crear} className={css.columna} style={{ gap: 16 }}>

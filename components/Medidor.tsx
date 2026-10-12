@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+// Se importa aquí para que apunte por dónde llegó la persona en la primera página.
+import '@/lib/llegada';
 
 /**
  * El medidor de la web: cuenta páginas vistas y cuánto se ven los vídeos.

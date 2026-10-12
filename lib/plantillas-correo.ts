@@ -101,7 +101,7 @@ export function correoAviso(c: Contacto & { origen?: string }) {
   };
 }
 
-const escapar = (s: string) =>
+export const escapar = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /**
@@ -109,19 +109,27 @@ const escapar = (s: string) =>
  * clientes de correo no entienden hojas de estilo ni maquetación moderna: lo
  * que aquí parece antiguo es lo único que se ve igual en Gmail y en Outlook.
  */
-function envoltorio(saludo: string, cuerpo: string) {
+export function envoltorio(saludo: string, cuerpo: string, baja?: string, antes = '') {
   return `<!doctype html>
 <html lang="es"><body style="margin:0;padding:0;background:#f2eee9">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2eee9;padding:32px 16px">
   <tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#faf8f5;border-top:3px solid #8a6a32">
       <tr><td style="padding:38px 36px;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.65;color:#3a352e">
-        <p style="margin:0 0 22px;font-size:22px;color:#1c1a17">${saludo}</p>
+        ${antes}<p style="margin:0 0 22px;font-size:22px;color:#1c1a17">${saludo}</p>
         ${cuerpo}
         <p style="margin:34px 0 0;padding-top:20px;border-top:1px solid #e3ddd4;font-size:13px;color:#6c645a">
           Sorela Caro · Creadora de la Técnica Divine<br>
           <a href="${WEB}" style="color:#8a6a32;text-decoration:none">sorelacarodivine.com</a>
-        </p>
+        </p>${
+          baja
+            ? `
+        <p style="margin:18px 0 0;font-size:11.5px;line-height:1.5;color:#958b7e">
+          Te escribo porque dejaste tus datos en mi web o tienes cuenta en mi plataforma. Si no quieres recibir más correos así,
+          <a href="${baja}" style="color:#958b7e">date de baja aquí</a>.
+        </p>`
+            : ''
+        }
       </td></tr>
     </table>
   </td></tr>

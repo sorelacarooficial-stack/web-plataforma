@@ -3,6 +3,8 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { revisar, type Contacto, type Fallo } from '@/lib/captacion';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { hayAppsScript, mandarInformacion } from '@/lib/enviar-informacion';
+import { procedenciaDe } from '@/lib/llegada-servidor';
+import { apuntarCorreo } from '@/lib/correos';
 
 /**
  * Recibe el formulario de captación, guarda el contacto y manda los correos.
@@ -58,7 +60,7 @@ const falla = (motivo: Fallo, estado: number, extra: object = {}) =>
   NextResponse.json({ ok: false, motivo, ...extra }, { status: estado });
 
 export async function POST(peticion: Request) {
-  let cuerpo: Partial<Contacto>;
+  let cuerpo: Partial<Contacto> & { llegada?: unknown };
   try {
     cuerpo = await peticion.json();
   } catch {
@@ -99,7 +101,11 @@ export async function POST(peticion: Request) {
           // La hora la pone el servidor de Google, no el navegador de quien
           // rellena: los relojes de los móviles vienen torcidos.
           actualizado: FieldValue.serverTimestamp(),
-          ...(previo.exists ? {} : { creado: FieldValue.serverTimestamp() }),
+          // Por dónde llegó se apunta la primera vez y no se machaca: si
+          // vuelve otro día desde Google, quien la trajo fue Instagram.
+          ...(previo.exists
+            ? {}
+            : { creado: FieldValue.serverTimestamp(), estado: 'Nuevo', ...procedenciaDe(cuerpo.llegada) }),
           veces: FieldValue.increment(1),
         },
         { merge: true }
@@ -116,6 +122,17 @@ export async function POST(peticion: Request) {
   const google = await mandarInformacion(datos);
 
   const correoEnviado = google.correo;
+
+  // Queda en el historial de correos de la persona, para que el CRM diga si
+  // le llegó la información y cuándo.
+  await apuntarCorreo({
+    para: datos.correo,
+    tipo: 'bienvenida',
+    asunto: 'Información de la Técnica Divine',
+    via: 'apps-script',
+    estado: correoEnviado ? 'enviado' : 'fallido',
+    contactoId: datos.correo.replace(/\//g, '_'),
+  });
   // Para dar el contacto por guardado vale con que esté en uno de los dos
   // sitios, y la fila de la hoja cuenta aunque el correo no haya salido.
   const guardado = enFirestore || google.guardado;

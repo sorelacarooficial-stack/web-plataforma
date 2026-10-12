@@ -212,7 +212,16 @@ export async function GET() {
       ciudad: v.ciudad ?? '',
       nota: v.nota ?? '',
       origen: v.origen ?? 'web',
-      estado: (v.estado as EstadoContacto) ?? 'Nuevo',
+      /* Un estado vacío o desconocido es alguien a quien nadie ha atendido.
+         Con `?? 'Nuevo'` el texto vacío —que es lo que traían los contactos
+         de la lista de espera— pasaba tal cual, y el tablero los escondía en
+         «Ver descartados» en vez de enseñarlos en «Por atender». */
+      estado: (ESTADOS as readonly string[]).includes(v.estado) ? (v.estado as EstadoContacto) : 'Nuevo',
+      // Desde dónde llegó a la web (Instagram, Google…) y en qué página dejó sus datos.
+      fuente: typeof v.fuente === 'string' ? v.fuente : null,
+      campana: typeof v.campana === 'string' ? v.campana : null,
+      pagina: typeof v.pagina === 'string' ? v.pagina : null,
+      registrada: Boolean(v.registrada),
       // De dónde entró decide qué busca: una sesión, formarse o la comunidad.
       // Se resuelve aquí y no en el navegador para que la lista y el correo
       // digan lo mismo. Ver lib/origenes.ts.
