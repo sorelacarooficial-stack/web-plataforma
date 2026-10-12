@@ -201,8 +201,14 @@ export default function Aula({ correo }: { correo?: string | null }) {
 
   if (lecciones === null) {
     return (
-      <div className={css.columna}>
-        <p className={css.vacioTexto}>Cargando tus clases…</p>
+      <div className={a.aula} aria-busy="true" aria-label="Cargando tus clases">
+        <div className={a.principal}>
+          <div className={a.esqueleto} style={{ aspectRatio: '16 / 9', borderRadius: 26 }} />
+          <div className={a.esqueleto} style={{ height: 120 }} />
+        </div>
+        <div className={a.lateral}>
+          <div className={a.esqueleto} style={{ height: 320 }} />
+        </div>
       </div>
     );
   }

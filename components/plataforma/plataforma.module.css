@@ -2714,3 +2714,45 @@
     box-shadow: none;
   }
 }
+
+/* ---------- Fluidez ---------- */
+
+/* La píldora del menú: el fondo del apartado activo vive en un elemento propio
+   que se desliza (ver Plataforma.tsx). El botón activo ya no pinta fondo. */
+.navBoton {
+  position: relative;
+}
+
+.navBoton.navActivo,
+.navBoton.navActivo:hover {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.navPildora {
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.navBoton .navPunto,
+.navBoton .navTexto {
+  position: relative;
+  z-index: 1;
+}
+
+.transicion {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+  min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transicion {
+    transform: none !important;
+  }
+}

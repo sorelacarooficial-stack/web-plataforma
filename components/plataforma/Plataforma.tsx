@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import Motas from '@/components/Motas';
 import logo from '@/fotos/logo-sorela.png';
 import type { Sesion } from '@/lib/sesion-servidor';
@@ -28,6 +29,7 @@ import Comunidad from './Comunidad';
 import FotoPerfil from './FotoPerfil';
 import Avisos from './Avisos';
 import Metricas from './Metricas';
+import PanelAlumna from './PanelAlumna';
 import BlogAdmin from './BlogAdmin';
 import Contactos from './Contactos';
 import Acuerdos from './Acuerdos';
@@ -217,6 +219,15 @@ export default function Plataforma({
                 aria-current={actual === n.id ? 'page' : undefined}
                 className={`${css.navBoton} ${actual === n.id ? css.navActivo : ''}`}
               >
+                {/* La píldora del apartado activo se desliza de uno a otro en
+                    vez de saltar: es lo que hace que el menú se sienta vivo. */}
+                {actual === n.id && (
+                  <motion.span
+                    layoutId="nav-pildora"
+                    className={`${css.navActivo} ${css.navPildora}`}
+                    transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                  />
+                )}
                 <span className={css.navPunto} />
                 <span className={css.navTexto}>{n.label}</span>
               </button>
@@ -253,6 +264,17 @@ export default function Plataforma({
         </aside>
 
         <main className={css.principal}>
+          {/* Cada pantalla entra con un fundido corto. La clave cambia con la
+              pantalla y con el «Ver como», así se nota el cambio sin parpadeo. */}
+          <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={`${rol}-${actual}`}
+            className={css.transicion}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+          >
           <header className={css.cabecera}>
             {/* Alumnas y miembros no tienen título aquí: su pantalla trae el
                 suyo, con su nombre. Se deja el hueco en blanco antes que
@@ -270,9 +292,13 @@ export default function Plataforma({
               miembro» —eso ya no existe— sino de lo que tenga contratado. Al
               mirar «Ver como» desde el panel de Sorela se usa la alumna de
               muestra, la misma que decide el menú de arriba. */}
-          {!esAdmin && actual === 'inicio' && (
-            <Proximamente accesos={accesosVistos} nombre={usuario} />
-          )}
+          {/* Con algo contratado, su panel; sin nada, la pantalla de «a punto». */}
+          {!esAdmin && actual === 'inicio' &&
+            (accesosVistos.length > 0 ? (
+              <PanelAlumna nombre={usuario} foto={sesion.foto} accesos={accesosVistos} ir={ir} />
+            ) : (
+              <Proximamente accesos={accesosVistos} nombre={usuario} />
+            ))}
           {!esAdmin && actual === 'aula' && <Aula correo={sesion.correo} />}
           {/* La misma pantalla que la de Sorela, y a propósito: la agenda de
               una terapeuta y la de Sorela son la misma cosa. Cada una ve solo
@@ -294,6 +320,8 @@ export default function Plataforma({
           {esAdmin && actual === 'blog' && <BlogAdmin />}
           {/* La misma para todas: el servidor decide quién lee, quién escribe y quién modera. */}
           {actual === 'comunidad' && <Comunidad />}
+          </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>
