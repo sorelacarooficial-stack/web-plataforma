@@ -28,7 +28,12 @@ type Pieza = { titulo: string; texto: string; listo?: boolean };
 const YA: Pieza[] = [
   {
     titulo: 'Tus clases',
-    texto: 'Las grabaciones de lo que has contratado, en «Mis clases».',
+    texto: 'Las grabaciones de lo que has contratado, con sus capítulos, en «Mis clases».',
+    listo: true,
+  },
+  {
+    titulo: 'Los dossieres',
+    texto: 'El material de cada día para leer en la plataforma, también en «Mis clases».',
     listo: true,
   },
   {
@@ -40,8 +45,8 @@ const YA: Pieza[] = [
 
 const ALUMNA: Pieza[] = [
   {
-    titulo: 'El material de la formación',
-    texto: 'Lo que traer el primer día y las fichas de valoración, descargables.',
+    titulo: 'Las fichas de valoración',
+    texto: 'Lo que traer el primer día y las fichas para usar con tus clientas.',
   },
   {
     titulo: 'Tu certificado',
@@ -139,7 +144,7 @@ export default function Proximamente({
             ? /* Con acceso, la pantalla dice dónde ir en vez de pedir que
                  espere: sus clases y su agenda están en el menú, y decirle
                  «estamos terminando» le haría irse sin abrirlos. */
-              'Tienes tus clases y tu agenda a la izquierda. El resto —el material descargable, la certificación y la comunidad— lo estamos terminando, y te avisamos por correo en cuanto se abra.'
+              'Tus clases, los dossieres y tu agenda ya están en el menú. Lo demás —la certificación y la comunidad— lo estamos terminando, y te avisamos por correo en cuanto se abra.'
             : esAlumna
               ? 'Estamos terminando el aula de la formación. Cuando esté abierta te llegará un correo y podrás entrar con esta misma cuenta.'
               : 'Estamos terminando la comunidad de terapeutas. Cuando esté abierta te llegará un correo y podrás entrar con esta misma cuenta.'}

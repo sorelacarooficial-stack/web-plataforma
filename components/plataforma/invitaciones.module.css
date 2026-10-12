@@ -1,0 +1,231 @@
+/* Los enlaces de invitación, arriba de Cuentas. Colores de la plataforma. */
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(20px, 2.4vw, 28px);
+  border-radius: clamp(24px, 2.6vw, 34px);
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(217, 180, 124, 0.16), transparent 55%),
+    #fffdf9;
+  border: 1px solid var(--oro-line);
+  box-shadow: 0 18px 40px -28px rgba(60, 45, 25, 0.45);
+}
+
+.cabecera {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.opcion {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.1));
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.opcion:hover {
+  border-color: var(--oro-line);
+}
+
+.opcion[data-on] {
+  border-color: var(--oro);
+  background: var(--oro-tint);
+  box-shadow: 0 0 0 3px rgba(201, 154, 85, 0.14);
+}
+
+.check {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 6px;
+  border: 1.5px solid var(--oro-line);
+  color: #fff;
+  background: #fff;
+  transition: background 0.2s;
+}
+
+.opcion[data-on] .check {
+  border-color: transparent;
+  background: linear-gradient(135deg, #8a6a32, #d9b47c);
+}
+
+.opcionTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.opcionTexto strong {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.opcionTexto span {
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--muted-2, #6b6156);
+}
+
+.campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: end;
+  gap: 12px;
+}
+
+@media (max-width: 760px) {
+  .campos {
+    grid-template-columns: 1fr;
+  }
+}
+
+.opcional {
+  font-weight: 300;
+  color: var(--faint);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.nueva {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #1c1915;
+  color: #f7f2ea;
+}
+
+.nuevaRotulo {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+.enlace {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+  word-break: break-all;
+  color: #f7f2ea;
+}
+
+.nuevaAcciones,
+.filaAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.whatsapp {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: #1f8f4e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: filter 0.2s;
+}
+
+.whatsapp:hover {
+  filter: brightness(1.08);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line-1, rgba(20, 18, 16, 0.07));
+}
+
+.fila[data-estado='caducada'],
+.fila[data-estado='anulada'] {
+  opacity: 0.55;
+}
+
+.filaQuien {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.filaQuien strong {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.filaQuien span {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--faint);
+}
+
+.estado {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--oro-tint);
+  color: var(--oro);
+}
+
+.estado[data-estado='usada'] {
+  background: rgba(111, 138, 99, 0.16);
+  color: #4f6b44;
+}
+
+.estado[data-estado='caducada'],
+.estado[data-estado='anulada'] {
+  background: rgba(20, 18, 16, 0.06);
+  color: var(--faint);
+}

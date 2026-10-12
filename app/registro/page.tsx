@@ -17,6 +17,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function Pagina() {
-  return <Registro />;
+export default async function Pagina({
+  searchParams,
+}: {
+  searchParams: Promise<{ [clave: string]: string | string[] | undefined }>;
+}) {
+  // El enlace de invitación que crea Sorela trae su código aquí.
+  const { invitacion } = await searchParams;
+  return <Registro invitacion={typeof invitacion === 'string' ? invitacion : undefined} />;
 }

@@ -3,6 +3,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { FieldValue } from 'firebase-admin/firestore';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { ROL_POR_DEFECTO } from '@/lib/roles';
+import { MOTIVO_TEXTO, canjear, comprobar } from '@/lib/invitaciones';
 
 /**
  * Crearse una cuenta desde la web.
@@ -126,19 +127,35 @@ export async function POST(peticion: Request) {
   const nombre = recortar(cuerpo.nombre, 120);
   const clave = String(cuerpo.clave ?? '');
   const quiereCrudo = recortar(cuerpo.quiere, 20);
+  /* Si viene de un enlace de invitación, el acceso lo trae el enlace y no
+     hace falta decir a qué viene. Ver lib/invitaciones.ts. */
+  const invitacion = recortar(cuerpo.invitacion, 64);
 
   const errores: Errores = {};
   if (nombre.length < 2) errores.nombre = 'Escribe tu nombre.';
   if (!CORREO.test(correo)) errores.correo = 'Escribe un correo con forma de correo.';
   if (clave.length < CLAVE_MIN) errores.clave = `La contraseña necesita al menos ${CLAVE_MIN} caracteres.`;
-  if (!(quiereCrudo in QUIERE)) errores.quiere = 'Dime a qué vienes.';
+  if (!invitacion && !(quiereCrudo in QUIERE)) errores.quiere = 'Dime a qué vienes.';
   if (cuerpo.consentimiento !== true) {
     errores.consentimiento = 'Necesito que lo aceptes para poder guardar tus datos.';
   }
   if (Object.keys(errores).length > 0) {
     return NextResponse.json({ ok: false, motivo: 'datos', errores }, { status: 400 });
   }
-  const quiere = quiereCrudo as Quiere;
+  const quiere: Quiere = quiereCrudo in QUIERE ? (quiereCrudo as Quiere) : 'curso';
+
+  /* Antes de crear nada, que el enlace valga para este correo. Se vuelve a
+     comprobar al gastarlo, dentro de la transacción: esto es solo para no
+     crear una cuenta que luego habría que deshacer. */
+  if (invitacion) {
+    const v = await comprobar(invitacion, correo);
+    if (!v.ok) {
+      return NextResponse.json(
+        { ok: false, motivo: 'invitacion', errores: { invitacion: MOTIVO_TEXTO[v.motivo] } },
+        { status: 409 }
+      );
+    }
+  }
 
   /*
    * El freno va AQUÍ, después de revisar y no antes.
@@ -216,7 +233,11 @@ export async function POST(peticion: Request) {
   try {
     await auth.setCustomUserClaims(usuario.uid, { role: ROL_POR_DEFECTO });
 
-    await baseDeDatos()
+    if (invitacion) {
+      // La ficha la escribe canjear(), con los accesos del enlace ya puestos.
+      const r = await canjear(invitacion, { uid: usuario.uid, correo, nombre }, true);
+      if (!r.ok) throw new Error(`invitación ${r.motivo}`);
+    } else await baseDeDatos()
       .collection(COLECCIONES.usuarios)
       .doc(usuario.uid)
       .set({
@@ -275,7 +296,7 @@ export async function POST(peticion: Request) {
       {
         nombre,
         correo,
-        origen: QUIERE[quiere].origen,
+        origen: invitacion ? 'invitacion' : QUIERE[quiere].origen,
         /* Que se ha creado la cuenta ella misma. Lo usa la lista para
            distinguirla de quien solo ha dejado su contacto: una ya está
            dentro esperando, la otra todavía no ha dado ese paso. */
@@ -286,6 +307,8 @@ export async function POST(peticion: Request) {
            la conversación, y volver a poner la fecha de hoy le quitaría el día
            que de verdad apareció. */
         ...(yaEstaba ? {} : { estado: 'Nuevo', veces: 1, creado: FieldValue.serverTimestamp() }),
+        /* Con enlace de invitación es que ya ha pagado: en el CRM, cerrada. */
+        ...(invitacion ? { estado: 'Cerrado' } : {}),
       },
       { merge: true }
     );
@@ -293,5 +316,5 @@ export async function POST(peticion: Request) {
     console.error('[registro] Cuenta creada, pero sin ficha en la lista de contactos:', e);
   }
 
-  return NextResponse.json({ ok: true, correo, nombre, quiere });
+  return NextResponse.json({ ok: true, correo, nombre, quiere, conInvitacion: Boolean(invitacion) });
 }

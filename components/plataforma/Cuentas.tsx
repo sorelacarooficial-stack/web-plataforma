@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { ETIQUETA_ROL, ROL_POR_DEFECTO, type Rol } from '@/lib/roles';
 import { clave } from '@/lib/aula';
 import { CURSO_DIVINE, cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
+import Invitaciones from './Invitaciones';
 import css from './plataforma.module.css';
 
 /**
@@ -448,15 +449,8 @@ export default function Cuentas() {
           pantalla importe: aquí se decide quién entra y quién no. Antes este
           aviso decía que la cuenta nueva «todavía no podrá entrar» y nombraba
           una variable del código; ya no es verdad ni hace falta. */}
-      {!abierta && (
-        <div className={css.aviso} role="note">
-          <p className={css.parrafo} style={{ flex: '1 1 320px', margin: 0 }}>
-            <strong>Solo entra quien des de alta aquí.</strong> Nadie puede hacerse una cuenta por
-            su cuenta, aunque conozca la dirección. Das el alta, le mandas su enlace, y con eso ya
-            entra.
-          </p>
-        </div>
-      )}
+      {/* La forma normal de dar acceso: un enlace de un solo uso. */}
+      <Invitaciones />
 
       {fallo && (
         <p className={css.avisoFallo} role="alert">

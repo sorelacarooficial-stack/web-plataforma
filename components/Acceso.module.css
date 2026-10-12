@@ -439,3 +439,34 @@
 .foto {
   box-shadow: var(--neu-fuera);
 }
+
+/* ---------- Enlace de invitación ---------- */
+
+.invitacion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: var(--oro-tint);
+  border: 1px solid var(--oro);
+}
+
+.invitacionRotulo {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.invitacionQue {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.invitacionQue + .letraPequena,
+.invitacion .letraPequena {
+  margin-top: 6px;
+}

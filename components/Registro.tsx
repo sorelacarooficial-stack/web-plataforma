@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import Marco from './MarcoAcceso';
 import { auth, hayAuth } from '@/lib/firebase-navegador';
@@ -41,8 +41,34 @@ const QUE_QUIERO = [
   },
 ];
 
-export default function Registro() {
+type Invitacion = { etiquetas: string[]; nombre: string | null; correo: string | null };
+
+export default function Registro({ invitacion }: { invitacion?: string }) {
   const router = useRouter();
+
+  /* Con enlace de invitación, la pantalla cambia: el acceso ya viene dado,
+     así que no se pregunta a qué viene ni se avisa de que hay que esperar. */
+  const [inv, setInv] = useState<Invitacion | null>(null);
+  const [invFallo, setInvFallo] = useState<string | null>(null);
+  const [invCargando, setInvCargando] = useState(Boolean(invitacion));
+  /* Si ese correo ya tiene cuenta, no se crea otra: se entra con la contraseña
+     de siempre y se le suma lo del enlace. */
+  const [yaTiene, setYaTiene] = useState(false);
+
+  useEffect(() => {
+    if (!invitacion) return;
+    fetch(`/api/invitaciones/ver?codigo=${encodeURIComponent(invitacion)}`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.ok) {
+          setInv({ etiquetas: j.etiquetas, nombre: j.nombre, correo: j.correo });
+          if (j.nombre) setNombre(j.nombre);
+          if (j.correo) setCorreo(j.correo);
+        } else setInvFallo(j.texto || 'Este enlace no vale.');
+      })
+      .catch(() => setInvFallo('No he podido comprobar el enlace. Revisa la conexión y recarga.'))
+      .finally(() => setInvCargando(false));
+  }, [invitacion]);
 
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
@@ -58,12 +84,52 @@ export default function Registro() {
   const [cargando, setCargando] = useState(false);
   const [hecho, setHecho] = useState(false);
 
+  /** Entra con su contraseña de siempre y le suma lo del enlace. */
+  async function anadirAMiCuenta() {
+    if (!hayAuth || !invitacion) return;
+    try {
+      const credencial = await signInWithEmailAndPassword(auth(), correo.trim(), clave);
+      const token = await credencial.user.getIdToken(true);
+      const r = await fetch('/api/invitaciones/canjear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo: invitacion, token }),
+      });
+      const c = await r.json().catch(() => ({ ok: false }));
+      if (!c.ok) {
+        setError(c.texto || 'No he podido añadirlo a tu cuenta. Vuelve a intentarlo.');
+        setCargando(false);
+        return;
+      }
+      const s = await fetch('/api/sesion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      if ((await s.json().catch(() => ({ ok: false }))).ok) {
+        router.push('/plataforma');
+        router.refresh();
+        return;
+      }
+      setHecho(true);
+      setCargando(false);
+    } catch {
+      setErrores({ clave: 'Esa no es la contraseña de tu cuenta. Escribe la de siempre o recupérala desde «Entrar».' });
+      setCargando(false);
+    }
+  }
+
   async function enviar(e: FormEvent) {
     e.preventDefault();
     if (cargando) return;
     setCargando(true);
     setErrores({});
     setError(null);
+
+    if (yaTiene) {
+      await anadirAMiCuenta();
+      return;
+    }
 
     try {
       const r = await fetch('/api/registro', {
@@ -76,11 +142,19 @@ export default function Registro() {
           quiere,
           consentimiento: acepta,
           empresa,
+          invitacion: inv ? invitacion : undefined,
         }),
       });
       const c = await r.json().catch(() => ({ ok: false }));
 
       if (!c.ok) {
+        /* Con enlace y un correo que ya tiene cuenta: se prueba a entrar con
+           la contraseña que acaba de escribir, que muchas veces es la suya. */
+        if (inv && c.motivo === 'ya-existe') {
+          setYaTiene(true);
+          await anadirAMiCuenta();
+          return;
+        }
         setErrores(c.errores ?? {});
         if (!c.errores || Object.keys(c.errores).length === 0) {
           setError(
@@ -135,12 +209,18 @@ export default function Registro() {
       <Marco>
         <h1 className={css.titulo}>Ya tienes tu cuenta.</h1>
         <div className={css.caja}>
+          {inv ? (
+            <p className="texto-fijo">
+              Y ya tienes dentro {inv.etiquetas.join(' y ')}. Entra con tu correo y tu contraseña.
+            </p>
+          ) : (
           <p className="texto-fijo">
             Entra con tu correo y la contraseña que acabas de elegir. Dentro verás tu espacio:
             todavía en preparación hasta que yo te dé{' '}
             {quiere === 'comunidad' ? 'la comunidad' : 'tu formación'}, que es el paso que hago yo.
           </p>
-          <p className="texto-fijo">Te escribo en cuanto lo vea.</p>
+          )}
+          {!inv && <p className="texto-fijo">Te escribo en cuanto lo vea.</p>}
         </div>
         <p className={css.cambio}>
           <Link href="/entrar" className={css.enlaceFino}>
@@ -153,18 +233,44 @@ export default function Registro() {
 
   return (
     <Marco>
-      <h1 className={css.titulo}>Crea tu cuenta</h1>
+      <h1 className={css.titulo}>{inv ? (yaTiene ? 'Añádelo a tu cuenta' : 'Bienvenida') : 'Crea tu cuenta'}</h1>
 
       <div className={css.caja}>
-        {/* Se dice ANTES de que escriba nada, no después de pulsar: si alguien
-            rellena cuatro campos creyendo que va a entrar en la comunidad y se
-            encuentra con que no, la culpa es de esta pantalla. */}
-        <p className={css.letraPequena} style={{ maxWidth: 'none', marginBottom: 4 }}>
-          Crear la cuenta no te da acceso todavía: el acceso te lo doy yo cuando confirmo tu plaza.
-          Esto es para que tengas tu contraseña puesta y no dependas de que yo te mande nada.
-        </p>
+        {invitacion && invCargando && <p className={css.letraPequena}>Comprobando tu enlace…</p>}
+        {invFallo && (
+          <p className={css.error} role="alert" style={{ marginBottom: 8 }}>
+            {invFallo}
+          </p>
+        )}
+        {inv ? (
+          <div className={css.invitacion}>
+            <span className={css.invitacionRotulo}>Sorela te da acceso a</span>
+            {inv.etiquetas.map((e) => (
+              <strong key={e} className={css.invitacionQue}>
+                {e}
+              </strong>
+            ))}
+            <span className={css.letraPequena} style={{ maxWidth: 'none' }}>
+              {yaTiene
+                ? 'Ese correo ya tiene cuenta. Escribe tu contraseña de siempre y lo añado a lo que ya tienes.'
+                : 'Crea tu contraseña y entras directamente. Si ya tienes cuenta, pon tu correo y tu contraseña de siempre.'}
+            </span>
+          </div>
+        ) : (
+          /* Se dice ANTES de que escriba nada, no después de pulsar: si alguien
+             rellena cuatro campos creyendo que va a entrar en la comunidad y se
+             encuentra con que no, la culpa es de esta pantalla. */
+          !invitacion && (
+            <p className={css.letraPequena} style={{ maxWidth: 'none', marginBottom: 4 }}>
+              Crear la cuenta no te da acceso todavía: el acceso te lo doy yo cuando confirmo tu plaza.
+              Esto es para que tengas tu contraseña puesta y no dependas de que yo te mande nada.
+            </p>
+          )
+        )}
 
+        {(!invitacion || inv) && (
         <form className={css.formulario} onSubmit={enviar} noValidate>
+          {!inv && (
           <fieldset className={css.opciones}>
             <legend className={css.opcionesTitulo}>A qué vienes</legend>
             {QUE_QUIERO.map((o) => (
@@ -187,6 +293,7 @@ export default function Registro() {
               </label>
             ))}
           </fieldset>
+          )}
 
           <input
             type="text"
@@ -195,6 +302,7 @@ export default function Registro() {
             placeholder="Nombre y apellidos"
             aria-label="Nombre y apellidos"
             className={css.campo}
+            hidden={yaTiene}
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
           />
@@ -214,6 +322,7 @@ export default function Registro() {
             aria-label="Correo"
             className={css.campo}
             value={correo}
+            readOnly={Boolean(inv?.correo) || yaTiene}
             onChange={(e) => setCorreo(e.target.value)}
           />
           {errores.correo && (
@@ -225,7 +334,7 @@ export default function Registro() {
           <input
             type="password"
             autoComplete="new-password"
-            placeholder="Contraseña (mínimo 8 caracteres)"
+            placeholder={yaTiene ? 'Tu contraseña de siempre' : 'Contraseña (mínimo 8 caracteres)'}
             aria-label="Contraseña"
             className={css.campo}
             value={clave}
@@ -283,9 +392,15 @@ export default function Registro() {
           )}
 
           <button type="submit" className={css.enviar} disabled={cargando}>
-            {cargando ? 'Un momento…' : 'Crear mi cuenta'}
+            {cargando ? 'Un momento…' : yaTiene ? 'Añadir a mi cuenta' : inv ? 'Crear mi cuenta y entrar' : 'Crear mi cuenta'}
           </button>
+          {errores.invitacion && (
+            <p className={css.error} role="alert">
+              {errores.invitacion}
+            </p>
+          )}
         </form>
+        )}
       </div>
 
       <p className={css.cambio}>
