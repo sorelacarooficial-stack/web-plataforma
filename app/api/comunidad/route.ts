@@ -151,11 +151,18 @@ export async function GET(peticion: Request) {
     return NextResponse.json({ ok: true, publicacion: await aPublicacion(d, autoras, yo), respuestas });
   }
 
-  const [lista, actividad, ajustes] = await Promise.all([
+  const [lista, actividad, ajustes, admins] = await Promise.all([
     db.collection(POSTS).orderBy('ultimaActividad', 'desc').limit(60).get(),
     db.collection(ACTIVIDAD).doc(mesDe()).get(),
     db.collection(COLECCIONES.ajustes).doc('comunidad').get(),
+    db.collection(COLECCIONES.usuarios).where('rol', '==', 'sorela').limit(5).get(),
   ]);
+  /* Quién firma la bienvenida: la cuenta de Sorela, con su foto si la tiene. */
+  const ficha = admins.docs.map((d) => d.data()).sort((a, b) => Number(Boolean(b.foto)) - Number(Boolean(a.foto)))[0];
+  const sorela = {
+    nombre: String(ficha?.nombre || 'Sorela Caro'),
+    foto: typeof ficha?.foto === 'string' && ficha.foto.length < 400_000 ? ficha.foto : null,
+  };
   const autoras = await autorasDe(lista.docs.map((d) => d.data().autor));
   const publicaciones = await Promise.all(lista.docs.map((d) => aPublicacion(d, autoras, yo)));
   // Las fijadas, arriba; el resto por última actividad.
@@ -180,6 +187,7 @@ export async function GET(peticion: Request) {
     publicaciones,
     ranking,
     proximaClase,
+    sorela,
   });
 }
 

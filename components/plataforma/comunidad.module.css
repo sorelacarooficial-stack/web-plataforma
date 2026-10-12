@@ -1045,3 +1045,101 @@
   right: 16px;
   font-size: 15px;
 }
+
+/* ---------- Bienvenida ---------- */
+
+.bienvenida {
+  border-color: var(--oro-line);
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(217, 180, 124, 0.2), transparent 55%),
+    #fffdf9;
+}
+
+.bienvenidaTitulo {
+  margin: 4px 0 0;
+  font-family: var(--fuente-cormorant), serif;
+  font-size: clamp(28px, 3vw, 38px);
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+.bienvenidaCuerpo {
+  overflow: hidden;
+  /* Aire para que la sombra de las tarjetas de dentro no se corte. */
+  margin: 0 -8px;
+  padding: 0 8px 6px;
+}
+
+.bienvenidaBloques {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  padding-top: 4px;
+}
+
+.bienvenidaBloques section {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: var(--neu-base);
+  box-shadow: var(--neu-fuera-sm);
+}
+
+.bienvenidaBloques h4 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.bienvenidaBloques ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bienvenidaBloques li {
+  position: relative;
+  padding-left: 14px;
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.bienvenidaBloques li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #cfa25e;
+}
+
+.bienvenidaBloques b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.bienvenidaCierre {
+  margin: 16px 0 0;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--ink-3);
+}
+
+.firma {
+  margin: 8px 0 0;
+  font-family: var(--fuente-cormorant), serif;
+  font-style: italic;
+  font-size: 26px;
+  color: var(--oro);
+}

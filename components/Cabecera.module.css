@@ -4,9 +4,12 @@
   left: 0;
   right: 0;
   z-index: 50;
-  background: color-mix(in srgb, var(--bg) 76%, transparent);
-  backdrop-filter: saturate(160%) blur(18px);
-  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  /* Casi opaca: los titulares de la web son enormes y, con más transparencia,
+     al bajar se leían a la vez que el menú. Lo de debajo queda solo como una
+     sombra desenfocada. */
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: saturate(160%) blur(26px);
+  -webkit-backdrop-filter: saturate(160%) blur(26px);
   border-bottom: 1px solid var(--caja-borde);
 }
 

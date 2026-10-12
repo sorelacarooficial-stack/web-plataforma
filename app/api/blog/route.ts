@@ -68,6 +68,7 @@ function limpiarBloques(crudo: unknown): Bloque[] {
 function refrescarWeb(slug?: string) {
   try {
     revalidatePath('/blog');
+    revalidatePath('/'); // la portada lleva el carrusel del blog
     revalidatePath('/sitemap.xml');
     if (slug) revalidatePath(`/blog/${slug}`);
   } catch (e) {

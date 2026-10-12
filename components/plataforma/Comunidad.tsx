@@ -12,6 +12,7 @@ import {
   type Publicacion,
   type Respuesta,
 } from '@/lib/comunidad-tipos';
+import Bienvenida from './Bienvenida';
 import css from './plataforma.module.css';
 import c from './comunidad.module.css';
 
@@ -31,6 +32,7 @@ type Datos = {
   publicaciones: Publicacion[];
   ranking: { uid: string; nombre: string; puntos: number }[];
   proximaClase: ProximaClase;
+  sorela: { nombre: string; foto: string | null };
 };
 
 type Filtro = 'Todo' | CategoriaComunidad | 'Sin responder';
@@ -587,6 +589,12 @@ export default function Comunidad() {
           </>
         )}
 
+        {/* La bienvenida, fija arriba para todas. Abierta mientras la
+            comunidad está vacía; recogida cuando ya hay conversación. */}
+        {datos && (filtro === 'Todo' || filtro === 'Anuncio') && (
+          <Bienvenida sorela={datos.sorela} puedeEscribir={datos.puedeEscribir} abiertaAlEmpezar={datos.publicaciones.length === 0} />
+        )}
+
         <motion.div layout className={c.lista}>
           <AnimatePresence initial={false} mode="popLayout">
             {lista.map((p) => (
@@ -606,9 +614,9 @@ export default function Comunidad() {
         {datos && lista.length === 0 && (
           <div className={c.vacio}>
             {datos.publicaciones.length === 0
-              ? datos.modera
-                ? 'Todavía no ha publicado nadie. Un anuncio de bienvenida tuyo es la mejor forma de abrirla.'
-                : 'Todavía no ha publicado nadie. La primera que escriba abre la comunidad.'
+              ? datos.puedeEscribir
+                ? 'Todavía no ha publicado nadie más. Preséntate y abre la conversación.'
+                : 'Todavía no ha publicado nadie más.'
               : filtro === 'Sin responder'
                 ? '¡Todo respondido! No queda nadie esperando.'
                 : 'Nada en esta sección todavía.'}

@@ -16,6 +16,8 @@ import LlamadaDivine from '@/components/LlamadaDivine';
 import BotonAsistente from '@/components/BotonAsistente';
 import BotonCaptacion from '@/components/BotonCaptacion';
 import DatosEstructurados from '@/components/DatosEstructurados';
+import BlogCarrusel from '@/components/BlogCarrusel';
+import { articulosPublicados } from '@/lib/blog';
 import {
   FAQS,
   INSTAGRAM,
@@ -42,7 +44,20 @@ export const metadata: Metadata = {
     'Te enseño la Técnica Divine, mi método de drenaje linfático manual avanzado: primero la formación online y después dos días presenciales conmigo.',
 };
 
-export default function Home() {
+/* La portada lleva los últimos artículos del blog: se rehace cada cinco
+   minutos y al instante cuando Sorela publica (ver app/api/blog). */
+export const revalidate = 300;
+
+export default async function Home() {
+  const articulos = (await articulosPublicados(8)).map((a) => ({
+    slug: a.slug,
+    titulo: a.titulo,
+    resumen: a.resumen,
+    categoria: a.categoria,
+    portada: a.portada?.url ?? null,
+    minutos: a.minutos,
+  }));
+
   return (
     // clip y no hidden: corta lo que asoma por los lados (la cinta de fotos,
     // las esquinas) sin romper las tarjetas que se quedan pegadas al bajar.
@@ -344,6 +359,15 @@ export default function Home() {
           <DatosEstructurados preguntas={FAQS} />
         </div>
       </section>
+
+      {/* ---------- Blog ---------- */}
+      {articulos.length > 0 && (
+        <section className="seccion">
+          <div className="wrap">
+            <BlogCarrusel articulos={articulos} />
+          </div>
+        </section>
+      )}
 
       {/* ---------- Cierre ---------- */}
       <section className={`panel-oscuro ${css.cierre}`}>
