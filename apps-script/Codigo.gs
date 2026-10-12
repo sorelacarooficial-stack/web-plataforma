@@ -484,7 +484,7 @@ function cierreMembresia(quien, apertura) {
       Cuando +
       ' abro la Comunidad Divine' +
       (fuera ? ' (' + fuera + ')' : '') +
-      ' con una masterclass en directo por Zoom. Lo que hay dentro te lo cuento ese día. Estás en la lista: ese mismo día te mando el enlace para entrar.'
+      ' con una masterclass en directo por Zoom sobre mi técnica y el alto impacto de lo digital en las terapeutas. Lo que hay dentro te lo cuento ese día. Estás en la lista: ese mismo día te mando el enlace para entrar.'
     );
   }
 

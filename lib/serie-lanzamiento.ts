@@ -12,8 +12,9 @@ import type { Campana } from './plantillas-campana';
  * tercero.
  *
  * LO QUE HAY DENTRO NO SE CUENTA. Ni aquí ni en la web: se presenta ese día en
- * la masterclass, y es lo que hace que vengan. Los correos dicen por qué existe
- * la comunidad, nunca qué trae.
+ * la masterclass, y es lo que hace que vengan. Los correos dicen de qué va la
+ * masterclass —la técnica de Sorela y el alto impacto de lo digital en las
+ * terapeutas—, nunca qué trae la comunidad.
  *
  * El último lleva el botón de Zoom SIN enlace a propósito: no sale hasta que
  * Sorela lo pegue en Programados (lib/campanas.ts no manda un correo con un
@@ -82,9 +83,12 @@ El viernes que viene empieza la cuenta atrás.`,
 
 Las horas en cada país: ${APERTURA_POR_PAISES}.
 
-Lo que hay dentro no te lo voy a contar por correo. Quiero enseñártelo ese día, en directo y con calma.
+Lo que hay dentro de la comunidad no te lo voy a contar por correo: te lo presento ese día.
 
-Lo único que te adelanto es por qué existe: lo que más me piden después de una formación es no quedarse solas. Tener a quien preguntar el día que una clienta no responde como esperabas.
+Lo que sí te adelanto es de qué te voy a hablar:
+
+- **La Técnica Divine**: cómo trabajo y por qué la enseño como la enseño.
+- **El alto impacto de lo digital en las terapeutas**: lo que ya está cambiando en nuestro oficio y cómo aprovecharlo en lugar de sufrirlo.
 
 Apúntatelo ya en el calendario. Si solo haces una cosa con este correo, que sea esa.
 
@@ -164,7 +168,7 @@ Ideas que puedes grabar esta misma semana sin enseñar la cara:
 
 Un truco: publica menos pero con constancia. Dos veces por semana durante tres meses vale más que todos los días durante dos semanas.
 
-Quedan tres días para la masterclass. Mañana te cuento lo que aprendí en Termatalia.`,
+De esto, y del impacto que lo digital está teniendo en nuestro trabajo, hablo a fondo en la masterclass del viernes. Mañana te cuento lo que aprendí en Termatalia.`,
     boton: null,
   },
   {
@@ -174,9 +178,9 @@ Quedan tres días para la masterclass. Mañana te cuento lo que aprendí en Term
     asunto: 'Lo que aprendí en Termatalia',
     cuerpo: `En septiembre presenté la Técnica Divine en Termatalia, en Ourense: profesionales de dieciséis países y una charla con la Asociación Gallega de Esteticistas.
 
-Me traje muchas cosas, pero una sobre todo: **casi todas las preguntas que me hicieron eran de terapeutas que trabajan solas.** Cómo saber si lo están haciendo bien. Qué hacer con una clienta que no avanza. Con quién comentar un caso raro.
+De todo lo que hablé allí con otras profesionales me quedé con una idea: **nuestro oficio está cambiando muy deprisa, y no por la técnica, sino por lo digital.** Cómo te encuentran, cómo te comparan y cómo te eligen antes de pisar tu cabina.
 
-Ese es el motivo por el que existe la Comunidad Divine. Aprender una técnica se hace en unos días; dominarla lleva años, y se hace mucho mejor acompañada: viendo cómo lo resuelven otras, preguntando sin miedo a parecer novata, volviendo a lo básico cuando hace falta.
+La técnica sigue siendo la base: sin buenas manos no hay nada que contar. Pero hoy, contarlo bien es parte del trabajo. De las dos cosas va la masterclass.
 
 Si quieres ver cómo fue, lo conté con fotos en el blog.
 
@@ -188,7 +192,7 @@ Pasado mañana a las ${HORA_ESPANA} (hora de España) nos vemos en la masterclas
     fecha: '2026-11-05',
     etiqueta: 'Falta 1 día',
     asunto: 'Mañana a las {hora}: la masterclass',
-    cuerpo: `Mañana, **${DIA_APERTURA} a las ${HORA_ESPANA}** (hora de España), es la masterclass en directo. Ahí te cuento por fin qué es la Comunidad Divine.
+    cuerpo: `Mañana, **${DIA_APERTURA} a las ${HORA_ESPANA}** (hora de España), es la masterclass en directo. Te hablo de la Técnica Divine y del alto impacto de lo digital en las terapeutas, y al final te cuento por fin qué es la Comunidad Divine.
 
 Las horas en cada país: ${APERTURA_POR_PAISES}.
 

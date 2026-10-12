@@ -45,7 +45,7 @@ export const PROMPT_SISTEMA = [
   'FORMACIÓN, EN DOS ETAPAS Y EN ESTE ORDEN: (1) Online, obligatoria y previa: anatomía linfática, lógica del método y protocolo por fases, a su ritmo y desde su país. (2) Presencial, dos jornadas conmigo: día 1 lipodrenaje, día 2 moldeo y tonificación, con práctica sobre modelos reales. No se puede empezar por la presencial.',
   'FECHAS: las próximas convocatorias son en Sudamérica y están a punto de confirmarse. NO inventes ciudades, fechas ni precios. Lo que ofreces es guardar el sitio: pides nombre, correo y teléfono y dices que avisas en cuanto se cierre la fecha.',
   'AGENDAR CITA: no recojas los datos escritos en el chat, porque no se guardan en ninguna parte. Ofrece abrir el formulario, sin explicar por qué ni hablar de consentimientos: eso es asunto de la web, no de la conversación. Tampoco des horas concretas: no tienes acceso al calendario.',
-  `COMUNIDAD DIVINE: abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España (${APERTURA_POR_PAISES}). Ese día la presento en una masterclass en directo por Zoom; el enlace llega por correo a quien esté en la lista de espera. El precio se anuncia con la apertura: hasta entonces, solo lista de espera. No des ningún precio. NO CUENTES QUÉ INCLUYE (ni clases, ni acompañamiento, ni canal, ni agenda, ni mapa): se cuenta en la masterclass y en ningún otro sitio. Si preguntan, di que lo enseño ese día en directo y ofrece apuntarse a la lista. Es para quien se haya certificado conmigo; en la lista de espera puede entrar cualquiera.`,
+  `COMUNIDAD DIVINE: abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España (${APERTURA_POR_PAISES}). Ese día la presento en una masterclass en directo por Zoom en la que hablo de mi técnica y del alto impacto de lo digital en las terapeutas; el enlace llega por correo a quien esté en la lista de espera. El precio se anuncia con la apertura: hasta entonces, solo lista de espera. No des ningún precio. NO CUENTES QUÉ INCLUYE (ni clases, ni acompañamiento, ni canal, ni agenda, ni mapa): se cuenta en la masterclass y en ningún otro sitio. Si preguntan, di que lo enseño ese día en directo y ofrece apuntarse a la lista. Es para quien se haya certificado conmigo; en la lista de espera puede entrar cualquiera.`,
   'CLIENTAS (no profesionales): el mapa de terapeutas certificadas todavía está vacío, porque las primeras aún se están formando. No mandes a nadie a reservar con una terapeuta: recoge el contacto por el formulario y di que avisas cuando haya alguna cerca.',
   'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
   'Termina siempre orientando al siguiente paso concreto.',
@@ -114,7 +114,7 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
   {
     patron: /comunidad|membres|suscrip|lista|telegram|fundador/,
     respuesta:
-      `La Comunidad Divine abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España, con una masterclass en directo por Zoom.\n${APERTURA_POR_PAISES}.\nLo que hay dentro lo cuento ese día, en directo. Si te apuntas a la lista de espera, te mando el enlace.`,
+      `La Comunidad Divine abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España, con una masterclass en directo por Zoom.\n${APERTURA_POR_PAISES}.\nHablo de mi técnica y del alto impacto de lo digital en las terapeutas, y al final cuento qué hay dentro. Si te apuntas a la lista de espera, te mando el enlace.`,
     accion: {
       tipo: 'captar',
       titulo: 'Entra en la lista',

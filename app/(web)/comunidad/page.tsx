@@ -38,8 +38,9 @@ export default function Comunidad() {
                 ella y quien lee es una terapeuta a la que conoce. */}
             <h1 className={`${css.titulo} degradado`}>Estoy preparando algo especial para ti.</h1>
             <p className="lede max-540" style={{ lineHeight: 1.62 }}>
-              El sitio donde sigo enseñando después del curso. Lo que hay dentro te lo cuento el{' '}
-              {DIA_APERTURA} en una masterclass en directo por Zoom.
+              El sitio donde sigo enseñando después del curso. Te lo presento el {DIA_APERTURA} en
+              una masterclass en directo por Zoom, sobre mi técnica y el alto impacto de lo digital
+              en las terapeutas.
             </p>
             <p className="texto max-540">
               Apúntate a la lista de espera y te mando el enlace.

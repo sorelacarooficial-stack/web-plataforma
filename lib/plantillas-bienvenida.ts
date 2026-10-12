@@ -29,7 +29,7 @@ const cuando = `el ${DIA_APERTURA} a las ${HORA_ESPANA}, hora de España,`;
 function cierreComunidad(t: Tipo) {
   if (t === 'comunidad')
     // Lo que hay dentro NO se cuenta: se presenta ese día en la masterclass.
-    return `${CUANDO} abro la Comunidad Divine${fuera ? ` (${fuera})` : ''} con una masterclass en directo por Zoom. Lo que hay dentro te lo cuento ese día. Estás en la lista: hasta entonces te escribo con ideas para tu cabina, y ese mismo día te mando el enlace para entrar.`;
+    return `${CUANDO} abro la Comunidad Divine${fuera ? ` (${fuera})` : ''} con una masterclass en directo por Zoom: te hablo de mi técnica y del alto impacto de lo digital en las terapeutas, y al final te cuento qué hay dentro. Estás en la lista: hasta entonces te escribo con ideas para tu cabina, y ese mismo día te mando el enlace para entrar.`;
   if (t === 'alumna')
     return `Y por si te sirve para decidirte: la formación no termina en el certificado. ${CUANDO} abro la Comunidad Divine, que es donde sigo enseñando después del curso. La presento ese día en una masterclass en directo.`;
   if (t === 'clienta')
