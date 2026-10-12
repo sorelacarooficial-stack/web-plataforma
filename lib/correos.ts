@@ -95,16 +95,23 @@ async function porResend(c: Correo): Promise<void> {
       subject: c.asunto,
       text: c.texto,
       html: c.html,
-      reply_to: c.responderA || correoDeSorela() || undefined,
+      /* Si el buzón hola@ está conectado a la plataforma, las respuestas van
+         ahí, para leerlas y contestarlas en «Buzón». Si no, a su Gmail. */
+      reply_to: c.responderA || (process.env.BUZON_CLAVE ? de.replace(/^.*<|>$/g, '') : correoDeSorela()) || undefined,
       /* Baja en un clic desde el propio Gmail (el botón «Anular suscripción»
          junto al remitente). Gmail y Yahoo lo EXIGEN desde 2024 a quien manda
          correos a listas; sin esto, esos correos van a spam. Apunta a la API,
          que acepta el POST que hacen ellos sin pasar por la página. */
-      ...(c.baja
+      ...(c.baja || c.cabeceras
         ? {
             headers: {
-              'List-Unsubscribe': `<${bajaDirecta(c.para)}>, <mailto:${correoDeSorela() ?? ''}?subject=Baja>`,
-              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+              ...(c.cabeceras ?? {}),
+              ...(c.baja
+                ? {
+                    'List-Unsubscribe': `<${bajaDirecta(c.para)}>, <mailto:${correoDeSorela() ?? ''}?subject=Baja>`,
+                    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                  }
+                : {}),
             },
           }
         : {}),
@@ -159,6 +166,8 @@ export type Correo = {
   responderA?: string;
   /** Enlace de baja: va en los correos que no son respuesta a algo que pidió. */
   baja?: string;
+  /** Cabeceras extra: In-Reply-To y References, para que una respuesta caiga en su hilo. */
+  cabeceras?: Record<string, string>;
   /** PDF adjuntos (el acuerdo y el dossier). Solo por Resend o SMTP. */
   adjuntos?: { nombre: string; contenido: Buffer; tipo: string }[];
 };

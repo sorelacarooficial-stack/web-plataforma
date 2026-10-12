@@ -38,7 +38,8 @@ export type Vista =
   | 'cuentas'
   | 'metricas'
   | 'blog'
-  | 'correos';
+  | 'correos'
+  | 'buzon';
 
 /**
  * El menú de cada rol.
@@ -62,6 +63,8 @@ export function navDe(rol: Rol, conAcceso = false): { id: Vista; label: string }
       // Los correos que salen solos, con su historial: va junto a Clientes
       // porque es la otra mitad de la misma conversación.
       { id: 'correos', label: 'Correos' },
+      // El buzón hola@: leer y contestar lo que escribe la gente.
+      { id: 'buzon', label: 'Buzón' },
       // Las alumnas que han firmado el acuerdo de confidencialidad.
       { id: 'acuerdos', label: 'Acuerdos' },
       { id: 'agenda', label: 'Agenda' },
@@ -123,6 +126,7 @@ export function tituloDe(vista: Vista, rol: Rol) {
     metricas: 'Métricas',
     blog: 'Blog',
     correos: 'Correos',
+    buzon: 'Buzón',
   };
   return titulos[vista];
 }
@@ -151,6 +155,7 @@ export function seccionDe(vista: Vista, rol: Rol) {
     metricas: 'Tu web',
     blog: 'Tu web',
     correos: 'CRM',
+    buzon: 'hola@sorelacarodivine.com',
   };
   return secciones[vista];
 }
