@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'node:crypto';
 import { getAuth } from 'firebase-admin/auth';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldPath, FieldValue } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { esRol, correoEsAdmin, normalizarRol, PLATAFORMA_ABIERTA, type Rol } from '@/lib/roles';
 import { revisarAccesos } from '@/lib/accesos';
 import { after } from 'next/server';
 import { alCambiarAccesos } from '@/lib/automatizar';
 import { sesionActual } from '@/lib/sesion-servidor';
+import { COLECCION_ACTIVIDAD, mesDe } from '@/lib/actividad';
+import { borrarFicha } from '@/lib/fichas';
 
 /**
  * Gestión de personas y roles. Solo para Sorela.
@@ -609,5 +612,40 @@ export async function DELETE(peticion: Request) {
     return NextResponse.json({ ok: false, motivo: 'ficha-suelta', uid }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, uid });
+  /*
+   * Y lo demás que era suyo: su perfil con la galería, sus fotos en el
+   * almacén (las del perfil y las que subió a la comunidad), su ficha del mapa
+   * —que además quita la página pública— y su entrada en el ranking del mes.
+   * Sus publicaciones de la comunidad se quedan, como avisa la pantalla.
+   *
+   * La cuenta ya no existe, así que nada de esto debe hacer que la respuesta
+   * diga que ha fallado: lo que no se pueda limpiar se apunta y se devuelve en
+   * `pendiente`, para saber qué mirar.
+   */
+  const pendiente: string[] = [];
+  const intentar = async (que: string, hacer: () => Promise<unknown>) => {
+    try {
+      await hacer();
+    } catch (e) {
+      console.error(`[usuarios] Cuenta borrada pero no se ha podido limpiar ${que}:`, e);
+      pendiente.push(que);
+    }
+  };
+  const almacen = getStorage(aplicacion()).bucket(process.env.FIREBASE_ALMACEN || `${process.env.FIREBASE_PROYECTO_ID}.firebasestorage.app`);
+  await Promise.all([
+    intentar('perfil', () => baseDeDatos().recursiveDelete(baseDeDatos().collection('perfiles').doc(uid))),
+    intentar('fotos-perfil', () => almacen.deleteFiles({ prefix: `perfiles/${uid}/` })),
+    intentar('fotos-comunidad', () => almacen.deleteFiles({ prefix: `comunidad/${uid}/` })),
+    intentar('ficha-mapa', () => borrarFicha(uid)),
+    intentar('ranking', () =>
+      baseDeDatos()
+        .collection(COLECCION_ACTIVIDAD)
+        .doc(mesDe())
+        .update(new FieldPath(uid), FieldValue.delete())
+        // Si no tenía puntos este mes (o no hay ranking aún), no hay nada que quitar.
+        .catch((e: { code?: number }) => (e?.code === 5 ? null : Promise.reject(e)))
+    ),
+  ]);
+
+  return NextResponse.json({ ok: true, uid, ...(pendiente.length ? { pendiente } : {}) });
 }

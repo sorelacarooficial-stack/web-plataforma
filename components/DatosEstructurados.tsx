@@ -1,4 +1,18 @@
 import { INSTAGRAM, type Pregunta } from '@/lib/contenido';
+import {
+  ID_LOGOTIPO,
+  ID_NEGOCIO,
+  ID_SORELA,
+  ID_WEB,
+  NOMBRE_SITIO,
+  REF_NEGOCIO,
+  SITIO,
+  absoluta,
+  nodoMigas,
+  serializar,
+  type Miga,
+  type Nodo,
+} from '@/lib/sitio';
 
 /**
  * Datos estructurados (JSON-LD).
@@ -28,37 +42,15 @@ import { INSTAGRAM, type Pregunta } from '@/lib/contenido';
  * Referencia del patrón: node_modules/next/dist/docs/01-app/02-guides/json-ld.md
  */
 
-/**
- * Dominio de producción, CON www.
- *
- * Cuarta copia de esta cadena: ya está en app/layout.tsx, app/robots.ts y
- * app/sitemap.ts. Sigue sin haber un módulo común donde ponerla y no me toca
- * crearlo; queda anotado en el informe. Va con www porque la versión sin www
- * responde 308 hacia esta, y un `@id` o una `url` que redirigen le dan a
- * Google dos direcciones para la misma cosa.
+/*
+ * La dirección de la web, el nombre, los identificadores del grafo y las dos
+ * utilidades (`absoluta` y `serializar`) viven ahora en lib/sitio.ts: las
+ * fichas de las terapeutas y el mapa del sitio también las usan, y una sola
+ * copia es la única forma de que no se separen.
  */
-const SITIO = 'https://www.sorelacarodivine.com';
 
 /** Confirmado por Sorela. Es el único canal de contacto directo que se publica. */
 const CORREO = 'sorelacarooficial@gmail.com';
-
-/**
- * El nombre tal y como lo dicen el layout, el pie de página y el título por
- * defecto. Si en los tres sitios se llama igual, Google entiende que es una
- * sola entidad; si cada sitio lo escribe a su manera, entiende tres.
- */
-const NOMBRE = 'Sorela Caro · Técnica Divine';
-
-/**
- * Identificadores estables de cada entidad. Son etiquetas internas, no
- * direcciones que se visiten: sirven para que el curso pueda decir «lo imparte
- * ESTA de aquí» en vez de repetir la ficha entera, y para que si dos páginas
- * describen a Sorela, Google sepa que es la misma persona y no dos.
- */
-const ID_NEGOCIO = `${SITIO}/#negocio`;
-const ID_WEB = `${SITIO}/#web`;
-const ID_SORELA = `${SITIO}/#sorela`;
-const ID_LOGOTIPO = `${SITIO}/#logotipo`;
 
 /**
  * Descripción del negocio, en los términos que sí se pueden publicar: qué
@@ -100,12 +92,8 @@ export type Curso = {
   requisitos?: string;
 };
 
-export type Miga = {
-  /** Cómo se llama el paso en la miga, p. ej. 'Formaciones'. */
-  nombre: string;
-  /** Ruta de ese paso, p. ej. '/formaciones'. '/' para la portada. */
-  ruta: string;
-};
+/** Un paso del camino hasta esta página. El tipo vive en lib/sitio.ts. */
+export type { Miga };
 
 type Props = {
   /**
@@ -141,49 +129,6 @@ type Props = {
   imagen?: string;
 };
 
-/** Objeto JSON-LD suelto. Sin tipar contra schema.org: no hay dependencia que lo haga. */
-type Nodo = Record<string, unknown>;
-
-/**
- * Convierte una ruta del sitio en dirección absoluta y con www.
- *
- * En datos estructurados las direcciones relativas no valen: quien lee esto no
- * es el navegador, que sabe en qué página está, sino un robot que se guarda la
- * cadena tal cual. La portada se escribe sin la barra final para que coincida
- * con lo que publica app/sitemap.ts.
- */
-function absoluta(ruta: string): string {
-  if (/^https?:\/\//i.test(ruta)) return ruta;
-  if (ruta === '/' || ruta === '') return SITIO;
-  return `${SITIO}${ruta.startsWith('/') ? ruta : `/${ruta}`}`;
-}
-
-/**
- * Serializa el JSON para meterlo dentro de una etiqueta `<script>` del HTML.
- *
- * El problema real es el de siempre con un script en línea: si cualquier
- * texto que venga de lib/contenido llegara a contener la secuencia que cierra
- * una etiqueta script, el navegador cerraría ahí la etiqueta y el resto del
- * JSON se pintaría como texto suelto en medio de la página. Sustituyendo el
- * signo de menor que por su forma escapada eso no puede ocurrir. De paso van
- * también el de mayor que y el ampersand.
- *
- * Los tres siguen siendo JSON válido una vez escapados —el navegador los lee
- * de vuelta como los caracteres originales— y ninguno de los tres aparece
- * nunca como carácter de estructura del JSON, solo dentro de cadenas: por eso
- * reemplazarlos a lo bruto sobre el documento entero no puede estropearlo.
- *
- * Los separadores de línea U+2028 y U+2029 no se tocan: solo hacen daño
- * cuando el bloque se interpreta como JavaScript, y esto no lo es. Son JSON
- * perfectamente válido, y ningún texto del sitio los contiene.
- */
-function serializar(datos: unknown): string {
-  return JSON.stringify(datos)
-    .replace(/</g, '\\u003c')
-    .replace(/>/g, '\\u003e')
-    .replace(/&/g, '\\u0026');
-}
-
 /**
  * Referencia corta a una entidad que puede estar descrita en otra página.
  *
@@ -191,7 +136,7 @@ function serializar(datos: unknown): string {
  * encuentre— y además el nombre, para que la referencia se entienda por sí
  * sola aunque en esta página no esté la ficha entera.
  */
-const refNegocio: Nodo = { '@type': 'Organization', '@id': ID_NEGOCIO, name: NOMBRE };
+const refNegocio: Nodo = REF_NEGOCIO;
 const refSorela: Nodo = { '@type': 'Person', '@id': ID_SORELA, name: 'Sorela Caro' };
 
 export default function DatosEstructurados({
@@ -209,7 +154,7 @@ export default function DatosEstructurados({
     grafo.push({
       '@type': negocio,
       '@id': ID_NEGOCIO,
-      name: NOMBRE,
+      name: NOMBRE_SITIO,
       alternateName: 'Técnica Divine',
       description: DESCRIPCION_NEGOCIO,
       url: SITIO,
@@ -241,7 +186,7 @@ export default function DatosEstructurados({
         url: `${SITIO}/icon.png`,
         width: 512,
         height: 512,
-        caption: NOMBRE,
+        caption: NOMBRE_SITIO,
       },
       image: imagen ? absoluta(imagen) : { '@id': ID_LOGOTIPO },
       /**
@@ -275,7 +220,7 @@ export default function DatosEstructurados({
       '@type': 'WebSite',
       '@id': ID_WEB,
       url: SITIO,
-      name: NOMBRE,
+      name: NOMBRE_SITIO,
       description: DESCRIPCION_NEGOCIO,
       inLanguage: 'es-ES',
       publisher: refNegocio,
@@ -347,19 +292,10 @@ export default function DatosEstructurados({
   }
 
   /* ---------- El camino hasta aquí ---------- */
-  // Con menos de dos pasos no hay camino que contar: una miga de un solo
-  // elemento es ruido que Google marca como incompleta.
-  if (migas && migas.length > 1) {
-    grafo.push({
-      '@type': 'BreadcrumbList',
-      itemListElement: migas.map((m, i) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: m.nombre,
-        item: absoluta(m.ruta),
-      })),
-    });
-  }
+  // Con menos de dos pasos no hay camino que contar: `nodoMigas` devuelve
+  // null y no se declara nada.
+  const camino = migas ? nodoMigas(migas) : null;
+  if (camino) grafo.push(camino);
 
   // Sin props no hay nada que declarar, y un script vacío es un script que
   // alguien acabará mirando preguntándose qué falta.
@@ -370,6 +306,25 @@ export default function DatosEstructurados({
       type="application/ld+json"
       // Es JSON-LD, no código: se pinta con una etiqueta <script> normal y no
       // con next/script, que está para cargar y ejecutar JavaScript.
+      dangerouslySetInnerHTML={{
+        __html: serializar({ '@context': 'https://schema.org', '@graph': grafo }),
+      }}
+    />
+  );
+}
+
+/**
+ * Un grafo JSON-LD ya montado, para las páginas que describen sus propias
+ * entidades (la ficha de una terapeuta, el listado de una ciudad) y no las del
+ * negocio. Pasa por el mismo `serializar` que el resto: en esas páginas el
+ * texto lo escribe cada terapeuta, y tiene que llegar escapado igual.
+ */
+export function GrafoJsonLd({ nodos }: { nodos: (Nodo | null | undefined)[] }) {
+  const grafo = nodos.filter((n): n is Nodo => Boolean(n));
+  if (grafo.length === 0) return null;
+  return (
+    <script
+      type="application/ld+json"
       dangerouslySetInnerHTML={{
         __html: serializar({ '@context': 'https://schema.org', '@graph': grafo }),
       }}

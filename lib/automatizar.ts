@@ -33,12 +33,27 @@ const tieneComunidad = (a: Acceso[]) => a.some((x) => x.tipo === 'membresia');
  *
  * La clave lleva el uid: si se le quita y se le vuelve a dar, no recibe el
  * mismo correo de bienvenida otra vez.
+ *
+ * Lo que sí hace al PERDER la Comunidad: quitar su ficha del mapa. Salir en
+ * «Localiza tu terapeuta» va con la membresía, y una ficha que se queda en la
+ * web cuando ya no es miembro es una promesa que la web no puede cumplir. Va
+ * antes del correo y aparte: aunque no tenga correo, la ficha se quita.
  */
 export async function alCambiarAccesos(
   persona: { uid: string; correo: string | null; nombre: string | null; enlaceClave?: string | null },
   antes: unknown,
   despues: unknown
 ) {
+  if (tieneComunidad(revisarAccesos(antes)) && !tieneComunidad(revisarAccesos(despues))) {
+    try {
+      // Se carga aquí y no arriba: arrastra sharp y Storage, y el cron de cada
+      // mañana, que también importa este archivo, no los necesita.
+      const { despublicarFicha } = await import('./fichas');
+      await despublicarFicha(persona.uid, 'sin-membresia');
+    } catch (e) {
+      console.error('[automatizar] ficha del mapa:', e);
+    }
+  }
   try {
     if (!persona.correo) return;
     const a = revisarAccesos(antes);

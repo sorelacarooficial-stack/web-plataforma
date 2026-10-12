@@ -22,7 +22,7 @@
 export const CORREO_PRIVACIDAD = 'sorelacarooficial@gmail.com';
 
 /** Cuándo se revisó por última vez. Cambiarlo cada vez que se toque esto. */
-export const REVISADA = '6 de octubre de 2026';
+export const REVISADA = '12 de octubre de 2026';
 
 export type Tratamiento = {
   /** Para qué formulario o parte de la web. */
@@ -69,6 +69,23 @@ export const TRATAMIENTOS: Tratamiento[] = [
     conservacion:
       'Mientras dure la obligación de confidencialidad y, después, durante los plazos de prescripción de las acciones legales.',
   },
+  /*
+   * La ficha del mapa. Es lo único de la plataforma que se PUBLICA: por eso va
+   * con su propio permiso, separado del alta, y se retira con un botón.
+   *
+   * La política es pública: aquí no se dice qué da acceso al mapa (membresía,
+   * certificación). Hasta la masterclass, eso no se cuenta fuera.
+   */
+  {
+    donde: 'Ficha pública en Localiza tu terapeuta',
+    datos:
+      'Tu nombre, tu foto de perfil, el nombre de tu centro, tu frase y tu texto de presentación, tu especialidad, tus tratamientos, tu ciudad y tu país, y el WhatsApp, el Instagram y la web que pongas. La dirección y el código postal de tu cabina, solo si eliges mostrarlos. Para situarte en el mapa se calculan las coordenadas del centro de tu ciudad o, si muestras la dirección, las de tu cabina.',
+    finalidad:
+      'Publicar tu ficha en la web para que quien busca una terapeuta certificada en Técnica Divine cerca de su casa te encuentre y te escriba directamente.',
+    base: 'Tu consentimiento, que das aparte, marcando su propia casilla, y puedes retirar cuando quieras quitando la ficha desde la plataforma.',
+    conservacion:
+      'Mientras la tengas publicada. Se quita de la web en cuanto la retiras, cuando dejas de cumplir las condiciones para aparecer o si borras tu cuenta; la constancia de tu permiso (fecha y texto aceptado) se guarda después solo para poder acreditarlo.',
+  },
   {
     donde: 'Facturación',
     datos: 'Nombre o razón social, NIF y domicilio fiscal.',
@@ -93,6 +110,11 @@ export const ENCARGADOS: { quien: string; para: string }[] = [
     quien: 'Anthropic (Claude)',
     para:
       'Ayudar a Sorela a priorizar y redactar sus respuestas. Solo recibe tu nombre de pila, qué buscas, tu ciudad y lo que escribiste; nunca tu correo ni tu teléfono.',
+  },
+  {
+    quien: 'OpenStreetMap Foundation (Nominatim)',
+    para:
+      'Situar la dirección en el mapa de terapeutas. Solo recibe la ciudad y el país y, si eliges mostrarla, la dirección y el código postal; nunca tu nombre ni tu contacto.',
   },
 ];
 
@@ -126,3 +148,16 @@ export const CAPA_ACUERDO: PrimeraCapa = {
     'Formalizar y custodiar tu acuerdo, poder acreditar la firma y enviarte tu copia y el dossier.',
   base: 'La ejecución del acuerdo que firmas y el interés legítimo en poder acreditarlo.',
 };
+
+export const CAPA_FICHA: PrimeraCapa = {
+  finalidad:
+    'Publicar tu ficha en «Localiza tu terapeuta» para que quien busca una terapeuta cerca te encuentre y te escriba directamente.',
+  base: 'Tu consentimiento, que das aparte con su propia casilla y retiras cuando quieras quitando la ficha.',
+};
+
+/**
+ * Los destinatarios de la ficha. No es «no se ceden a nadie»: se PUBLICAN, a la
+ * vista de cualquiera, y eso hay que decirlo con esas palabras.
+ */
+export const DESTINATARIOS_FICHA =
+  'Se publican en la web, a la vista de cualquiera, en «Localiza tu terapeuta». Para situarte en el mapa se consulta OpenStreetMap (Nominatim) solo con la ciudad, el país y, si la muestras, la dirección. Los guardan por encargo de Sorela Google y Vercel.';

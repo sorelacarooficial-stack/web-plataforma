@@ -8,6 +8,8 @@
  * cerca.
  */
 
+import type { ResumenPuntos } from './puntos-tipos';
+
 export type Familia = 'curso' | 'comunidad' | 'constancia';
 
 export type DefLogro = {
@@ -30,6 +32,7 @@ export const LOGROS: DefLogro[] = [
   { id: 'cinco-respuestas', familia: 'comunidad', nombre: 'Compañera de oro', texto: 'Respondes 5 veces en la comunidad.', icono: '✨', meta: 5 },
   { id: 'diez-me-gusta', familia: 'comunidad', nombre: 'Inspiras', texto: 'Recibes 10 «me gusta».', icono: '❤️', meta: 10 },
   { id: 'podio', familia: 'comunidad', nombre: 'En el podio', texto: 'Quedas entre las 3 más activas del mes.', icono: '🥇', meta: 1 },
+  { id: 'perfil-completo', familia: 'comunidad', nombre: 'Perfil listo', texto: 'Completas tu perfil: foto, quién eres y dónde trabajas.', icono: '✨', meta: 1 },
 
   { id: 'racha-3', familia: 'constancia', nombre: 'Tres días seguidos', texto: 'Entras 3 días seguidos.', icono: '🔥', meta: 3 },
   { id: 'racha-7', familia: 'constancia', nombre: 'Una semana entera', texto: 'Entras 7 días seguidos.', icono: '⚡', meta: 7 },
@@ -51,4 +54,6 @@ export type Resumen = {
   curso: { hechas: number; total: number; porcentaje: number };
   racha: { actual: number; mejor: number };
   certificado: boolean;
+  /** Sus puntos y su nivel, sacados de todo lo anterior (ver lib/puntos-tipos.ts). */
+  puntos: ResumenPuntos;
 };

@@ -1,4 +1,11 @@
-/* La comunidad: muro a la izquierda, clase en vivo y ranking a la derecha. */
+/* La comunidad: muro a la izquierda, clase en vivo y ranking a la derecha.
+
+   Letra: Cormorant solo para títulos (de publicación, de la clase, del vacío);
+   Jost para todo lo demás, a 400 como mínimo en lo que se lee (la 300 se
+   deshace en pantalla a estos tamaños). Contraste medido: el texto de lectura
+   va en --ink-2 (#3e3831, 11:1 sobre #fffdf9), lo secundario en --muted
+   (5,7:1) y el oro pequeño en #6f5323 (7:1), porque el --oro de la marca
+   (#8a6a32) se queda en 4,4:1 sobre los fondos dorados claros. */
 
 .comunidad {
   display: grid;
@@ -33,15 +40,79 @@
   }
 }
 
+/* Vacío: icono, un título corto y una frase útil. Sin cajas de texto gris. */
 .vacio {
-  padding: 36px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 30px 24px 32px;
   border-radius: 24px;
-  border: 1px dashed var(--oro-line);
+  background: #fffdf9;
+  border: 1px solid var(--line-2);
   text-align: center;
-  font-family: var(--fuente-cormorant), serif;
-  font-style: italic;
-  font-size: 21px;
-  color: var(--faint);
+}
+
+.vacioIcono {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--oro-tint);
+  color: #6f5323;
+}
+
+.vacioTitulo {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.vacioTexto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 420px;
+}
+
+.vacioTexto p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.vacioBoton {
+  padding: 10px 20px;
+  border: 1px solid rgba(20, 18, 16, 0.24);
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.vacioBoton:hover {
+  background: var(--surface-2);
+}
+
+/* Para los lectores de pantalla: se lee, no se ve. */
+.soloLector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .esqueleto {
@@ -62,7 +133,8 @@
 }
 
 .error {
-  font-size: 12.5px;
+  font-size: 13.5px;
+  font-weight: 500;
   color: #a24a2e;
 }
 
@@ -75,7 +147,7 @@
   overflow: hidden;
   border-radius: 999px;
   background: var(--oro-tint);
-  color: var(--oro);
+  color: #6f5323;
   font-family: var(--fuente-cormorant), serif;
   font-weight: 600;
   box-shadow: 0 0 0 2px #fffdf9;
@@ -112,24 +184,24 @@
 }
 
 .selloSorela {
-  padding: 2px 8px;
+  padding: 2px 9px;
   border-radius: 999px;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   background: linear-gradient(140deg, #f3e2c4, #d9b47c);
   color: #3b2a12;
 }
 
 .cuando {
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
 }
 
 .cuando b {
-  font-weight: 500;
-  color: var(--oro);
+  font-weight: 600;
+  color: #6f5323;
 }
 
 /* ---------- Escribir ---------- */
@@ -162,18 +234,24 @@
 .escribirCerrado > span:nth-child(2) {
   flex: 1;
   font-size: 15px;
-  font-weight: 300;
-  color: var(--faint);
+  font-weight: 400;
+  color: var(--muted);
 }
 
 .escribirBoton {
   padding: 9px 18px;
   border-radius: 999px;
   font-size: 12px;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   background: var(--oro-tint);
-  color: var(--oro);
+  border: 1px solid var(--oro-line);
+  color: #6f5323;
+}
+
+.escribirCerrado:hover .escribirBoton {
+  background: #efe5d2;
 }
 
 .escribirAbierto {
@@ -192,13 +270,19 @@
 .categoria {
   position: relative;
   padding: 8px 16px;
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.12));
+  border: 1px solid rgba(20, 18, 16, 0.2);
   border-radius: 999px;
   background: transparent;
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 500;
   color: var(--ink-3);
   cursor: pointer;
+}
+
+.categoria:hover {
+  border-color: rgba(20, 18, 16, 0.36);
+  color: var(--ink);
 }
 
 .categoria[data-on] {
@@ -219,35 +303,54 @@
 
 .ayuda {
   margin: 0;
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--muted);
 }
 
+/* Campos con borde que se ve y foco dorado claro: se sabe dónde se escribe. */
 .campoTitulo,
 .campoTexto {
   width: 100%;
-  border: 0;
-  background: transparent;
+  padding: 11px 14px;
+  border: 1px solid rgba(20, 18, 16, 0.2);
+  border-radius: 14px;
+  background: #fff;
   font: inherit;
   color: var(--ink);
   outline: none;
   resize: vertical;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+
+.campoTitulo:focus,
+.campoTexto:focus {
+  border-color: #8a6a32;
+  box-shadow: 0 0 0 3px rgba(217, 180, 124, 0.38);
+}
+
+.campoTitulo::placeholder,
+.campoTexto::placeholder,
+.responder textarea::placeholder {
+  color: #857c70;
+  opacity: 1;
 }
 
 .campoTitulo {
-  padding: 4px 0;
-  font-family: var(--fuente-cormorant), serif;
-  font-size: 26px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 24px;
   font-weight: 600;
-  border-bottom: 1px solid var(--line-1);
+  line-height: 1.2;
 }
 
 .campoTexto {
-  min-height: 110px;
-  font-size: 15px;
-  font-weight: 300;
-  line-height: 1.6;
+  min-height: 120px;
+  font-size: 15.5px;
+  font-weight: 400;
+  line-height: 1.55;
 }
 
 .fotosNuevas {
@@ -274,21 +377,27 @@
   position: absolute;
   top: 5px;
   right: 5px;
-  width: 24px;
-  height: 24px;
-  border: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 999px;
-  background: rgba(20, 16, 10, 0.7);
+  background: rgba(20, 16, 10, 0.78);
   color: #fff;
-  font-size: 11px;
   cursor: pointer;
+  transition: background 0.18s;
+}
+
+.fotosNuevas button:hover {
+  background: #a24a2e;
 }
 
 .recordatorio {
   margin: 0;
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
 }
 
 .escribirPie {
@@ -303,17 +412,40 @@
   align-items: center;
   gap: 8px;
   padding: 9px 14px;
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.12));
+  border: 1px solid rgba(20, 18, 16, 0.2);
   border-radius: 999px;
   background: transparent;
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 500;
   color: var(--ink-3);
   cursor: pointer;
 }
 
+.botonFoto:hover:not(:disabled) {
+  border-color: rgba(20, 18, 16, 0.36);
+  color: var(--ink);
+}
+
 .hueco {
   flex: 1;
+}
+
+.botonCancelar {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.botonCancelar:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--ink);
 }
 
 .visita {
@@ -321,10 +453,10 @@
   border-radius: 20px;
   background: var(--oro-tint);
   border: 1px solid var(--oro-line);
-  font-size: 14px;
-  font-weight: 300;
-  line-height: 1.55;
-  color: var(--ink-3);
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-2);
 }
 
 .visita strong {
@@ -356,15 +488,16 @@
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 13px;
-  color: var(--muted, #5f574e);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-3);
   cursor: pointer;
   white-space: nowrap;
 }
 
 .filtros button[aria-selected='true'] {
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .filtros button > span:last-child {
@@ -424,13 +557,14 @@
 .selloResuelta {
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .selloFijada {
   background: var(--oro-tint);
-  color: var(--oro);
+  color: #6f5323;
 }
 
 .selloResuelta {
@@ -451,55 +585,88 @@
 }
 
 .menuBoton {
-  width: 32px;
-  height: 32px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--faint);
-  font-size: 16px;
-  letter-spacing: 1px;
+  color: var(--ink-3);
   cursor: pointer;
+  transition: background 0.18s;
 }
 
-.menuBoton:hover {
+.menuBoton:hover,
+.menuBoton[data-on] {
   background: var(--surface-2);
+  color: var(--ink);
+}
+
+.menuBoton:focus-visible,
+.menu button:focus-visible,
+.borrarRespuesta:focus-visible,
+.rankingNombre:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
 }
 
 .menu {
   position: absolute;
   right: 0;
-  top: 36px;
+  top: 40px;
   z-index: 4;
   display: flex;
   flex-direction: column;
-  min-width: 190px;
+  min-width: 220px;
   padding: 6px;
-  border-radius: 14px;
+  border-radius: 16px;
   background: #fffdf9;
-  border: 1px solid var(--line-1);
-  box-shadow: 0 18px 40px -20px rgba(60, 45, 25, 0.5);
+  border: 1px solid rgba(20, 18, 16, 0.12);
+  box-shadow: 0 22px 44px -22px rgba(60, 45, 25, 0.55);
   transform-origin: top right;
 }
 
 .menu button {
-  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
   border: 0;
   border-radius: 10px;
   background: transparent;
   font: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
+  font-weight: 500;
   text-align: left;
   color: var(--ink);
   cursor: pointer;
 }
 
-.menu button:hover {
+.menu button svg {
+  flex: none;
+  color: var(--ink-3);
+}
+
+.menu button:hover,
+.menu button:focus-visible {
   background: var(--surface-2);
 }
 
-.peligro {
-  color: #a24a2e !important;
+.menuRaya {
+  height: 1px;
+  margin: 4px 8px;
+  background: var(--line-2);
+}
+
+.menu .peligro,
+.menu .peligro svg {
+  color: #a24a2e;
+}
+
+.menu .peligro:hover,
+.menu .peligro:focus-visible {
+  background: #fbeee9;
 }
 
 .titulo {
@@ -513,10 +680,10 @@
 
 .texto {
   margin: 0;
-  font-size: 15px;
-  font-weight: 300;
-  line-height: 1.65;
-  color: var(--ink-3);
+  font-size: 15.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-2);
   white-space: pre-line;
 }
 
@@ -529,11 +696,16 @@
 
 .verMas {
   align-self: flex-start;
+  padding: 0;
   border: 0;
   background: none;
   font: inherit;
-  font-size: 13px;
-  color: var(--oro);
+  font-size: 14px;
+  font-weight: 600;
+  color: #6f5323;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
   cursor: pointer;
 }
 
@@ -611,29 +783,32 @@
   border-radius: 999px;
   background: transparent;
   font: inherit;
-  font-size: 13px;
-  color: var(--muted, #5f574e);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-3);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
 
 .accion:hover {
   background: var(--surface-2);
+  color: var(--ink);
 }
 
 .accion[data-on] {
-  color: #b5562f;
+  color: #a8492a;
 }
 
 .pie .accion:nth-child(2)[data-on] {
-  color: var(--oro);
+  color: #6f5323;
   background: var(--oro-tint);
 }
 
 .respondio {
   margin-left: auto;
-  font-size: 12px;
-  color: var(--oro);
+  font-size: 13px;
+  font-weight: 500;
+  color: #6f5323;
 }
 
 /* ---------- Hilo ---------- */
@@ -651,9 +826,9 @@
 
 .cargando {
   margin: 0;
-  font-size: 13px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted);
 }
 
 .respuesta {
@@ -683,10 +858,10 @@
 
 .respuestaCuerpo p {
   margin: 4px 0 0;
-  font-size: 14px;
-  font-weight: 300;
-  line-height: 1.6;
-  color: var(--ink-3);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-2);
   white-space: pre-line;
 }
 
@@ -698,12 +873,26 @@
 }
 
 .borrarRespuesta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
   border: 0;
+  border-radius: 999px;
   background: none;
   font: inherit;
-  font-size: 12px;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
   cursor: pointer;
+  transition:
+    background 0.18s,
+    color 0.18s;
+}
+
+.borrarRespuesta:hover {
+  background: #fbeee9;
+  color: #a24a2e;
 }
 
 .responder {
@@ -716,19 +905,24 @@
   flex: 1;
   min-height: 44px;
   padding: 11px 14px;
-  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.12));
+  border: 1px solid rgba(20, 18, 16, 0.2);
   border-radius: 18px;
   background: #fff;
   font: inherit;
-  font-size: 14px;
-  font-weight: 300;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.45;
   color: var(--ink);
   outline: none;
   resize: vertical;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
 }
 
 .responder textarea:focus {
-  border-color: var(--oro);
+  border-color: #8a6a32;
+  box-shadow: 0 0 0 3px rgba(217, 180, 124, 0.38);
 }
 
 @media (max-width: 560px) {
@@ -761,8 +955,9 @@
 
 .claseRotulo {
   margin: 0;
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #d9b47c;
 }
@@ -789,9 +984,9 @@
 .claseFalta,
 .claseNota {
   margin: 0;
-  font-size: 12.5px;
-  font-weight: 300;
-  color: rgba(239, 230, 216, 0.7);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: rgba(239, 230, 216, 0.82);
 }
 
 .claseEntrar {
@@ -822,9 +1017,11 @@
   border: 0;
   background: none;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 13.5px;
+  font-weight: 500;
   color: #d9b47c;
   text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
 }
 
@@ -836,13 +1033,23 @@
 
 .claseForm input {
   padding: 10px 12px;
-  border: 1px solid rgba(239, 230, 216, 0.2);
+  border: 1px solid rgba(239, 230, 216, 0.32);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.06);
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   color: #f7f0e4;
   color-scheme: dark;
+  outline: none;
+}
+
+.claseForm input::placeholder {
+  color: rgba(239, 230, 216, 0.62);
+}
+
+.claseForm input:focus {
+  border-color: #d9b47c;
+  box-shadow: 0 0 0 3px rgba(217, 180, 124, 0.3);
 }
 
 .claseBotones {
@@ -852,11 +1059,12 @@
 
 .claseBotones button {
   padding: 8px 14px;
-  border: 1px solid rgba(239, 230, 216, 0.25);
+  border: 1px solid rgba(239, 230, 216, 0.36);
   border-radius: 999px;
   background: transparent;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 13px;
+  font-weight: 500;
   color: #efe6d8;
   cursor: pointer;
 }
@@ -879,18 +1087,19 @@
 
 .ladoRotulo {
   margin: 0;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
   text-transform: uppercase;
-  color: var(--oro);
+  color: #6f5323;
 }
 
 .ladoTexto {
   margin: 0;
-  font-size: 13px;
-  font-weight: 300;
-  line-height: 1.55;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
   color: var(--ink-3);
 }
 
@@ -924,72 +1133,230 @@
 }
 
 .pendientes strong {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--ink);
 }
 
 .pendientes span {
-  font-size: 11.5px;
-  font-weight: 300;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* ---------- Ranking del mes ----------
+   Las barras crecen en proporción a la primera. Oro, plata y bronce para el
+   podio; el resto en un tostado neutro. Cifras en Jost con dígitos de igual
+   ancho, para que no bailen al cambiar. */
+
+.ranking {
+  gap: 2px;
 }
 
 .ranking li {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 0;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 -10px;
+  padding: 9px 10px;
+  border-radius: 14px;
+}
+
+.ranking li[data-yo] {
+  background: #fffdf9;
+  box-shadow: inset 0 0 0 1px var(--oro-line);
 }
 
 .puesto {
+  flex: none;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  background: var(--surface-2);
-  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  background: #e7e1d7;
+  color: #4f4840;
 }
 
 .puesto[data-p='0'] {
-  background: linear-gradient(140deg, #f3e2c4, #cfa25e);
+  background: radial-gradient(circle at 34% 28%, #fbf1dc 0%, #e6c890 40%, #c49a5a 100%);
+  box-shadow: 0 4px 10px -4px rgba(196, 154, 90, 0.8);
   color: #3b2a12;
 }
 
 .puesto[data-p='1'] {
-  background: #e7e3dc;
-  color: #5f574e;
+  background: radial-gradient(circle at 34% 28%, #ffffff 0%, #e4e0d9 45%, #c4beb4 100%);
+  color: #3e3831;
 }
 
 .puesto[data-p='2'] {
-  background: #ecd6c2;
-  color: #7a4f2c;
+  background: radial-gradient(circle at 34% 28%, #fbe7d6 0%, #e6bf9c 45%, #c08a5f 100%);
+  color: #4a2e16;
+}
+
+.rankingCuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rankingLinea {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
 }
 
 .rankingNombre {
   flex: 1;
   min-width: 0;
-  font-size: 13.5px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  text-align: left;
   color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: pointer;
+}
+
+.rankingNombre:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .puntos {
+  flex: none;
+  font-size: 14.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.puntos small {
   font-size: 12px;
   font-weight: 500;
-  color: var(--oro);
+  color: var(--muted);
+}
+
+.rankingPista {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(20, 18, 16, 0.08);
+}
+
+.rankingRelleno {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #a89a87, #cfc4b4);
+}
+
+.rankingRelleno[data-p='0'] {
+  background: linear-gradient(90deg, #8a6a32, #d9b47c);
+  box-shadow: 0 0 10px -2px rgba(217, 180, 124, 0.7);
+}
+
+.rankingRelleno[data-p='1'] {
+  background: linear-gradient(90deg, #8f897f, #cfc9bf);
+}
+
+.rankingRelleno[data-p='2'] {
+  background: linear-gradient(90deg, #9a6440, #e0b48f);
+}
+
+.chipNivel {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 2px 9px 2px 3px;
+  border-radius: 999px;
+  background: var(--oro-tint);
+  border: 1px solid var(--oro-line);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #6f5323;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chipNumero {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #fbf1dc 0%, #e6c890 45%, #c49a5a 100%);
+  font-size: 10.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #17140f;
+}
+
+.rankingYo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 2px 0 0;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: #17140f;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  color: #efe6d8;
+}
+
+.rankingYo b {
+  font-weight: 600;
+  color: #f7f0e4;
+}
+
+.rankingYo > b:first-child {
+  color: #d9b47c;
+}
+
+.rankingYo > span[aria-hidden] {
+  color: rgba(239, 230, 216, 0.55);
+}
+
+.rankingComo {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.rankingComo b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #6f5323;
 }
 
 .normas li {
   position: relative;
   padding: 4px 0 4px 16px;
-  font-size: 13px;
-  font-weight: 300;
+  font-size: 14px;
+  font-weight: 400;
   line-height: 1.5;
   color: var(--ink-3);
 }
@@ -1098,11 +1465,11 @@
 
 .bienvenidaBloques h4 {
   margin: 0 0 8px;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--oro);
+  color: #6f5323;
 }
 
 .bienvenidaBloques ul {
@@ -1117,8 +1484,8 @@
 .bienvenidaBloques li {
   position: relative;
   padding-left: 14px;
-  font-size: 13.5px;
-  font-weight: 300;
+  font-size: 14px;
+  font-weight: 400;
   line-height: 1.5;
   color: var(--ink-3);
 }
@@ -1141,10 +1508,10 @@
 
 .bienvenidaCierre {
   margin: 16px 0 0;
-  font-size: 15px;
-  font-weight: 300;
-  line-height: 1.65;
-  color: var(--ink-3);
+  font-size: 15.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-2);
 }
 
 .firma {

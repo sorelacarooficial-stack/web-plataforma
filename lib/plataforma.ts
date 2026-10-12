@@ -39,7 +39,8 @@ export type Vista =
   | 'metricas'
   | 'blog'
   | 'correos'
-  | 'buzon';
+  | 'buzon'
+  | 'fichas';
 
 /**
  * El menú de cada rol.
@@ -73,6 +74,8 @@ export function gruposDe(rol: Rol, conAcceso = false): Grupo[] {
           { id: 'leads', label: 'Clientes' },
           { id: 'cuentas', label: 'Cuentas' },
           { id: 'acuerdos', label: 'Acuerdos' },
+          // Las fichas de «Localiza tu terapeuta»: salen solas, aquí se vigilan.
+          { id: 'fichas', label: 'Mapa' },
         ],
       },
       {
@@ -157,6 +160,7 @@ export function tituloDe(vista: Vista, rol: Rol) {
     blog: 'Blog',
     correos: 'Correos',
     buzon: 'Buzón',
+    fichas: 'Mapa de terapeutas',
   };
   return titulos[vista];
 }
@@ -186,6 +190,7 @@ export function seccionDe(vista: Vista, rol: Rol) {
     blog: 'Tu web',
     correos: 'CRM',
     buzon: 'hola@sorelacarodivine.com',
+    fichas: 'Localiza tu terapeuta',
   };
   return secciones[vista];
 }
@@ -381,17 +386,10 @@ export const POR_CONFIRMAR: { cliente: string; cuando: string; detalle: string }
 
 export const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-export const TRATAMIENTOS_PERFIL = [
-  'Drenaje linfático',
-  'Postparto',
-  'Reductivo corporal',
-  'Postquirúrgico',
-  'Maderoterapia',
-  'Masaje profundo',
-];
-
-/* Lo que cada terapeuta marca en su ficha. De salida, nada marcado. */
-export const TRATAMIENTOS_ACTIVOS: string[] = [];
+/* Aquí había una lista de tratamientos para la ficha con «Postparto»,
+   «Reductivo corporal» y «Postquirúrgico», que no se pueden publicar. No la
+   usaba nadie. La lista buena, cerrada, es TRATAMIENTOS_FICHA de
+   lib/fichas-tipos.ts. */
 
 /** La membresía está en beta: no hay cuota, no hay recibos. Esto es lo que
  *  falta para poder abrirla al público y ponerle precio. */
@@ -417,8 +415,8 @@ export const KPIS_ADMIN = [
   { label: 'Lista de la comunidad', valor: '0', nota: 'ver Contactos' },
 ];
 
-/* Las fichas del mapa se aprueban una a una cuando haya certificadas. */
-export const POR_APROBAR: { nombre: string; ciudad: string; nota: string }[] = [];
+/* Las fichas del mapa ya no se aprueban una a una: salen solas al publicarlas
+   y Sorela las vigila (y oculta si hace falta) en Personas → Mapa. */
 
 /* Convocatorias, inscritas y reservas: se llenan al abrir la primera. */
 export const INSCRITAS: { curso: string; cuando: string; plazas: string }[] = [];

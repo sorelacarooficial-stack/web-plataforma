@@ -1385,6 +1385,28 @@
   color: var(--oro);
 }
 
+/* Sus puntos (el marcador de components/plataforma/Puntos.tsx). En escritorio
+   van en el pie de la lateral, bajo su nombre; en el móvil, en la barra de
+   arriba junto al menú. Nunca los dos a la vez: el marcador anuncia los puntos
+   ganados a los lectores de pantalla, y dos marcadores visibles lo dirían dos
+   veces (el cajón cerrado sigue en la página, solo se aparta). */
+.marcadorLateral {
+  display: flex;
+  margin: 0 0 6px;
+}
+
+.marcadorMovil {
+  display: flex;
+  margin-left: auto;
+  min-width: 0;
+}
+
+@media (max-width: 880px) {
+  .marcadorLateral {
+    display: none;
+  }
+}
+
 /* ==========================================================================
    Contactos reales
    ========================================================================== */

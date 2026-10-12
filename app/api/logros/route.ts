@@ -4,10 +4,14 @@ import { accesosDe, sesionActual } from '@/lib/sesion-servidor';
 import { resumenLogros } from '@/lib/logros';
 
 /**
- * Los logros de una persona.
+ * Los logros y los puntos de una persona.
  *   GET            → los propios
- *   GET ?celebrar=1→ los propios, y se marcan los nuevos (para la celebración)
- *   GET ?uid=      → los de otra, para su perfil (sin celebrar nada)
+ *   GET ?celebrar=1→ los propios, y se marcan los nuevos (para la celebración):
+ *                    `puntos.antes` y `puntos.subioNivel` dicen qué celebrar
+ *   GET ?uid=      → los de otra, para su perfil (sin celebrar nada). Los
+ *                    puntos de todas los ven todas.
+ *
+ * Respuesta: { ok, esMio, ...Resumen } (lib/logros-tipos.ts), con `puntos`.
  */
 
 export const runtime = 'nodejs';
@@ -24,6 +28,6 @@ export async function GET(peticion: Request) {
     return NextResponse.json({ ok: false, motivo: 'sin-acceso' }, { status: 403 });
   }
   // Solo la celebración marca los nuevos como vistos (?celebrar=1).
-  const r = await resumenLogros(pedido, esMio && new URL(peticion.url).searchParams.get('celebrar') === '1');
+  const r = await resumenLogros(pedido, esMio && new URL(peticion.url).searchParams.get('celebrar') === '1', esMio);
   return NextResponse.json({ ok: true, esMio, ...r }, { headers: { 'Cache-Control': 'private, no-store' } });
 }

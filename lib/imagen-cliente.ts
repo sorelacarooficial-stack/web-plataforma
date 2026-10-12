@@ -81,6 +81,42 @@ export async function prepararImagen(archivo: File, ladoMax = 2000): Promise<Fil
 }
 
 /**
+ * La foto de perfil: recortada en cuadrado y reducida a `lado` px, como imagen
+ * en texto (data URL) lista para POST /api/perfil/foto.
+ *
+ * Es lo mismo que hace el avatar de arriba (FotoPerfil), con dos diferencias:
+ * gira la foto según su EXIF (un retrato del móvil no sale tumbado) y entiende
+ * más formatos, porque usa el mismo `decodificar` que las demás subidas.
+ */
+export async function fotoCuadrada(archivo: File, lado = 256): Promise<string> {
+  if (!/^image\//.test(archivo.type)) throw new Error('Eso no es una imagen.');
+  let d: Awaited<ReturnType<typeof decodificar>>;
+  try {
+    d = await decodificar(archivo);
+  } catch {
+    throw new Error('No puedo leer ese formato de foto. Prueba a elegirla desde la galería o a mandarla en JPG.');
+  }
+  try {
+    const corte = Math.min(d.ancho, d.alto);
+    // Un poco por encima del centro: en un retrato la cara suele estar arriba.
+    const x = (d.ancho - corte) / 2;
+    const y = Math.max(0, (d.alto - corte) * 0.3);
+    const c = document.createElement('canvas');
+    c.width = lado;
+    c.height = lado;
+    const ctx = c.getContext('2d');
+    if (!ctx) throw new Error('No se ha podido preparar la foto.');
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(d.img, x, y, corte, corte, 0, 0, lado, lado);
+    const webp = c.toDataURL('image/webp', 0.86);
+    // Safari antiguo no sabe hacer webp y devuelve png: entonces, jpeg.
+    return webp.startsWith('data:image/webp') ? webp : c.toDataURL('image/jpeg', 0.86);
+  } finally {
+    d.cerrar();
+  }
+}
+
+/**
  * Lee la respuesta de la API aunque no sea JSON (un 413 de Vercel, una caída):
  * siempre devuelve un objeto con `ok`, y `texto` listo para enseñar.
  */

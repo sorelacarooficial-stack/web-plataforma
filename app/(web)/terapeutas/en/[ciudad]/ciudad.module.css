@@ -1,0 +1,117 @@
+/* La página de una ciudad. La portada y el título son los de /terapeutas
+   (terapeutas.module.css); aquí solo van las migas y las otras ciudades. */
+
+.migas {
+  border-bottom: 1px solid var(--line-2);
+  background: var(--surface);
+}
+
+.migas ol {
+  margin: 0 auto;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.migas li {
+  display: inline-flex;
+  align-items: center;
+}
+
+.migas li + li::before {
+  content: '/';
+  margin: 0 10px;
+  color: var(--muted);
+}
+
+.migas a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--ink-3);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.migas a:hover {
+  color: var(--ink);
+  border-bottom-color: var(--arcilla-line);
+}
+
+.migas [aria-current] {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ---------- Otras ciudades ---------- */
+.otras {
+  padding: clamp(40px, 6vw, 72px) 0 clamp(60px, 9vw, 110px);
+  background: var(--surface);
+  border-top: 1px solid var(--line-2);
+}
+
+.otrasTitulo {
+  margin: 0 0 18px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.chips {
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 18px;
+  border: 1px solid var(--line-4);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 15px;
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.chip:hover {
+  border-color: var(--arcilla);
+  background: var(--arcilla-tint);
+}
+
+.chip:focus-visible,
+.todas:focus-visible {
+  outline: 2px solid var(--arcilla);
+  outline-offset: 2px;
+}
+
+.todas {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--arcilla);
+}
+
+.todas:hover {
+  color: var(--arcilla-ink);
+}

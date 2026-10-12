@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   esVideoPropio,
   minutos,
@@ -35,6 +35,7 @@ type Mapa = Record<string, Progreso>;
 const GUARDAR_CADA = 10; // segundos
 
 function Anillo({ valor }: { valor: number }) {
+  const reducir = useReducedMotion();
   const r = 52;
   const c = 2 * Math.PI * r;
   return (
@@ -46,7 +47,7 @@ function Anillo({ valor }: { valor: number }) {
         r={r}
         className={a.anilloValor}
         strokeDasharray={c}
-        initial={{ strokeDashoffset: c }}
+        initial={{ strokeDashoffset: reducir ? c * (1 - valor / 100) : c }}
         animate={{ strokeDashoffset: c * (1 - valor / 100) }}
         transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
       />
@@ -57,6 +58,26 @@ function Anillo({ valor }: { valor: number }) {
         completado
       </text>
     </svg>
+  );
+}
+
+/**
+ * Una barra de progreso que se llena cuando entra en pantalla, y que vuelve a
+ * moverse sola si el valor cambia (al guardar por dónde va el vídeo).
+ */
+function BarraProgreso({ valor, className }: { valor: number; className: string }) {
+  const reducir = useReducedMotion();
+  const v = Math.max(0, Math.min(100, valor)) / 100;
+  return (
+    <span className={className} aria-hidden="true">
+      <motion.span
+        style={{ originX: 0 }}
+        initial={{ scaleX: reducir ? v : 0 }}
+        whileInView={{ scaleX: v }}
+        viewport={{ once: true }}
+        transition={{ type: 'spring', stiffness: 90, damping: 18, restDelta: 0.001 }}
+      />
+    </span>
   );
 }
 
@@ -166,7 +187,11 @@ export default function Aula({ correo }: { correo?: string | null }) {
       body: JSON.stringify({ id, visto, completada }),
     })
       // Al terminar una clase puede caer un logro: que lo mire la celebración.
-      .then(() => completada && window.dispatchEvent(new Event('divine:logros')))
+      .then((r) => (completada ? r.json() : null))
+      // Solo la PRIMERA vez que se termina una clase hay algo que celebrar:
+      // pasado el 90 % el vídeo repite «terminada» cada diez segundos, y el
+      // servidor dice con `nueva` cuál de todas es la de verdad.
+      .then((j) => j?.nueva === true && window.dispatchEvent(new Event('divine:logros')))
       .catch(() => {});
   }, []);
 
@@ -383,6 +408,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
                     <span className={a.moduloCuenta}>
                       {m.hechas} de {m.lecciones.length} {m.lecciones.length === 1 ? 'clase' : 'clases'}
                     </span>
+                    <BarraProgreso className={a.moduloBarra} valor={m.lecciones.length ? (m.hechas / m.lecciones.length) * 100 : 0} />
                   </span>
                 </button>
               ))}
@@ -451,9 +477,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
                         ) : (
                           <>
                             <span className={a.pct}>{pct}%</span>
-                            <span className={a.barra}>
-                              <span style={{ width: `${pct}%` }} />
-                            </span>
+                            <BarraProgreso className={a.barra} valor={pct} />
                           </>
                         )}
                       </span>

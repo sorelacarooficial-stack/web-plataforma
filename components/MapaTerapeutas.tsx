@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Terapeuta } from '@/lib/terapeutas';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lugarDe, type TerapeutaMapa } from '@/lib/terapeutas';
 import css from './MapaTerapeutas.module.css';
 
 /**
@@ -30,14 +30,51 @@ import css from './MapaTerapeutas.module.css';
  *
  * Los puntos de las terapeutas son botones de verdad, colocados encima del
  * lienzo: se llega a ellos con el tabulador y un lector de pantalla los lee.
+ *
+ * UN PUNTO PUEDE SER VARIAS. Quien no enseña su dirección sale en el centro
+ * de su ciudad, así que tres terapeutas de Sevilla sin dirección caen en el
+ * mismo sitio exacto. Separarlas a mano (lo que hacían los antiguos `dx`/`dy`)
+ * las pondría en calles donde no están; en su lugar se juntan en un solo
+ * punto y, al pulsarlo, la ficha flotante las lista a todas.
  */
 
 type Props = {
-  terapeutas: Terapeuta[];
+  terapeutas: TerapeutaMapa[];
   /** Slugs que pasan el filtro; el resto se apagan sin desaparecer. */
   visibles: Set<string>;
   onVerPerfil: (slug: string) => void;
+  /**
+   * Dónde mirar al empezar, si no es la península: en la página de una
+   * ciudad, la ciudad. `nombre` es para el botón de volver («Volver a Bogotá»).
+   */
+  inicio?: { lng: number; lat: number; k: number; nombre: string };
 };
+
+/** Un punto del globo: una o varias terapeutas en las mismas coordenadas. */
+type Punto = {
+  clave: string;
+  lng: number;
+  lat: number;
+  ciudad: string;
+  miembros: TerapeutaMapa[];
+};
+
+/**
+ * Junta las que comparten coordenadas (a tres decimales, unos cien metros).
+ * Las que no tienen coordenadas válidas se quedan fuera del globo, pero no
+ * del listado de la página.
+ */
+function agrupar(terapeutas: TerapeutaMapa[]): Punto[] {
+  const puntos = new Map<string, Punto>();
+  for (const t of terapeutas) {
+    if (!Number.isFinite(t.lat) || !Number.isFinite(t.lng)) continue;
+    const clave = `${t.lat.toFixed(3)},${t.lng.toFixed(3)}`;
+    const p = puntos.get(clave);
+    if (p) p.miembros.push(t);
+    else puntos.set(clave, { clave, lng: t.lng, lat: t.lat, ciudad: t.ciudad, miembros: [t] });
+  }
+  return [...puntos.values()];
+}
 
 const RAD = Math.PI / 180;
 
@@ -57,8 +94,11 @@ function enPeninsula(lng: number, lat: number) {
 
 type Vista = { lng: number; lat: number; k: number };
 
-export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Props) {
+export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil, inicio }: Props) {
   const cajaRef = useRef<HTMLDivElement>(null);
+  const puntos = useMemo(() => agrupar(terapeutas), [terapeutas]);
+  /* El punto de partida y de «volver»: la península, o la ciudad de la página. */
+  const partida = useRef<Vista>(inicio ? { lng: inicio.lng, lat: inicio.lat, k: inicio.k } : { ...INICIO, k: 1.15 });
   const lienzoRef = useRef<HTMLCanvasElement>(null);
   const pinesRef = useRef<Map<string, HTMLButtonElement>>(new Map());
 
@@ -66,7 +106,7 @@ export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Pr
      segundo mientras gira, y pasarla por React repintaría todo el componente
      en cada fotograma. Solo lo que React de verdad pinta va en estado. */
   const vista = useRef<Vista>({ lng: INICIO.lng - 70, lat: 20, k: 1 });
-  const destino = useRef<Vista | null>({ ...INICIO, k: 1.15 });
+  const destino = useRef<Vista | null>({ ...partida.current });
   const inercia = useRef({ lng: 0, lat: 0 });
   const tocado = useRef(0);
   const quieto = useRef(false);
@@ -75,9 +115,9 @@ export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Pr
 
   const [tierra, setTierra] = useState<Float32Array | null>(null);
   const [error, setError] = useState(false);
-  const [activo, setActivo] = useState<Terapeuta | null>(null);
+  const [activo, setActivo] = useState<Punto | null>(null);
   const [fichaPos, setFichaPos] = useState<{ x: number; y: number } | null>(null);
-  const activoRef = useRef<Terapeuta | null>(null);
+  const activoRef = useRef<Punto | null>(null);
   activoRef.current = activo;
 
   /* ---------- La tierra ---------- */
@@ -99,7 +139,7 @@ export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Pr
     const m = window.matchMedia('(prefers-reduced-motion: reduce)');
     quieto.current = m.matches;
     if (m.matches) {
-      vista.current = { ...INICIO, k: 1.15 };
+      vista.current = { ...partida.current };
       destino.current = null;
     }
   }, []);
@@ -315,14 +355,14 @@ export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Pr
       /* --- Las consultas: un punto que brilla y un pulso que se abre. --- */
       ctx.font = `500 12px ${tipografia}`;
       ctx.textBaseline = 'middle';
-      for (const tp of terapeutas) {
+      for (const tp of puntos) {
         const [x, y, z] = proyectar(tp.lng, tp.lat);
-        const boton = pinesRef.current.get(tp.slug);
+        const boton = pinesRef.current.get(tp.clave);
         if (z <= 0.05) {
           if (boton) boton.style.visibility = 'hidden';
           continue;
         }
-        const on = visiblesRef.current.has(tp.slug);
+        const on = tp.miembros.some((m) => visiblesRef.current.has(m.slug));
         if (boton) {
           boton.style.visibility = 'visible';
           boton.style.transform = `translate(${x - 18}px, ${y - 18}px)`;
@@ -371,7 +411,7 @@ export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Pr
       ro.disconnect();
       vigia.disconnect();
     };
-  }, [tierra, terapeutas]);
+  }, [tierra, puntos]);
 
   /* ---------- Arrastrar, acercar ---------- */
   const punteros = useRef(new Map<number, { x: number; y: number }>());
@@ -445,7 +485,7 @@ export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Pr
 
   const volver = () => {
     setActivo(null);
-    destino.current = { ...INICIO, k: 1.15 };
+    destino.current = { ...partida.current };
     tocado.current = performance.now();
   };
 
@@ -456,9 +496,9 @@ export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Pr
     if (firma === firmaPrev.current) return;
     firmaPrev.current = firma;
     setActivo(null);
-    const dentro = terapeutas.filter((t) => visibles.has(t.slug));
+    const dentro = terapeutas.filter((t) => visibles.has(t.slug) && Number.isFinite(t.lat) && Number.isFinite(t.lng));
     if (!dentro.length) {
-      destino.current = { ...INICIO, k: 1.15 };
+      destino.current = { ...partida.current };
       return;
     }
     const lng = dentro.reduce((s, t) => s + t.lng, 0) / dentro.length;
@@ -469,22 +509,32 @@ export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Pr
     tocado.current = performance.now();
   }, [firma, visibles, terapeutas]);
 
-  const abrir = useCallback((t: Terapeuta) => {
-    setActivo(t);
-    destino.current = { lng: t.lng, lat: t.lat, k: Math.max(vista.current.k, 2.8) };
+  const abrir = useCallback((p: Punto) => {
+    setActivo(p);
+    destino.current = { lng: p.lng, lat: p.lat, k: Math.max(vista.current.k, 2.8) };
     tocado.current = performance.now();
   }, []);
 
   /* ---------- Leyenda ---------- */
-  const dentro = visibles.size;
+  /* Se cuentan terapeutas, no «consultas»: quien no enseña su dirección
+     también está, aunque su punto sea el de su ciudad. */
+  const dentro = terapeutas.filter((t) => visibles.has(t.slug)).length;
   const leyenda =
     terapeutas.length === 0
       ? 'Las primeras terapeutas certificadas llegan pronto'
       : dentro === terapeutas.length
-        ? `${terapeutas.length} ${terapeutas.length === 1 ? 'consulta certificada' : 'consultas certificadas'}`
+        ? `${terapeutas.length} ${terapeutas.length === 1 ? 'terapeuta certificada' : 'terapeutas certificadas'}`
         : dentro === 0
-          ? 'Sin consultas con ese filtro'
-          : `${dentro} ${dentro === 1 ? 'consulta' : 'consultas'} con ese filtro`;
+          ? 'Ninguna con ese filtro'
+          : `${dentro} ${dentro === 1 ? 'terapeuta' : 'terapeutas'} con ese filtro`;
+
+  /* En la ficha flotante, las del punto que pasan el filtro (o todas, si
+     ninguna lo pasa: se ha pulsado un punto apagado a propósito). */
+  const enFicha = activo
+    ? activo.miembros.filter((m) => visibles.has(m.slug)).length
+      ? activo.miembros.filter((m) => visibles.has(m.slug))
+      : activo.miembros
+    : [];
 
   if (error) {
     return (
@@ -509,26 +559,30 @@ export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Pr
         role="img"
         aria-label={
           terapeutas.length === 0
-            ? 'Globo terráqueo, todavía sin consultas'
-            : 'Globo terráqueo con las consultas de las terapeutas Divine certificadas'
+            ? 'Globo terráqueo, todavía sin terapeutas'
+            : 'Globo terráqueo con las terapeutas certificadas en Técnica Divine'
         }
       />
 
       {/* Los puntos, como botones de verdad encima del lienzo. Los coloca el
           bucle de dibujo en cada fotograma, sin pasar por React. */}
-      {terapeutas.map((t) => (
+      {puntos.map((p) => (
         <button
-          key={t.slug}
+          key={p.clave}
           type="button"
           ref={(b) => {
-            if (b) pinesRef.current.set(t.slug, b);
-            else pinesRef.current.delete(t.slug);
+            if (b) pinesRef.current.set(p.clave, b);
+            else pinesRef.current.delete(p.clave);
           }}
           className={css.pin}
           style={{ visibility: 'hidden' }}
-          aria-label={`${t.nombre}, ${t.ciudad}`}
+          aria-label={
+            p.miembros.length === 1
+              ? `${p.miembros[0].nombre}, ${lugarDe(p.miembros[0])}`
+              : `${p.miembros.length} terapeutas en ${p.ciudad}`
+          }
           onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => abrir(t)}
+          onClick={() => abrir(p)}
         />
       ))}
 
@@ -539,7 +593,12 @@ export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Pr
         <button type="button" onClick={() => escalar(1 / 1.5)} aria-label="Alejar">
           −
         </button>
-        <button type="button" onClick={volver} aria-label="Volver a España" title="Volver a España">
+        <button
+          type="button"
+          onClick={volver}
+          aria-label={`Volver a ${inicio?.nombre ?? 'España'}`}
+          title={`Volver a ${inicio?.nombre ?? 'España'}`}
+        >
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
             <circle cx="12" cy="12" r="8" />
             <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none" />
@@ -574,15 +633,59 @@ export default function MapaTerapeutas({ terapeutas, visibles, onVerPerfil }: Pr
           <button type="button" className={css.fichaCerrar} aria-label="Cerrar" onClick={() => setActivo(null)}>
             ×
           </button>
-          <h3>{activo.nombre}</h3>
-          <p className={css.fichaCiudad}>{activo.ciudad} · certificada por Sorela</p>
-          <p className={css.fichaDir}>{activo.direccion}</p>
-          <p className={css.fichaTrat}>{activo.tratamientos.join(' · ')}</p>
-          <button type="button" className={css.fichaVer} onClick={() => onVerPerfil(activo.slug)}>
-            Ver perfil y reservar
-          </button>
+          {enFicha.length === 1 ? (
+            <>
+              <div className={css.fichaCabeza}>
+                <Avatar t={enFicha[0]} />
+                <div>
+                  <h3>{enFicha[0].nombre}</h3>
+                  <p className={css.fichaCiudad}>{lugarDe(enFicha[0])} · certificada</p>
+                </div>
+              </div>
+              {enFicha[0].centro && <p className={css.fichaDir}>{enFicha[0].centro}</p>}
+              {/* La dirección solo existe en la ficha pública si ella ha
+                  elegido enseñarla: si llega vacía, no se inventa una zona. */}
+              {enFicha[0].direccion && <p className={css.fichaDir}>{enFicha[0].direccion}</p>}
+              <p className={css.fichaTrat}>{enFicha[0].tratamientos.join(' · ')}</p>
+              <button type="button" className={css.fichaVer} onClick={() => onVerPerfil(enFicha[0].slug)}>
+                Ver su ficha
+              </button>
+            </>
+          ) : (
+            <>
+              <h3>{enFicha.length} terapeutas en {activo.ciudad}</h3>
+              <p className={css.fichaCiudad}>Certificadas en Técnica Divine</p>
+              <ul className={css.fichaLista}>
+                {enFicha.map((t) => (
+                  <li key={t.slug}>
+                    <button type="button" onClick={() => onVerPerfil(t.slug)}>
+                      <Avatar t={t} />
+                      <span>
+                        <b>{t.nombre}</b>
+                        {t.centro && <em>{t.centro}</em>}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
     </div>
+  );
+}
+
+/** La foto de la terapeuta o, si no tiene, sus iniciales. Nunca una foto de archivo. */
+function Avatar({ t }: { t: TerapeutaMapa }) {
+  return t.foto ? (
+    // Las fotos vienen de Storage con su token; next/image necesitaría
+    // abrir ese dominio en next.config, y a este tamaño no gana nada.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img className={css.avatar} src={t.foto} alt="" width={40} height={40} loading="lazy" />
+  ) : (
+    <span className={css.avatar} aria-hidden="true">
+      {t.iniciales}
+    </span>
   );
 }

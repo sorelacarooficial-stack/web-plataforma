@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import { MotionConfig, motion, useReducedMotion } from 'framer-motion';
 import { minutos, porBloques, type Leccion, type Progreso } from '@/lib/aula';
 import { tieneMembresia, type Acceso } from '@/lib/accesos';
 import type { Vista } from '@/lib/plataforma';
 import type { ProximaClase, Publicacion } from '@/lib/comunidad-tipos';
 import Noticias from './Noticias';
+import { BarraNivel, ComoGanarPuntos, ContadorPuntos, useResumenPuntos } from './Puntos';
 import p from './panelalumna.module.css';
 
 /**
@@ -14,8 +15,9 @@ import p from './panelalumna.module.css';
  *
  * Antes era una lista de «lo que tienes y lo que falta». Ahora es un panel de
  * verdad: cuánto lleva del curso, la clase por la que va con un botón para
- * seguir, el material, lo próximo de su agenda y lo último de la comunidad.
- * Todo lleva a su pantalla con un clic.
+ * seguir, su nivel con lo que le falta y cómo sumar más, el material, lo
+ * próximo de su agenda y lo último de la comunidad. Todo lleva a su pantalla
+ * con un clic.
  */
 
 type Evento = { id: string; titulo: string; cuando: string | null; tipo: string; estado: string };
@@ -32,6 +34,7 @@ const DIA_SEMANA = new Intl.DateTimeFormat('es-ES', { weekday: 'short' });
 const mayus = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 function Anillo({ valor }: { valor: number }) {
+  const reducir = useReducedMotion();
   const r = 46;
   const cc = 2 * Math.PI * r;
   return (
@@ -43,7 +46,7 @@ function Anillo({ valor }: { valor: number }) {
         r={r}
         className={p.anilloValor}
         strokeDasharray={cc}
-        initial={{ strokeDashoffset: cc }}
+        initial={{ strokeDashoffset: reducir ? cc * (1 - valor / 100) : cc }}
         animate={{ strokeDashoffset: cc * (1 - valor / 100) }}
         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
       />
@@ -76,6 +79,8 @@ export default function PanelAlumna({
   const [docs, setDocs] = useState<Doc[]>([]);
   const [eventos, setEventos] = useState<Evento[] | null>(null);
   const [com, setCom] = useState<{ publicaciones: Publicacion[]; proximaClase: ProximaClase } | null>(null);
+  // Los puntos llegan solos (los reparte la Celebración con `divine:puntos`).
+  const puntos = useResumenPuntos();
 
   useEffect(() => {
     const json = (u: string) => fetch(u).then((r) => r.json()).catch(() => ({ ok: false }));
@@ -101,6 +106,8 @@ export default function PanelAlumna({
   const pila = (nombre || '').trim().split(/\s+/)[0];
 
   return (
+    // Con «reducir movimiento», las tarjetas aparecen sin desplazarse.
+    <MotionConfig reducedMotion="user">
     <div className={p.panel}>
       {/* ---------- Saludo y progreso ---------- */}
       <motion.section className={p.hero} {...aparecer(0)}>
@@ -170,8 +177,33 @@ export default function PanelAlumna({
       <Noticias yaEsMiembro={miembro} ir={ir} />
 
       <div className={p.rejilla}>
+        {/* ---------- Tu nivel: la barra grande y cómo sumar más ---------- */}
+        <motion.section className={`${p.tarjeta} ${p.oscura} ${p.nivel}`} {...aparecer(1)} aria-labelledby="panel-tu-nivel">
+          <div className={p.nivelIzquierda}>
+            <header className={p.cabecera}>
+              <h3 id="panel-tu-nivel">Tu nivel</h3>
+              {puntos && (
+                <span className={p.nivelTotal}>
+                  <ContadorPuntos valor={puntos.total} desde={puntos.antes ?? undefined} />
+                  <small>puntos</small>
+                </span>
+              )}
+            </header>
+            {puntos ? (
+              <BarraNivel total={puntos.total} desde={puntos.antes ?? undefined} tamano="grande" />
+            ) : (
+              <div className={p.esqueletoOscuro} aria-busy="true" aria-label="Cargando tus puntos" />
+            )}
+            <p className={p.nivelNota}>
+              Los puntos salen de lo que haces aquí: clases, comunidad, constancia y tu perfil. Si algo se borra, sus
+              puntos se van con ello.
+            </p>
+          </div>
+          <ComoGanarPuntos resumen={puntos} />
+        </motion.section>
+
         {/* ---------- Clases ---------- */}
-        <motion.section className={p.tarjeta} {...aparecer(1)}>
+        <motion.section className={p.tarjeta} {...aparecer(2)}>
           <header className={p.cabecera}>
             <h3>Tus clases</h3>
             <button type="button" className={p.enlace} onClick={() => ir('aula')}>
@@ -212,7 +244,7 @@ export default function PanelAlumna({
         </motion.section>
 
         {/* ---------- Material ---------- */}
-        <motion.section className={p.tarjeta} {...aparecer(2)}>
+        <motion.section className={p.tarjeta} {...aparecer(3)}>
           <header className={p.cabecera}>
             <h3>Tu material</h3>
             <button type="button" className={p.enlace} onClick={() => ir('aula')}>
@@ -238,7 +270,7 @@ export default function PanelAlumna({
         </motion.section>
 
         {/* ---------- Agenda ---------- */}
-        <motion.section className={p.tarjeta} {...aparecer(3)}>
+        <motion.section className={p.tarjeta} {...aparecer(4)}>
           <header className={p.cabecera}>
             <h3>Tu agenda</h3>
             <button type="button" className={p.enlace} onClick={() => ir('agenda')}>
@@ -270,7 +302,7 @@ export default function PanelAlumna({
         </motion.section>
 
         {/* ---------- Comunidad ---------- */}
-        <motion.section className={`${p.tarjeta} ${p.oscura}`} {...aparecer(4)}>
+        <motion.section className={`${p.tarjeta} ${p.oscura}`} {...aparecer(5)}>
           <header className={p.cabecera}>
             <h3>Comunidad</h3>
             <button type="button" className={p.enlace} onClick={() => ir('comunidad')}>
@@ -305,5 +337,6 @@ export default function PanelAlumna({
         </motion.section>
       </div>
     </div>
+    </MotionConfig>
   );
 }

@@ -48,14 +48,24 @@ export default function FotoPerfil({
   iniciales,
   nombre,
   verPerfil,
+  alCambiar,
 }: {
   foto: string | null;
   iniciales: string;
   nombre: string;
   /** Abre su perfil. Si no se pasa, el menú no lo ofrece. */
   verPerfil?: () => void;
+  /** Avisa de la foto nueva (o null al quitarla) a quien la guarda por encima. */
+  alCambiar?: (foto: string | null) => void;
 }) {
-  const [foto, setFoto] = useState(inicial);
+  const [foto, setFotoLocal] = useState(inicial);
+  /* La que llega de fuera manda cuando cambia: la bienvenida también sube el
+     avatar, y Plataforma se lo pasa aquí. */
+  useEffect(() => setFotoLocal(inicial), [inicial]);
+  const setFoto = (f: string | null) => {
+    setFotoLocal(f);
+    alCambiar?.(f);
+  };
   const [abierto, setAbierto] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [aviso, setAviso] = useState('');

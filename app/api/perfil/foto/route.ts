@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
+import { actualizarFotoFicha } from '@/lib/fichas';
 
 /**
  * La foto de perfil de quien ha entrado.
@@ -13,6 +14,10 @@ import { sesionActual } from '@/lib/sesion-servidor';
  * aquí solo se comprueba que es una imagen y que no es enorme. Se guarda en la
  * ficha de la persona y cada una solo puede tocar la suya: el uid sale de la
  * sesión, no del cuerpo de la petición.
+ *
+ * Si tiene la ficha del mapa publicada, la foto de la web es una COPIA de este
+ * avatar: se rehace (o se quita) aquí mismo. Si no, quitar la foto desde la
+ * cabecera dejaría la vieja a la vista de todo el mundo en su ficha pública.
  */
 
 export const runtime = 'nodejs';
@@ -21,6 +26,15 @@ export const dynamic = 'force-dynamic';
 /** Una imagen de 256 px en webp ronda los 20 KB; con este tope cabe de sobra. */
 const MAX_CARACTERES = 300_000;
 const FORMA = /^data:image\/(webp|jpeg|png);base64,[A-Za-z0-9+/=]+$/;
+
+/** Que la ficha pública no se quede con la foto vieja. Si falla, se dice en el registro y no se rompe el guardado. */
+async function refrescarFicha(uid: string) {
+  try {
+    await actualizarFotoFicha(uid);
+  } catch (e) {
+    console.error('[perfil/foto] no se ha podido rehacer la foto de la ficha:', e);
+  }
+}
 
 async function quien() {
   if (!hayFirebase()) return { error: NextResponse.json({ ok: false, motivo: 'sin-base' }, { status: 503 }) };
@@ -50,6 +64,7 @@ export async function POST(peticion: Request) {
     .collection(COLECCIONES.usuarios)
     .doc(q.sesion.uid)
     .set({ foto: imagen, fotoCambiada: FieldValue.serverTimestamp() }, { merge: true });
+  await refrescarFicha(q.sesion.uid);
 
   return NextResponse.json({ ok: true });
 }
@@ -61,5 +76,6 @@ export async function DELETE() {
     .collection(COLECCIONES.usuarios)
     .doc(q.sesion.uid)
     .set({ foto: FieldValue.delete(), fotoCambiada: FieldValue.serverTimestamp() }, { merge: true });
+  await refrescarFicha(q.sesion.uid);
   return NextResponse.json({ ok: true });
 }

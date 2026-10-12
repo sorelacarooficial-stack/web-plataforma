@@ -1,0 +1,672 @@
+/*
+ * Puntos y niveles.
+ *
+ * Oro sobre negro para lo que tiene que dar ganas: la barra se llena con un
+ * degradado del oro de la marca (#8a6a32 → #d9b47c), un brillo la recorre y la
+ * punta luce. Cifras en Jost con dígitos de igual ancho, para que al contar no
+ * baile la línea; nombres de nivel en Cormorant, como los títulos.
+ *
+ * La barra no impone colores de texto: hereda el del bloque donde va (negro en
+ * el marcador y en «Tu nivel», claro si alguien la pone en una tarjeta clara) y
+ * saca el secundario mezclando ese mismo color, así el contraste se mantiene.
+ */
+
+.soloLector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.cifra {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.01em;
+}
+
+.rotulo {
+  margin: 0;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+/* ---------- La insignia de nivel: una moneda dorada ---------- */
+
+.insignia {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #fbf1dc 0%, #e6c890 38%, #c49a5a 70%, #8a6a32 100%);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.35),
+    inset 0 -2px 4px rgba(70, 48, 16, 0.35),
+    0 4px 12px -4px rgba(217, 180, 124, 0.7);
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: #17140f;
+}
+
+.insignia[data-grande] {
+  width: 46px;
+  height: 46px;
+  font-size: 20px;
+}
+
+/* ==========================================================================
+   La barra de nivel
+   ========================================================================== */
+
+.barraNivel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  color: inherit;
+}
+
+.filaNivel {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.nivelNombre {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 0;
+}
+
+.nivelNumero {
+  flex: none;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, currentColor 80%, transparent);
+}
+
+.punto {
+  color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.nivelTitulo {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.nivelCifras {
+  flex: none;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, currentColor 80%, transparent);
+}
+
+.pista {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.relleno {
+  position: relative;
+  display: block;
+  height: 100%;
+  min-width: 0;
+  overflow: visible;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8a6a32 0%, #b8914f 45%, #d9b47c 85%, #ecd2a2 100%);
+  box-shadow: 0 0 14px -2px rgba(217, 180, 124, 0.55);
+}
+
+/* El brillo que recorre la barra, recortado a su forma. */
+.relleno::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(100deg, transparent 0%, transparent 35%, rgba(255, 250, 238, 0.65) 50%, transparent 65%, transparent 100%);
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  animation: recorrer 2.8s ease-in-out infinite;
+}
+
+@keyframes recorrer {
+  0% {
+    background-position: 160% 0;
+  }
+  70%,
+  100% {
+    background-position: -60% 0;
+  }
+}
+
+/* La punta: un punto de luz que respira. */
+.punta {
+  position: absolute;
+  top: 50%;
+  right: -5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: radial-gradient(circle, #fffaf0 0%, #f3e3c3 40%, rgba(217, 180, 124, 0) 72%);
+  box-shadow: 0 0 10px 3px rgba(243, 227, 195, 0.65);
+  animation: respirar 1.8s ease-in-out infinite;
+}
+
+@keyframes respirar {
+  50% {
+    box-shadow: 0 0 16px 6px rgba(243, 227, 195, 0.85);
+  }
+}
+
+.destello {
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  background: radial-gradient(60% 100% at 100% 50%, #fffaf0, rgba(243, 227, 195, 0.6) 40%, transparent 75%);
+  box-shadow: 0 0 26px 6px rgba(243, 227, 195, 0.7);
+  pointer-events: none;
+}
+
+/* La frase de lo que falta va en el color pleno del bloque: es lo que más se
+   lee de la barra. Las cifras se distinguen por el peso, no por un gris. */
+.falta {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.falta b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.subes {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Grande: la de «Tu nivel» y la del panel. */
+.barraNivel[data-tamano='grande'] {
+  gap: 10px;
+}
+
+.barraNivel[data-tamano='grande'] .pista {
+  height: 12px;
+}
+
+.barraNivel[data-tamano='grande'] .punta {
+  right: -7px;
+  width: 16px;
+  height: 16px;
+}
+
+.barraNivel[data-tamano='grande'] .nivelTitulo {
+  font-size: clamp(22px, 2.2vw, 26px);
+}
+
+.barraNivel[data-tamano='grande'] .falta {
+  font-size: 14.5px;
+}
+
+/* ==========================================================================
+   El desglose
+   ========================================================================== */
+
+.desglose {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.desglose li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(48px, 88px) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.desglose li:last-child {
+  border-bottom: 0;
+}
+
+.desgloseTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.desgloseTexto strong {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.desgloseTexto em {
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, currentColor 76%, transparent);
+}
+
+.desglosePista {
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.desglosePista span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8a6a32, #d9b47c);
+  transform-origin: left center;
+}
+
+.desgloseValor {
+  min-width: 52px;
+  text-align: right;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.desgloseVacio {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: color-mix(in srgb, currentColor 80%, transparent);
+}
+
+/* ==========================================================================
+   Cómo ganar más (bloque propio, negro: se ve igual donde se ponga)
+   ========================================================================== */
+
+.ganar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  border-radius: 22px;
+  background: #17140f;
+  border: 1px solid rgba(217, 180, 124, 0.2);
+  color: #f7f2ea;
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.accion {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.accionIcono {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(217, 180, 124, 0.14);
+  color: #d9b47c;
+}
+
+.accionTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.accionTexto strong {
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: #f7f2ea;
+}
+
+.accionTexto em {
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #cfc6b8;
+}
+
+.accionLado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.accionPuntos {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #f3e3c3;
+}
+
+.accionBoton {
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f3e3c3, #d9b47c);
+  color: #17140f;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.accionBoton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px -8px rgba(217, 180, 124, 0.8);
+}
+
+.accionBoton:focus-visible,
+.hud:focus-visible,
+.cerrar:focus-visible {
+  outline: 2px solid #d9b47c;
+  outline-offset: 3px;
+}
+
+.accionEtiqueta {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 180, 124, 0.4);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #e8d3ad;
+}
+
+@media (max-width: 520px) {
+  .accion {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .accionLado {
+    grid-column: 2;
+    justify-content: space-between;
+  }
+}
+
+/* ==========================================================================
+   El marcador (HUD)
+   ========================================================================== */
+
+.marcador {
+  position: relative;
+  display: inline-flex;
+}
+
+.hud {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 16px 6px 7px;
+  border: 1px solid rgba(217, 180, 124, 0.38);
+  border-radius: 999px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(217, 180, 124, 0.16), transparent 60%),
+    #17140f;
+  color: #f7f2ea;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -14px rgba(20, 16, 10, 0.8);
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+}
+
+.hud:hover {
+  border-color: rgba(217, 180, 124, 0.7);
+  transform: translateY(-1px);
+}
+
+.hud[data-brilla] {
+  animation: brillaHud 1.6s ease-out;
+}
+
+@keyframes brillaHud {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 180, 124, 0.7), 0 10px 24px -14px rgba(20, 16, 10, 0.8);
+  }
+  40% {
+    box-shadow: 0 0 0 8px rgba(217, 180, 124, 0), 0 0 28px 2px rgba(217, 180, 124, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 180, 124, 0), 0 10px 24px -14px rgba(20, 16, 10, 0.8);
+  }
+}
+
+.hudTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.hudPuntos {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  color: #f7f2ea;
+}
+
+.hudPuntos small {
+  font-size: 12px;
+  font-weight: 500;
+  color: #cfc6b8;
+}
+
+.hudBarra {
+  display: block;
+  width: 96px;
+}
+
+.hudBarra .pista {
+  height: 5px;
+}
+
+.hudBarra .punta {
+  right: -4px;
+  width: 9px;
+  height: 9px;
+}
+
+.marcador[data-compacto] .hud {
+  min-height: 40px;
+  padding-right: 13px;
+}
+
+/* El «+N»: una pastilla negra con oro, para que se lea sobre cualquier fondo. */
+.mas {
+  position: absolute;
+  top: -12px;
+  right: -4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #17140f;
+  border: 1px solid rgba(217, 180, 124, 0.6);
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #f3e3c3;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 0 18px -2px rgba(217, 180, 124, 0.7);
+}
+
+/* ---------- El panel del marcador ---------- */
+
+.velo {
+  display: none;
+}
+
+.panel {
+  position: fixed;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(217, 180, 124, 0.25);
+  background:
+    radial-gradient(100% 60% at 100% 0%, rgba(217, 180, 124, 0.14), transparent 60%),
+    #17140f;
+  color: #f7f2ea;
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(0, 0, 0, 0.2);
+  outline: none;
+}
+
+.panel .ganar {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.panelCabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panelTotal {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 4px 0 0;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 38px;
+  font-weight: 600;
+  line-height: 1;
+  color: #f7f2ea;
+}
+
+.panelTotal small {
+  font-size: 14px;
+  font-weight: 500;
+  color: #cfc6b8;
+}
+
+.cerrar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  color: #f7f2ea;
+  cursor: pointer;
+}
+
+.cerrar:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.bloquePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* En el móvil, el panel es una hoja sobre la barra de abajo. */
+@media (max-width: 639px) {
+  .velo {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1049;
+    background: rgba(12, 10, 9, 0.45);
+  }
+  .panel[data-hoja] {
+    left: 12px;
+    right: 12px;
+    bottom: calc(92px + env(safe-area-inset-bottom));
+    max-height: min(72vh, calc(100vh - 120px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .relleno::before,
+  .punta,
+  .hud[data-brilla] {
+    animation: none;
+  }
+  .hud,
+  .accionBoton {
+    transition: none;
+  }
+}

@@ -1,16 +1,26 @@
+/*
+ * El buscador de «Localiza tu terapeuta».
+ *
+ * La letra sigue la línea de la web: Cormorant para los nombres y los títulos,
+ * Jost para todo lo demás. El texto pequeño va en Jost 400 y con los tonos de
+ * tinta fuertes (--ink-2, --ink-3, --arcilla-ink): en una tarjeta que se lee
+ * de pasada, un gris claro en 300 se pierde.
+ */
+
 .filtros {
   position: sticky;
   top: var(--cabecera);
   z-index: 20;
   background: var(--bg-blur);
   backdrop-filter: blur(10px);
-  border-top: 1px solid var(--line-1);
-  border-bottom: 1px solid var(--line-1);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--line-2);
+  border-bottom: 1px solid var(--line-2);
 }
 
 .filtrosFila {
-  padding-top: 16px;
-  padding-bottom: 16px;
+  padding-top: 14px;
+  padding-bottom: 14px;
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -18,24 +28,33 @@
 }
 
 .select {
-  padding: 13px 18px;
+  flex: 0 1 260px;
+  min-width: 0;
+  min-height: 46px;
+  padding: 11px 18px;
   background: var(--neu-base);
-  border: 1px solid transparent;
+  border: 1px solid var(--line-4);
   border-radius: 999px;
   box-shadow: var(--neu-fuera-sm);
-  font-size: 14px;
-  font-weight: 300;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 400;
   color: var(--ink);
   cursor: pointer;
-  min-width: 0;
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--arcilla);
+  outline-offset: 2px;
 }
 
 .resultado {
   margin-left: auto;
-  font-size: 12px;
-  letter-spacing: 0.14em;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink-3);
 }
 
 /* ---------- Mapa ---------- */
@@ -45,62 +64,240 @@
 
 .hueco {
   width: 100%;
-  height: clamp(320px, 52vh, 520px);
-  background: var(--mapa-sea);
-  border: 1px solid var(--line-3);
+  height: clamp(440px, 62vw, 640px);
+  border-radius: clamp(20px, 2.6vw, 32px);
+  background: #0c0b09;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  letter-spacing: 0.16em;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--mapa-txt-2);
+  color: #e9dcc4;
+}
+
+@media (max-width: 640px) {
+  .hueco {
+    height: min(118vw, 560px);
+  }
 }
 
 .pieMapa {
   margin: 12px 0 0;
-  font-size: 12.5px;
-  font-weight: 300;
-  color: var(--muted);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted-2);
+}
+
+/* ---------- Por ciudad ---------- */
+.ciudades {
+  padding: clamp(28px, 4vw, 44px) 0 0;
+}
+
+.rotulo {
+  margin: 0 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--arcilla-ink);
+}
+
+.chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 10px 8px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line-4);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    transform 0.2s;
+}
+
+.chip:hover {
+  border-color: var(--arcilla);
+  background: var(--arcilla-tint);
+  transform: translateY(-1px);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--arcilla);
+  outline-offset: 2px;
+}
+
+.chipN {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--arcilla-tint);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--arcilla-ink);
 }
 
 /* ---------- Listado ---------- */
 .listado {
-  padding: clamp(36px, 5vw, 64px) 0 clamp(60px, 9vw, 120px);
+  padding: clamp(36px, 5vw, 60px) 0 clamp(48px, 7vw, 90px);
 }
 
-.vacio {
+.listadoCabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-bottom: clamp(20px, 2.6vw, 30px);
+}
+
+.listadoTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: clamp(28px, 3.2vw, 40px);
+  line-height: 1.08;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.quitar {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--arcilla-line);
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--arcilla-ink);
+  cursor: pointer;
+}
+
+.quitar:hover {
+  color: var(--ink);
+}
+
+.sinResultados {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+  margin-bottom: clamp(20px, 3vw, 32px);
+  padding: 18px 22px;
+  border: 1px solid var(--arcilla-line);
+  border-left: 3px solid var(--arcilla);
+  border-radius: 14px;
   background: var(--arcilla-tint);
-  padding: clamp(30px, 4vw, 52px);
-  margin-bottom: clamp(30px, 4vw, 48px);
+}
+
+.sinResultados p {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.sinResultados b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* El mapa sin nadie todavía: icono, título corto, una frase y el formulario. */
+.vacio {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 14px;
+  max-width: 760px;
+  padding: clamp(26px, 4vw, 44px);
+  border: 1px solid var(--arcilla-line);
+  border-radius: clamp(18px, 2.4vw, 28px);
+  background: var(--arcilla-tint);
+}
+
+.vacioIcono {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--arcilla-line);
+  color: var(--arcilla-ink);
 }
 
 .vacioTitulo {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.1;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.vacioTexto {
+  margin: 0;
+  max-width: 560px;
+  font-size: 16px;
   font-weight: 400;
-  font-size: clamp(22px, 2.6vw, 32px);
-  line-height: 1.15;
+  line-height: 1.55;
+  color: var(--ink-2);
   text-wrap: pretty;
 }
 
-.tarjetas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: clamp(18px, 2.4vw, 30px);
+.vacioForm {
+  width: 100%;
+  margin-top: 6px;
 }
 
+.tarjetas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: clamp(18px, 2.4vw, 28px);
+}
+
+.tarjetas > li {
+  display: flex;
+}
+
+/* ---------- Tarjeta ---------- */
 .tarjeta {
-  background: var(--surface);
-  border: 1px solid var(--line-2);
-  padding: clamp(24px, 2.8vw, 34px);
+  position: relative;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  justify-content: space-between;
+  gap: 14px;
+  padding: clamp(22px, 2.6vw, 30px);
+  background: var(--surface);
+  border: 1px solid var(--line-3);
+  border-radius: clamp(18px, 2vw, 24px);
   transition:
     border-color 0.25s,
     transform 0.28s,
@@ -109,8 +306,26 @@
 
 .tarjeta:hover {
   border-color: var(--arcilla);
-  transform: translateY(-4px);
-  box-shadow: 0 18px 40px rgba(20, 18, 16, 0.07);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px -18px rgba(60, 45, 25, 0.35);
+}
+
+/* Toda la tarjeta lleva a la ficha, aunque el enlace sea solo el nombre. */
+.tarjeta:focus-within {
+  border-color: var(--arcilla);
+  box-shadow: 0 0 0 2px var(--arcilla);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta,
+  .chip {
+    transition: none;
+  }
+
+  .tarjeta:hover,
+  .chip:hover {
+    transform: none;
+  }
 }
 
 .identidad {
@@ -119,44 +334,186 @@
   gap: 14px;
 }
 
+.foto,
 .iniciales {
   flex: 0 0 auto;
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
   border-radius: 999px;
+  box-shadow: 0 0 0 1px var(--arcilla-line);
+}
+
+.foto {
+  object-fit: cover;
+  background: var(--photo-bg);
+}
+
+.iniciales {
+  display: grid;
+  place-items: center;
   background: var(--arcilla-tint);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 19px;
+  font-size: 23px;
+  font-weight: 600;
   color: var(--arcilla-ink);
 }
 
+.quien {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
 .nombre {
+  margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(20px, 2vw, 25px);
-  line-height: 1.1;
+  font-weight: 600;
+  font-size: clamp(23px, 2vw, 27px);
+  line-height: 1.08;
   color: var(--ink);
+  text-wrap: balance;
+}
+
+.enlace {
+  color: inherit;
+  text-decoration: none;
+}
+
+.enlace::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.enlace:focus-visible {
+  outline: none;
+}
+
+.centro {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ink-2);
 }
 
 .ciudad {
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--muted-2);
+}
+
+.sello {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--arcilla);
+  color: var(--arcilla-ink);
 }
 
 .frase {
   margin: 0;
-  font-weight: 300;
   font-size: 16px;
-  line-height: 1.6;
+  font-weight: 400;
+  line-height: 1.55;
   color: var(--ink-3);
   text-wrap: pretty;
 }
 
+.etiquetas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.etiquetas li {
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--ink-2);
+}
+
+.ver {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.flecha {
+  display: inline-block;
+  transition: transform 0.25s;
+}
+
+.tarjeta:hover .flecha {
+  transform: translateX(4px);
+}
+
+/* ---------- ¿No hay ninguna cerca? ---------- */
+.aviso {
+  padding: clamp(40px, 6vw, 72px) 0 clamp(60px, 9vw, 110px);
+  background: var(--surface);
+  border-top: 1px solid var(--line-2);
+}
+
+.avisoFila {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: clamp(20px, 4vw, 56px);
+  align-items: start;
+}
+
+.avisoTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.avisoTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.avisoTexto p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+@media (max-width: 800px) {
+  .avisoFila {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 560px) {
+  .select {
+    flex: 1 1 100%;
+  }
+
   .resultado {
     margin-left: 0;
   }
