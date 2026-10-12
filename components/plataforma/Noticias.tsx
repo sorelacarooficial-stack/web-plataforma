@@ -118,9 +118,7 @@ export default function Noticias({ yaEsMiembro, ir }: { yaEsMiembro: boolean; ir
           <span>{APERTURA_POR_PAISES}</span>
         </p>
         <p className={n.texto}>
-          El sitio para no quedarte sola con los casos difíciles: una clase en vivo al mes con Sorela, casos resueltos entre
-          todas y el material de consulta siempre a mano. Quien está en la lista lo sabe antes que nadie y entra con el precio
-          fundador.
+          Apúntate a la lista de espera y te avisamos en cuanto abra.
         </p>
 
         <div className={n.accion}>
