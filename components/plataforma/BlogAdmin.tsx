@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, Reorder, useDragControls } from 'framer-motion';
 import Cuerpo from '@/components/blog/Cuerpo';
 import { CATEGORIAS, minutosDe, type Articulo, type Bloque } from '@/lib/blog-tipos';
+import { leerRespuesta, prepararImagen } from '@/lib/imagen-cliente';
 import css from './plataforma.module.css';
 import b from './blogadmin.module.css';
 
@@ -70,9 +71,9 @@ function Area(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 
 async function subirImagen(archivo: File): Promise<string> {
   const f = new FormData();
-  f.append('archivo', archivo);
-  const r = await fetch('/api/blog/imagen', { method: 'POST', body: f });
-  const j = await r.json().catch(() => ({ ok: false }));
+  // Reducida aquí: una foto de cámara pasa del límite de 4,5 MB de Vercel.
+  f.append('archivo', await prepararImagen(archivo, 2400));
+  const j = await leerRespuesta<{ url: string }>(await fetch('/api/blog/imagen', { method: 'POST', body: f }));
   if (!j.ok) throw new Error(j.texto || 'No he podido subir la imagen.');
   return j.url;
 }

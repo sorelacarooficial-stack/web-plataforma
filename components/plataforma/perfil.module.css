@@ -577,3 +577,28 @@
   color: var(--oro);
   cursor: pointer;
 }
+
+/* Aviso flotante (una subida que falla): en lugar del alert del navegador. */
+.aviso {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  z-index: 1200;
+  width: min(440px, calc(100vw - 32px));
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: #17140f;
+  color: #f7f2ea;
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: center;
+  box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.6);
+  translate: -50% 0;
+}
+
+@media (max-width: 879px) {
+  .aviso {
+    bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+}

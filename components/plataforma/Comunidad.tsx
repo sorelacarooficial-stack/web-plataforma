@@ -16,6 +16,7 @@ import Bienvenida from './Bienvenida';
 import css from './plataforma.module.css';
 import c from './comunidad.module.css';
 import { verPerfil } from '@/lib/navegar';
+import { leerRespuesta, prepararImagen } from '@/lib/imagen-cliente';
 
 /**
  * La comunidad de terapeutas: casos, dudas y resultados entre todas, con
@@ -147,14 +148,15 @@ function Escribir({ yo, modera, alPublicar }: { yo: Datos['yo']; modera: boolean
     if (!lista) return;
     setSubiendo(true);
     for (const f of [...lista].slice(0, 4 - fotos.length)) {
-      const fd = new FormData();
-      fd.append('archivo', f);
       try {
-        const j = await (await fetch('/api/comunidad/imagen', { method: 'POST', body: fd })).json();
+        const fd = new FormData();
+        // Reducida aquí: una foto de móvil pasa del límite de 4,5 MB de Vercel.
+        fd.append('archivo', await prepararImagen(f));
+        const j = await leerRespuesta<{ ruta: string; url: string }>(await fetch('/api/comunidad/imagen', { method: 'POST', body: fd }));
         if (j.ok) setFotos((x) => [...x, { ruta: j.ruta, url: j.url }]);
         else setErrores({ fotos: j.texto || 'No he podido subir la foto.' });
-      } catch {
-        setErrores({ fotos: 'No hay conexión.' });
+      } catch (e) {
+        setErrores({ fotos: (e as Error).message || 'No hay conexión.' });
       }
     }
     setSubiendo(false);

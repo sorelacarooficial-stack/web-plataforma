@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Logros from './Logros';
+import { leerRespuesta, prepararImagen } from '@/lib/imagen-cliente';
 import p from './perfil.module.css';
 
 /**
@@ -43,6 +44,7 @@ export default function Perfil() {
   const [editando, setEditando] = useState(false);
   const [abierta, setAbierta] = useState<number | null>(null);
   const [subiendo, setSubiendo] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [montado, setMontado] = useState(false);
   const entradaFoto = useRef<HTMLInputElement>(null);
   const entradaPortada = useRef<HTMLInputElement>(null);
@@ -77,26 +79,33 @@ export default function Perfil() {
     try {
       const f = new FormData();
       f.set('tipo', tipo);
-      f.set('archivo', archivo);
-      const j = await (await fetch('/api/perfiles', { method: 'POST', body: f })).json();
+      // Reducida aquí: una foto de móvil pasa del límite de 4,5 MB de Vercel.
+      f.set('archivo', await prepararImagen(archivo, tipo === 'portada' ? 2400 : 2000));
+      const j = await leerRespuesta<{ url?: string; foto?: Datos['fotos'][number] }>(await fetch('/api/perfiles', { method: 'POST', body: f }));
       if (!j.ok) throw new Error(j.texto || 'No se ha podido subir.');
-      if (tipo === 'portada') setDatos((d) => (d ? { ...d, perfil: { ...d.perfil, portada: j.url } } : d));
-      else setDatos((d) => (d ? { ...d, fotos: [j.foto, ...d.fotos] } : d));
+      if (tipo === 'portada') setDatos((d) => (d && j.url ? { ...d, perfil: { ...d.perfil, portada: j.url } } : d));
+      else if (j.foto) setDatos((d) => (d ? { ...d, fotos: [j.foto!, ...d.fotos] } : d));
     } catch (e) {
-      window.alert((e as Error).message);
+      setAviso((e as Error).message || 'No hay conexión. Inténtalo otra vez.');
     } finally {
       setSubiendo(null);
     }
   }
 
+  useEffect(() => {
+    if (!aviso) return;
+    const t = setTimeout(() => setAviso(null), 5000);
+    return () => clearTimeout(t);
+  }, [aviso]);
+
   async function borrarFoto(id: string) {
     if (!datos || !window.confirm('¿Borrar esta foto?')) return;
     const q = new URLSearchParams({ foto: id, ...(datos.esMio ? {} : { uid: datos.perfil.uid }) });
-    const j = await (await fetch(`/api/perfiles?${q}`, { method: 'DELETE' })).json();
+    const j = await leerRespuesta(await fetch(`/api/perfiles?${q}`, { method: 'DELETE' }).catch(() => new Response('')));
     if (j.ok) {
       setDatos((d) => (d ? { ...d, fotos: d.fotos.filter((f) => f.id !== id) } : d));
       setAbierta(null);
-    }
+    } else setAviso('No se ha podido borrar. Inténtalo otra vez.');
   }
 
   if (fallo) return <p className={p.fallo}>{fallo}</p>;
@@ -217,6 +226,18 @@ export default function Perfil() {
 
       <input ref={entradaFoto} type="file" accept="image/*" hidden onChange={(e) => { subir('foto', e.target.files?.[0]); e.target.value = ''; }} />
       <input ref={entradaPortada} type="file" accept="image/*" hidden onChange={(e) => { subir('portada', e.target.files?.[0]); e.target.value = ''; }} />
+
+      {montado &&
+        createPortal(
+          <AnimatePresence>
+            {aviso && (
+              <motion.p key="aviso" className={p.aviso} role="alert" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}>
+                {aviso}
+              </motion.p>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
 
       {montado &&
         createPortal(
