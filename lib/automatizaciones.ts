@@ -15,7 +15,7 @@ export const AUTOMATIZACIONES = [
     cuando: 'Alguien deja su nombre y correo en un formulario de la web.',
     quien: 'La persona que lo ha rellenado',
     porDefecto: true,
-    /** Este no se apaga desde aquí: lo manda el Apps Script de tu Gmail. */
+    /** Estos no se apagan desde aquí: van por su propio camino. */
     fijo: true,
   },
   {
@@ -47,18 +47,12 @@ export const AUTOMATIZACIONES = [
     porDefecto: true,
   },
   {
-    id: 'apertura-semana',
-    nombre: 'Falta una semana para la Comunidad',
-    cuando: 'Siete días antes de la apertura, una sola vez.',
-    quien: 'Toda la lista de espera de la comunidad',
-    porDefecto: false,
-  },
-  {
-    id: 'apertura-dia',
-    nombre: 'Hoy abre la Comunidad Divine',
-    cuando: 'La mañana del día de la apertura, una sola vez.',
-    quien: 'Toda la lista de espera de la comunidad',
-    porDefecto: false,
+    id: 'acuerdo',
+    nombre: 'Acuerdo de confidencialidad firmado',
+    cuando: 'Una alumna firma el acuerdo de la formación.',
+    quien: 'La alumna, con su acuerdo en PDF y el dossier',
+    porDefecto: true,
+    fijo: true,
   },
   {
     id: 'resumen-sorela',
@@ -75,7 +69,7 @@ export const ID_AUTOMATIZACIONES = AUTOMATIZACIONES.map((a) => a.id) as IdAutoma
 
 export const ETIQUETA_CORREO: Record<string, string> = {
   ...Object.fromEntries(AUTOMATIZACIONES.map((a) => [a.id, a.nombre])),
-  acuerdo: 'Acuerdo firmado',
+  campana: 'Aviso o programado',
   prueba: 'Prueba',
   manual: 'A mano',
 };

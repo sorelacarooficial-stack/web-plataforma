@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { ETIQUETA_ROL, ROL_POR_DEFECTO, type Rol } from '@/lib/roles';
 import { clave } from '@/lib/aula';
 import { CURSO_DIVINE, cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
@@ -798,7 +799,8 @@ export default function Cuentas() {
       </section>
 
       {/* Borrar pide una confirmación de verdad, que diga qué se pierde y qué no. */}
-      {aBorrar && (
+      {aBorrar &&
+        createPortal(
         <div className={css.veloBorrar} role="presentation" onClick={() => setABorrar(null)}>
           <div
             className={css.dialogoBorrar}
@@ -827,8 +829,9 @@ export default function Cuentas() {
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </div>,
+          document.body
+        )}
 
       <section className={css.punteada}>
         <form onSubmit={crear} className={css.columna} style={{ gap: 16 }}>

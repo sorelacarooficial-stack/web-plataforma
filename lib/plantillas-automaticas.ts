@@ -1,4 +1,4 @@
-import { APERTURA_POR_PAISES, DIA_APERTURA, HORA_ESPANA } from './apertura';
+import { DIA_APERTURA, HORA_ESPANA } from './apertura';
 import { envoltorio, escapar } from './plantillas-correo';
 
 /**
@@ -136,55 +136,6 @@ export function correoRegistro(nombre: string | null, pide: 'comunidad' | 'curso
       `${p('Ya tienes tu cuenta creada en mi plataforma.')}
        ${p(escapar(frase))}
        ${p('Si tienes cualquier duda, respóndeme a este correo.')}`
-    ),
-  };
-}
-
-/* ----------------------------------------------------------- apertura */
-
-export function correoAperturaSemana(nombre: string | null, baja: string): Plantilla {
-  return {
-    asunto: 'Falta una semana para la Comunidad Divine',
-    texto: plano([
-      hola(nombre),
-      '',
-      `Queda una semana: el ${DIA_APERTURA} a las ${HORA_ESPANA} (hora de España) abro la Comunidad Divine.`,
-      `Las horas en cada país: ${APERTURA_POR_PAISES}.`,
-      '',
-      'Como estás en la lista de espera, ese día te escribo la primera para que entres antes que nadie.',
-      '',
-      `Si no quieres recibir más correos así: ${baja}`,
-    ]),
-    html: envoltorio(
-      escapar(hola(nombre)),
-      `${p(`Queda una semana: el <strong>${escapar(DIA_APERTURA)} a las ${escapar(HORA_ESPANA)}</strong> (hora de España) abro la Comunidad Divine.`)}
-       ${p(escapar(APERTURA_POR_PAISES), ';font-size:14px;color:#6c645a')}
-       ${p('Como estás en la lista de espera, ese día te escribo la primera para que entres antes que nadie.')}`,
-      baja
-    ),
-  };
-}
-
-export function correoAperturaDia(nombre: string | null, baja: string): Plantilla {
-  return {
-    asunto: 'Hoy abre la Comunidad Divine',
-    texto: plano([
-      hola(nombre),
-      '',
-      `Hoy es el día: a las ${HORA_ESPANA} (hora de España) abro la Comunidad Divine.`,
-      `Las horas en cada país: ${APERTURA_POR_PAISES}.`,
-      '',
-      'Aquí lo tienes todo:',
-      `${WEB}/comunidad`,
-      '',
-      `Si no quieres recibir más correos así: ${baja}`,
-    ]),
-    html: envoltorio(
-      escapar(hola(nombre)),
-      `${p(`Hoy es el día: a las <strong>${escapar(HORA_ESPANA)}</strong> (hora de España) abro la Comunidad Divine.`)}
-       ${p(escapar(APERTURA_POR_PAISES), ';font-size:14px;color:#6c645a')}
-       ${boton(`${WEB}/comunidad`, 'Ver la Comunidad Divine')}`,
-      baja
     ),
   };
 }

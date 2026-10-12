@@ -30,13 +30,14 @@ export type EstadoCorreo = 'enviado' | 'fallido' | 'omitido';
 
 export type RegistroCorreo = {
   para: string;
-  tipo: IdAutomatizacion | 'acuerdo' | 'prueba' | 'manual';
+  tipo: IdAutomatizacion | 'campana' | 'prueba' | 'manual';
   asunto: string;
   via: Via | null;
   estado: EstadoCorreo;
   detalle?: string;
   contactoId?: string;
   uid?: string;
+  campanaId?: string;
 };
 
 const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
@@ -147,6 +148,7 @@ export type Opciones = {
   clave?: string;
   contactoId?: string;
   uid?: string;
+  campanaId?: string;
 };
 
 export type Resultado = { estado: EstadoCorreo; detalle?: string; via: Via | null };
@@ -161,7 +163,7 @@ export async function yaEnviado(clave: string): Promise<boolean> {
 /** Manda un correo y lo apunta. No lanza: devuelve qué ha pasado. */
 export async function mandarCorreo(c: Correo, o: Opciones): Promise<Resultado> {
   const via = viaDeEnvio();
-  const base = { para: c.para, tipo: o.tipo, asunto: c.asunto, contactoId: o.contactoId, uid: o.uid };
+  const base = { para: c.para, tipo: o.tipo, asunto: c.asunto, contactoId: o.contactoId, uid: o.uid, campanaId: o.campanaId };
   const limpio = <T extends object>(x: T) =>
     Object.fromEntries(Object.entries(x).filter(([, v]) => v !== undefined)) as T;
 

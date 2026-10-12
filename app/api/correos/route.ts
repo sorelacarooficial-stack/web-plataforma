@@ -7,23 +7,19 @@ import {
   COLECCION_CORREOS,
   automatizacionesActivas,
   correoDeSorela,
-  enlaceBaja,
   mandarCorreo,
   viaDeEnvio,
 } from '@/lib/correos';
-import { calendario, datosResumen, listaDeEspera, tareasDelDia } from '@/lib/automatizar';
+import { datosResumen, listaDeEspera, tareasDelDia } from '@/lib/automatizar';
 import { correoBienvenida } from '@/lib/plantillas-correo';
 import {
   correoAccesoComunidad,
   correoAccesoFormacion,
-  correoAperturaDia,
-  correoAperturaSemana,
   correoInvitacion,
   correoRegistro,
   correoResumen,
   type Plantilla,
 } from '@/lib/plantillas-automaticas';
-import { APERTURA } from '@/lib/apertura';
 
 /**
  * La pantalla Correos (solo Sorela).
@@ -33,7 +29,7 @@ import { APERTURA } from '@/lib/apertura';
  *   GET ?ver=id         → la vista previa de un correo, en HTML
  *   PATCH { id, activa }→ encender o apagar una automatización
  *   POST  { accion: 'prueba', id } → mandarle a Sorela ese correo de muestra
- *   POST  { accion: 'ejecutar' }   → hacer ahora lo del cron de la mañana
+ *   POST  { accion: 'ejecutar' }   → hacer ahora lo del cron de la mañana (avisos incluidos)
  */
 
 export const runtime = 'nodejs';
@@ -51,7 +47,7 @@ async function exigirAdmin() {
 const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
 
 /** Cada correo con datos de muestra, para verlo antes de encenderlo. */
-async function muestra(id: IdAutomatizacion): Promise<Plantilla> {
+async function muestra(id: IdAutomatizacion): Promise<Plantilla | null> {
   const ejemplo = 'tu-correo@ejemplo.com';
   switch (id) {
     case 'bienvenida': {
@@ -71,10 +67,9 @@ async function muestra(id: IdAutomatizacion): Promise<Plantilla> {
       });
     case 'registro':
       return correoRegistro('María López', 'comunidad');
-    case 'apertura-semana':
-      return correoAperturaSemana('María López', enlaceBaja(ejemplo));
-    case 'apertura-dia':
-      return correoAperturaDia('María López', enlaceBaja(ejemplo));
+    case 'acuerdo':
+      // Lo escribe el Apps Script con el PDF del acuerdo: aquí no hay vista previa.
+      return null;
     case 'resumen-sorela': {
       const d = await datosResumen().catch(() => ({ sinAtender: [], esperando: [] }));
       return correoResumen(
@@ -97,6 +92,7 @@ export async function GET(peticion: Request) {
   if (ver) {
     if (!esId(ver)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
     const m = await muestra(ver);
+    if (!m) return NextResponse.json({ ok: false, motivo: 'sin-vista' }, { status: 404 });
     return NextResponse.json({ ok: true, asunto: m.asunto, html: m.html });
   }
 
@@ -127,23 +123,12 @@ export async function GET(peticion: Request) {
     automatizacionesActivas(),
     listaDeEspera().catch(() => []),
   ]);
-  const c = calendario();
-  const ahora = Date.now();
-  const proximos = [
-    { id: 'apertura-semana', dia: c.semana, personas: espera.length },
-    { id: 'apertura-dia', dia: c.dia, personas: espera.length },
-  ].filter((p) => p.dia >= c.hoy);
-
   return NextResponse.json({
     ok: true,
     via: viaDeEnvio(),
     correoSorela: correoDeSorela(),
-    cron: Boolean(process.env.CRON_SECRET),
     activas,
     automatizaciones: AUTOMATIZACIONES,
-    proximos,
-    apertura: APERTURA,
-    abierta: new Date(APERTURA).getTime() <= ahora,
     listaEspera: espera.length,
     historial: historial.docs.map(aFila),
   });
@@ -181,6 +166,7 @@ export async function POST(peticion: Request) {
     const para = g.sesion.correo || correoDeSorela();
     if (!para) return NextResponse.json({ ok: false, motivo: 'sin-correo' }, { status: 400 });
     const m = await muestra(c.id);
+    if (!m) return NextResponse.json({ ok: false, motivo: 'sin-vista' }, { status: 400 });
     const r = await mandarCorreo({ para, asunto: `[Prueba] ${m.asunto}`, texto: m.texto, html: m.html }, { tipo: 'prueba' });
     return NextResponse.json({ ok: r.estado === 'enviado', ...r, para });
   }

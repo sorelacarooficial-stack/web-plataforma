@@ -4,6 +4,7 @@ import { baseDeDatos } from './firebase-servidor';
 import { enviar, hayCorreo } from './correo';
 import { pdfDelAcuerdo, type AcuerdoGuardado } from './acuerdo-pdf';
 import { leerFirmaSorela } from './firma-sorela';
+import { apuntarCorreo } from './correos';
 
 /**
  * El correo que recibe quien acaba de firmar el acuerdo.
@@ -166,11 +167,13 @@ async function porSmtp(a: AcuerdoGuardado, acuerdo: Uint8Array, dossier: Buffer 
 export async function enviarAcuerdo(referencia: string): Promise<ResultadoCorreo> {
   const fecha = new Date().toISOString();
   let resultado: ResultadoCorreo;
+  let para = '';
 
   try {
     const a = await acuerdoGuardado(referencia);
     if (!a) return { enviado: false, via: 'ninguna', fecha, detalle: 'No existe ese acuerdo.' };
 
+    para = a.correo;
     const acuerdo = await pdfDelAcuerdo(a, { firmaSorela: await leerFirmaSorela() });
     let dossier: Buffer | null = null;
     try {
@@ -203,6 +206,18 @@ export async function enviarAcuerdo(referencia: string): Promise<ResultadoCorreo
     await baseDeDatos().collection(COLECCION).doc(referencia).update({ envioCorreo: resultado });
   } catch (error) {
     console.error('[acuerdos] no se ha podido apuntar el resultado del correo', error);
+  }
+
+  // También en el historial de la pantalla Correos y de su ficha.
+  if (para) {
+    await apuntarCorreo({
+      para,
+      tipo: 'acuerdo',
+      asunto: `Acuerdo de confidencialidad ${referencia}`,
+      via: resultado.via === 'apps-script' || resultado.via === 'smtp' ? resultado.via : null,
+      estado: resultado.enviado ? 'enviado' : 'fallido',
+      ...(resultado.enviado ? {} : { detalle: resultado.detalle.slice(0, 300) }),
+    });
   }
 
   if (!resultado.enviado) console.error('[acuerdos] el correo no ha salido', referencia, resultado.detalle);

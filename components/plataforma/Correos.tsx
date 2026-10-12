@@ -1,8 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ETIQUETA_CORREO, type IdAutomatizacion } from '@/lib/automatizaciones';
+import Programados from './Programados';
 import k from './correos.module.css';
 
 /**
@@ -34,10 +36,8 @@ type Fila = {
 type Datos = {
   via: 'resend' | 'smtp' | 'apps-script' | null;
   correoSorela: string | null;
-  cron: boolean;
   activas: Record<IdAutomatizacion, boolean>;
   automatizaciones: Auto[];
-  proximos: { id: IdAutomatizacion; dia: string; personas: number }[];
   listaEspera: number;
   historial: Fila[];
 };
@@ -56,11 +56,6 @@ const VIA: Record<string, { titulo: string; texto: string }> = {
     texto: 'Con la cuenta de correo configurada en el servidor.',
   },
 };
-
-function fechaLarga(dia: string) {
-  const [a, m, d] = dia.split('-').map(Number);
-  return new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(a, m - 1, d));
-}
 
 function hace(iso: string | null) {
   if (!iso) return '';
@@ -173,7 +168,6 @@ export default function Correos() {
 
   const via = datos.via ? VIA[datos.via] : null;
   const filas = datos.historial.filter((f) => filtro === 'todos' || f.estado === 'fallido');
-  const proximo = datos.proximos[0];
 
   return (
     <div className={k.correos}>
@@ -196,12 +190,6 @@ export default function Correos() {
               ? via.texto
               : 'Falta conectar una vía de envío en Vercel. Hasta entonces, cada correo queda apuntado aquí como «No salió».'}
           </span>
-          {!datos.cron && (
-            <span className={k.estadoNota}>
-              Los envíos de cada mañana (recordatorios y tu resumen) todavía no se lanzan solos: falta la variable
-              CRON_SECRET en Vercel. Mientras tanto, el botón «Hacer ahora lo de hoy» lo lanza a mano.
-            </span>
-          )}
         </div>
         <button type="button" className={k.btn} onClick={hacerHoy} disabled={ocupado === 'hoy'}>
           {ocupado === 'hoy' ? 'Haciendo…' : 'Hacer ahora lo de hoy'}
@@ -224,23 +212,14 @@ export default function Correos() {
           <span className={k.cifraValor}>{datos.listaEspera}</span>
           <span className={k.cifraNota}>recibirán los avisos de apertura</span>
         </div>
-        <div className={k.cifra}>
-          <span className={k.cifraEtiqueta}>Próximo envío</span>
-          <span className={k.cifraValorTexto}>{proximo ? fechaLarga(proximo.dia) : '—'}</span>
-          <span className={k.cifraNota}>
-            {proximo
-              ? datos.activas[proximo.id]
-                ? `${ETIQUETA_CORREO[proximo.id]} · ${proximo.personas} personas`
-                : `${ETIQUETA_CORREO[proximo.id]} · apagado, no saldrá`
-              : 'nada programado'}
-          </span>
-        </div>
       </div>
+
+      <Programados alCambiar={cargar} />
 
       {/* ---------- Automatizaciones ---------- */}
       <section className={k.tarjeta}>
         <header className={k.cabecera}>
-          <h3>Lo que sale solo</h3>
+          <h3>Lo que sale solo, cuando pasa algo</h3>
           <p>Enciende o apaga cada correo. Antes de encender uno, míralo con «Ver correo» o mándate una prueba.</p>
         </header>
         <ul className={k.autos}>
@@ -256,14 +235,14 @@ export default function Correos() {
                   <span className={k.autoCuando}>
                     <b>A quién:</b> {a.quien}
                   </span>
-                  <span className={k.autoBotones}>
+                  {a.id !== 'acuerdo' && <span className={k.autoBotones}>
                     <button type="button" className={k.enlace} onClick={() => ver(a.id)} disabled={ocupado === `ver:${a.id}`}>
                       Ver correo
                     </button>
                     <button type="button" className={k.enlace} onClick={() => probar(a.id)} disabled={ocupado === `probar:${a.id}`}>
                       {ocupado === `probar:${a.id}` ? 'Mandando…' : 'Mandarme una prueba'}
                     </button>
-                  </span>
+                  </span>}
                 </div>
                 {a.fijo ? (
                   <span className={k.fijo}>Siempre activo</span>
@@ -322,7 +301,8 @@ export default function Correos() {
       </section>
 
       {/* ---------- Vista previa ---------- */}
-      <AnimatePresence>
+      {createPortal(
+        <AnimatePresence>
         {vista && (
           <motion.div className={k.velo} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setVista(null)}>
             <motion.div
@@ -355,7 +335,9 @@ export default function Correos() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }

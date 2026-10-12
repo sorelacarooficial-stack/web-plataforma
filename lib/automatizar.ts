@@ -1,15 +1,12 @@
-import { createHash } from 'node:crypto';
 import { APERTURA } from './apertura';
 import { CURSO_DIVINE, revisarAccesos, type Acceso } from './accesos';
 import { baseDeDatos, COLECCIONES, hayFirebase } from './firebase-servidor';
 import { diaDe } from './metricas';
 import { comoLlego, tipoDeOrigen } from './origenes';
-import { correoDeSorela, enlaceBaja, estaActiva, mandarCorreo, type Resultado } from './correos';
+import { correoDeSorela, estaActiva, mandarCorreo, type Resultado } from './correos';
 import {
   correoAccesoComunidad,
   correoAccesoFormacion,
-  correoAperturaDia,
-  correoAperturaSemana,
   correoInvitacion,
   correoRegistro,
   correoResumen,
@@ -28,7 +25,6 @@ import {
 const clave = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 const tieneCurso = (a: Acceso[]) => a.some((x) => x.tipo === 'curso' && clave(x.nombre ?? '') === clave(CURSO_DIVINE));
 const tieneComunidad = (a: Acceso[]) => a.some((x) => x.tipo === 'membresia');
-const hash = (t: string) => createHash('sha256').update(t.toLowerCase()).digest('hex').slice(0, 24);
 
 /**
  * Se ha cambiado lo que una persona tiene. Solo escribe por lo que GANA: quitar
@@ -155,23 +151,6 @@ export type InformeDia = {
   hechas: { id: string; enviados: number; fallidos: number; omitidos: number }[];
 };
 
-async function aLaLista(
-  id: 'apertura-semana' | 'apertura-dia',
-  plantilla: (n: string | null, baja: string) => { asunto: string; texto: string; html: string }
-) {
-  const r = { id, enviados: 0, fallidos: 0, omitidos: 0 };
-  for (const p of await listaDeEspera()) {
-    const x = await mandarCorreo(
-      { para: p.correo, ...plantilla(p.nombre, enlaceBaja(p.correo)), baja: enlaceBaja(p.correo) },
-      { tipo: id, clave: `${id}:${hash(p.correo)}` }
-    );
-    if (x.estado === 'enviado') r.enviados++;
-    else if (x.estado === 'fallido') r.fallidos++;
-    else r.omitidos++;
-  }
-  return r;
-}
-
 /** Datos del resumen de Sorela: lo que está esperando que haga algo. */
 export async function datosResumen(): Promise<ResumenDatos> {
   const db = baseDeDatos();
@@ -209,12 +188,9 @@ export async function tareasDelDia(ahora = new Date()): Promise<InformeDia> {
   const hechas: InformeDia['hechas'] = [];
   if (!hayFirebase()) return { hoy: c.hoy, hechas };
 
-  if (c.hoy === c.semana && (await estaActiva('apertura-semana'))) {
-    hechas.push(await aLaLista('apertura-semana', correoAperturaSemana));
-  }
-  if (c.hoy === c.dia && (await estaActiva('apertura-dia'))) {
-    hechas.push(await aLaLista('apertura-dia', correoAperturaDia));
-  }
+  // Los avisos y la serie del lanzamiento que tocan hoy (lib/campanas.ts).
+  const { campanasDelDia } = await import('./campanas');
+  for (const r of await campanasDelDia(ahora)) hechas.push({ ...r, id: `campana:${r.id}` });
 
   const para = correoDeSorela();
   if (para && (await estaActiva('resumen-sorela'))) {
