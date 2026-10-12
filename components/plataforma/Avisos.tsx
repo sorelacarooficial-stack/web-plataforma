@@ -20,7 +20,7 @@ import a from './avisos.module.css';
 
 type Novedad = {
   id: string;
-  tipo: 'contacto' | 'registro' | 'invitacion' | 'acuerdo' | 'cita' | 'resumen';
+  tipo: 'contacto' | 'registro' | 'invitacion' | 'acuerdo' | 'cita' | 'comunidad' | 'resumen';
   titulo: string;
   texto: string;
   cuando: string;
@@ -77,6 +77,8 @@ function Icono({ tipo }: { tipo: Novedad['tipo'] }) {
       return <svg {...p}><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></svg>;
     case 'acuerdo':
       return <svg {...p}><path d="M6 3h8l4 4v14H6z" /><path d="M9 16c1.5-2 2.5 1 4-1s1.5 1 2.5 0" /></svg>;
+    case 'comunidad':
+      return <svg {...p}><path d="M4 5.5h16v10H9l-5 4z" /></svg>;
     case 'cita':
       return <svg {...p}><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M8 3v4M16 3v4M3 10h18" /></svg>;
     default:
@@ -183,7 +185,7 @@ export default function Avisos({ ir }: { ir: (v: Vista) => void }) {
               id: `resumen:${j.ahora}`,
               tipo: 'resumen',
               titulo: 'Mientras no estabas',
-              texto: `Y ${resto} novedades más. Las tienes en Clientes, Cuentas y Acuerdos.`,
+              texto: `Y ${resto} novedades más. Las tienes en Clientes, Cuentas, Acuerdos y Comunidad.`,
               cuando: j.ahora,
               ir: 'inicio',
             },

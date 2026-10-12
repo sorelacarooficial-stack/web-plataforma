@@ -20,10 +20,10 @@ import { sesionActual } from '@/lib/sesion-servidor';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-type Vista = 'leads' | 'cuentas' | 'acuerdos' | 'agenda';
+type Vista = 'leads' | 'cuentas' | 'acuerdos' | 'agenda' | 'comunidad';
 export type Novedad = {
   id: string;
-  tipo: 'contacto' | 'registro' | 'invitacion' | 'acuerdo' | 'cita';
+  tipo: 'contacto' | 'registro' | 'invitacion' | 'acuerdo' | 'cita' | 'comunidad';
   titulo: string;
   texto: string;
   cuando: string;
@@ -139,6 +139,30 @@ export async function GET(peticion: Request) {
     }
   } catch (e) {
     console.error('[novedades] invitaciones', e);
+  }
+
+  // La comunidad: lo que publican las terapeutas (lo de Sorela no se avisa a ella misma).
+  try {
+    const posts = await db.collection('comunidad_posts').where('creado', '>', ts).orderBy('creado', 'desc').limit(20).get();
+    const autoras = posts.docs.map((d) => d.data().autor).filter((a) => a && a !== sesion.uid);
+    const fichas = autoras.length
+      ? new Map((await db.getAll(...[...new Set(autoras)].map((u) => db.collection(COLECCIONES.usuarios).doc(u)))).map((f) => [f.id, f.data() ?? {}]))
+      : new Map();
+    for (const d of posts.docs) {
+      const v = d.data();
+      if (v.autor === sesion.uid) continue;
+      const f = fichas.get(v.autor) ?? {};
+      novedades.push({
+        id: `comunidad:${d.id}`,
+        tipo: 'comunidad',
+        titulo: v.categoria === 'Duda' ? 'Una duda en la comunidad' : 'Nueva publicación',
+        texto: `${quien(f.nombre, f.correo)}: «${String(v.titulo ?? '').slice(0, 80)}»`,
+        cuando: fechaDe(v.creado) ?? desde.toISOString(),
+        ir: 'comunidad',
+      });
+    }
+  } catch (e) {
+    console.error('[novedades] comunidad', e);
   }
 
   for (const d of acuerdos?.docs ?? []) {

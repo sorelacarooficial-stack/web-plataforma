@@ -85,6 +85,7 @@ export function navDe(rol: Rol, conAcceso = false): { id: Vista; label: string }
     ? [
         { id: 'inicio', label: 'Inicio' },
         { id: 'aula', label: 'Mis clases' },
+        { id: 'comunidad', label: 'Comunidad' },
         { id: 'agenda', label: 'Mi agenda' },
       ]
     : [{ id: 'inicio', label: 'Inicio' }];

@@ -7,7 +7,7 @@ import Motas from '@/components/Motas';
 import logo from '@/fotos/logo-sorela.png';
 import type { Sesion } from '@/lib/sesion-servidor';
 import { ETIQUETA_ROL } from '@/lib/roles';
-import { CURSO_DIVINE, tieneMembresia, type Acceso } from '@/lib/accesos';
+import { CURSO_DIVINE, type Acceso } from '@/lib/accesos';
 
 import {
   ROLES,
@@ -23,7 +23,8 @@ import {
  * en `Vistas.tsx` y se volverán a enchufar aquí cuando haya algo real que
  * enseñar dentro. Hasta entonces, esos roles ven `Proximamente`.
  */
-import { Comunidad, FormacionesAdmin, PanelSorela } from './Vistas';
+import { FormacionesAdmin, PanelSorela } from './Vistas';
+import Comunidad from './Comunidad';
 import FotoPerfil from './FotoPerfil';
 import Avisos from './Avisos';
 import Metricas from './Metricas';
@@ -291,7 +292,8 @@ export default function Plataforma({
           {esAdmin && actual === 'cuentas' && <Cuentas />}
           {esAdmin && actual === 'metricas' && <Metricas />}
           {esAdmin && actual === 'blog' && <BlogAdmin />}
-          {esAdmin && actual === 'comunidad' && <Comunidad rol={rol} ir={ir} iniciales={iniciales} conComunidad={tieneMembresia(accesos)} />}
+          {/* La misma para todas: el servidor decide quién lee, quién escribe y quién modera. */}
+          {actual === 'comunidad' && <Comunidad />}
         </main>
       </div>
     </div>
