@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { hayFirebase } from '@/lib/firebase-servidor';
+import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
 import { enviarAcuerdo } from '@/lib/enviar-acuerdo';
 
@@ -22,6 +22,8 @@ export async function POST(_peticion: Request, { params }: { params: Promise<{ r
   if (!hayFirebase()) return NextResponse.json({ ok: false, motivo: 'sin-base' }, { status: 503 });
 
   const { ref } = await params;
-  const resultado = await enviarAcuerdo(ref.toUpperCase());
+  // Reenviar no aprueba: si aún no está aprobado, se reenvía solo el acuse, sin dossier.
+  const d = await baseDeDatos().collection('acuerdos').doc(ref.toUpperCase()).get();
+  const resultado = await enviarAcuerdo(ref.toUpperCase(), d.get('estado') === 'aprobado' ? 'aprobado' : 'firmado');
   return NextResponse.json({ ok: resultado.enviado, ...resultado });
 }

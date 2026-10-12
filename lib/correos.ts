@@ -1,3 +1,4 @@
+import 'server-only';
 import { createHmac } from 'node:crypto';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from './firebase-servidor';
@@ -250,7 +251,10 @@ export async function estaActiva(id: IdAutomatizacion): Promise<boolean> {
 const COLECCION_BAJAS = 'correos_bajas';
 
 function llaveBaja() {
-  return process.env.BAJA_SECRETO || process.env.FIREBASE_CLAVE_PRIVADA || 'divine';
+  const llave = process.env.BAJA_SECRETO || process.env.FIREBASE_CLAVE_PRIVADA;
+  // Sin llave no se firman bajas: mejor fallar que firmar con algo adivinable.
+  if (!llave) throw new Error('Falta BAJA_SECRETO');
+  return llave;
 }
 
 const idBaja = (correo: string) => createHmac('sha256', llaveBaja()).update(`id:${correo.toLowerCase()}`).digest('hex').slice(0, 40);

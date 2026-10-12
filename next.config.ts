@@ -12,11 +12,31 @@ const nextConfig: NextConfig = {
    * encontraría en el servidor; esto se lo dice.
    */
   outputFileTracingIncludes: {
-    '/api/dossier': ['./docs/dossier.pdf'],
-    /* La firma y el reenvío adjuntan el dossier al correo, y el PDF del
-       acuerdo lleva el logotipo. */
-    '/api/acuerdos': ['./docs/dossier.pdf', './fotos/logo-sorela.png'],
-    '/api/acuerdos/**': ['./docs/dossier.pdf', './fotos/logo-sorela.png'],
+    /* El PDF del acuerdo lleva el logotipo. El dossier ya NO va en el
+       paquete: vive en Storage privado (lib/dossier-privado.ts). */
+    '/api/acuerdos': ['./fotos/logo-sorela.png'],
+    '/api/acuerdos/**': ['./fotos/logo-sorela.png'],
+    '/api/certificado': ['./fotos/logo-sorela.png'],
+  },
+  /* Cabeceras de seguridad en todas las páginas:
+     · nadie puede meter la web dentro de un marco ajeno (evita que engañen a
+       Sorela para pulsar «borrar cuenta» o «enviar» sin saberlo);
+     · el navegador no adivina tipos de archivo;
+     · solo HTTPS, y no se cuenta a otras webs la dirección exacta de origen. */
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+        ],
+      },
+    ];
   },
   images: {
     // Las fotos ya se pre-optimizan a WebP con scripts/optimizar-imagenes.mjs.

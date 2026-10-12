@@ -43,3 +43,8 @@ docs/capturas/ficha.png
 # cualquiera junto a su correo. El manual que sí se sube lleva el hueco en
 # blanco para escribirla a mano.
 docs/privado/
+
+# Confidencial: el dossier y sus imágenes viven en Storage privado, nunca en el repositorio.
+docs/dossier.pdf
+docs/dossier.html
+docs/impresion/

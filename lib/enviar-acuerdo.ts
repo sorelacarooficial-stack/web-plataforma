@@ -1,11 +1,11 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
+import 'server-only';
 import { baseDeDatos } from './firebase-servidor';
 import { enviar, hayCorreo } from './correo';
 import { pdfDelAcuerdo, type AcuerdoGuardado } from './acuerdo-pdf';
 import { leerFirmaSorela } from './firma-sorela';
 import { apuntarCorreo, hayResend, mandarCorreo } from './correos';
-import { correoAcuerdo } from './plantillas-bienvenida';
+import { correoAcuerdo, correoAcuerdoRecibido } from './plantillas-bienvenida';
+import { leerDossier } from './dossier-privado';
 
 /**
  * El correo que recibe quien acaba de firmar el acuerdo.
@@ -165,7 +165,12 @@ async function porSmtp(a: AcuerdoGuardado, acuerdo: Uint8Array, dossier: Buffer 
  * de reenviar de la plataforma, y en ninguno de los dos casos un fallo de
  * correo puede deshacer una firma que ya está guardada.
  */
-export async function enviarAcuerdo(referencia: string): Promise<ResultadoCorreo> {
+/**
+ * `firmado`: acaba de firmar. Le llega su acuerdo en PDF y el aviso de que
+ * Sorela lo revisa; el dossier todavía NO.
+ * `aprobado`: Sorela lo ha aprobado. Le llega el dossier.
+ */
+export async function enviarAcuerdo(referencia: string, modo: 'firmado' | 'aprobado' = 'aprobado'): Promise<ResultadoCorreo> {
   const fecha = new Date().toISOString();
   let resultado: ResultadoCorreo;
   let para = '';
@@ -176,12 +181,7 @@ export async function enviarAcuerdo(referencia: string): Promise<ResultadoCorreo
 
     para = a.correo;
     const acuerdo = await pdfDelAcuerdo(a, { firmaSorela: await leerFirmaSorela() });
-    let dossier: Buffer | null = null;
-    try {
-      dossier = await readFile(path.join(process.cwd(), 'docs', 'dossier.pdf'));
-    } catch {
-      dossier = null;
-    }
+    const dossier = modo === 'aprobado' ? await leerDossier() : null;
 
     /* Con Resend sale desde el dominio, con su diseño y los dos PDF adjuntos.
        Queda apuntado en el historial por el propio envío. */
@@ -191,11 +191,20 @@ export async function enviarAcuerdo(referencia: string): Promise<ResultadoCorreo
       ];
       if (dossier) adjuntos.push({ nombre: 'Dossier-Tecnica-Divine.pdf', contenido: dossier, tipo: 'application/pdf' });
       const r = await mandarCorreo(
-        { para: a.correo, ...correoAcuerdo(`${a.nombre}`, a.referencia, enlaceDelDossier(a.referencia), true), adjuntos },
+        {
+          para: a.correo,
+          ...(modo === 'aprobado'
+            ? correoAcuerdo(`${a.nombre}`, a.referencia, enlaceDelDossier(a.referencia), Boolean(dossier))
+            : correoAcuerdoRecibido(`${a.nombre}`, a.referencia)),
+          adjuntos,
+        },
         { tipo: 'acuerdo' }
       );
       resultado = { enviado: r.estado === 'enviado', via: 'resend', fecha, detalle: r.detalle ?? 'Enviado.' };
       para = '';
+    } else if (modo === 'firmado') {
+      // Sin Resend, el acuse de firma no sale: el Apps Script solo sabe mandar el dossier.
+      resultado = { enviado: false, via: 'ninguna', fecha, detalle: 'Acuse sin enviar: falta Resend.' };
     } else {
     const apps = await porAppsScript(a, acuerdo, dossier);
     if (apps.ok) {

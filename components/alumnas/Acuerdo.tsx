@@ -108,7 +108,7 @@ export default function Acuerdo() {
   const [errores, setErrores] = useState<ErroresAcuerdo>({});
   const [enviando, setEnviando] = useState(false);
   const [fallo, setFallo] = useState('');
-  const [hecho, setHecho] = useState<{ referencia: string; firmadoEl: string; dossier: string } | null>(null);
+  const [hecho, setHecho] = useState<{ referencia: string; firmadoEl: string } | null>(null);
 
   /** El señuelo para robots. Una persona no lo ve y no lo rellena. */
   const [empresa, setEmpresa] = useState('');
@@ -221,7 +221,6 @@ export default function Acuerdo() {
       setHecho({
         referencia: String(c.referencia),
         firmadoEl: String(c.firmadoEl),
-        dossier: String(c.dossier ?? ''),
       });
       setPaso(3);
     } catch {
@@ -757,7 +756,7 @@ function Gracias({
   hecho,
 }: {
   datos: DatosAcuerdo;
-  hecho: { referencia: string; firmadoEl: string; dossier: string };
+  hecho: { referencia: string; firmadoEl: string };
 }) {
   return (
     <div className={css.gracias}>
@@ -770,18 +769,9 @@ function Gracias({
       <h2 className={css.graciasTitulo}>Gracias, {datos.nombre}.</h2>
       <p className={css.graciasTexto}>
         Tu acuerdo queda registrado el {fechaLarga(hecho.firmadoEl)}. En unos minutos te llega a{' '}
-        <strong>{datos.correo}</strong> un correo con <strong>tu acuerdo firmado</strong> y{' '}
-        <strong>tu dossier</strong>. Si no lo ves, mira en la carpeta de spam.
+        <strong>{datos.correo}</strong> un correo con <strong>tu acuerdo firmado</strong>. Sorela lo
+        revisa y, en cuanto lo apruebe, te llega <strong>tu dossier</strong> por correo.
       </p>
-
-      {/* El dossier se abre AQUÍ MISMO, sin esperar al correo. El correo
-          llega, pero depende de Google, de la cobertura y de la carpeta de
-          promociones; esto no depende de nada. */}
-      {hecho.dossier && (
-        <a className={css.dossier} href={hecho.dossier} target="_blank" rel="noreferrer">
-          Abrir mi dossier
-        </a>
-      )}
       <p className={css.referencia}>
         <span>Tu referencia</span>
         <strong>{hecho.referencia}</strong>

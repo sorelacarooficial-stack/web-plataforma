@@ -1,3 +1,4 @@
+import 'server-only';
 import { ImapFlow } from 'imapflow';
 import { simpleParser, type AddressObject, type ParsedMail } from 'mailparser';
 import MailComposer from 'nodemailer/lib/mail-composer';

@@ -2,7 +2,8 @@ import { NextResponse, after } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
-import { enlaceDelDossier, enviarAcuerdo } from '@/lib/enviar-acuerdo';
+import { enviarAcuerdo } from '@/lib/enviar-acuerdo';
+import { randomInt } from 'node:crypto';
 import { REVISADA } from '@/lib/privacidad';
 import {
   CIERRE_ACUERDO,
@@ -63,6 +64,9 @@ function vaDemasiadoRapido(ip: string): boolean {
 
 const recortar = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
 
+/* La referencia es lo que abre el dossier: azar criptográfico, no Math.random. */
+const azar = () => randomInt(0, 2 ** 30) / 2 ** 30;
+
 export async function POST(peticion: Request) {
   if (!hayFirebase()) {
     return NextResponse.json({ ok: false, motivo: 'sin-base' }, { status: 503 });
@@ -79,7 +83,7 @@ export async function POST(peticion: Request) {
      viene con algo, es un robot. Se le contesta que sí y no se guarda nada,
      porque un «no» le dice qué cambiar para colarse a la siguiente. */
   if (recortar(cuerpo.empresa, 50)) {
-    return NextResponse.json({ ok: true, referencia: referenciaNueva() });
+    return NextResponse.json({ ok: true, referencia: referenciaNueva(azar) });
   }
 
   /*
@@ -129,7 +133,7 @@ export async function POST(peticion: Request) {
   }
 
   const base = baseDeDatos();
-  const referencia = referenciaNueva();
+  const referencia = referenciaNueva(azar);
 
   /*
    * La hora la pone el servidor, nunca el navegador.
@@ -191,13 +195,13 @@ export async function POST(peticion: Request) {
    * Y sigue sin bloquear a quien firma: la firma ya está guardada, que es lo
    * que importa, y no tiene por qué esperar a que Google acepte dos PDF.
    */
-  after(() => enviarAcuerdo(referencia));
+  // El acuse con su acuerdo. El dossier llega cuando Sorela lo apruebe.
+  after(() => enviarAcuerdo(referencia, 'firmado'));
 
   return NextResponse.json({
     ok: true,
     referencia,
     firmadoEl: ahora,
-    dossier: enlaceDelDossier(referencia),
   });
 }
 

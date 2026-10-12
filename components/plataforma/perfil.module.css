@@ -1,0 +1,579 @@
+/* El perfil: portada, foto que la pisa, datos, pestañas y cuadrícula de fotos. */
+
+.perfil {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 960px;
+}
+
+.fallo,
+.vacio {
+  margin: 0;
+  padding: 24px 0;
+  font-size: 14.5px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+.esqueleto {
+  height: 420px;
+  border-radius: 28px;
+  background: linear-gradient(90deg, rgba(20, 18, 16, 0.04), rgba(20, 18, 16, 0.08), rgba(20, 18, 16, 0.04));
+}
+
+.cabeza {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-radius: 28px;
+  overflow: hidden;
+  background: #fffdf9;
+  border: 1px solid var(--line-1, rgba(20, 18, 16, 0.1));
+  box-shadow: 0 1px 2px rgba(60, 45, 25, 0.05), 0 24px 50px -32px rgba(60, 45, 25, 0.5);
+}
+
+.portada {
+  position: relative;
+  aspect-ratio: 3 / 1;
+  min-height: 140px;
+  max-height: 250px;
+  width: 100%;
+  background:
+    radial-gradient(120% 140% at 15% 10%, rgba(217, 180, 124, 0.55), transparent 55%),
+    radial-gradient(120% 140% at 85% 90%, rgba(138, 106, 50, 0.45), transparent 55%),
+    linear-gradient(135deg, #2a231b, #17140f);
+  background-size: cover;
+  background-position: center;
+}
+
+.cambiarPortada {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  padding: 9px 15px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(23, 20, 15, 0.62);
+  backdrop-filter: blur(8px);
+  color: #f7f2ea;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.identidad {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-top: -52px;
+  padding: 0 clamp(18px, 3vw, 28px);
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: clamp(92px, 12vw, 120px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #fffdf9;
+  background: linear-gradient(160deg, #f5efe2, #e8dcc4);
+  color: var(--oro);
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 600;
+  box-shadow: 0 10px 26px -12px rgba(20, 18, 16, 0.45);
+}
+
+.avatar[data-sorela] {
+  border-color: #d9b47c;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nombreBloque {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 6px;
+}
+
+.nombreBloque h2 {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.sello {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--oro);
+}
+
+.sub {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.btnEditar,
+.btnLinea,
+.btnOscuro {
+  flex: none;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btnEditar,
+.btnLinea {
+  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.16));
+  background: #fff;
+  color: var(--ink);
+}
+
+.btnOscuro {
+  border: 0;
+  background: var(--ink);
+  color: #faf8f5;
+}
+
+.cifras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 26px;
+  padding: 0 clamp(18px, 3vw, 28px);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.cifras b {
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.bio {
+  margin: 0;
+  padding: 0 clamp(18px, 3vw, 28px);
+  max-width: 640px;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-line;
+  color: var(--ink);
+}
+
+.instagram {
+  padding: 0 clamp(18px, 3vw, 28px);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--oro);
+  text-decoration: none;
+}
+
+.pista {
+  margin: 0 clamp(18px, 3vw, 28px);
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--oro-tint);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.pestanas {
+  display: flex;
+  justify-content: center;
+  gap: clamp(20px, 6vw, 60px);
+  border-bottom: 1px solid var(--line-2, rgba(20, 18, 16, 0.12));
+}
+
+.pestanas button {
+  position: relative;
+  padding: 12px 4px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.pestanas button[aria-current='page'] {
+  color: var(--ink);
+}
+
+.subrayado {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--ink);
+}
+
+/* ---------- Fotos: cuadrícula de 3, como Instagram ---------- */
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.celda,
+.subirFoto {
+  position: relative;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.celda {
+  background: var(--neu-base);
+  border-radius: 6px;
+}
+
+.celda img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease, filter 0.3s;
+}
+
+.celda:hover img {
+  transform: scale(1.04);
+  filter: brightness(0.92);
+}
+
+.subirFoto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1.5px dashed var(--oro-line);
+  border-radius: 6px;
+  background: var(--oro-tint);
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--oro);
+}
+
+.subirFoto span {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.rejilla .vacio {
+  grid-column: 1 / -1;
+}
+
+/* ---------- Recorrido ---------- */
+
+.linea {
+  margin: 0;
+  padding: 6px 0 0 18px;
+  list-style: none;
+  border-left: 2px solid var(--oro-line);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hito {
+  position: relative;
+  display: flex;
+  gap: 16px;
+}
+
+.hito::before {
+  content: '';
+  position: absolute;
+  left: -25px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--oro);
+  box-shadow: 0 0 0 4px var(--oro-tint);
+}
+
+.anio {
+  flex: none;
+  width: 52px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--oro);
+}
+
+.hito strong {
+  font-size: 15.5px;
+  color: var(--ink);
+}
+
+.hito p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* ---------- Visor ---------- */
+
+.visor {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(12, 10, 9, 0.88);
+}
+
+.visor figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  max-width: min(960px, 100%);
+  max-height: calc(100dvh - 32px);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fffdf9;
+}
+
+.visor img {
+  max-height: calc(100dvh - 110px);
+  object-fit: contain;
+  background: #000;
+}
+
+.visor figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.visor figcaption button {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: #a24a2e;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.izq,
+.der {
+  position: fixed;
+  top: 50%;
+  translate: 0 -50%;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.izq {
+  left: 14px;
+}
+
+.der {
+  right: 14px;
+}
+
+/* ---------- Editor ---------- */
+
+.velo {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 18, 16, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  width: min(620px, 100%);
+  max-height: calc(100dvh - 32px);
+  border-radius: 24px;
+  overflow: hidden;
+  background: #fffdf9;
+  box-shadow: 0 30px 80px -30px rgba(20, 18, 16, 0.6);
+}
+
+.editorCabeza,
+.editorPie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 20px;
+}
+
+.editorCabeza {
+  border-bottom: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
+}
+
+.editorCabeza strong {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.editorPie {
+  justify-content: flex-end;
+  border-top: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
+}
+
+.cerrar {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--neu-base);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.editorCuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px;
+  overflow-y: auto;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.campo small {
+  align-self: flex-end;
+  font-weight: 300;
+  color: var(--faint);
+}
+
+.campo input,
+.campo textarea,
+.hitoEditor input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.16));
+  border-radius: 14px;
+  background: #fff;
+  font: inherit;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+
+.campo textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.dos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 560px) {
+  .dos {
+    grid-template-columns: 1fr;
+  }
+  .identidad {
+    flex-wrap: wrap;
+  }
+  .nombreBloque {
+    flex-basis: 100%;
+  }
+  .btnEditar {
+    width: 100%;
+  }
+}
+
+.rotulo {
+  margin: 6px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.hitoEditor {
+  display: grid;
+  grid-template-columns: 76px 1fr 30px;
+  gap: 8px;
+  align-items: start;
+}
+
+.hitoEditor > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quitar {
+  width: 30px;
+  height: 30px;
+  margin-top: 6px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--neu-base);
+  cursor: pointer;
+}
+
+.anadir {
+  align-self: flex-start;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--oro);
+  cursor: pointer;
+}

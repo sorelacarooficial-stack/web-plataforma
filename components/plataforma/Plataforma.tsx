@@ -12,6 +12,8 @@ import { CURSO_DIVINE, type Acceso } from '@/lib/accesos';
 
 import {
   ROLES,
+  grupoDe,
+  gruposDe,
   navDe,
   seccionDe,
   tituloDe,
@@ -31,6 +33,9 @@ import Avisos from './Avisos';
 import Metricas from './Metricas';
 import Correos from './Correos';
 import Buzon from './Buzon';
+import IconoNav from './IconoNav';
+import Perfil from './Perfil';
+import Celebracion from './Celebracion';
 import PanelAlumna from './PanelAlumna';
 import BlogAdmin from './BlogAdmin';
 import Contactos from './Contactos';
@@ -65,10 +70,13 @@ const ACCESOS_DE_MUESTRA: Acceso[] = [{ tipo: 'curso', nombre: CURSO_DIVINE }];
 export default function Plataforma({
   sesion,
   accesos,
+  vistaInicial = null,
 }: {
   sesion: Sesion;
   /** Qué tiene contratado: lo lee el servidor y llega ya resuelto. */
   accesos: Acceso[];
+  /** La pantalla que pedía la dirección (?v=…). Se comprueba contra el menú. */
+  vistaInicial?: string | null;
 }) {
   const router = useRouter();
   // Dos cosas distintas que conviene no confundir: `puedeVerComo` es el rol
@@ -76,7 +84,10 @@ export default function Plataforma({
   // rol que se está MIRANDO, y solo decide qué se pinta.
   const puedeVerComo = sesion.rol === 'sorela';
   const [rol, setRol] = useState<Rol>(sesion.rol);
-  const [vista, setVista] = useState<Vista>('inicio');
+  const [vista, setVista] = useState<Vista>((vistaInicial as Vista) || 'inicio');
+  /* Dentro de cada grupo, la última pestaña que se abrió: volver a «Personas»
+     te deja en Cuentas si estabas en Cuentas, no otra vez en Clientes. */
+  const [ultimaDe, setUltimaDe] = useState<Record<string, Vista>>({});
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   // Con el cajón abierto, la página de detrás no se desplaza.
@@ -100,10 +111,12 @@ export default function Plataforma({
      Sorela quiere revisar: sus clases tal y como las verá quien pague. */
   const accesosVistos: Acceso[] = puedeVerComo ? ACCESOS_DE_MUESTRA : accesos;
   const menu = navDe(rol, accesosVistos.length > 0);
+  const grupos = gruposDe(rol, accesosVistos.length > 0);
   // Si el rol cambia y la vista actual no existe en su menú, vuelve a Inicio.
   const actual = menu.some((n) => n.id === vista) ? vista : 'inicio';
 
   const esAdmin = rol === 'sorela';
+  const grupoActual = grupoDe(grupos, actual);
   // El nombre sale de la cuenta con la que se ha entrado, no de la maqueta.
   // Si alguien entró con Google sin nombre configurado, se usa la parte del
   // correo anterior a la arroba antes que dejarlo en blanco.
@@ -116,7 +129,33 @@ export default function Plataforma({
       .join('')
       .toUpperCase() || 'D';
 
+  /* La pantalla va en la dirección (`/plataforma?v=leads`). Así funcionan el
+     botón «atrás» del navegador y del móvil, recargar deja donde estabas y se
+     puede guardar o compartir el enlace a una pantalla concreta. Se usa el
+     history del navegador y no el router de Next: cambiar de pantalla no tiene
+     que volver a pedir nada al servidor. */
+  useEffect(() => {
+    const leer = () => {
+      const v = new URLSearchParams(window.location.search).get('v') as Vista | null;
+      setVista(v || 'inicio');
+    };
+    window.addEventListener('popstate', leer);
+    return () => window.removeEventListener('popstate', leer);
+  }, []);
+
+  function irGrupo(id: string) {
+    const g = grupos.find((x) => x.id === id);
+    if (!g) return;
+    ir(ultimaDe[id] && g.vistas.some((v) => v.id === ultimaDe[id]) ? ultimaDe[id] : g.vistas[0].id);
+  }
+
   function ir(v: Vista) {
+    const g = grupoDe(grupos, v);
+    if (g) setUltimaDe((u) => ({ ...u, [g.id]: v }));
+    if (v !== actual) {
+      const url = v === 'inicio' ? window.location.pathname : `${window.location.pathname}?v=${v}`;
+      window.history.pushState(null, '', url);
+    }
     setVista(v);
     setMenuAbierto(false);
     try {
@@ -147,6 +186,7 @@ export default function Plataforma({
     // selector ni siquiera se pinta; esta comprobación es el segundo cierre.
     if (!puedeVerComo) return;
     setRol(nuevo);
+    if (vista !== 'inicio') window.history.pushState(null, '', window.location.pathname);
     setVista('inicio');
     setMenuAbierto(false);
   }
@@ -154,6 +194,8 @@ export default function Plataforma({
   return (
     <div className={css.pantalla}>
       <Motas className={css.motas} />
+      {/* Los logros que se van ganando, con confeti. Solo para quien aprende. */}
+      {!puedeVerComo && <Celebracion />}
       {/* Los avisos flotantes, solo para Sorela. Pulsar uno la devuelve a su
           vista de administradora aunque esté mirando «Ver como». */}
       {puedeVerComo && (
@@ -210,30 +252,33 @@ export default function Plataforma({
           <nav
             className={css.nav}
             aria-label="Secciones de la plataforma"
-            hidden={menu.length < 2}
+            hidden={grupos.length < 2}
           >
-            <p className={css.navTitulo}>General</p>
-            {menu.map((n) => (
-              <button
-                key={n.id}
-                type="button"
-                onClick={() => ir(n.id)}
-                aria-current={actual === n.id ? 'page' : undefined}
-                className={`${css.navBoton} ${actual === n.id ? css.navActivo : ''}`}
-              >
-                {/* La píldora del apartado activo se desliza de uno a otro en
-                    vez de saltar: es lo que hace que el menú se sienta vivo. */}
-                {actual === n.id && (
-                  <motion.span
-                    layoutId="nav-pildora"
-                    className={`${css.navActivo} ${css.navPildora}`}
-                    transition={{ type: 'spring', stiffness: 420, damping: 36 }}
-                  />
-                )}
-                <span className={css.navPunto} />
-                <span className={css.navTexto}>{n.label}</span>
-              </button>
-            ))}
+            {grupos.map((g) => {
+              const activo = grupoActual?.id === g.id;
+              return (
+                <button
+                  key={g.id}
+                  type="button"
+                  onClick={() => irGrupo(g.id)}
+                  aria-current={activo ? 'page' : undefined}
+                  className={`${css.navBoton} ${activo ? css.navActivo : ''}`}
+                >
+                  {/* La píldora del grupo activo se desliza de uno a otro. */}
+                  {activo && (
+                    <motion.span
+                      layoutId="nav-pildora"
+                      className={`${css.navActivo} ${css.navPildora}`}
+                      transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                    />
+                  )}
+                  <span className={css.navIcono}>
+                    <IconoNav icono={g.icono} size={19} />
+                  </span>
+                  <span className={css.navTexto}>{g.label}</span>
+                </button>
+              );
+            })}
           </nav>
 
           <div className={css.pieLateral}>
@@ -282,13 +327,34 @@ export default function Plataforma({
                 suyo, con su nombre. Se deja el hueco en blanco antes que
                 pintar una línea vacía. */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {seccionDe(actual, rol) && (
-                <p className={css.seccion}>{seccionDe(actual, rol)}</p>
+              {(esAdmin && grupoActual && grupoActual.vistas.length > 1 ? grupoActual.label : seccionDe(actual, rol)) && (
+                <p className={css.seccion}>
+                  {esAdmin && grupoActual && grupoActual.vistas.length > 1 ? grupoActual.label : seccionDe(actual, rol)}
+                </p>
               )}
               {tituloDe(actual, rol) && <h1 className={css.titulo}>{tituloDe(actual, rol)}</h1>}
             </div>
-            <FotoPerfil foto={sesion.foto} iniciales={iniciales} nombre={usuario} />
+            <FotoPerfil foto={sesion.foto} iniciales={iniciales} nombre={usuario} verPerfil={() => ir('perfil')} />
           </header>
+
+          {/* Las pestañas del grupo: lo que antes eran apartados sueltos del menú. */}
+          {grupoActual && grupoActual.vistas.length > 1 && (
+            <nav className={css.pestanas} aria-label={grupoActual.label}>
+              {grupoActual.vistas.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  aria-current={actual === v.id ? 'page' : undefined}
+                  onClick={() => ir(v.id)}
+                >
+                  {actual === v.id && (
+                    <motion.span layoutId={`pestana-${grupoActual.id}`} className={css.pestanaFondo} transition={{ type: 'spring', stiffness: 480, damping: 38 }} />
+                  )}
+                  <span>{v.label}</span>
+                </button>
+              ))}
+            </nav>
+          )}
 
           {/* Qué ve quien no es Sorela ya no depende de «ser alumna» o «ser
               miembro» —eso ya no existe— sino de lo que tenga contratado. Al
@@ -324,10 +390,27 @@ export default function Plataforma({
           {esAdmin && actual === 'blog' && <BlogAdmin />}
           {/* La misma para todas: el servidor decide quién lee, quién escribe y quién modera. */}
           {actual === 'comunidad' && <Comunidad />}
+          {actual === 'perfil' && <Perfil />}
           </motion.div>
           </AnimatePresence>
         </main>
       </div>
+
+      {/* En el móvil, los grupos van abajo, al alcance del pulgar, como en Instagram. */}
+      {grupos.length > 1 && (
+        <nav className={css.barraInferior} aria-label="Secciones">
+          {grupos.map((g) => {
+            const activo = grupoActual?.id === g.id;
+            return (
+              <button key={g.id} type="button" onClick={() => irGrupo(g.id)} aria-current={activo ? 'page' : undefined}>
+                {activo && <motion.span layoutId="barra-activa" className={css.barraActiva} transition={{ type: 'spring', stiffness: 480, damping: 36 }} />}
+                <IconoNav icono={g.icono} size={22} />
+                <span>{g.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
     </div>
   );
 }

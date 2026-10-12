@@ -1,3 +1,4 @@
+import 'server-only';
 import { APERTURA_POR_PAISES, DIA_APERTURA, HORA_ESPANA } from './apertura';
 import type { Contacto } from './captacion';
 import { enviar, hayCorreo } from './correo';

@@ -67,6 +67,10 @@ function nodeSirve(version: string): boolean {
 }
 
 export async function GET() {
+  // Solo Sorela: esto enseña cómo está configurado el servidor.
+  const { sesionActual } = await import('@/lib/sesion-servidor');
+  const s = await sesionActual().catch(() => null);
+  if (!s || s.rol !== 'sorela') return Response.json({ ok: false, motivo: 'sin-permiso' }, { status: 403 });
   try {
     const { aplicacion, diagnostico, hayFirebase } = await import('@/lib/firebase-servidor');
     const { getAuth } = await import('firebase-admin/auth');

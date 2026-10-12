@@ -1,3 +1,4 @@
+import 'server-only';
 import { APERTURA } from './apertura';
 import { CURSO_DIVINE, revisarAccesos, type Acceso } from './accesos';
 import { baseDeDatos, COLECCIONES, hayFirebase } from './firebase-servidor';

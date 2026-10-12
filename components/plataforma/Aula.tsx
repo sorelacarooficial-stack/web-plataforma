@@ -164,7 +164,10 @@ export default function Aula({ correo }: { correo?: string | null }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, visto, completada }),
-    }).catch(() => {});
+    })
+      // Al terminar una clase puede caer un logro: que lo mire la celebración.
+      .then(() => completada && window.dispatchEvent(new Event('divine:logros')))
+      .catch(() => {});
   }, []);
 
   const abrir = (id: string) => {

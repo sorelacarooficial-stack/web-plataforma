@@ -52,50 +52,80 @@ export type Vista =
  * Cuando cada pieza esté hecha, se vuelve a añadir su línea aquí y su vista
  * —que sigue escrita en `Vistas.tsx`— vuelve a enrutarse en `Plataforma.tsx`.
  */
-export function navDe(rol: Rol, conAcceso = false): { id: Vista; label: string }[] {
+/**
+ * El menú en grupos. Sorela tenía catorce apartados sueltos en la lateral y
+ * se confundían (Correos y Buzón, Formaciones y Subir contenido): ahora son
+ * cinco grupos y, dentro de cada uno, pestañas. En el móvil, los cinco grupos
+ * van en una barra abajo, como Instagram.
+ */
+export type Icono = 'inicio' | 'personas' | 'mensajes' | 'contenido' | 'negocio' | 'clases' | 'comunidad' | 'agenda' | 'perfil';
+export type Grupo = { id: string; label: string; icono: Icono; vistas: { id: Vista; label: string }[] };
+
+export function gruposDe(rol: Rol, conAcceso = false): Grupo[] {
   if (rol === 'sorela')
     return [
-      { id: 'inicio', label: 'Panel' },
-      { id: 'metricas', label: 'Métricas' },
-      // El orden es el del día a día: primero a quién hay que llamar, después
-      // qué hay en el calendario, y luego lo que se cobra.
-      { id: 'leads', label: 'Clientes' },
-      // Los correos que salen solos, con su historial: va junto a Clientes
-      // porque es la otra mitad de la misma conversación.
-      { id: 'correos', label: 'Correos' },
-      // El buzón hola@: leer y contestar lo que escribe la gente.
-      { id: 'buzon', label: 'Buzón' },
-      // Las alumnas que han firmado el acuerdo de confidencialidad.
-      { id: 'acuerdos', label: 'Acuerdos' },
-      { id: 'agenda', label: 'Agenda' },
-      { id: 'facturacion', label: 'Facturación' },
-      { id: 'formaciones', label: 'Formaciones' },
-      { id: 'contenido', label: 'Subir contenido' },
-      { id: 'blog', label: 'Blog' },
-      { id: 'comunidad', label: 'Comunidad' },
-      // Al final del menú a propósito: dar de alta a alguien se hace de vez en
-      // cuando, no todos los días como llamar a una clienta o cobrar.
-      { id: 'cuentas', label: 'Cuentas' },
+      { id: 'inicio', label: 'Inicio', icono: 'inicio', vistas: [{ id: 'inicio', label: 'Resumen' }] },
+      {
+        id: 'personas',
+        label: 'Personas',
+        icono: 'personas',
+        vistas: [
+          { id: 'leads', label: 'Clientes' },
+          { id: 'cuentas', label: 'Cuentas' },
+          { id: 'acuerdos', label: 'Acuerdos' },
+        ],
+      },
+      {
+        id: 'mensajes',
+        label: 'Mensajes',
+        icono: 'mensajes',
+        vistas: [
+          { id: 'buzon', label: 'Buzón' },
+          { id: 'correos', label: 'Avisos y correos' },
+        ],
+      },
+      {
+        id: 'contenido',
+        label: 'Contenido',
+        icono: 'contenido',
+        vistas: [
+          { id: 'formaciones', label: 'Formaciones' },
+          { id: 'contenido', label: 'Subir clases' },
+          { id: 'blog', label: 'Blog' },
+          { id: 'comunidad', label: 'Comunidad' },
+        ],
+      },
+      {
+        id: 'negocio',
+        label: 'Negocio',
+        icono: 'negocio',
+        vistas: [
+          { id: 'metricas', label: 'Métricas' },
+          { id: 'agenda', label: 'Agenda' },
+          { id: 'facturacion', label: 'Facturación' },
+        ],
+      },
     ];
-  /* Quien no ha contratado nada ve una sola puerta, y detrás la pantalla de
-     «en preparación». En cuanto tiene algo —un curso, la comunidad— aparecen
-     sus clases, que es a lo que viene, y su agenda, que es la herramienta con
-     la que va a trabajar al salir de la formación. Un menú con un aula vacía
-     sería peor que no tenerla: prometería algo que al abrirlo no está.
-
-     La agenda va detrás de tener acceso y no de tener cuenta. Es una decisión:
-     funciona igual para cualquiera —cada una en la suya, ver
-     `app/api/agenda`—, pero quien está dada de alta sin haber contratado nada
-     todavía ve una pantalla que le dice que su espacio se está terminando, y
-     abrirle ahí una agenda suelta desdiría ese mensaje. */
   return conAcceso
     ? [
-        { id: 'inicio', label: 'Inicio' },
-        { id: 'aula', label: 'Mis clases' },
-        { id: 'comunidad', label: 'Comunidad' },
-        { id: 'agenda', label: 'Mi agenda' },
+        { id: 'inicio', label: 'Inicio', icono: 'inicio', vistas: [{ id: 'inicio', label: 'Inicio' }] },
+        { id: 'aula', label: 'Clases', icono: 'clases', vistas: [{ id: 'aula', label: 'Mis clases' }] },
+        { id: 'comunidad', label: 'Comunidad', icono: 'comunidad', vistas: [{ id: 'comunidad', label: 'Comunidad' }] },
+        { id: 'agenda', label: 'Agenda', icono: 'agenda', vistas: [{ id: 'agenda', label: 'Mi agenda' }] },
+        { id: 'perfil', label: 'Perfil', icono: 'perfil', vistas: [{ id: 'perfil', label: 'Mi perfil' }] },
       ]
-    : [{ id: 'inicio', label: 'Inicio' }];
+    : [{ id: 'inicio', label: 'Inicio', icono: 'inicio', vistas: [{ id: 'inicio', label: 'Inicio' }] }];
+}
+
+/** El grupo al que pertenece una pantalla. */
+export function grupoDe(grupos: Grupo[], vista: Vista): Grupo | undefined {
+  return grupos.find((g) => g.vistas.some((v) => v.id === vista));
+}
+
+export function navDe(rol: Rol, conAcceso = false): { id: Vista; label: string }[] {
+  // Todas las pantallas a las que se puede ir, sacadas de los grupos. El
+  // perfil propio se puede abrir siempre desde la foto de arriba.
+  return [...gruposDe(rol, conAcceso).flatMap((g) => g.vistas), { id: 'perfil', label: 'Mi perfil' }];
 }
 
 /**
@@ -119,7 +149,7 @@ export function tituloDe(vista: Vista, rol: Rol) {
     pagos: 'Mis pagos',
     contenido: 'Subir contenido',
     facturacion: 'Facturación',
-    perfil: 'Mi ficha',
+    perfil: 'Perfil',
     agenda: admin ? 'Agenda' : 'Mi agenda',
     cuentas: 'Cuentas',
     suscripcion: admin ? 'Cobros' : 'Comunidad',
@@ -143,7 +173,7 @@ export function seccionDe(vista: Vista, rol: Rol) {
     clases: 'Comunidad',
     clientas: 'Tu negocio',
     facturacion: admin ? 'Administración' : 'Tu negocio',
-    perfil: 'Tu negocio',
+    perfil: '',
     leads: 'CRM',
     acuerdos: 'Alumnas',
     formaciones: 'Administración',

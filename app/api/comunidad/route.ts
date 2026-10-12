@@ -113,6 +113,16 @@ async function aPublicacion(d: FirebaseFirestore.DocumentSnapshot, autoras: Map<
   };
 }
 
+/* Contadores por persona para los logros (lib/logros.ts): cuántas veces ha
+   publicado, respondido y cuántos «me gusta» ha recibido. Nunca rompen nada. */
+async function contar(uid: string, campo: 'publicaciones' | 'respuestas' | 'meGustaRecibidos', n = 1) {
+  await baseDeDatos()
+    .collection(COLECCIONES.usuarios)
+    .doc(uid)
+    .set({ stats: { [campo]: FieldValue.increment(n) } }, { merge: true })
+    .catch(() => null);
+}
+
 async function sumarActividad(autora: Autora, puntos: number) {
   if (autora.esSorela) return; // el ranking es de las terapeutas
   await baseDeDatos()
@@ -217,10 +227,11 @@ export async function POST(peticion: Request) {
       if (!d.exists) return null;
       const dado = Boolean(d.data()?.meGusta?.[yo]);
       t.update(objetivo, { [`meGusta.${yo}`]: !dado });
-      return !dado;
+      return { dado: !dado, autor: String(d.data()?.autor ?? '') };
     });
     if (r === null) return no('no-existe', 404);
-    return NextResponse.json({ ok: true, loHeDado: r });
+    if (r.autor && r.autor !== yo) await contar(r.autor, 'meGustaRecibidos', r.dado ? 1 : -1);
+    return NextResponse.json({ ok: true, loHeDado: r.dado });
   }
 
   if (accion === 'proximaClase') {
@@ -270,6 +281,7 @@ export async function POST(peticion: Request) {
       respondioSorela: false,
     });
     await sumarActividad(autora, 3);
+    await contar(yo, 'publicaciones');
     return NextResponse.json({ ok: true, id: nueva.id });
   }
 
@@ -292,6 +304,7 @@ export async function POST(peticion: Request) {
     });
     await lote.commit();
     if (!esAutora) await sumarActividad(autora, 2);
+    await contar(yo, 'respuestas');
     return NextResponse.json({ ok: true, rid: r.id });
   }
 

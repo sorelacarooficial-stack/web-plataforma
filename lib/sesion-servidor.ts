@@ -1,3 +1,4 @@
+import 'server-only';
 import { cookies } from 'next/headers';
 import { getAuth } from 'firebase-admin/auth';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -149,7 +150,14 @@ export async function crearSesion(tokenId: string): Promise<Sesion> {
    * PLATAFORMA_ABIERTA sigue existiendo para el día en que el registro se abra
    * de verdad; mientras sea false, manda el alta.
    */
-  if (!PLATAFORMA_ABIERTA && !correoEsAdmin(datos.email ?? null) && !(await tieneAlta(datos.uid))) {
+  /* Ser admin por el correo SOLO si ese correo está demostrado: verificado o
+     entrando con Google. Si no, cualquiera podría registrar una cuenta con el
+     correo de Sorela (sin verificar) y entrar como administradora. */
+  const correoProbado =
+    datos.email_verified === true || datos.firebase?.sign_in_provider === 'google.com';
+  const esAdminDeVerdad = correoProbado && correoEsAdmin(datos.email ?? null);
+
+  if (!PLATAFORMA_ABIERTA && !esAdminDeVerdad && !(await tieneAlta(datos.uid))) {
     throw new PlataformaCerrada();
   }
 
@@ -157,7 +165,8 @@ export async function crearSesion(tokenId: string): Promise<Sesion> {
     datos.uid,
     datos.email ?? null,
     datos.role,
-    (datos.name as string | undefined) ?? null
+    (datos.name as string | undefined) ?? null,
+    esAdminDeVerdad
   );
 
   const cookie = await auth.createSessionCookie(tokenId, { expiresIn: DURACION_MS });
@@ -244,14 +253,16 @@ export async function asegurarRol(
    * único sitio que escribía el nombre era el alta, y quien entraba con Google
    * pasaba por aquí, que no lo guardaba aunque lo tuviera delante.
    */
-  nombre?: string | null
+  nombre?: string | null,
+  /** Si su correo de admin está demostrado (verificado o Google). */
+  puedeSerAdmin = false
 ): Promise<Rol> {
   const auth = getAuth(aplicacion());
 
   // Sorela siempre es admin, incluso si alguna vez se le cambió por error.
   // Sin esta regla habría un problema de huevo y gallina: para dar roles hay
   // que ser admin, y al principio no hay ninguna.
-  const deberiaSerAdmin = correoEsAdmin(correo);
+  const deberiaSerAdmin = puedeSerAdmin && correoEsAdmin(correo);
   /* `esRol` y no `normalizarRol` en la comprobación de si ya está bien: una
      claim que pone «alumna» NO está bien, aunque se sepa traducir. Que dé
      false es lo que hace que se reescriba a «miembro» ahí abajo y la cuenta

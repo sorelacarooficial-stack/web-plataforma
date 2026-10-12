@@ -15,6 +15,7 @@ import {
 import Bienvenida from './Bienvenida';
 import css from './plataforma.module.css';
 import c from './comunidad.module.css';
+import { verPerfil } from '@/lib/navegar';
 
 /**
  * La comunidad de terapeutas: casos, dudas y resultados entre todas, con
@@ -70,11 +71,12 @@ function Avatar({ a, tam = 40 }: { a: Pick<Autora, 'nombre' | 'foto' | 'esSorela
 }
 
 function Nombre({ a }: { a: Autora }) {
+  // Tocar el nombre abre su perfil, como en Instagram.
   return (
-    <span className={c.nombre}>
+    <button type="button" className={c.nombre} onClick={() => verPerfil(a.uid)} title={`Ver el perfil de ${a.nombre}`}>
       {a.nombre}
       {a.esSorela && <span className={c.selloSorela}>✦ Sorela</span>}
-    </span>
+    </button>
   );
 }
 
@@ -176,6 +178,7 @@ function Escribir({ yo, modera, alPublicar }: { yo: Datos['yo']; modera: boolean
         setFotos([]);
         setAbierto(false);
         alPublicar();
+        window.dispatchEvent(new Event('divine:logros'));
       }
     } catch {
       setErrores({ general: 'No hay conexión.' });
@@ -295,6 +298,7 @@ function Tarjeta({
     setEnviando(false);
     if (j.ok) {
       setTexto('');
+      window.dispatchEvent(new Event('divine:logros'));
       await cargarHilo();
       refrescar();
     }

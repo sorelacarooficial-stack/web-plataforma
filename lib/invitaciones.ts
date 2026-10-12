@@ -1,3 +1,4 @@
+import 'server-only';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { baseDeDatos, COLECCIONES } from './firebase-servidor';
 import { CURSO_DIVINE, revisarAccesos, type Acceso } from './accesos';

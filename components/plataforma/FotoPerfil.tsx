@@ -47,10 +47,13 @@ export default function FotoPerfil({
   foto: inicial,
   iniciales,
   nombre,
+  verPerfil,
 }: {
   foto: string | null;
   iniciales: string;
   nombre: string;
+  /** Abre su perfil. Si no se pasa, el menú no lo ofrece. */
+  verPerfil?: () => void;
 }) {
   const [foto, setFoto] = useState(inicial);
   const [abierto, setAbierto] = useState(false);
@@ -137,6 +140,11 @@ export default function FotoPerfil({
 
       {abierto && (
         <div className={f.menu} role="menu">
+          {verPerfil && (
+            <button type="button" role="menuitem" className={f.opcion} onClick={() => { setAbierto(false); verPerfil(); }}>
+              Ver mi perfil
+            </button>
+          )}
           <button type="button" role="menuitem" className={f.opcion} onClick={() => entrada.current?.click()}>
             {foto ? 'Cambiar foto' : 'Poner foto'}
           </button>

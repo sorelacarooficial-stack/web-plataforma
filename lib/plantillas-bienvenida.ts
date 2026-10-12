@@ -165,3 +165,31 @@ export function correoAcuerdo(nombre: string, referencia: string, enlaceDossier:
   );
   return { asunto: `Tu acuerdo firmado y tu dossier${n ? `, ${n}` : ''}`, texto, html };
 }
+
+/** Acaba de firmar: su acuerdo en PDF y el aviso de que Sorela lo revisa. */
+export function correoAcuerdoRecibido(nombre: string, referencia: string) {
+  const n = pila(nombre);
+  const saludo = n ? `Hola, ${n}.` : 'Hola.';
+  const texto = [
+    saludo,
+    '',
+    'He recibido tu acuerdo de confidencialidad firmado. Gracias.',
+    '',
+    `Tu referencia es ${referencia}. Te adjunto el acuerdo en PDF para que lo guardes.`,
+    '',
+    'Lo reviso yo y, en cuanto lo apruebe, te llega por aquí tu dossier de la formación.',
+    '',
+    'Un abrazo,',
+    'Sorela',
+  ].join('\n');
+  const html = envoltorio(
+    escapar(saludo),
+    `<p style="margin:0 0 18px">He recibido tu acuerdo de confidencialidad firmado. Gracias.</p>
+     <p style="margin:22px 0;padding:14px 16px;background:#f5efe2;border:1px solid #d9c6a0;border-radius:10px">
+       <span style="display:block;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#6e5327">Tu referencia</span>
+       <strong style="font-size:21px;letter-spacing:.06em">${escapar(referencia)}</strong>
+     </p>
+     <p style="margin:0 0 18px">Te adjunto el acuerdo en PDF para que lo guardes. Lo reviso yo y, en cuanto lo apruebe, te llega por aquí <strong>tu dossier de la formación</strong>.</p>`
+  );
+  return { asunto: `He recibido tu acuerdo${n ? `, ${n}` : ''}`, texto, html };
+}

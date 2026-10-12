@@ -2911,3 +2911,145 @@
     left: 0;
   }
 }
+
+/* ---------- Menú por grupos ---------- */
+
+.navIcono {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  color: var(--ink-3, #cfc6b8);
+  opacity: 0.8;
+}
+
+.navActivo .navIcono {
+  color: var(--oro-claro);
+  opacity: 1;
+}
+
+.fotoBoton {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+/* Las pestañas de cada grupo: una píldora que se desliza. */
+.pestanas {
+  display: flex;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: calc(-1 * clamp(8px, 1.4vw, 16px));
+  padding: 5px;
+  overflow-x: auto;
+  border-radius: 999px;
+  background: var(--neu-base);
+  box-shadow: var(--neu-dentro-sm);
+  scrollbar-width: none;
+}
+
+.pestanas::-webkit-scrollbar {
+  display: none;
+}
+
+.pestanas button {
+  position: relative;
+  flex: none;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.pestanas button[aria-current='page'] {
+  color: var(--ink);
+}
+
+.pestanas button > span:last-child {
+  position: relative;
+}
+
+.pestanaFondo {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #fffdf9;
+  box-shadow: 0 6px 16px -8px rgba(60, 45, 25, 0.5), 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
+
+/* La barra de abajo, solo en el móvil. */
+.barraInferior {
+  display: none;
+}
+
+@media (max-width: 880px) {
+  .barraInferior {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 45;
+    display: flex;
+    justify-content: space-around;
+    gap: 2px;
+    padding: 6px;
+    border-radius: 26px;
+    background: color-mix(in srgb, #17140f 88%, transparent);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 18px 40px -16px rgba(12, 10, 9, 0.55);
+  }
+
+  .barraInferior button {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 2px 7px;
+    border: 0;
+    border-radius: 20px;
+    background: transparent;
+    font: inherit;
+    font-size: 10.5px;
+    letter-spacing: 0.02em;
+    color: rgba(247, 242, 234, 0.62);
+    cursor: pointer;
+  }
+
+  .barraInferior button > svg,
+  .barraInferior button > span:last-child {
+    position: relative;
+    z-index: 1;
+  }
+
+  .barraInferior button[aria-current='page'] {
+    color: #f3e3c3;
+  }
+
+  .barraActiva {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: rgba(217, 180, 124, 0.16);
+  }
+
+  /* Que lo último de cada pantalla no quede debajo de la barra. */
+  .principal {
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+}

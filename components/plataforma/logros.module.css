@@ -1,0 +1,284 @@
+/* Logros: anillo de progreso, insignias que brillan al conseguirse y la celebración. */
+
+.logros {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.vacio {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.esqueleto {
+  height: 260px;
+  border-radius: 24px;
+  background: linear-gradient(90deg, rgba(20, 18, 16, 0.04), rgba(20, 18, 16, 0.08), rgba(20, 18, 16, 0.04));
+}
+
+.resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 22px;
+  padding: 20px 22px;
+  border-radius: 24px;
+  background: linear-gradient(140deg, #201b14, #14110d);
+  color: #f7f2ea;
+}
+
+.anillo {
+  --p: 0%;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 118px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(#d9b47c var(--p), rgba(255, 255, 255, 0.1) 0);
+}
+
+.anillo span {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #17140f;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.anillo b {
+  font-size: 26px;
+  color: #f3e3c3;
+}
+
+.anillo small {
+  font-size: 11px;
+  color: rgba(247, 242, 234, 0.6);
+}
+
+.datos {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14.5px;
+  color: rgba(247, 242, 234, 0.82);
+}
+
+.datos p {
+  margin: 0;
+}
+
+.datos b {
+  color: #f3e3c3;
+}
+
+.fuego {
+  display: inline-block;
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.fuego[data-viva] {
+  filter: none;
+  opacity: 1;
+  animation: latir 1.6s ease-in-out infinite;
+}
+
+@keyframes latir {
+  50% {
+    transform: scale(1.18);
+  }
+}
+
+.certificado {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f3e3c3, #d9b47c);
+  color: #17140f;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.familia h4 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.insignia {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--neu-base);
+  border: 1px solid transparent;
+  opacity: 0.78;
+}
+
+.insignia[data-hecho] {
+  opacity: 1;
+  background: linear-gradient(160deg, #fffaf0, #f5ead3);
+  border-color: rgba(217, 180, 124, 0.6);
+  box-shadow: 0 14px 30px -20px rgba(138, 106, 50, 0.7);
+}
+
+.icono {
+  font-size: 30px;
+  line-height: 1;
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+.insignia[data-hecho] .icono {
+  filter: none;
+  opacity: 1;
+}
+
+.insignia strong {
+  font-size: 14.5px;
+  color: var(--ink);
+}
+
+.insignia small {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.barra {
+  height: 6px;
+  margin-top: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(20, 18, 16, 0.08);
+}
+
+.barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d9b47c, #8a6a32);
+}
+
+.hecho {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+/* ---------- Celebración ---------- */
+
+.celebracion {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(12, 10, 9, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.confeti {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.tarjetaLogro {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(380px, 100%);
+  padding: 30px 26px 24px;
+  border-radius: 28px;
+  background: linear-gradient(170deg, #fffaf0, #f3e3c3);
+  text-align: center;
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.7);
+}
+
+.medalla {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #e8cf9c 60%, #b88c46);
+  font-size: 48px;
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.6), 0 18px 40px -14px rgba(138, 106, 50, 0.9);
+  animation: brillo 2.4s ease-in-out infinite;
+}
+
+@keyframes brillo {
+  50% {
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.3), 0 18px 50px -10px rgba(217, 180, 124, 1);
+  }
+}
+
+.etiqueta {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--oro);
+}
+
+.tarjetaLogro h3 {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 30px;
+  font-weight: 600;
+  color: #17140f;
+}
+
+.tarjetaLogro p {
+  margin: 0;
+  font-size: 14.5px;
+  color: #4e463d;
+}
+
+.seguir {
+  margin-top: 10px;
+  padding: 12px 28px;
+  border: 0;
+  border-radius: 999px;
+  background: #17140f;
+  color: #faf8f5;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medalla,
+  .fuego[data-viva] {
+    animation: none;
+  }
+}

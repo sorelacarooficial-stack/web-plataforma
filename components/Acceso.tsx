@@ -68,7 +68,10 @@ function mensaje(codigo: string): string {
 function Formulario() {
   const router = useRouter();
   const parametros = useSearchParams();
-  const volver = parametros.get('volver') || '/plataforma';
+  /* Solo rutas de esta misma web: «/algo», nunca «//otra.web» ni «https://…».
+     Si no, un enlace trucado mandaría a una página falsa justo después de entrar. */
+  const pedida = parametros.get('volver') || '';
+  const volver = pedida.startsWith('/') && !pedida.startsWith('//') && !pedida.startsWith('/\\') ? pedida : '/plataforma';
 
   const [correo, setCorreo] = useState('');
   const [clave, setClave] = useState('');

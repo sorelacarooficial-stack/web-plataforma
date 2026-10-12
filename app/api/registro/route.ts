@@ -5,6 +5,7 @@ import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebas
 import { ROL_POR_DEFECTO } from '@/lib/roles';
 import { MOTIVO_TEXTO, canjear, comprobar } from '@/lib/invitaciones';
 import { after } from 'next/server';
+import { correoEsAdmin } from '@/lib/roles';
 import { alRegistrarse } from '@/lib/automatizar';
 import { procedenciaDe } from '@/lib/llegada-servidor';
 
@@ -137,6 +138,8 @@ export async function POST(peticion: Request) {
   const errores: Errores = {};
   if (nombre.length < 2) errores.nombre = 'Escribe tu nombre.';
   if (!CORREO.test(correo)) errores.correo = 'Escribe un correo con forma de correo.';
+  // El correo de administración no se registra por aquí: esa cuenta ya existe.
+  else if (correoEsAdmin(correo)) errores.correo = 'Ese correo no se puede registrar aquí.';
   if (clave.length < CLAVE_MIN) errores.clave = `La contraseña necesita al menos ${CLAVE_MIN} caracteres.`;
   if (!invitacion && !(quiereCrudo in QUIERE)) errores.quiere = 'Dime a qué vienes.';
   if (cuerpo.consentimiento !== true) {

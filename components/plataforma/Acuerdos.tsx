@@ -26,6 +26,7 @@ type Fila = {
   telefono: string;
   lugar: string;
   firmadoEl: string;
+  estado: string;
   descargas: number;
   correoEnviado: boolean;
   correoDetalle: string;
@@ -63,12 +64,32 @@ export default function Acuerdos() {
       const c = await r.json();
       setAviso(
         c.enviado
-          ? `Enviado a ${f.correo}: acuerdo firmado y dossier.`
+          ? `Enviado a ${f.correo}${f.estado === 'aprobado' ? ': acuerdo firmado y dossier.' : ': acuse con su acuerdo (sin dossier, aún no está aprobado).'}`
           : `No ha salido el correo a ${f.correo}. ${c.detalle ?? ''}`
       );
       await cargar();
     } catch {
       setAviso('No he podido reenviarlo. Revisa la conexión y vuelve a intentarlo.');
+    } finally {
+      setEnviando(null);
+    }
+  }
+
+  async function aprobar(f: Fila) {
+    if (!window.confirm(`¿Aprobar el acuerdo de ${f.nombre} ${f.apellidos}? Le llegará su dossier a ${f.correo}.`)) return;
+    setEnviando(f.referencia);
+    setAviso('');
+    try {
+      const r = await fetch(`/api/acuerdos/${f.referencia}/aprobar`, { method: 'POST' });
+      const c = await r.json();
+      setAviso(
+        c.enviado
+          ? `Aprobado. ${f.nombre} ya tiene su dossier en ${f.correo}.`
+          : `Aprobado, pero el correo no ha salido. ${c.detalle ?? ''} Pulsa «Reenviar correo».`
+      );
+      await cargar();
+    } catch {
+      setAviso('No se ha podido aprobar. Vuelve a intentarlo.');
     } finally {
       setEnviando(null);
     }
@@ -97,6 +118,11 @@ export default function Acuerdos() {
             <span className={css.kpiValor}>{sinCorreo}</span>
             <span className={css.kpiLabel}>Sin correo enviado</span>
             <span className={css.kpiNota}>{sinCorreo ? 'Reenvíalos desde aquí' : 'Todo enviado'}</span>
+          </article>
+          <article className={css.kpi}>
+            <span className={css.kpiValor}>{lista.filter((f) => f.estado !== 'aprobado' && f.estado !== 'anulado').length}</span>
+            <span className={css.kpiLabel}>Por aprobar</span>
+            <span className={css.kpiNota}>Sin aprobar no reciben el dossier</span>
           </article>
           <article className={css.kpi}>
             <span className={css.kpiValor}>{lista.reduce((t, f) => t + f.descargas, 0)}</span>
@@ -147,6 +173,7 @@ export default function Acuerdos() {
                     color: f.correoEnviado ? 'var(--salvia-ink)' : 'var(--arcilla-ink)',
                   }}
                 >
+                  {f.estado === 'aprobado' ? '✓ Aprobado · ' : '⏳ Pendiente de tu aprobación · '}
                   {f.correoEnviado ? '✓ Correo enviado' : '✕ Correo no enviado'}
                   {!f.correoEnviado && f.correoDetalle ? ` — ${f.correoDetalle}` : ''}
                 </span>
@@ -162,6 +189,11 @@ export default function Acuerdos() {
                 >
                   Ver acuerdo en PDF
                 </a>
+                {f.estado !== 'aprobado' && f.estado !== 'anulado' && (
+                  <button type="button" className={css.btnComunidad} onClick={() => aprobar(f)} disabled={enviando === f.referencia}>
+                    Aprobar y enviar dossier
+                  </button>
+                )}
                 <button
                   type="button"
                   className={css.btnLinea}

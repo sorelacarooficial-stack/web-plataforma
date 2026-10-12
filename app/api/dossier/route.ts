@@ -1,8 +1,7 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { NextResponse, after } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
+import { leerDossier } from '@/lib/dossier-privado';
 
 /**
  * El dossier del precurso, para quien ha firmado el acuerdo.
@@ -31,8 +30,6 @@ export const dynamic = 'force-dynamic';
 
 const COLECCION = 'acuerdos';
 
-/** El archivo vive fuera de `public/`. Ver `outputFileTracingIncludes`. */
-const RUTA = path.join(process.cwd(), 'docs', 'dossier.pdf');
 
 /** La forma de una referencia: DIV- y dos grupos de cuatro. */
 const FORMA = /^DIV-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
@@ -61,14 +58,14 @@ export async function GET(peticion: Request) {
   if (doc.get('estado') === 'anulado') {
     return NextResponse.json({ ok: false, motivo: 'anulado' }, { status: 403 });
   }
-
-  let pdf: Buffer;
-  try {
-    pdf = await readFile(RUTA);
-  } catch (error) {
-    console.error('[dossier] no se encuentra el archivo', error);
-    return NextResponse.json({ ok: false, motivo: 'sin-archivo' }, { status: 500 });
+  /* Solo con el acuerdo APROBADO por Sorela. Firmar no basta: el formulario es
+     público, y con un nombre inventado cualquiera se llevaba el dossier. */
+  if (doc.get('estado') !== 'aprobado') {
+    return NextResponse.json({ ok: false, motivo: 'pendiente' }, { status: 403 });
   }
+
+  const pdf = await leerDossier();
+  if (!pdf) return NextResponse.json({ ok: false, motivo: 'sin-archivo' }, { status: 500 });
 
   /* La descarga se apunta después de responder, con `after`: así quien ha
      firmado no espera su dossier por una línea de registro, y la plataforma
