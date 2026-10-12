@@ -7,7 +7,7 @@ import Motas from '@/components/Motas';
 import logo from '@/fotos/logo-sorela.png';
 import type { Sesion } from '@/lib/sesion-servidor';
 import { ETIQUETA_ROL } from '@/lib/roles';
-import { tieneMembresia, type Acceso } from '@/lib/accesos';
+import { CURSO_DIVINE, tieneMembresia, type Acceso } from '@/lib/accesos';
 
 import {
   ROLES,
@@ -37,7 +37,7 @@ import css from './plataforma.module.css';
 
 /* Lo que tiene la alumna que se simula con «Ver como». El nombre es el del
    curso de las clases subidas: así el aula enseña lo mismo que verá ella. */
-const ACCESOS_DE_MUESTRA: Acceso[] = [{ tipo: 'curso', nombre: 'Formación Técnica Divine' }];
+const ACCESOS_DE_MUESTRA: Acceso[] = [{ tipo: 'curso', nombre: CURSO_DIVINE }];
 
 /**
  * Plataforma privada.

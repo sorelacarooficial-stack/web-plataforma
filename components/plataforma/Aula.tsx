@@ -10,6 +10,7 @@ import {
   type Leccion,
   type Progreso,
 } from '@/lib/aula';
+import { Lector, TarjetasMaterial, type DocumentoVisible } from './Material';
 import css from './plataforma.module.css';
 import a from './aula.module.css';
 
@@ -24,6 +25,9 @@ import a from './aula.module.css';
  * Los vídeos del almacén propio se ven con un enlace que caduca, sin botón de
  * descarga y con el correo de quien mira flotando encima. Los de YouTube que
  * queden de antes siguen funcionando igual que siempre.
+ *
+ * Debajo de las clases está el material: los dossieres de cada día, que se
+ * leen en el lector protegido de `Material.tsx`.
  */
 
 type Mapa = Record<string, Progreso>;
@@ -66,15 +70,24 @@ export default function Aula({ correo }: { correo?: string | null }) {
   const [fuente, setFuente] = useState<{ id: string; url: string } | null>(null);
   const [falloVideo, setFalloVideo] = useState(false);
   const [inicioYoutube, setInicioYoutube] = useState(0);
+  const [documentos, setDocumentos] = useState<DocumentoVisible[]>([]);
+  const [leyendo, setLeyendo] = useState<{ id: string; desde: number } | null>(null);
   const video = useRef<HTMLVideoElement>(null);
   const ultimoGuardado = useRef(0);
 
   const cargar = useCallback(async () => {
     setFallo(null);
     try {
-      const [rl, rp] = await Promise.all([fetch('/api/lecciones'), fetch('/api/progreso')]);
+      const [rl, rp, rm] = await Promise.all([
+        fetch('/api/lecciones'),
+        fetch('/api/progreso'),
+        // El material no debe tumbar el aula si falla: se queda sin tarjetas.
+        fetch('/api/material').catch(() => null),
+      ]);
       const cl = await rl.json().catch(() => ({ ok: false }));
       const cp = await rp.json().catch(() => ({ ok: false }));
+      const cm = rm ? await rm.json().catch(() => ({ ok: false })) : { ok: false };
+      setDocumentos(cm.ok ? cm.documentos ?? [] : []);
       if (!cl.ok) {
         setFallo(cl.motivo === 'sin-configurar' ? 'Falta la configuración del servidor.' : 'No he podido cargar tus clases.');
         setLecciones([]);
@@ -174,6 +187,18 @@ export default function Aula({ correo }: { correo?: string | null }) {
     }
   };
 
+  const abrirMaterial = (id: string, desde = 1) => setLeyendo({ id, desde });
+  const docLeyendo = documentos.find((d) => d.id === leyendo?.id);
+  const lector = docLeyendo && leyendo && (
+    <Lector doc={docLeyendo} correo={correo} desde={leyendo.desde} cerrar={() => setLeyendo(null)} />
+  );
+  const seccionMaterial = documentos.length > 0 && (
+    <section className={a.bloque} id="aula-material">
+      <h3 className={a.rotulo}>Material del curso</h3>
+      <TarjetasMaterial documentos={documentos} abrir={abrirMaterial} />
+    </section>
+  );
+
   if (lecciones === null) {
     return (
       <div className={css.columna}>
@@ -199,6 +224,8 @@ export default function Aula({ correo }: { correo?: string | null }) {
             verás aquí sin tener que hacer nada.
           </p>
         </section>
+        {seccionMaterial}
+        {lector}
       </div>
     );
   }
@@ -208,6 +235,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
     (l) => (!modulo || l.modulo === modulo) && (!t || l.titulo.toLowerCase().includes(t))
   );
   const pActual = progreso[actual.id];
+  const dossier = documentos.find((d) => d.modulo === actual.modulo);
 
   return (
     <div className={a.aula}>
@@ -279,6 +307,13 @@ export default function Aula({ correo }: { correo?: string | null }) {
               <h2 className={a.titulo}>{actual.titulo}</h2>
               {actual.descripcion && <p className={a.descripcion}>{actual.descripcion}</p>}
             </div>
+            <div className={a.fichaBotones}>
+            {dossier && (
+              <button type="button" className={a.marcarVista} onClick={() => abrirMaterial(dossier.id)}>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 3h8l4 4v14H6z" strokeLinejoin="round" /><path d="M14 3v4h4M9 12h6M9 16h6" strokeLinejoin="round" strokeLinecap="round" /></svg>
+                Dossier de este día
+              </button>
+            )}
             <button
               type="button"
               className={pActual?.completada ? a.vista : a.marcarVista}
@@ -294,6 +329,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
                 'Marcar como vista'
               )}
             </button>
+            </div>
           </div>
         </section>
 
@@ -344,6 +380,9 @@ export default function Aula({ correo }: { correo?: string | null }) {
             </div>
           </section>
         )}
+
+        {/* ---------- Material ---------- */}
+        {seccionMaterial}
 
         {/* ---------- Todas las clases ---------- */}
         <section className={a.tarjeta}>
@@ -489,6 +528,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
           </ul>
         </section>
       </aside>
+      {lector}
     </div>
   );
 }

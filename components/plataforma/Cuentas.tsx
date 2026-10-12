@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { ETIQUETA_ROL, ROL_POR_DEFECTO, type Rol } from '@/lib/roles';
-import { cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
+import { clave } from '@/lib/aula';
+import { CURSO_DIVINE, cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
 import css from './plataforma.module.css';
 
 /**
@@ -203,15 +204,30 @@ export default function Cuentas() {
    * persona con un acceso que nadie le dio.
    */
   async function cambiarMembresia(c: Cuenta, dar: boolean) {
+    await guardarAccesos(
+      c,
+      dar
+        ? [...c.accesos.filter((a) => a.tipo !== 'membresia'), { tipo: 'membresia' as const }]
+        : c.accesos.filter((a) => a.tipo !== 'membresia')
+    );
+  }
+
+  /**
+   * Dar o quitar la formación. Sirve sobre todo para quien se registró sola:
+   * paga, se hace la cuenta, y Sorela le abre las clases con un clic.
+   */
+  async function cambiarFormacion(c: Cuenta, dar: boolean) {
+    const otros = c.accesos.filter((a) => !(a.tipo === 'curso' && clave(a.nombre) === clave(CURSO_DIVINE)));
+    await guardarAccesos(c, dar ? [...otros, { tipo: 'curso' as const, nombre: CURSO_DIVINE }] : otros);
+  }
+
+  async function guardarAccesos(c: Cuenta, nuevos: Acceso[]) {
     /* Se guarda SOLO lo de esta persona, no la lista entera.
        Guardando la lista entera y restaurándola al fallar, un error aquí
        borraba de la pantalla los cambios que se hubieran guardado bien
        mientras tanto en otras filas: la persona volvía a ver una foto vieja y
        no había forma de saber cuál de los dos estados era el real. */
     const accesosAntes = c.accesos;
-    const nuevos: Acceso[] = dar
-      ? [...c.accesos.filter((a) => a.tipo !== 'membresia'), { tipo: 'membresia' as const }]
-      : c.accesos.filter((a) => a.tipo !== 'membresia');
 
     setLista((l) => l?.map((x) => (x.uid === c.uid ? { ...x, accesos: nuevos } : x)) ?? l);
     try {
@@ -649,6 +665,18 @@ export default function Cuentas() {
                       {tieneMembresia(c.accesos) ? 'Quitar comunidad' : 'Dar comunidad'}
                     </button>
                   )}
+                  {!c.protegida && (() => {
+                    const conFormacion = cursosDe(c.accesos).some((a) => clave(a.nombre) === clave(CURSO_DIVINE));
+                    return (
+                      <button
+                        type="button"
+                        className={conFormacion ? css.btnLinea : css.btnComunidad}
+                        onClick={() => cambiarFormacion(c, !conFormacion)}
+                      >
+                        {conFormacion ? 'Quitar formación' : 'Dar formación'}
+                      </button>
+                    );
+                  })()}
                   {/* El rol se enseña, no se elige. Ver quitarAdmin(). */}
                   <span
                     className={`${css.estado} ${rolActual === 'sorela' ? css.estadoTinta : css.estadoNeutro}`}
@@ -770,12 +798,17 @@ export default function Cuentas() {
               <input
                 value={curso}
                 onChange={(e) => setCurso(e.target.value)}
-                placeholder="Formación Base, presencial de Bogotá…"
+                placeholder={CURSO_DIVINE}
+                list="cursos-conocidos"
                 className={css.campoCaja}
               />
+              <datalist id="cursos-conocidos">
+                <option value={CURSO_DIVINE} />
+              </datalist>
               <span className={css.apunte}>
-                Escríbela como quieras llamarla. Se queda en su ficha para siempre: el curso lo
-                compró, y eso no caduca. Si todavía no ha hecho ninguna, déjalo vacío.
+                Para que vea las clases y el material, pon <b>{CURSO_DIVINE}</b> (sale al escribir).
+                Se queda en su ficha para siempre: el curso lo compró, y eso no caduca. Si todavía
+                no ha hecho ninguna, déjalo vacío.
               </span>
             </label>
           </div>

@@ -38,6 +38,13 @@ export type Acceso = {
   desde?: string;
 };
 
+/**
+ * El curso que se vende hoy. Las clases y el material van dirigidos a este
+ * nombre, así que una alumna tiene que tenerlo escrito igual (sin importar
+ * tildes ni mayúsculas) para verlos.
+ */
+export const CURSO_DIVINE = 'Formación Técnica Divine';
+
 export const ETIQUETA_ACCESO: Record<TipoAcceso, string> = {
   membresia: 'Comunidad Divine',
   curso: 'Formación',
