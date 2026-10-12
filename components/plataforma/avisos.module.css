@@ -1,0 +1,164 @@
+/*
+ * Los avisos flotantes. Abajo a la derecha en ordenador; en móvil, abajo a lo
+ * ancho. Tarjeta clara y sólida (con cristal se transparentaba lo de detrás y
+ * no se leía en el móvil), icono dorado por tipo y una barra fina
+ * que se va vaciando mientras el aviso sigue a la vista.
+ */
+
+.pila {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 900;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+  width: min(380px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .pila {
+    right: 16px;
+    left: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    width: auto;
+  }
+}
+
+.aviso {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #fffdf9;
+  border: 1px solid rgba(201, 154, 85, 0.28);
+  box-shadow:
+    0 1px 2px rgba(60, 45, 25, 0.08),
+    0 22px 44px -22px rgba(60, 45, 25, 0.55);
+  pointer-events: auto;
+}
+
+.cuerpo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 14px 6px 16px 14px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: #1c1915;
+  cursor: pointer;
+}
+
+.icono {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(140deg, #f3e2c4, #d9b47c);
+  color: #3b2a12;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.aviso[data-tipo='cita'] .icono {
+  background: linear-gradient(140deg, #2a2420, #14110e);
+  color: #f0d4a6;
+}
+
+.aviso[data-tipo='acuerdo'] .icono,
+.aviso[data-tipo='invitacion'] .icono {
+  background: linear-gradient(140deg, #dfe9d8, #a9c29c);
+  color: #2f4528;
+}
+
+.texto {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cabecera strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.hace {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: #9a8d7c;
+}
+
+.frase {
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.45;
+  color: #4d443a;
+}
+
+.cerrar {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 8px 8px 0 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #9a8d7c;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.cerrar:hover {
+  background: rgba(20, 18, 16, 0.06);
+  color: #1c1915;
+}
+
+.barra {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(201, 154, 85, 0.12);
+}
+
+.barra span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #cfa25e, #e9cf9f);
+  transform-origin: left;
+  animation: vaciar linear forwards;
+}
+
+@keyframes vaciar {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra span {
+    animation: none;
+  }
+}

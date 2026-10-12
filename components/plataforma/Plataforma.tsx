@@ -25,6 +25,7 @@ import {
  */
 import { Comunidad, FormacionesAdmin, PanelSorela } from './Vistas';
 import FotoPerfil from './FotoPerfil';
+import Avisos from './Avisos';
 import Contactos from './Contactos';
 import Acuerdos from './Acuerdos';
 import Proximamente from './Proximamente';
@@ -146,6 +147,16 @@ export default function Plataforma({
   return (
     <div className={css.pantalla}>
       <Motas className={css.motas} />
+      {/* Los avisos flotantes, solo para Sorela. Pulsar uno la devuelve a su
+          vista de administradora aunque esté mirando «Ver como». */}
+      {puedeVerComo && (
+        <Avisos
+          ir={(v) => {
+            setRol('sorela');
+            ir(v);
+          }}
+        />
+      )}
 
       {/* Solo en móvil: logo y hamburguesa. En escritorio manda la lateral. */}
       <div className={css.barraMovil}>

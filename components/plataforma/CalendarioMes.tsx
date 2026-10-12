@@ -25,6 +25,8 @@ export type EventoEnCalendario = {
   id: string;
   cuando: string | null;
   estado: 'Pendiente' | 'Hecho' | 'Cancelado';
+  /** Para decir qué hay al pasar por encima del día. */
+  titulo?: string;
 };
 
 type Props = {
@@ -124,7 +126,7 @@ export default function CalendarioMes({
   const porDia = useMemo(() => {
     const mapa = new Map<
       string,
-      { pendientes: number; hechos: number; cancelados: number; total: number }
+      { pendientes: number; hechos: number; cancelados: number; total: number; titulos: string[] }
     >();
     for (const ev of eventos) {
       if (!ev.cuando) continue;
@@ -136,7 +138,9 @@ export default function CalendarioMes({
         hechos: 0,
         cancelados: 0,
         total: 0,
+        titulos: [],
       };
+      if (ev.titulo && ev.estado !== 'Cancelado') cuenta.titulos.push(ev.titulo);
       if (ev.estado === 'Hecho') cuenta.hechos++;
       else if (ev.estado === 'Cancelado') cuenta.cancelados++;
       else cuenta.pendientes++;
@@ -313,6 +317,7 @@ export default function CalendarioMes({
               aria-current={esHoy ? 'date' : undefined}
               aria-label={`${conMayuscula(DIA_LARGO.format(d))}, ${cuantas}`}
               tabIndex={clave === tabulable ? 0 : -1}
+              title={cuenta?.titulos.length ? cuenta.titulos.join(' · ') : undefined}
               onKeyDown={(e) => teclas(e, d)}
               onClick={() => {
                 setFoco(clave);
@@ -328,12 +333,20 @@ export default function CalendarioMes({
                 esHoy ? css.hoy : '',
                 marcado ? css.marcado : '',
                 cuenta ? css.conCosas : '',
+                /* Lo que queda por hacer se ve desde lejos: el día entero se
+                   enciende en oro. Lo ya hecho, solo un fondo suave. */
+                cuenta?.pendientes ? css.conPendiente : cuenta?.hechos ? css.soloHecho : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
             >
               <span className={css.disco}>
                 <span className={css.numero}>{d.getDate()}</span>
+                {cuenta && cuenta.pendientes > 0 && (
+                  <span className={css.cuenta} aria-hidden="true">
+                    {cuenta.pendientes}
+                  </span>
+                )}
               </span>
               <span className={css.puntos} aria-hidden="true">
                 {puntos.map((clase, i) => (
@@ -347,8 +360,8 @@ export default function CalendarioMes({
       </div>
 
       <p className={css.leyenda}>
-        <span className={css.punto} aria-hidden="true" /> pendiente
-        <span className={css.puntoHecho} style={{ marginLeft: 14 }} aria-hidden="true" /> hecho
+        <span className={css.muestraPendiente} aria-hidden="true" /> con algo pendiente
+        <span className={css.muestraHecho} style={{ marginLeft: 14 }} aria-hidden="true" /> ya hecho
         <span className={css.leyendaNota}>Pulsa un día para ver o apuntar lo de ese día.</span>
       </p>
     </section>

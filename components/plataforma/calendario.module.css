@@ -382,3 +382,90 @@
     transition: none;
   }
 }
+
+/* ==========================================================================
+   Días con algo apuntado
+   ==========================================================================
+   Antes era solo un punto de 4px debajo del número y no se veía. Ahora el
+   disco entero se enciende: en oro si queda algo por hacer, con el número de
+   cosas pendientes en una burbuja; en un fondo suave si ya está todo hecho. */
+
+.disco {
+  position: relative;
+  width: 34px;
+  height: 34px;
+}
+
+.conPendiente .disco {
+  background: linear-gradient(140deg, #f3e2c4 0%, #e2c08a 55%, #cfa25e 100%);
+  border-color: rgba(176, 130, 64, 0.55);
+  box-shadow: 0 6px 14px -6px rgba(150, 105, 40, 0.65);
+}
+
+.conPendiente .numero {
+  color: #2a1d0c;
+  font-weight: 600;
+}
+
+.conPendiente:hover .disco {
+  background: linear-gradient(140deg, #f6e8cf 0%, #e7c895 55%, #d4a865 100%);
+}
+
+.soloHecho .disco {
+  background: var(--surface-2);
+  border-color: var(--line-2);
+}
+
+.cuenta {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--bg);
+}
+
+/* Con el día marcado, el oro cede: el marcado es el único sólido. */
+.marcado.conPendiente .disco {
+  background: var(--ink);
+  border-color: var(--ink);
+  box-shadow: none;
+}
+
+.marcado.conPendiente .numero {
+  color: var(--bg);
+}
+
+.marcado .cuenta {
+  background: var(--oro-claro);
+  color: #2a1d0c;
+}
+
+.fuera.conPendiente .disco {
+  opacity: 0.45;
+}
+
+.muestraPendiente,
+.muestraHecho {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.muestraPendiente {
+  background: linear-gradient(140deg, #f3e2c4, #cfa25e);
+}
+
+.muestraHecho {
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+}
