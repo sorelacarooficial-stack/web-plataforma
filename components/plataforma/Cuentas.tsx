@@ -1,36 +1,26 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ETIQUETA_ROL, ROL_POR_DEFECTO, type Rol } from '@/lib/roles';
+import { ETIQUETA_ROL, type Rol } from '@/lib/roles';
 import { clave } from '@/lib/aula';
 import { CURSO_DIVINE, cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
 import Invitaciones from './Invitaciones';
 import css from './plataforma.module.css';
 
 /**
- * Quién tiene cuenta, y cómo se da de alta a alguien nuevo.
+ * Quién tiene cuenta y qué tiene contratado.
  *
- * Existe por un efecto secundario de cerrar el registro público: desde que
- * lib/sesion-servidor.ts solo deja entrar a las administradoras, Sorela no
- * tenía manera de dar acceso a una alumna que se matricula salvo entrar en la
- * consola de Firebase. Esta pantalla es esa manera.
+ * Las cuentas nuevas entran SOLO por enlace de invitación (arriba, en
+ * Invitaciones): Sorela crea el enlace, se lo manda, y la persona se hace la
+ * cuenta con su contraseña y entra ya con lo que se le dio. Aquí había además
+ * un formulario «Dar de alta una cuenta» que creaba la cuenta con una
+ * contraseña al azar y un enlace para cambiarla; se quita porque hacía lo
+ * mismo por un camino más largo y Sorela prefiere uno solo.
  *
- * Dos cosas que conviene entender antes de tocar nada:
- *
- * 1. La contraseña NO la pone Sorela. El servidor crea la cuenta con una larga
- *    al azar que nadie ve y devuelve un enlace para que la persona ponga la
- *    suya. Ese enlace hay que mandárselo A MANO —por WhatsApp, por correo, por
- *    donde sea—, porque este servidor no envía correos. Si el enlace no se
- *    manda, el alta se queda a medias.
- *
- * 2. Ese enlace es tan bueno como una contraseña: quien lo tenga puede entrar
- *    en esa cuenta. Se dice en pantalla para que no acabe pegado en un grupo.
- *
- * No hay nada inventado: la lista es la que hay en Firestore, y de salida es
- * solo Sorela.
+ * Desde aquí se da o se quita la comunidad, se bloquea o se borra una cuenta.
+ * No hay nada inventado: la lista es la que hay en Firestore.
  */
-
 type Cuenta = {
   uid: string;
   correo: string | null;
@@ -59,15 +49,6 @@ type Cuenta = {
   /** Cómo llegó a tener cuenta. */
   llego?: 'registro' | 'invitacion' | 'tu' | null;
   creado?: string | null;
-};
-
-/** Lo que devuelve el alta y hay que enseñar hasta que se dé por leído. */
-type Alta = {
-  correo: string;
-  nombre: string;
-  rol: Rol;
-  enlace: string | null;
-  rolForzado: boolean;
 };
 
 /** «hace 3 h», «ayer», «12 oct». Una fecha completa no dice nada de un vistazo. */
@@ -131,25 +112,6 @@ export default function Cuentas() {
      en false, que es lo prudente: si la carga falla, se avisa de más. */
   const [abierta, setAbierta] = useState(false);
 
-  /* El formulario de alta. Cada campo por separado, como en la agenda: son
-     dos líneas más, pero se lee de un vistazo cuál se está tocando. */
-  const [correo, setCorreo] = useState('');
-  const [nombre, setNombre] = useState('');
-  /* Qué ha contratado, marcado en el mismo formulario del alta: es cuando se
-     sabe, porque se la da de alta PORQUE ha comprado algo. El curso es texto
-     libre —lo escribe ella— hasta que haya convocatorias de verdad con las que
-     enlazarlo. */
-  const [conMembresia, setConMembresia] = useState(false);
-  const [curso, setCurso] = useState('');
-  const [errores, setErrores] = useState<Partial<Record<string, string>>>({});
-  const [guardando, setGuardando] = useState(false);
-
-  // El alta recién hecha se queda en pantalla hasta que Sorela la cierra: si
-  // desapareciera al recargar la lista, se llevaría por delante el enlace, que
-  // no se puede volver a pedir desde aquí.
-  const [alta, setAlta] = useState<Alta | null>(null);
-  const [copiado, setCopiado] = useState<boolean | null>(null);
-
   /** Si la lista viene recortada por el tope del servidor. */
   const [recortada, setRecortada] = useState(false);
   /** Si el servidor no ha podido leer las cuentas de acceso. */
@@ -160,9 +122,6 @@ export default function Cuentas() {
      peticiones en el aire, y no tienen por qué contestar en orden: si la
      primera llega la última, pinta una lista vieja y nada lo delata. */
   const turno = useRef(0);
-
-  /* La sección del alta, para saltar a ella cuando el enlace está listo. */
-  const cajaAlta = useRef<HTMLElement | null>(null);
 
   const cargar = useCallback(async () => {
     const mio = ++turno.current;
@@ -197,15 +156,6 @@ export default function Cuentas() {
   useEffect(() => {
     cargar();
   }, [cargar]);
-
-  /** Lo marcado en el formulario, con la forma que espera el servidor. */
-  function accesosDelFormulario(): Acceso[] {
-    const lista: Acceso[] = [];
-    if (conMembresia) lista.push({ tipo: 'membresia' });
-    const nombreCurso = curso.trim();
-    if (nombreCurso) lista.push({ tipo: 'curso', nombre: nombreCurso });
-    return lista;
-  }
 
   /**
    * Dar o quitar la comunidad a alguien que ya tiene cuenta.
@@ -253,79 +203,6 @@ export default function Cuentas() {
     } catch {
       setLista((l) => l?.map((x) => (x.uid === c.uid ? { ...x, accesos: accesosAntes } : x)) ?? l);
       setFallo('No se ha podido cambiar. Vuelve a intentarlo.');
-    }
-  }
-
-  async function crear(e: FormEvent) {
-    e.preventDefault();
-    if (guardando) return;
-    setGuardando(true);
-    setErrores({});
-    setFallo(null);
-
-    try {
-      const r = await fetch('/api/usuarios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          correo,
-          nombre,
-          // Toda cuenta que se da de alta aquí nace miembro. El rol de
-          // administradora lo reparte ADMIN_CORREOS, no esta pantalla.
-          rol: ROL_POR_DEFECTO,
-          accesos: accesosDelFormulario(),
-        }),
-      });
-      const c = await r.json().catch(() => ({ ok: false }));
-      if (!c.ok) {
-        setErrores(c.errores ?? {});
-        // Si el servidor no dice qué campo falla, el problema no está en lo
-        // escrito: se avisa arriba, donde se ven los fallos generales.
-        if (!c.errores || Object.keys(c.errores).length === 0) {
-          /*
-           * «cuenta-suelta» es el único caso en que hace falta que ella haga
-           * algo fuera de aquí: el alta se quedó a medias y tampoco se pudo
-           * deshacer, así que en Firebase hay una cuenta con ese correo que no
-           * sale en esta lista y que va a impedir volver a intentarlo. Si no se
-           * dice, se queda pulsando «crear» contra un «ya existe» eterno.
-           */
-          setFallo(
-            c.motivo === 'cuenta-suelta'
-              ? 'La cuenta se creó a medias y no he podido deshacerla. Ha quedado suelta en Firebase con ese correo: bórrala desde allí y vuelve a intentarlo.'
-              : 'No he podido crear la cuenta.'
-          );
-        }
-        return;
-      }
-
-      setAlta({
-        correo: c.correo,
-        nombre: c.nombre,
-        rol: c.rol,
-        enlace: c.enlace ?? null,
-        rolForzado: Boolean(c.rolForzado),
-      });
-      setCopiado(null);
-      // El formulario se vacía entero: dar de alta a dos personas seguidas con
-      // el mismo correo no existe, y dejar el anterior escrito invita a ello.
-      setCorreo('');
-      setNombre('');
-      setConMembresia(false);
-      setCurso('');
-      /* El enlace se pinta arriba del todo y el botón de crear está al final,
-         así que al guardar no se movía nada: los campos se vaciaban y parecía
-         que no había pasado nada. Se lleva la vista y el foco hasta el enlace,
-         que además es lo único que queda por hacer. El bloque tiene
-         role="status", así que con el foco encima se lee solo. */
-      requestAnimationFrame(() => {
-        cajaAlta.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
-        cajaAlta.current?.focus();
-      });
-      await cargar();
-    } catch {
-      setFallo('No hay conexión con el servidor.');
-    } finally {
-      setGuardando(false);
     }
   }
 
@@ -463,18 +340,6 @@ export default function Cuentas() {
     }
   }
 
-  async function copiarEnlace(enlace: string) {
-    try {
-      // navigator.clipboard no existe fuera de un contexto seguro y el
-      // navegador puede denegar el permiso. Sin el try, no poder copiar el
-      // enlace tumbaría la pantalla entera.
-      await navigator.clipboard.writeText(enlace);
-      setCopiado(true);
-    } catch {
-      setCopiado(false);
-    }
-  }
-
   if (lista === null) {
     return (
       <div className={css.columna}>
@@ -512,88 +377,6 @@ export default function Cuentas() {
         </p>
       )}
 
-      {/* El alta recién hecha, con su enlace. Va arriba del todo porque es lo
-          que hay que hacer ahora mismo: copiarlo y mandarlo. */}
-      {alta && (
-        <section className={css.tarjeta} ref={cajaAlta} tabIndex={-1}>
-          <div className={css.columna} style={{ gap: 14 }}>
-            <p className={css.avisoBien} role="status">
-              Cuenta creada para <strong>{alta.nombre}</strong> ({alta.correo}) como{' '}
-              {ETIQUETA_ROL[alta.rol]}.
-              {alta.rolForzado &&
-                ' Ese correo está en la lista de administradoras, así que se ha guardado con el rol de admin.'}
-            </p>
-
-            {alta.enlace ? (
-              <>
-                <p className={css.parrafo} style={{ margin: 0 }}>
-                  Queda un paso, y no lo hace sola la plataforma:{' '}
-                  <strong>mándale tú este enlace</strong> para que se ponga su contraseña. Desde
-                  aquí no sale ningún correo. Mientras no lo abra, no puede entrar.
-                </p>
-
-                <code className={css.enlaceClave}>{alta.enlace}</code>
-
-                <div className={css.barraAcciones}>
-                  <span className={css.apunte}>
-                    Trátalo como una contraseña: quien lo tenga entra en esa cuenta. No lo pegues
-                    en un grupo.
-                  </span>
-                  <span className={css.acciones}>
-                    <button
-                      type="button"
-                      className={css.btn}
-                      onClick={() => alta.enlace && copiarEnlace(alta.enlace)}
-                    >
-                      Copiar el enlace
-                    </button>
-                    <button
-                      type="button"
-                      className={css.enlaceAccion}
-                      onClick={() => {
-                        setAlta(null);
-                        setCopiado(null);
-                      }}
-                    >
-                      Ya está mandado
-                    </button>
-                  </span>
-                </div>
-
-                {/* Se dice si funcionó o no: un botón de copiar que no copia y
-                    no avisa hace que se mande un mensaje vacío. */}
-                {copiado !== null && (
-                  <p className={css.apunte} role="status" style={{ margin: 0 }}>
-                    {copiado
-                      ? 'Copiado. Pégalo donde hables con ella.'
-                      : 'No he podido copiarlo. Selecciona el enlace de arriba y cópialo a mano.'}
-                  </p>
-                )}
-              </>
-            ) : (
-              <>
-                <p className={css.parrafo} style={{ margin: 0 }}>
-                  La cuenta está creada, pero no he podido generar el enlace de la contraseña.
-                  Dile que entre en la pantalla de acceso y pulse{' '}
-                  {/* El texto va citado exacto, como está en components/Acceso.tsx:
-                      si aquí se escribe de otra manera, Sorela le dicta por
-                      teléfono un botón que esa persona no encuentra. */}
-                  <strong>«¿Has olvidado la contraseña?»</strong> con este correo, o borra la cuenta
-                  aquí abajo y vuelve a darla de alta.
-                </p>
-                <div className={css.barraAcciones}>
-                  <span className={css.apunte}>
-                    La cuenta ya existe: no hace falta volver a crearla.
-                  </span>
-                  <button type="button" className={css.enlaceAccion} onClick={() => setAlta(null)}>
-                    Entendido
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </section>
-      )}
 
       {/* Si el servidor no ha podido leer las cuentas de acceso, la lista puede
           estar incompleta sin que se note: se dice, porque una cuenta que no
@@ -629,8 +412,8 @@ export default function Cuentas() {
           </p>
         ) : soloYo ? (
           <p className={css.vacioTexto}>
-            Ahora mismo solo está tu cuenta. Cuando des de alta a alguien aquí abajo, aparecerá en
-            esta lista con lo que haya contratado y con la última vez que entró.
+            Ahora mismo solo está tu cuenta. Cuando alguien use su enlace de invitación, aparecerá
+            aquí con lo que tenga contratado y la última vez que entró.
           </p>
         ) : (
           lista.map((c) => {
@@ -833,121 +616,6 @@ export default function Cuentas() {
           document.body
         )}
 
-      <section className={css.punteada}>
-        <form onSubmit={crear} className={css.columna} style={{ gap: 16 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <p className={css.rotuloSeccion}>Dar de alta una cuenta</p>
-            <p className={css.apunte}>
-              Tú no eliges su contraseña: se crea una al azar que no ve nadie y te doy un enlace
-              para que ella ponga la suya.
-            </p>
-          </div>
-
-          <div className={css.formRejilla}>
-            <label className={css.etiquetaCampo}>
-              Correo
-              <input
-                type="email"
-                value={correo}
-                onChange={(e) => setCorreo(e.target.value)}
-                placeholder="Con el que va a entrar"
-                autoComplete="off"
-                className={css.campoCaja}
-              />
-              {errores.correo && (
-                <span className={css.errorCampo} role="alert">
-                  {errores.correo}
-                </span>
-              )}
-            </label>
-
-            <label className={css.etiquetaCampo}>
-              Nombre
-              <input
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                placeholder="Cómo se llama"
-                autoComplete="off"
-                className={css.campoCaja}
-              />
-              {errores.nombre && (
-                <span className={css.errorCampo} role="alert">
-                  {errores.nombre}
-                </span>
-              )}
-            </label>
-
-            {/* Aquí había un desplegable de rol con dos opciones: «Miembro» y
-                «Sorela (admin)». Con eso, un clic de más en el sitio
-                equivocado daba a esa persona todos los contactos, la
-                facturación y el botón de borrar cuentas, sin preguntar nada.
-                Toda cuenta nueva nace miembro; quién es administradora lo
-                decide ADMIN_CORREOS en el servidor, y ahora el servidor lo
-                hace cumplir. El error de `rol` se sigue pintando abajo por si
-                el servidor rechaza algo. */}
-          </div>
-
-          {errores.rol && (
-            <span className={css.errorCampo} role="alert">
-              {errores.rol}
-            </span>
-          )}
-
-          {/* ---------- Qué ha contratado ----------
-              Va en el mismo formulario y no en una segunda pantalla porque es
-              justo cuando se sabe: se le da de alta PORQUE ha comprado algo.
-              Dejarlo para después significa que la mitad de las fichas se
-              quedan sin ello. */}
-          <div className={css.contratado}>
-            <p className={css.rotuloSeccion}>Qué ha contratado</p>
-
-            <label className={`${css.fichaComunidad} ${conMembresia ? css.fichaComunidadOn : ''}`}>
-              <input
-                type="checkbox"
-                checked={conMembresia}
-                onChange={(e) => setConMembresia(e.target.checked)}
-              />
-              <span className={css.fichaComunidadTexto}>
-                <span className={css.fichaComunidadTitulo}>
-                  <Destello />
-                  Comunidad Divine
-                </span>
-                <span className={css.apunte}>
-                  La membresía de cada mes. Puedes dársela o quitársela luego desde su línea.
-                </span>
-              </span>
-            </label>
-
-            <label className={css.etiquetaCampo}>
-              Formación que ha hecho
-              <input
-                value={curso}
-                onChange={(e) => setCurso(e.target.value)}
-                placeholder={CURSO_DIVINE}
-                list="cursos-conocidos"
-                className={css.campoCaja}
-              />
-              <datalist id="cursos-conocidos">
-                <option value={CURSO_DIVINE} />
-              </datalist>
-              <span className={css.apunte}>
-                Para que vea las clases y el material, pon <b>{CURSO_DIVINE}</b> (sale al escribir).
-                Se queda en su ficha para siempre: el curso lo compró, y eso no caduca. Si todavía
-                no ha hecho ninguna, déjalo vacío.
-              </span>
-            </label>
-          </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
-            <button type="submit" className={css.btn} disabled={guardando}>
-              {guardando ? 'Creando…' : 'Crear la cuenta'}
-            </button>
-            <span className={css.apunte}>
-              Al crearla te sale el enlace aquí arriba. Hay que mandárselo tú.
-            </span>
-          </div>
-        </form>
-      </section>
     </div>
   );
 }

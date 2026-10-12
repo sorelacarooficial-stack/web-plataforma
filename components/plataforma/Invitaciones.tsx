@@ -35,13 +35,6 @@ const OPCIONES: { id: QueDa; titulo: string; texto: string }[] = [
 
 const ETIQUETA: Record<QueDa, string> = { curso: 'Formación', membresia: 'Comunidad' };
 
-const ESTADO: Record<Invitacion['estado'], string> = {
-  pendiente: 'Sin usar',
-  usada: 'Usado',
-  caducada: 'Caducado',
-  anulada: 'Anulado',
-};
-
 const fecha = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
 
@@ -63,7 +56,6 @@ export default function Invitaciones() {
   const [envio, setEnvio] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
-  const [verTodas, setVerTodas] = useState(false);
 
   const cargar = useCallback(async () => {
     try {
@@ -129,7 +121,10 @@ export default function Invitaciones() {
     } else setFallo(j.motivo === 'usada' ? 'Ese enlace ya se ha usado: el acceso se quita desde su cuenta.' : 'No he podido anularlo.');
   }
 
-  const visibles = (lista ?? []).filter((x) => verTodas || x.estado === 'pendiente' || x.estado === 'usada').slice(0, verTodas ? 60 : 8);
+  /* Solo los que siguen sin usar: son los únicos con algo que hacer (copiar,
+     reenviar, anular). Los usados ya están en la lista de cuentas de abajo, y
+     los caducados o anulados no sirven para nada; enseñarlos era ruido. */
+  const visibles = (lista ?? []).filter((x) => x.estado === 'pendiente');
 
   const acciones = (inv: Invitacion) => (
     <>
@@ -246,36 +241,28 @@ export default function Invitaciones() {
 
       {fallo && <p className={css.errorCampo}>{fallo}</p>}
 
-      {lista && lista.length > 0 && (
-        <ul className={i.lista}>
-          {visibles.map((inv) => (
-            <li key={inv.codigo} className={i.fila} data-estado={inv.estado}>
-              <span className={i.filaQuien}>
-                <strong>{inv.usadaPor?.nombre || inv.nombre || inv.usadaPor?.correo || inv.correo || 'Sin nombre'}</strong>
-                <span>
-                  {inv.que.map((q) => ETIQUETA[q]).join(' + ')} · creado el {fecha(inv.creado)}
-                  {inv.usadaPor ? ` · lo usó ${inv.usadaPor.correo} el ${fecha(inv.usadaPor.en)}` : ''}
+      {visibles.length > 0 && (
+        <>
+          <p className={i.rotuloLista}>Enlaces sin usar · {visibles.length}</p>
+          <ul className={i.lista}>
+            {visibles.map((inv) => (
+              <li key={inv.codigo} className={i.fila} data-estado={inv.estado}>
+                <span className={i.filaQuien}>
+                  <strong>{inv.nombre || inv.correo || inv.que.map((q) => ETIQUETA[q]).join(' + ')}</strong>
+                  <span>
+                    {inv.que.map((q) => ETIQUETA[q]).join(' + ')} · caduca el {fecha(inv.caduca)}
+                  </span>
                 </span>
-              </span>
-              <span className={i.estado} data-estado={inv.estado}>
-                {ESTADO[inv.estado]}
-              </span>
-              {inv.estado === 'pendiente' && (
                 <span className={i.filaAcciones}>
                   {acciones(inv)}
                   <button type="button" className={css.enlaceAccion} onClick={() => anular(inv)}>
                     Anular
                   </button>
                 </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-      {lista && lista.length > 8 && (
-        <button type="button" className={css.enlaceAccion} onClick={() => setVerTodas((v) => !v)}>
-          {verTodas ? 'Ver menos' : 'Ver todos, también los caducados y anulados'}
-        </button>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </section>
   );
