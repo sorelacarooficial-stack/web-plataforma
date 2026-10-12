@@ -326,7 +326,7 @@ export default function Correos() {
                 </button>
               </header>
               <iframe className={k.marco} title="Vista previa del correo" srcDoc={vista.html} sandbox="" />
-              {vista.id === 'bienvenida' && (
+              {vista.id === 'bienvenida' && datos.via !== 'resend' && (
                 <p className={k.previaNota}>
                   Este lo escribe tu Apps Script y cambia un poco según de dónde venga la persona: esto es la versión de
                   reserva.

@@ -1,5 +1,5 @@
 import { DIA_APERTURA, HORA_ESPANA } from './apertura';
-import { envoltorio, escapar } from './plantillas-correo';
+import { botonCorreo, envoltorio, escapar } from './plantillas-correo';
 
 /**
  * Los textos de los correos automáticos (ver lib/automatizaciones.ts).
@@ -20,11 +20,7 @@ export type Plantilla = { asunto: string; texto: string; html: string };
 const pila = (n: string | null | undefined) => (n || '').trim().split(/\s+/)[0] || '';
 const hola = (n: string | null | undefined) => (pila(n) ? `Hola ${pila(n)},` : 'Hola,');
 
-function boton(enlace: string, texto: string) {
-  return `<p style="margin:6px 0 30px">
-      <a href="${enlace}" style="display:inline-block;padding:14px 26px;background:#1c1a17;color:#faf8f5;text-decoration:none;font-size:12px;letter-spacing:.14em;text-transform:uppercase;border-radius:999px">${escapar(texto)}</a>
-    </p>`;
-}
+const boton = botonCorreo;
 
 const p = (t: string, extra = '') => `<p style="margin:0 0 18px${extra}">${t}</p>`;
 
@@ -66,7 +62,10 @@ export function correoAccesoFormacion(nombre: string | null, enlaceClave?: strin
       `${p('Ya tienes abierta la <strong>Formación Técnica Divine</strong> en mi plataforma: las clases en vídeo, los dossiers de cada día y la comunidad para preguntarme.')}
        ${pv ? p(escapar(pv.linea), ';font-size:14px;color:#6c645a') : ''}
        ${boton(pv ? pv.enlace : PLATAFORMA, pv ? pv.boton : 'Entrar a mis clases')}
-       ${p('Te recomiendo ir en orden, clase a clase, y practicar cada protocolo antes de pasar al siguiente. Cualquier duda, me la dejas en la comunidad o me respondes a este correo.')}`
+       ${p('Te recomiendo ir en orden, clase a clase, y practicar cada protocolo antes de pasar al siguiente. Cualquier duda, me la dejas en la comunidad o me respondes a este correo.')}`,
+      undefined,
+      '',
+      { titulo: 'Tu formación ya está abierta', etiqueta: 'Formación Técnica Divine', imagen: 'equipo', previa: 'Ya puedes entrar a tus clases.' }
     ),
   };
 }
@@ -90,7 +89,10 @@ export function correoAccesoComunidad(nombre: string | null, enlaceClave?: strin
       `${p('Ya formas parte de la <strong>Comunidad Divine</strong>. Dentro tienes el espacio para compartir tus casos, preguntarme y ver las clases en vivo.')}
        ${pv ? p(escapar(pv.linea), ';font-size:14px;color:#6c645a') : ''}
        ${boton(pv ? pv.enlace : PLATAFORMA, pv ? pv.boton : 'Entrar a la comunidad')}
-       ${p('Lo primero: preséntate en la comunidad. Cuéntanos quién eres y desde dónde trabajas.')}`
+       ${p('Lo primero: preséntate en la comunidad. Cuéntanos quién eres y desde dónde trabajas.')}`,
+      undefined,
+      '',
+      { titulo: 'Bienvenida a la Comunidad Divine', etiqueta: 'Comunidad Divine', imagen: 'consulta', previa: 'Ya formas parte de la comunidad.' }
     ),
   };
 }
@@ -114,7 +116,10 @@ export function correoInvitacion(o: { nombre: string | null; enlace: string; que
       escapar(hola(o.nombre)),
       `${p(`Te he preparado el acceso a <strong>${escapar(que)}</strong>. Con este enlace te creas la cuenta y entras directamente.`)}
        ${boton(o.enlace, 'Crear mi cuenta')}
-       ${p(`El enlace es solo para ti, sirve una vez y caduca el ${escapar(hasta)}.`, ';font-size:14px;color:#6c645a')}`
+       ${p(`El enlace es solo para ti, sirve una vez y caduca el ${escapar(hasta)}.`, ';font-size:14px;color:#6c645a')}`,
+      undefined,
+      '',
+      { titulo: 'Tu acceso está listo', etiqueta: 'Invitación personal', imagen: 'equipo', previa: 'Crea tu cuenta con este enlace.' }
     ),
   };
 }
@@ -135,7 +140,10 @@ export function correoRegistro(nombre: string | null, pide: 'comunidad' | 'curso
       escapar(hola(nombre)),
       `${p('Ya tienes tu cuenta creada en mi plataforma.')}
        ${p(escapar(frase))}
-       ${p('Si tienes cualquier duda, respóndeme a este correo.')}`
+       ${p('Si tienes cualquier duda, respóndeme a este correo.')}`,
+      undefined,
+      '',
+      { titulo: 'Tu cuenta está creada', etiqueta: 'Plataforma Técnica Divine', imagen: 'consulta', previa: 'Ya tienes tu cuenta en mi plataforma.' }
     ),
   };
 }
@@ -172,7 +180,10 @@ export function correoResumen(d: ResumenDatos): Plantilla {
       'Buenos días, Sorela.',
       `${d.sinAtender.length ? `<p style="margin:0 0 8px"><strong>Por atender en Clientes (${d.sinAtender.length})</strong></p>${lista(lineasA)}` : ''}
        ${d.esperando.length ? `<p style="margin:0 0 8px"><strong>Cuentas esperando acceso (${d.esperando.length})</strong></p>${lista(lineasB)}` : ''}
-       ${boton(PLATAFORMA, 'Abrir la plataforma')}`
+       ${boton(PLATAFORMA, 'Abrir la plataforma')}`,
+      undefined,
+      '',
+      { titulo: 'Tu resumen de hoy', etiqueta: 'Plataforma', previa: 'Lo que tienes pendiente.' }
     ),
   };
 }

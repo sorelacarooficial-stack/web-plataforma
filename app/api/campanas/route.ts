@@ -50,6 +50,7 @@ function revisar(c: Record<string, unknown>, parcial = false) {
     if (!datos.cuerpo) errores.cuerpo = 'Escribe el texto del correo.';
   }
   if (hay('etiqueta')) datos.etiqueta = texto(c.etiqueta, 60).trim();
+  if (hay('imagen')) datos.imagen = c.imagen === 'consulta' || c.imagen === 'ninguna' ? c.imagen : 'equipo';
   if (hay('audiencia')) {
     if (!(String(c.audiencia) in AUDIENCIAS)) errores.audiencia = 'Elige a quién va.';
     else datos.audiencia = c.audiencia as Audiencia;
@@ -100,7 +101,7 @@ export async function POST(peticion: Request) {
     const para = g.sesion.correo || correoDeSorela();
     if (!para) return NextResponse.json({ ok: false, motivo: 'sin-correo' }, { status: 400 });
     const m = plantillaCampana(
-      { etiqueta: String(datos.etiqueta ?? ''), asunto: String(datos.asunto), cuerpo: String(datos.cuerpo), boton: (datos.boton as never) ?? null },
+      { etiqueta: String(datos.etiqueta ?? ''), asunto: String(datos.asunto), cuerpo: String(datos.cuerpo), boton: (datos.boton as never) ?? null, imagen: (datos.imagen as never) ?? 'equipo' },
       g.sesion.nombre,
       enlaceBaja(para)
     );

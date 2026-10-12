@@ -95,21 +95,34 @@ export async function POST(peticion: Request) {
       const ref = baseDeDatos().collection(COLECCIONES.contactos).doc(id);
       const previo = await ref.get();
 
-      await ref.set(
-        {
+      if (!previo.exists) {
+        await ref.set({
           ...datos,
           // La hora la pone el servidor de Google, no el navegador de quien
           // rellena: los relojes de los móviles vienen torcidos.
           actualizado: FieldValue.serverTimestamp(),
-          // Por dónde llegó se apunta la primera vez y no se machaca: si
-          // vuelve otro día desde Google, quien la trajo fue Instagram.
-          ...(previo.exists
-            ? {}
-            : { creado: FieldValue.serverTimestamp(), estado: 'Nuevo', ...procedenciaDe(cuerpo.llegada) }),
-          veces: FieldValue.increment(1),
-        },
-        { merge: true }
-      );
+          creado: FieldValue.serverTimestamp(),
+          estado: 'Nuevo',
+          ...procedenciaDe(cuerpo.llegada),
+          veces: 1,
+        });
+      } else {
+        /* Si ya estaba, NO se pisa lo que hay: el formulario es público y
+           cualquiera podría escribir el correo de otra persona para cambiarle
+           el nombre o el teléfono. Solo se rellenan los huecos vacíos, y el
+           envío entero queda guardado aparte, en su historial. */
+        const v = previo.data() ?? {};
+        const huecos = Object.fromEntries(
+          (['nombre', 'whatsapp', 'perfil', 'ciudad'] as const)
+            .filter((k) => datos[k] && !v[k])
+            .map((k) => [k, datos[k]])
+        );
+        await ref.set(
+          { ...huecos, actualizado: FieldValue.serverTimestamp(), veces: FieldValue.increment(1) },
+          { merge: true }
+        );
+        await ref.collection('envios').add({ ...datos, cuando: FieldValue.serverTimestamp() });
+      }
       enFirestore = true;
     } catch (e) {
       console.error('[captar] Firestore ha fallado:', e);

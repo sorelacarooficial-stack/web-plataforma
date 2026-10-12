@@ -1,4 +1,5 @@
-import { envoltorio, escapar } from './plantillas-correo';
+import { botonCorreo, envoltorio, escapar } from './plantillas-correo';
+import type { ImagenCorreo } from './marca-correo';
 
 /**
  * Los avisos y correos programados que escribe Sorela (ver lib/campanas.ts).
@@ -33,6 +34,8 @@ export type Campana = {
   asunto: string;
   cuerpo: string;
   boton: { texto: string; enlace: string } | null;
+  /** La foto de cabecera del correo. */
+  imagen?: ImagenCorreo;
   audiencia: Audiencia;
   /** Día de envío, `2026-10-30`, en hora de España. */
   fecha: string;
@@ -78,21 +81,20 @@ export function cuerpoTexto(cuerpo: string) {
 
 /** El correo entero de una campaña para una persona. */
 export function plantillaCampana(
-  c: Pick<Campana, 'etiqueta' | 'asunto' | 'cuerpo' | 'boton'>,
+  c: Pick<Campana, 'etiqueta' | 'asunto' | 'cuerpo' | 'boton' | 'imagen'>,
   nombre: string | null,
   baja: string
 ) {
   const hola = pila(nombre) ? `Hola ${pila(nombre)},` : 'Hola,';
   const cuerpo = conNombre(c.cuerpo, nombre);
   const asunto = conNombre(c.asunto, nombre);
-  const boton =
-    c.boton && c.boton.texto && /^https?:\/\//.test(c.boton.enlace)
-      ? `<p style="margin:6px 0 30px"><a href="${escapar(c.boton.enlace)}" style="display:inline-block;padding:14px 26px;background:#1c1a17;color:#faf8f5;text-decoration:none;font-size:12px;letter-spacing:.14em;text-transform:uppercase;border-radius:999px">${escapar(c.boton.texto)}</a></p>`
-      : '';
-  const etiqueta = c.etiqueta
-    ? `<p style="margin:0 0 10px;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8a6a32">${escapar(c.etiqueta)}</p>`
-    : '';
-  const html = envoltorio(escapar(hola), cuerpoHtml(cuerpo) + boton, baja, etiqueta);
+  const boton = c.boton && c.boton.texto && /^https?:\/\//.test(c.boton.enlace) ? botonCorreo(c.boton.enlace, c.boton.texto) : '';
+  const html = envoltorio(escapar(hola), cuerpoHtml(cuerpo) + boton, baja, '', {
+    titulo: asunto,
+    etiqueta: c.etiqueta || undefined,
+    imagen: c.imagen ?? 'equipo',
+    previa: cuerpoTexto(cuerpo).split('\n')[0].slice(0, 140),
+  });
   const texto = [
     c.etiqueta ? c.etiqueta.toUpperCase() : '',
     hola,

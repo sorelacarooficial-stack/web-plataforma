@@ -36,8 +36,34 @@ import { NextResponse, type NextRequest } from 'next/server';
  */
 const SUBDOMINIOS = ['alumnas', 'presentacion'] as const;
 
-export function middleware(peticion: NextRequest) {
+/**
+ * Protección contra peticiones falsificadas desde otra web (CSRF): una página
+ * ajena no puede hacer que el navegador de Sorela, con su sesión abierta,
+ * mande un «borrar cuenta» o «enviar aviso». Los navegadores ponen siempre la
+ * cabecera Origin en esas peticiones; si viene de fuera, se rechaza. Sin
+ * Origin (servidores: el «darse de baja» de Gmail, el cron) se deja pasar.
+ */
+const DOMINIO = 'sorelacarodivine.com';
+function mismoSitio(origen: string, anfitrion: string) {
+  try {
+    const h = new URL(origen).hostname.toLowerCase();
+    return h === anfitrion || h === DOMINIO || h.endsWith(`.${DOMINIO}`) || h === 'localhost';
+  } catch {
+    return false;
+  }
+}
+
+export function proxy(peticion: NextRequest) {
   const anfitrion = (peticion.headers.get('host') ?? '').toLowerCase().split(':')[0];
+
+  if (peticion.nextUrl.pathname.startsWith('/api/')) {
+    const origen = peticion.headers.get('origin');
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(peticion.method) && origen && !mismoSitio(origen, anfitrion)) {
+      return NextResponse.json({ ok: false, motivo: 'origen' }, { status: 403 });
+    }
+    return NextResponse.next();
+  }
+
   const cual = SUBDOMINIOS.find((s) => anfitrion.startsWith(`${s}.`));
 
   if (!cual) return NextResponse.next();
@@ -63,5 +89,5 @@ export function middleware(peticion: NextRequest) {
  * imagen por aquí es trabajo por cada archivo de cada carga de cada página.
  */
 export const config = {
-  matcher: ['/((?!api|_next|.*\\.).*)'],
+  matcher: ['/api/:path*', '/((?!api|_next|.*\\.).*)'],
 };

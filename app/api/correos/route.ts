@@ -11,7 +11,7 @@ import {
   viaDeEnvio,
 } from '@/lib/correos';
 import { datosResumen, listaDeEspera, tareasDelDia } from '@/lib/automatizar';
-import { correoBienvenida } from '@/lib/plantillas-correo';
+import { correoBienvenidaPorOrigen } from '@/lib/plantillas-bienvenida';
 import {
   correoAccesoComunidad,
   correoAccesoFormacion,
@@ -50,10 +50,8 @@ const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
 async function muestra(id: IdAutomatizacion): Promise<Plantilla | null> {
   const ejemplo = 'tu-correo@ejemplo.com';
   switch (id) {
-    case 'bienvenida': {
-      const b = correoBienvenida({ nombre: 'María López', correo: ejemplo });
-      return { asunto: b.asunto, texto: b.texto, html: b.html };
-    }
+    case 'bienvenida':
+      return correoBienvenidaPorOrigen('María López', 'lista-comunidad');
     case 'acceso-formacion':
       return correoAccesoFormacion('María López');
     case 'acceso-comunidad':

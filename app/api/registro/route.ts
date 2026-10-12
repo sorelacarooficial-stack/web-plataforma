@@ -300,9 +300,9 @@ export async function POST(peticion: Request) {
 
     await ficha.set(
       {
-        nombre,
-        correo,
-        origen: invitacion ? 'invitacion' : QUIERE[quiere].origen,
+        /* Nombre y origen solo si la ficha es nueva: el registro es público y
+           no puede reescribir la ficha de otra persona. */
+        ...(yaEstaba ? {} : { nombre, correo, origen: invitacion ? 'invitacion' : QUIERE[quiere].origen }),
         /* Que se ha creado la cuenta ella misma. Lo usa la lista para
            distinguirla de quien solo ha dejado su contacto: una ya está
            dentro esperando, la otra todavía no ha dado ese paso. */

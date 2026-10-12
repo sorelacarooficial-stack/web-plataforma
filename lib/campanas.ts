@@ -41,6 +41,7 @@ export function aCampana(id: string, v: FirebaseFirestore.DocumentData): Campana
     asunto: String(v.asunto ?? ''),
     cuerpo: String(v.cuerpo ?? ''),
     boton: v.boton && v.boton.texto ? { texto: String(v.boton.texto), enlace: String(v.boton.enlace ?? '') } : null,
+    imagen: v.imagen === 'consulta' || v.imagen === 'ninguna' ? v.imagen : 'equipo',
     audiencia: (v.audiencia in AUDIENCIAS ? v.audiencia : 'espera') as Audiencia,
     fecha: String(v.fecha ?? ''),
     estado: (['borrador', 'programada', 'enviada', 'pausada', 'caducada'].includes(v.estado) ? v.estado : 'borrador') as EstadoCampana,

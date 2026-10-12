@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AUDIENCIAS, plantillaCampana, type Audiencia, type Campana, type EstadoCampana } from '@/lib/plantillas-campana';
+import { IMAGENES_CORREO, type ImagenCorreo } from '@/lib/marca-correo';
 import k from './programados.module.css';
 
 /**
@@ -19,6 +20,7 @@ type Borrador = {
   cuerpo: string;
   botonTexto: string;
   botonEnlace: string;
+  imagen: ImagenCorreo;
   audiencia: Audiencia;
   fecha: string;
   cuando: 'borrador' | 'programada';
@@ -45,6 +47,7 @@ const vacio = (hoy: string): Borrador => ({
   cuerpo: '',
   botonTexto: '',
   botonEnlace: '',
+  imagen: 'equipo',
   audiencia: 'espera',
   fecha: hoy,
   cuando: 'programada',
@@ -57,6 +60,7 @@ const deCampana = (c: Campana): Borrador => ({
   cuerpo: c.cuerpo,
   botonTexto: c.boton?.texto ?? '',
   botonEnlace: c.boton?.enlace ?? '',
+  imagen: c.imagen ?? 'equipo',
   audiencia: c.audiencia,
   fecha: c.fecha,
   cuando: c.estado === 'borrador' ? 'borrador' : 'programada',
@@ -67,6 +71,7 @@ const aCuerpo = (b: Borrador) => ({
   asunto: b.asunto,
   cuerpo: b.cuerpo,
   boton: b.botonTexto && b.botonEnlace ? { texto: b.botonTexto, enlace: b.botonEnlace } : null,
+  imagen: b.imagen,
   audiencia: b.audiencia,
   fecha: b.fecha,
   estado: b.cuando,
@@ -209,6 +214,7 @@ export default function Programados({ alCambiar }: { alCambiar?: () => void }) {
         asunto: editando.asunto || '(sin asunto)',
         cuerpo: editando.cuerpo || 'Aquí va tu texto.',
         boton: editando.botonTexto ? { texto: editando.botonTexto, enlace: editando.botonEnlace || 'https://' } : null,
+        imagen: editando.imagen,
       },
       'María',
       '#'
@@ -393,6 +399,14 @@ export default function Programados({ alCambiar }: { alCambiar?: () => void }) {
                     </label>
                   </div>
                   {errores.boton && <em className={k.error}>{errores.boton}</em>}
+                  <label className={k.campo}>
+                    <span>Foto de cabecera</span>
+                    <select value={editando.imagen} onChange={(e) => campo('imagen', e.target.value)}>
+                      {(Object.keys(IMAGENES_CORREO) as ImagenCorreo[]).map((i) => (
+                        <option key={i} value={i}>{IMAGENES_CORREO[i]}</option>
+                      ))}
+                    </select>
+                  </label>
                   <label className={k.campo}>
                     <span>A quién</span>
                     <select value={editando.audiencia} onChange={(e) => campo('audiencia', e.target.value)}>

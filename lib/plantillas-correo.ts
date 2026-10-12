@@ -1,5 +1,6 @@
 import { APERTURA_POR_PAISES, DIA_APERTURA, HORA_ESPANA } from './apertura';
 import type { Contacto } from './captacion';
+import { MARCA, type ImagenCorreo } from './marca-correo';
 
 /**
  * Los dos correos automáticos. Están aquí y no dentro de la ruta para que se
@@ -109,26 +110,74 @@ export const escapar = (s: string) =>
  * clientes de correo no entienden hojas de estilo ni maquetación moderna: lo
  * que aquí parece antiguo es lo único que se ve igual en Gmail y en Outlook.
  */
-export function envoltorio(saludo: string, cuerpo: string, baja?: string, antes = '') {
+/** El botón de los correos: el mismo en todos. */
+export function botonCorreo(enlace: string, texto: string) {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 28px"><tr><td style="border-radius:999px;background:#17140f">
+    <a href="${escapar(enlace)}" style="display:inline-block;padding:16px 30px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#f3e3c3;text-decoration:none;border-radius:999px">${escapar(texto)} &rarr;</a>
+  </td></tr></table>`;
+}
+
+export type Marco = {
+  /** El titular grande del correo. */
+  titulo?: string;
+  /** La línea pequeña dorada de encima del titular. */
+  etiqueta?: string;
+  /** La foto de cabecera; 'ninguna' para no poner. Por defecto, ninguna. */
+  imagen?: ImagenCorreo;
+  /** Lo que se lee en la bandeja de entrada junto al asunto. */
+  previa?: string;
+};
+
+/**
+ * El marco de TODOS los correos: cabecera oscura con el logotipo, foto,
+ * titular elegante, el texto, la firma y un pie con la web y las redes.
+ *
+ * Tablas y estilos escritos en cada etiqueta porque los programas de correo
+ * no entienden hojas de estilo ni maquetación moderna: lo que aquí parece
+ * antiguo es lo único que se ve igual en Gmail, Apple Mail y Outlook. Ancho
+ * de 600 px, que es el estándar, y en el móvil se ajusta solo.
+ */
+export function envoltorio(saludo: string, cuerpo: string, baja?: string, antes = '', marco: Marco = {}) {
+  const foto = marco.imagen && marco.imagen !== 'ninguna' ? MARCA.imagenes[marco.imagen] : null;
+  const serif = "'Cormorant Garamond',Georgia,'Times New Roman',serif";
+  const sans = "'Helvetica Neue',Helvetica,Arial,sans-serif";
   return `<!doctype html>
-<html lang="es"><body style="margin:0;padding:0;background:#f2eee9">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2eee9;padding:32px 16px">
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  @media (max-width:620px){ .caja{padding:30px 24px !important} .titular{font-size:30px !important} .pie{padding:26px 24px !important} }
+  a{color:#8a6a32}
+</style></head>
+<body style="margin:0;padding:0;background:#ece5d9;-webkit-text-size-adjust:100%">
+${marco.previa ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${escapar(marco.previa)}&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>` : ''}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ece5d9;padding:28px 12px">
   <tr><td align="center">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#faf8f5;border-top:3px solid #8a6a32">
-      <tr><td style="padding:38px 36px;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.65;color:#3a352e">
-        ${antes}<p style="margin:0 0 22px;font-size:22px;color:#1c1a17">${saludo}</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;border-radius:22px;overflow:hidden;background:#fffdf9;box-shadow:0 20px 50px -30px rgba(23,20,15,.45)">
+      <tr><td align="center" style="background:#17140f;padding:26px 24px">
+        <a href="${WEB}" style="text-decoration:none"><img src="${MARCA.logoClaro}" width="140" alt="Sorela Caro · Técnica Divine" style="display:block;width:140px;height:auto;border:0"></a>
+      </td></tr>
+      ${foto ? `<tr><td style="padding:0;line-height:0"><img src="${foto}" width="600" alt="" style="display:block;width:100%;max-width:600px;height:auto;border:0"></td></tr>` : ''}
+      <tr><td class="caja" style="padding:42px 46px 34px;font-family:${sans};font-size:16px;line-height:1.72;color:#3a352e">
+        ${marco.etiqueta ? `<p style="margin:0 0 10px;font-family:${sans};font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#8a6a32">${escapar(marco.etiqueta)}</p>` : ''}
+        ${marco.titulo ? `<h1 class="titular" style="margin:0 0 18px;font-family:${serif};font-size:36px;font-weight:600;line-height:1.12;color:#17140f">${escapar(marco.titulo)}</h1>
+        <div style="width:46px;height:2px;margin:0 0 26px;background:#d9b47c;line-height:2px;font-size:0">&nbsp;</div>` : ''}
+        ${antes}<p style="margin:0 0 18px;font-family:${serif};font-size:${marco.titulo ? '21px' : '24px'};font-weight:600;color:#17140f">${saludo}</p>
         ${cuerpo}
-        <p style="margin:34px 0 0;padding-top:20px;border-top:1px solid #e3ddd4;font-size:13px;color:#6c645a">
-          Sorela Caro · Creadora de la Técnica Divine<br>
-          <a href="${WEB}" style="color:#8a6a32;text-decoration:none">sorelacarodivine.com</a>
-        </p>${
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:30px"><tr>
+          <td style="padding-right:14px;vertical-align:middle"><div style="width:44px;height:44px;border-radius:50%;background:#17140f;text-align:center;line-height:44px;font-family:${serif};font-size:20px;color:#f3e3c3">S</div></td>
+          <td style="vertical-align:middle;font-family:${sans};font-size:13px;line-height:1.45;color:#6c645a">
+            <span style="font-family:${serif};font-size:19px;font-style:italic;color:#17140f">Sorela Caro</span><br>Creadora de la Técnica Divine
+          </td>
+        </tr></table>
+      </td></tr>
+      <tr><td class="pie" align="center" style="background:#17140f;padding:28px 46px;font-family:${sans};font-size:12px;line-height:1.6;color:rgba(247,242,234,.6)">
+        <a href="${WEB}" style="color:#d9b47c;text-decoration:none;font-weight:600">sorelacarodivine.com</a>
+        &nbsp;·&nbsp; <a href="${MARCA.instagram}" style="color:#d9b47c;text-decoration:none">Instagram</a>
+        &nbsp;·&nbsp; <a href="${MARCA.whatsapp}" style="color:#d9b47c;text-decoration:none">WhatsApp</a>
+        ${
           baja
-            ? `
-        <p style="margin:18px 0 0;font-size:11.5px;line-height:1.5;color:#958b7e">
-          Te escribo porque dejaste tus datos en mi web o tienes cuenta en mi plataforma. Si no quieres recibir más correos así,
-          <a href="${baja}" style="color:#958b7e">date de baja aquí</a>.
-        </p>`
-            : ''
+            ? `<p style="margin:16px 0 0;font-size:11px;color:rgba(247,242,234,.45)">Te escribo porque dejaste tus datos en mi web o tienes cuenta en mi plataforma.<br><a href="${baja}" style="color:rgba(247,242,234,.6)">Darme de baja de estos correos</a></p>`
+            : '<p style="margin:16px 0 0;font-size:11px;color:rgba(247,242,234,.45)">Técnica Divine · Sorela Caro</p>'
         }
       </td></tr>
     </table>

@@ -1,6 +1,6 @@
 import { APERTURA_POR_PAISES, DIA_APERTURA, HORA_ESPANA } from './apertura';
 import { comoLlego, ETIQUETA_TIPO, tipoDeOrigen, type Tipo } from './origenes';
-import { envoltorio, escapar } from './plantillas-correo';
+import { botonCorreo, envoltorio, escapar } from './plantillas-correo';
 
 /**
  * El correo que recibe quien deja sus datos en la web, y el aviso a Sorela.
@@ -78,6 +78,13 @@ const TEXTOS: Record<Tipo, { asunto: string; saludo: string; parrafos: (string |
   },
 };
 
+const TITULARES: Record<Tipo, string> = {
+  clienta: 'La Técnica Divine',
+  alumna: 'La formación en Técnica Divine',
+  comunidad: 'La Comunidad Divine',
+  otro: 'Gracias por escribirme',
+};
+
 export function correoBienvenidaPorOrigen(nombre: string | null, origen: string | null) {
   const tipo = tipoDeOrigen(origen);
   const t = TEXTOS[tipo];
@@ -99,7 +106,10 @@ export function correoBienvenidaPorOrigen(nombre: string | null, origen: string 
   const html = envoltorio(
     escapar(n ? `Hola ${n},` : 'Hola,'),
     `${parrafos.map((p) => `<p style="margin:0 0 18px">${escapar(p)}</p>`).join('\n')}
-     <p style="margin:6px 0 10px"><a href="${WHATSAPP}" style="display:inline-block;padding:13px 24px;background:#1c1a17;color:#faf8f5;text-decoration:none;font-size:12px;letter-spacing:.14em;text-transform:uppercase;border-radius:999px">Escríbeme por WhatsApp</a></p>`
+     ${botonCorreo(WHATSAPP, 'Escríbeme por WhatsApp')}`,
+    undefined,
+    '',
+    { titulo: TITULARES[tipo], etiqueta: 'Técnica Divine', imagen: tipo === 'clienta' ? 'consulta' : 'equipo', previa: t.saludo }
   );
   return { asunto: `${t.asunto}${n ? `, ${n}` : ''}`, texto, html };
 }
@@ -159,9 +169,12 @@ export function correoAcuerdo(nombre: string, referencia: string, enlaceDossier:
        <span style="display:block;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#6e5327">Tu referencia</span>
        <strong style="font-size:21px;letter-spacing:.06em">${escapar(referencia)}</strong>
      </p>
-     <p style="margin:6px 0 14px"><a href="${escapar(enlaceDossier)}" style="display:inline-block;padding:14px 26px;background:#1c1a17;color:#faf8f5;text-decoration:none;font-size:12px;letter-spacing:.14em;text-transform:uppercase;border-radius:999px">Abrir mi dossier</a></p>
+     ${botonCorreo(enlaceDossier, 'Abrir mi dossier')}
      <p style="margin:0 0 18px;font-size:14px;color:#6c645a">${escapar(aviso)}</p>
-     <p style="margin:0 0 18px">Nos vemos en la formación.</p>`
+     <p style="margin:0 0 18px">Nos vemos en la formación.</p>`,
+    undefined,
+    '',
+    { titulo: 'Tu dossier de la formación', etiqueta: 'Acuerdo aprobado', previa: 'Tu dossier, adjunto y confidencial.' }
   );
   return { asunto: `Tu acuerdo firmado y tu dossier${n ? `, ${n}` : ''}`, texto, html };
 }
@@ -189,7 +202,10 @@ export function correoAcuerdoRecibido(nombre: string, referencia: string) {
        <span style="display:block;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#6e5327">Tu referencia</span>
        <strong style="font-size:21px;letter-spacing:.06em">${escapar(referencia)}</strong>
      </p>
-     <p style="margin:0 0 18px">Te adjunto el acuerdo en PDF para que lo guardes. Lo reviso yo y, en cuanto lo apruebe, te llega por aquí <strong>tu dossier de la formación</strong>.</p>`
+     <p style="margin:0 0 18px">Te adjunto el acuerdo en PDF para que lo guardes. Lo reviso yo y, en cuanto lo apruebe, te llega por aquí <strong>tu dossier de la formación</strong>.</p>`,
+    undefined,
+    '',
+    { titulo: 'Acuerdo recibido', etiqueta: 'Formación Técnica Divine', previa: 'Lo reviso y te envío tu dossier.' }
   );
   return { asunto: `He recibido tu acuerdo${n ? `, ${n}` : ''}`, texto, html };
 }
