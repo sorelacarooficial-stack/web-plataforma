@@ -1,3 +1,5 @@
+import { FECHA_APERTURA } from './apertura';
+
 /**
  * El contenido de la presentación profesional.
  *
@@ -309,7 +311,8 @@ export const SERVICIOS: { nombre: string; texto: string }[] = [
   {
     nombre: 'Comunidad Divine',
     texto:
-      'Acompañamiento ilimitado, masterclasses, tutorías y un mapa público de terapeutas certificadas que recibe y deriva clientas.',
+      // Sin lo que incluye: se presenta en la masterclass de la apertura.
+      `El espacio para las terapeutas que terminan la formación. Se presenta el ${FECHA_APERTURA} en una masterclass en directo.`,
   },
 ];
 

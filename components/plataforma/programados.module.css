@@ -237,7 +237,8 @@
 }
 
 .chip[data-estado='caducada'],
-.chip[data-estado='pausada'] {
+.chip[data-estado='pausada'],
+.chip[data-estado='falta'] {
   background: rgba(196, 92, 60, 0.1);
   color: #a24a2e;
 }

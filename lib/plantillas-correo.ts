@@ -42,10 +42,10 @@ export function correoBienvenida(c: Pick<Contacto, 'nombre' | 'correo'>) {
     '',
     'Gracias por dejarme tus datos. Te escribo yo en cuanto pueda.',
     '',
-    `${cuando}, abro la Membresía Divine: una clase en vivo al mes con lo nuevo del método, tus casos mirados uno a uno y un canal privado donde preguntarme.`,
+    `${cuando}, abro la Comunidad Divine con una masterclass en directo por Zoom. Lo que hay dentro lo cuento ese día.`,
     `Las horas en cada país: ${APERTURA_POR_PAISES}.`,
     '',
-    'Aquí puedes verlo y entrar en la lista de espera:',
+    'Apúntate a la lista de espera y te mando el enlace:',
     comunidad,
     '',
     'Si te queda alguna duda, respóndeme a este correo. Lo leo yo.',
@@ -62,7 +62,7 @@ export function correoBienvenida(c: Pick<Contacto, 'nombre' | 'correo'>) {
     `Hola ${escapar(n)},`,
     `
     <p style="margin:0 0 18px">Gracias por dejarme tus datos. Te escribo yo en cuanto pueda.</p>
-    <p style="margin:0 0 18px">${escapar(cuando)}, abro la <strong>Membresía Divine</strong>: una clase en vivo al mes con lo nuevo del método, tus casos mirados uno a uno y un canal privado donde preguntarme.</p>
+    <p style="margin:0 0 18px">${escapar(cuando)}, abro la <strong>Comunidad Divine</strong> con una masterclass en directo por Zoom. Lo que hay dentro lo cuento ese día.</p>
     <p style="margin:0 0 26px;font-size:14px;color:#6c645a">${escapar(APERTURA_POR_PAISES)}</p>
     <p style="margin:0 0 30px">
       <a href="${comunidad}" style="display:inline-block;padding:14px 26px;background:#1c1a17;color:#faf8f5;text-decoration:none;font-size:12px;letter-spacing:.14em;text-transform:uppercase;border-radius:999px">
@@ -73,7 +73,7 @@ export function correoBienvenida(c: Pick<Contacto, 'nombre' | 'correo'>) {
   `
   );
 
-  return { asunto: `La Membresía Divine abre el ${FECHA_CORTA}, ${n}`, texto, html };
+  return { asunto: `La Comunidad Divine abre el ${FECHA_CORTA}, ${n}`, texto, html };
 }
 
 /** El aviso interno, para que Sorela pueda escribir el mismo día. */

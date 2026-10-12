@@ -482,9 +482,9 @@ function cierreMembresia(quien, apertura) {
   if (quien === 'comunidad') {
     return (
       Cuando +
-      ' abre la Membresía Divine' +
+      ' abro la Comunidad Divine' +
       (fuera ? ' (' + fuera + ')' : '') +
-      ': una clase en vivo al mes con lo nuevo del método, tus casos mirados uno a uno, canal privado y tu ficha en el mapa de terapeutas. Apúntate a la lista de espera y te aviso en cuanto abra.'
+      ' con una masterclass en directo por Zoom. Lo que hay dentro te lo cuento ese día. Estás en la lista: ese mismo día te mando el enlace para entrar.'
     );
   }
 
@@ -492,7 +492,7 @@ function cierreMembresia(quien, apertura) {
     return (
       'Y por si te sirve para decidirte: la formación no termina en el certificado. ' +
       Cuando +
-      ' abro la Membresía Divine, que es donde sigo enseñando después del curso: una clase en vivo al mes, tus casos mirados uno a uno y un canal privado donde preguntarme. Apúntate a la lista de espera y te aviso en cuanto abra.'
+      ' abro la Comunidad Divine, que es donde sigo enseñando después del curso. La presento ese día en una masterclass en directo: apúntate a la lista de espera y te mando el enlace.'
     );
   }
 

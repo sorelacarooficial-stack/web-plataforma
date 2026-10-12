@@ -45,6 +45,9 @@ export type Campana = {
   resultado: { enviados: number; fallidos: number; omitidos: number; cuando: string | null } | null;
 };
 
+/** Un botón con texto y sin enlace es un correo a medias (el de Zoom antes de tenerlo): no sale. */
+export const faltaEnlace = (c: Pick<Campana, 'boton'>) => !!c.boton && !/^https?:\/\/\S+$/.test(c.boton.enlace);
+
 const pila = (n: string | null | undefined) => (n || '').trim().split(/\s+/)[0] || '';
 
 /** El texto de Sorela, con el nombre puesto. */

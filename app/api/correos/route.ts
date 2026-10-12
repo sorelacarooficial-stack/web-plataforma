@@ -69,9 +69,9 @@ async function muestra(id: IdAutomatizacion): Promise<Plantilla | null> {
       // Lo escribe el Apps Script con el PDF del acuerdo: aquí no hay vista previa.
       return null;
     case 'resumen-sorela': {
-      const d = await datosResumen().catch(() => ({ sinAtender: [], esperando: [] }));
+      const d = await datosResumen().catch(() => ({ sinAtender: [], esperando: [], sinEnlace: [] }));
       return correoResumen(
-        d.sinAtender.length + d.esperando.length
+        d.sinAtender.length + d.esperando.length + (d.sinEnlace?.length ?? 0)
           ? d
           : { sinAtender: [{ nombre: 'María López', dias: 3, como: 'Lista de espera de la comunidad (desde Instagram)' }], esperando: [] }
       );

@@ -6,7 +6,7 @@ import { baseDeDatos, COLECCIONES, hayFirebase } from './firebase-servidor';
 import { diaDe } from './metricas';
 import { enlaceBaja, estaDeBaja, mandarCorreo } from './correos';
 import { listaDeEspera } from './automatizar';
-import { AUDIENCIAS, plantillaCampana, type Audiencia, type Campana, type EstadoCampana } from './plantillas-campana';
+import { AUDIENCIAS, faltaEnlace, plantillaCampana, type Audiencia, type Campana, type EstadoCampana } from './plantillas-campana';
 import { serieLanzamiento } from './serie-lanzamiento';
 
 /**
@@ -126,7 +126,7 @@ export async function cuantos(): Promise<Record<Audiencia, number>> {
 
 /* ------------------------------------------------------------ envío */
 
-export type InformeCampana = { id: string; enviados: number; fallidos: number; omitidos: number };
+export type InformeCampana = { id: string; enviados: number; fallidos: number; omitidos: number; motivo?: 'falta-enlace' };
 
 /** Manda una campaña a su audiencia. Se puede repetir: solo escribe a quien le falte. */
 export async function enviarCampana(id: string): Promise<InformeCampana> {
@@ -135,6 +135,8 @@ export async function enviarCampana(id: string): Promise<InformeCampana> {
   const r: InformeCampana = { id, enviados: 0, fallidos: 0, omitidos: 0 };
   if (!d.exists) return r;
   const c = aCampana(id, d.data() ?? {});
+  // No sale nada con un botón vacío: se queda programada hasta que tenga enlace.
+  if (faltaEnlace(c)) return { ...r, motivo: 'falta-enlace' };
 
   for (const p of await destinatarios(c.audiencia)) {
     const baja = enlaceBaja(p.correo);

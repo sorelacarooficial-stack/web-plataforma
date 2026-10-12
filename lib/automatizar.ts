@@ -155,10 +155,20 @@ export type InformeDia = {
 /** Datos del resumen de Sorela: lo que está esperando que haga algo. */
 export async function datosResumen(): Promise<ResumenDatos> {
   const db = baseDeDatos();
-  const [contactos, usuarios] = await Promise.all([
+  const [contactos, usuarios, programadas] = await Promise.all([
     db.collection(COLECCIONES.contactos).get(),
     db.collection(COLECCIONES.usuarios).where('altaPor', '==', 'registro').get(),
+    db.collection('campanas').where('estado', '==', 'programada').get(),
   ]);
+  // Los que salen en los próximos 7 días con el botón sin enlace (el de Zoom).
+  const hoy = diaDe(new Date());
+  const tope = diaDe(new Date(Date.now() + 7 * DIA));
+  const sinEnlace = programadas.docs
+    .map((d) => d.data())
+    .filter((v) => v.boton?.texto && !/^https?:\/\/\S+$/.test(String(v.boton.enlace ?? '')))
+    .map((v) => ({ asunto: String(v.asunto ?? ''), fecha: String(v.fecha ?? '') }))
+    .filter((v) => v.fecha >= hoy && v.fecha <= tope)
+    .sort((a, b) => a.fecha.localeCompare(b.fecha));
   const ahora = Date.now();
   const sinAtender = contactos.docs
     .map((d) => d.data())
@@ -177,7 +187,7 @@ export async function datosResumen(): Promise<ResumenDatos> {
       correo: String(v.correo || ''),
       pide: v.pide === 'comunidad' ? 'pide la Comunidad Divine' : v.pide === 'curso' ? 'pide la formación' : 'sin especificar',
     }));
-  return { sinAtender, esperando };
+  return { sinAtender, esperando, sinEnlace };
 }
 
 /**
@@ -197,7 +207,7 @@ export async function tareasDelDia(ahora = new Date()): Promise<InformeDia> {
   if (para && (await estaActiva('resumen-sorela'))) {
     const d = await datosResumen();
     const r = { id: 'resumen-sorela', enviados: 0, fallidos: 0, omitidos: 0 };
-    if (d.sinAtender.length + d.esperando.length > 0) {
+    if (d.sinAtender.length + d.esperando.length + (d.sinEnlace?.length ?? 0) > 0) {
       const x = await mandarCorreo({ para, ...correoResumen(d) }, { tipo: 'resumen-sorela', clave: `resumen-sorela:${c.hoy}` });
       if (x.estado === 'enviado') r.enviados++;
       else if (x.estado === 'fallido') r.fallidos++;

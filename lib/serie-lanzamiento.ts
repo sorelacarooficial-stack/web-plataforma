@@ -5,10 +5,19 @@ import type { Campana } from './plantillas-campana';
  * La serie del lanzamiento de la Comunidad Divine, ya escrita.
  *
  * Va a la lista de espera: un correo por semana hasta la última, y en la
- * última uno cada día, contando hacia atrás hasta la apertura. Cada uno trae
- * algo que sirva aunque nunca entren en la comunidad —postura, cabina,
- * clientas, redes, cómo hablar de su trabajo—, porque un correo que solo dice
- * «queda poco» se deja de abrir al tercero.
+ * última uno cada día, contando hacia atrás hasta la masterclass en directo
+ * (por Zoom) en la que Sorela abre la comunidad. Cada uno trae algo que sirva
+ * aunque nunca entren —postura, cabina, clientas, redes, cómo hablar de su
+ * trabajo—, porque un correo que solo dice «queda poco» se deja de abrir al
+ * tercero.
+ *
+ * LO QUE HAY DENTRO NO SE CUENTA. Ni aquí ni en la web: se presenta ese día en
+ * la masterclass, y es lo que hace que vengan. Los correos dicen por qué existe
+ * la comunidad, nunca qué trae.
+ *
+ * El último lleva el botón de Zoom SIN enlace a propósito: no sale hasta que
+ * Sorela lo pegue en Programados (lib/campanas.ts no manda un correo con un
+ * botón vacío, y el resumen de la mañana se lo recuerda).
  *
  * Esto es solo el punto de partida: se copia a Firestore la primera vez que se
  * abre la pantalla Correos y desde ahí Sorela lo lee, lo cambia o lo pausa.
@@ -18,7 +27,6 @@ import type { Campana } from './plantillas-campana';
  */
 
 const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
-const COMUNIDAD = `${WEB}/comunidad`;
 
 type Semilla = Omit<Campana, 'estado' | 'resultado' | 'audiencia' | 'serie'>;
 
@@ -28,7 +36,9 @@ const SEMILLAS: Semilla[] = [
     fecha: '2026-10-16',
     etiqueta: 'Camino a la Comunidad Divine · 1',
     asunto: 'Tus manos son tu herramienta más cara, {nombre}',
-    cuerpo: `Te escribo cada semana hasta que abra la Comunidad Divine, y la última semana, un correo cada día. Ninguno va a ser para venderte nada: quiero que cada uno te deje algo que puedas usar mañana en cabina.
+    cuerpo: `Te escribo cada semana hasta el **${DIA_APERTURA}**, el día que abro la Comunidad Divine con una **masterclass en directo**, y la última semana, un correo cada día. Ninguno va a ser para venderte nada: quiero que cada uno te deje algo que puedas usar mañana en cabina.
+
+Apúntate ya la fecha: a las ${HORA_ESPANA} en España (${APERTURA_POR_PAISES.split(' · ').filter((t) => !t.includes('España')).join(', ')}).
 
 Empiezo por lo que más se descuida en nuestro oficio: **tu propio cuerpo**. Una terapeuta con las muñecas cargadas trabaja peor a las cinco de la tarde que a las diez de la mañana, y la clienta lo nota aunque no sepa decir qué.
 
@@ -40,8 +50,8 @@ Tres cosas que hago yo y que te recomiendo:
 
 Esta semana, fíjate solo en una cosa: dónde te duele al acabar el día. Eso te dice qué parte de tu postura está trabajando de más.
 
-Te escribo el viernes que viene. Un favor pequeño: añade **hola@sorelacarodivine.com** a tus contactos, así mis correos no se pierden en Promociones ni en spam.`,
-    boton: { texto: 'Qué es la Comunidad Divine', enlace: COMUNIDAD },
+Te escribo el viernes que viene. Un favor pequeño: añade **hola@sorelacarodivine.com** a tus contactos, así mis correos no se pierden en Promociones ni en spam (y el enlace de la masterclass te llega seguro).`,
+    boton: null,
   },
   {
     id: 'lanzamiento-02-volver',
@@ -67,21 +77,19 @@ El viernes que viene empieza la cuenta atrás.`,
     id: 'lanzamiento-03-semana',
     fecha: '2026-10-30',
     etiqueta: 'Faltan 7 días',
-    asunto: 'Falta una semana para la Comunidad Divine',
-    cuerpo: `Dentro de siete días, el **${DIA_APERTURA} a las ${HORA_ESPANA}** (hora de España), abro la Comunidad Divine.
+    asunto: 'Falta una semana: el 6 de noviembre, en directo',
+    cuerpo: `Dentro de siete días, el **${DIA_APERTURA} a las ${HORA_ESPANA}** (hora de España), hago una **masterclass en directo por Zoom** y abro la Comunidad Divine.
 
 Las horas en cada país: ${APERTURA_POR_PAISES}.
 
-Te cuento qué es, sin adornos:
+Lo que hay dentro no te lo voy a contar por correo. Quiero enseñártelo ese día, en directo y con calma.
 
-- **Una clase en vivo al mes** conmigo, con lo nuevo del método.
-- **Tus casos mirados uno a uno**: me traes una duda real de tu cabina y la trabajamos.
-- **Un espacio privado** donde preguntarme y compartir con otras terapeutas que trabajan como tú.
+Lo único que te adelanto es por qué existe: lo que más me piden después de una formación es no quedarse solas. Tener a quien preguntar el día que una clienta no responde como esperabas.
 
-La creé porque lo que más me piden después de una formación es no quedarse solas: alguien a quien preguntar el día que una clienta no responde como esperabas.
+Apúntatelo ya en el calendario. Si solo haces una cosa con este correo, que sea esa.
 
-Desde hoy y hasta el día de la apertura te escribo **cada mañana** con una idea concreta para tu trabajo. Siete correos cortos. Si alguno no te sirve, bórralo sin culpa; si alguno te sirve, me encantaría que me lo dijeras.`,
-    boton: { texto: 'Ver la Comunidad Divine', enlace: COMUNIDAD },
+Desde hoy y hasta el día 6 te escribo **cada mañana** con una idea concreta para tu trabajo. Siete correos cortos. Si alguno no te sirve, bórralo sin culpa; si alguno te sirve, me encantaría que me lo dijeras.`,
+    boton: null,
   },
   {
     id: 'lanzamiento-04-ritmo',
@@ -156,7 +164,7 @@ Ideas que puedes grabar esta misma semana sin enseñar la cara:
 
 Un truco: publica menos pero con constancia. Dos veces por semana durante tres meses vale más que todos los días durante dos semanas.
 
-Pasado mañana abrimos. Mañana te cuento lo que aprendí en Termatalia.`,
+Quedan tres días para la masterclass. Mañana te cuento lo que aprendí en Termatalia.`,
     boton: null,
   },
   {
@@ -172,42 +180,45 @@ Ese es el motivo por el que existe la Comunidad Divine. Aprender una técnica se
 
 Si quieres ver cómo fue, lo conté con fotos en el blog.
 
-Pasado mañana a las ${HORA_ESPANA} (hora de España) abro las puertas. Mañana te escribo con todo lo que necesitas tener listo.`,
+Pasado mañana a las ${HORA_ESPANA} (hora de España) nos vemos en la masterclass. Mañana te escribo con todo lo que necesitas tener listo.`,
     boton: { texto: 'Leer: Técnica Divine en Termatalia', enlace: `${WEB}/blog/tecnica-divine-termatalia-2026` },
   },
   {
     id: 'lanzamiento-09-manana',
     fecha: '2026-11-05',
     etiqueta: 'Falta 1 día',
-    asunto: 'Mañana a las {hora}: lo que necesitas tener listo',
-    cuerpo: `Mañana, **${DIA_APERTURA} a las ${HORA_ESPANA}** (hora de España), abre la Comunidad Divine.
+    asunto: 'Mañana a las {hora}: la masterclass',
+    cuerpo: `Mañana, **${DIA_APERTURA} a las ${HORA_ESPANA}** (hora de España), es la masterclass en directo. Ahí te cuento por fin qué es la Comunidad Divine.
 
 Las horas en cada país: ${APERTURA_POR_PAISES}.
 
 Para que no se te escape:
 
 - **Pon una alarma** cinco minutos antes, con la hora de tu país.
-- **Ten a mano este correo**: mañana te escribo con el enlace para entrar.
-- **Piensa en una duda real** de tu cabina. La primera clase en vivo será el mejor sitio para traerla.
+- **Busca un rato tranquilo**, mejor con libreta que con el móvil en la mano. No es para tenerla de fondo.
+- **Si nunca has usado Zoom**, descárgalo hoy en el móvil o el ordenador. Así mañana entras con un toque.
+
+Mañana a primera hora te mando el enlace para entrar.
 
 Gracias por haber estado en la lista estas semanas. Cada respuesta que me habéis mandado la he leído, y muchas me han ayudado a preparar lo que viene.
 
-Mañana nos vemos dentro.`,
+Mañana nos vemos en directo.`,
     boton: null,
   },
   {
     id: 'lanzamiento-10-hoy',
     fecha: '2026-11-06',
     etiqueta: 'Hoy',
-    asunto: 'Hoy abre la Comunidad Divine',
-    cuerpo: `Hoy es el día. A las **${HORA_ESPANA}** (hora de España) abro la Comunidad Divine.
+    asunto: 'Hoy a las {hora}, en directo',
+    cuerpo: `Hoy es el día. A las **${HORA_ESPANA}** (hora de España) empieza la masterclass en directo en la que abro la Comunidad Divine.
 
 Las horas en cada país: ${APERTURA_POR_PAISES}.
 
-Desde el botón de abajo tienes toda la información y cómo entrar. Si te surge cualquier duda, respóndeme a este correo: hoy estoy pendiente de todo.
+El botón de abajo te lleva directa a Zoom. Entra cinco minutos antes para que nada te pille con prisas. Si te surge cualquier duda, respóndeme a este correo: hoy estoy pendiente de todo.
 
-Gracias por esperar conmigo.`,
-    boton: { texto: 'Entrar a la Comunidad Divine', enlace: COMUNIDAD },
+Gracias por esperar conmigo. Nos vemos dentro.`,
+    // Sin enlace hasta que Sorela pegue el de Zoom: así no sale (ver arriba).
+    boton: { texto: 'Entrar a la masterclass', enlace: '' },
   },
 ];
 

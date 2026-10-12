@@ -7,6 +7,7 @@ import css from './Formularios.module.css';
 import InfoPrivacidad from '@/components/InfoPrivacidad';
 import { CAPA_INFORMACION } from '@/lib/privacidad';
 import { conLlegada } from '@/lib/llegada';
+import { FECHA_APERTURA } from '@/lib/apertura';
 
 type Estado = 'quieto' | 'enviando' | 'hecho' | 'fallo';
 type Errores = Partial<Record<keyof Contacto, string>>;
@@ -95,9 +96,11 @@ export default function ListaEspera() {
             hecho es guardar su sitio en una lista que todavía no ha abierto. */}
         <h2 className={css.exitoTitulo}>Gracias. Tu sitio está guardado.</h2>
         <p className={css.exitoTexto}>
-          {conCorreo
-            ? 'Te acabo de mandar un correo para confirmártelo. Te aviso yo en cuanto abra. Nada de correos cada semana.'
-            : 'Te aviso yo en cuanto abra. Nada de correos cada semana.'}
+          {/* Decía «nada de correos cada semana», y la cuenta atrás escribe cada
+              semana: prometer una cosa y hacer otra es la forma más rápida de
+              acabar en spam. */}
+          {conCorreo ? 'Te acabo de mandar un correo para confirmártelo. ' : ''}
+          {`Hasta el ${FECHA_APERTURA} te escribo con ideas para tu cabina, y ese día te mando el enlace de la masterclass.`}
         </p>
         <button
           type="button"

@@ -63,8 +63,9 @@ function revisar(c: Record<string, unknown>, parcial = false) {
     const b = (c.boton ?? null) as { texto?: unknown; enlace?: unknown } | null;
     const t = texto(b?.texto, 60).trim();
     const e = texto(b?.enlace, 400).trim();
-    if (t && !/^https?:\/\/\S+$/.test(e)) errores.boton = 'El enlace del botón tiene que empezar por https://';
-    datos.boton = t && e ? { texto: t, enlace: e } : null;
+    if (t && e && !/^https?:\/\/\S+$/.test(e)) errores.boton = 'El enlace del botón tiene que empezar por https://';
+    // Texto sin enlace se guarda (el de Zoom se pega más tarde), pero no sale hasta tenerlo.
+    datos.boton = t ? { texto: t, enlace: e } : null;
   }
   if (hay('estado')) {
     if (!['borrador', 'programada', 'pausada'].includes(String(c.estado))) errores.estado = 'Estado no válido.';
@@ -90,6 +91,7 @@ export async function POST(peticion: Request) {
     const id = String(c.id ?? '');
     if (!ID.test(id)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
     const r = await enviarCampana(id);
+    if (r.motivo) return NextResponse.json({ ok: false, ...r }, { status: 409 });
     return NextResponse.json({ ok: true, ...r });
   }
 

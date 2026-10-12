@@ -153,12 +153,18 @@ export function correoRegistro(nombre: string | null, pide: 'comunidad' | 'curso
 export type ResumenDatos = {
   sinAtender: { nombre: string; dias: number; como: string }[];
   esperando: { nombre: string; correo: string; pide: string }[];
+  /** Programados de los próximos días con el botón sin enlace: no saldrán. */
+  sinEnlace?: { asunto: string; fecha: string }[];
 };
 
 export function correoResumen(d: ResumenDatos): Plantilla {
-  const n = d.sinAtender.length + d.esperando.length;
+  const sinEnlace = d.sinEnlace ?? [];
+  const n = d.sinAtender.length + d.esperando.length + sinEnlace.length;
   const lineasA = d.sinAtender.map((c) => `· ${c.nombre} — ${c.dias === 0 ? 'hoy' : c.dias === 1 ? 'desde ayer' : `${c.dias} días esperando`} — ${c.como}`);
   const lineasB = d.esperando.map((c) => `· ${c.nombre} (${c.correo}) — ${c.pide}`);
+  const fechaCorta = (f: string) =>
+    new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${f}T12:00:00Z`));
+  const lineasC = sinEnlace.map((c) => `· «${c.asunto}» — sale el ${fechaCorta(c.fecha)}`);
   const lista = (xs: string[]) =>
     `<ul style="margin:0 0 22px;padding-left:18px;font-size:15px">${xs.map((x) => `<li style="margin:0 0 6px">${escapar(x.replace(/^· /, ''))}</li>`).join('')}</ul>`;
   return {
@@ -166,6 +172,9 @@ export function correoResumen(d: ResumenDatos): Plantilla {
     texto: [
       'Buenos días, Sorela.',
       '',
+      sinEnlace.length ? `Correos que NO saldrán porque al botón le falta el enlace (pégalo en Avisos y correos):` : false,
+      ...lineasC,
+      sinEnlace.length ? '' : false,
       d.sinAtender.length ? `Por atender en Clientes (${d.sinAtender.length}):` : false,
       ...lineasA,
       d.sinAtender.length ? '' : false,
@@ -178,7 +187,8 @@ export function correoResumen(d: ResumenDatos): Plantilla {
       .join('\n'),
     html: envoltorio(
       'Buenos días, Sorela.',
-      `${d.sinAtender.length ? `<p style="margin:0 0 8px"><strong>Por atender en Clientes (${d.sinAtender.length})</strong></p>${lista(lineasA)}` : ''}
+      `${sinEnlace.length ? `<p style="margin:0 0 8px;color:#a24a2e"><strong>No saldrán: al botón le falta el enlace</strong></p><p style="margin:0 0 8px;font-size:14px">Pégalo en Avisos y correos → Editar.</p>${lista(lineasC)}` : ''}
+       ${d.sinAtender.length ? `<p style="margin:0 0 8px"><strong>Por atender en Clientes (${d.sinAtender.length})</strong></p>${lista(lineasA)}` : ''}
        ${d.esperando.length ? `<p style="margin:0 0 8px"><strong>Cuentas esperando acceso (${d.esperando.length})</strong></p>${lista(lineasB)}` : ''}
        ${boton(PLATAFORMA, 'Abrir la plataforma')}`,
       undefined,

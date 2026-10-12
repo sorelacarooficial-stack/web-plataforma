@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Contador from '@/components/Contador';
 import ListaEspera from '@/components/ListaEspera';
-import { COMUNIDAD, OBJECIONES, PIEZAS_COMUNIDAD } from '@/lib/contenido';
+import { COMUNIDAD, OBJECIONES, PIEZAS_MASTERCLASS } from '@/lib/contenido';
+import { DIA_APERTURA } from '@/lib/apertura';
 import css from './comunidad.module.css';
 
 /**
@@ -18,8 +19,9 @@ import css from './comunidad.module.css';
  */
 export const metadata: Metadata = {
   title: { absolute: 'La Comunidad Divine para terapeutas ya certificadas' },
+  // Sin lo que incluye: se presenta en la masterclass de la apertura (lib/contenido.ts).
   description:
-    'Donde sigo enseñando cuando acaba el curso: una clase en vivo al mes, tus casos mirados uno a uno, canal privado y tu ficha en el mapa. Lista de espera abierta.',
+    'Donde sigo enseñando cuando acaba el curso. La presento en una masterclass en directo por Zoom: apúntate a la lista de espera y te mando el enlace.',
 };
 
 export default function Comunidad() {
@@ -36,12 +38,11 @@ export default function Comunidad() {
                 ella y quien lee es una terapeuta a la que conoce. */}
             <h1 className={`${css.titulo} degradado`}>Estoy preparando algo especial para ti.</h1>
             <p className="lede max-540" style={{ lineHeight: 1.62 }}>
-              El sitio donde sigo enseñando después del curso: una clase en vivo al mes con lo
-              nuevo del método, tus casos mirados uno a uno, un canal privado donde preguntarme y
-              tu ficha en el mapa.
+              El sitio donde sigo enseñando después del curso. Lo que hay dentro te lo cuento el{' '}
+              {DIA_APERTURA} en una masterclass en directo por Zoom.
             </p>
             <p className="texto max-540">
-              Apúntate a la lista de espera y te aviso en cuanto abra.
+              Apúntate a la lista de espera y te mando el enlace.
             </p>
             <Contador />
           </div>
@@ -55,10 +56,10 @@ export default function Comunidad() {
       <section className={`${css.piezasSeccion} panel-blanco`}>
         <div className="wrap">
           <p className="antetitulo" style={{ marginBottom: 'clamp(30px,4vw,52px)' }}>
-            Qué incluye cada mes
+            La masterclass de la apertura
           </p>
           <div className={css.piezas}>
-            {PIEZAS_COMUNIDAD.map((m) => (
+            {PIEZAS_MASTERCLASS.map((m) => (
               <article key={m.titulo} className={`tarjeta ${css.pieza}`}>
                 <span className={css.estado}>{m.estado}</span>
                 <h3 className={css.piezaTitulo}>{m.titulo}</h3>

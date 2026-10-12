@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AUDIENCIAS, plantillaCampana, type Audiencia, type Campana, type EstadoCampana } from '@/lib/plantillas-campana';
+import { AUDIENCIAS, faltaEnlace, plantillaCampana, type Audiencia, type Campana, type EstadoCampana } from '@/lib/plantillas-campana';
 import { IMAGENES_CORREO, type ImagenCorreo } from '@/lib/marca-correo';
 import k from './programados.module.css';
 
@@ -70,7 +70,8 @@ const aCuerpo = (b: Borrador) => ({
   etiqueta: b.etiqueta,
   asunto: b.asunto,
   cuerpo: b.cuerpo,
-  boton: b.botonTexto && b.botonEnlace ? { texto: b.botonTexto, enlace: b.botonEnlace } : null,
+  // Con texto y sin enlace se guarda igual: queda marcado «Falta el enlace» y no sale.
+  boton: b.botonTexto ? { texto: b.botonTexto, enlace: b.botonEnlace } : null,
   imagen: b.imagen,
   audiencia: b.audiencia,
   fecha: b.fecha,
@@ -152,7 +153,9 @@ export default function Programados({ alCambiar }: { alCambiar?: () => void }) {
       setAviso(
         j.ok
           ? `Enviado a ${j.enviados}.${j.fallidos ? ` ${j.fallidos} no salieron: míralos en el historial.` : ''}${j.omitidos ? ` ${j.omitidos} no hacía falta (ya lo tenían o se dieron de baja).` : ''}`
-          : 'No se ha podido enviar.'
+          : j.motivo === 'falta-enlace'
+            ? 'No ha salido: al botón le falta el enlace. Pulsa «Editar», pégalo y vuelve a enviarlo.'
+            : 'No se ha podido enviar.'
       );
       await cargar();
       alCambiar?.();
@@ -247,7 +250,13 @@ export default function Programados({ alCambiar }: { alCambiar?: () => void }) {
             {c.resultado && ` · enviado a ${c.resultado.enviados}${c.resultado.fallidos ? `, ${c.resultado.fallidos} fallaron` : ''}`}
           </span>
         </span>
-        <span className={k.chip} data-estado={c.estado}>{ESTADO[c.estado]}</span>
+        {!pasada && faltaEnlace(c) ? (
+          <span className={k.chip} data-estado="falta" title="No sale hasta que pegues el enlace del botón">
+            Falta el enlace
+          </span>
+        ) : (
+          <span className={k.chip} data-estado={c.estado}>{ESTADO[c.estado]}</span>
+        )}
         <span className={k.acciones}>
           {!pasada && (
             <button type="button" className={k.enlace} onClick={() => { setSoloLectura(false); setErrores({}); setEditando(deCampana(c)); }}>
@@ -399,6 +408,9 @@ export default function Programados({ alCambiar }: { alCambiar?: () => void }) {
                     </label>
                   </div>
                   {errores.boton && <em className={k.error}>{errores.boton}</em>}
+                  {!errores.boton && editando.botonTexto && !editando.botonEnlace.trim() && (
+                    <em className={k.error}>Sin enlace este correo no sale: se queda esperando hasta que lo pegues.</em>
+                  )}
                   <label className={k.campo}>
                     <span>Foto de cabecera</span>
                     <select value={editando.imagen} onChange={(e) => campo('imagen', e.target.value)}>

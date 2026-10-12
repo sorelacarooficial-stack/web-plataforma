@@ -272,7 +272,11 @@ export const FAQS_CURSO: Pregunta[] = [
 export const OBJECIONES: Pregunta[] = [
   {
     q: '¿Cuándo abre?',
-    a: `El ${DIA_APERTURA} a las ${HORA_ESPANA}, hora de España: ${APERTURA_POR_PAISES}. Quien esté en la lista lo sabe antes que nadie.`,
+    a: `El ${DIA_APERTURA}, con una masterclass en directo por Zoom: ${APERTURA_POR_PAISES}. El enlace llega por correo a quien esté en la lista.`,
+  },
+  {
+    q: '¿Qué incluye?',
+    a: 'Lo cuento ese día, en la masterclass. Prefiero enseñártelo en directo y con calma que resumirlo en una lista.',
   },
   {
     q: '¿Me compromete a algo apuntarme?',
@@ -321,6 +325,28 @@ export type PiezaComunidad = {
   color: string;
 };
 
+/** Lo que la web cuenta hasta la apertura: cuándo, dónde y que lo de dentro se cuenta ese día. */
+export const PIEZAS_MASTERCLASS: PiezaComunidad[] = [
+  {
+    titulo: `${FECHA_APERTURA}, ${HORA_ESPANA}`,
+    texto: `${APERTURA_POR_PAISES}.`,
+    estado: 'En directo',
+    color: 'var(--arcilla)',
+  },
+  {
+    titulo: 'Por Zoom',
+    texto: 'Desde el móvil o el ordenador. El enlace llega por correo a quien esté en la lista.',
+    estado: 'Online',
+    color: 'var(--salvia)',
+  },
+  {
+    titulo: 'Lo que hay dentro',
+    texto: 'Qué es la Comunidad Divine y cómo entrar. Hasta ese día no lo cuento en ningún otro sitio.',
+    estado: 'Solo ese día',
+    color: 'var(--oro)',
+  },
+];
+
 /**
  * Precio de la Comunidad Divine. En fase de fundadoras: quien entra ahora lo
  * conserva, y por eso el número aparece siempre acompañado de esa condición.
@@ -334,6 +360,14 @@ export const COMUNIDAD = {
   apertura: APERTURA_LARGA,
 } as const;
 
+/**
+ * Lo que va a tener la comunidad.
+ *
+ * NO SE ENSEÑA EN NINGÚN SITIO PÚBLICO hasta la masterclass del día de la
+ * apertura: es lo que Sorela presenta ese día y lo que hace que vengan. La web
+ * enseña `PIEZAS_MASTERCLASS` en su lugar. Esto se queda aquí para la página
+ * de después.
+ */
 export const PIEZAS_COMUNIDAD: PiezaComunidad[] = [
   {
     titulo: 'Una clase en vivo al mes',
