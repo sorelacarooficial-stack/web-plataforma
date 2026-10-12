@@ -4,7 +4,8 @@ import { baseDeDatos } from './firebase-servidor';
 import { enviar, hayCorreo } from './correo';
 import { pdfDelAcuerdo, type AcuerdoGuardado } from './acuerdo-pdf';
 import { leerFirmaSorela } from './firma-sorela';
-import { apuntarCorreo } from './correos';
+import { apuntarCorreo, hayResend, mandarCorreo } from './correos';
+import { correoAcuerdo } from './plantillas-bienvenida';
 
 /**
  * El correo que recibe quien acaba de firmar el acuerdo.
@@ -34,7 +35,7 @@ const ESPERA_MAX = 45_000;
 
 export type ResultadoCorreo = {
   enviado: boolean;
-  via: 'apps-script' | 'smtp' | 'ninguna';
+  via: 'apps-script' | 'smtp' | 'resend' | 'ninguna';
   fecha: string;
   detalle: string;
 };
@@ -182,6 +183,20 @@ export async function enviarAcuerdo(referencia: string): Promise<ResultadoCorreo
       dossier = null;
     }
 
+    /* Con Resend sale desde el dominio, con su diseño y los dos PDF adjuntos.
+       Queda apuntado en el historial por el propio envío. */
+    if (hayResend()) {
+      const adjuntos: { nombre: string; contenido: Buffer; tipo: string }[] = [
+        { nombre: nombreArchivo(a), contenido: Buffer.from(acuerdo), tipo: 'application/pdf' },
+      ];
+      if (dossier) adjuntos.push({ nombre: 'Dossier-Tecnica-Divine.pdf', contenido: dossier, tipo: 'application/pdf' });
+      const r = await mandarCorreo(
+        { para: a.correo, ...correoAcuerdo(`${a.nombre}`, a.referencia, enlaceDelDossier(a.referencia), true), adjuntos },
+        { tipo: 'acuerdo' }
+      );
+      resultado = { enviado: r.estado === 'enviado', via: 'resend', fecha, detalle: r.detalle ?? 'Enviado.' };
+      para = '';
+    } else {
     const apps = await porAppsScript(a, acuerdo, dossier);
     if (apps.ok) {
       resultado = { enviado: true, via: 'apps-script', fecha, detalle: apps.detalle };
@@ -194,6 +209,7 @@ export async function enviarAcuerdo(referencia: string): Promise<ResultadoCorreo
       }
     } else {
       resultado = { enviado: false, via: 'ninguna', fecha, detalle: apps.detalle };
+    }
     }
   } catch (error) {
     resultado = { enviado: false, via: 'ninguna', fecha, detalle: String(error) };

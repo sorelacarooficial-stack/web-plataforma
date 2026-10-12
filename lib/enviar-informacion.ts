@@ -2,6 +2,9 @@ import { APERTURA_POR_PAISES, DIA_APERTURA, HORA_ESPANA } from './apertura';
 import type { Contacto } from './captacion';
 import { enviar, hayCorreo } from './correo';
 import { correoAviso, correoBienvenida } from './plantillas-correo';
+import { correoAvisoContacto, correoBienvenidaPorOrigen } from './plantillas-bienvenida';
+import { correoDeSorela, hayResend, mandarCorreo } from './correos';
+import { diaDe } from './metricas';
 
 /**
  * Mandar la información de la Técnica Divine a una persona.
@@ -30,7 +33,7 @@ const ESPERA_MAX = 10_000;
  * Juntándolas, un correo que falla con Firestore caído daría el contacto por
  * perdido aunque su fila estuviera escrita en la hoja.
  */
-export type Envio = { correo: boolean; guardado: boolean };
+export type Envio = { correo: boolean; guardado: boolean; via?: 'resend' | 'apps-script' | 'smtp' };
 
 const NADA: Envio = { correo: false, guardado: false };
 
@@ -125,10 +128,30 @@ async function correoPorSmtp(datos: Contacto & { origen: string }): Promise<bool
 export async function mandarInformacion(datos: Contacto & { origen: string }): Promise<Envio> {
   if (!datos.correo) return NADA;
 
+  /* Con Resend todo sale desde el dominio y con el diseño de la web, y el
+     Apps Script no se llama: si se llamara, mandaría además su propio correo
+     desde Gmail y la persona recibiría dos. La copia en la hoja de Google deja
+     de hacerse; Firestore sigue siendo donde se guarda el contacto. */
+  if (hayResend()) {
+    const contactoId = datos.correo.replace(/\//g, '_');
+    const r = await mandarCorreo(
+      { para: datos.correo, ...correoBienvenidaPorOrigen(datos.nombre, datos.origen) },
+      // Una vez al día como mucho: quien escanea el QR dos veces no recibe dos.
+      { tipo: 'bienvenida', clave: `bienvenida:${contactoId.slice(0, 80)}:${diaDe()}`, contactoId }
+    );
+    const salio = r.estado !== 'fallido';
+    const sorela = correoDeSorela();
+    if (sorela) {
+      const a = correoAvisoContacto(datos, datos.origen, salio);
+      await mandarCorreo({ para: sorela, asunto: a.asunto, texto: a.texto, responderA: datos.correo }, { tipo: 'aviso-interno' });
+    }
+    return { correo: salio, guardado: false, via: 'resend' };
+  }
+
   const google = await llamarAppsScript(datos);
   // El SMTP solo entra si no hay Apps Script: si lo hay y ha fallado, mandar
   // por las dos vías acabaría con la misma persona recibiendo el correo dos
   // veces el día que el script conteste tarde pero sí haya enviado.
   const correo = google.correo || (!hayAppsScript() && (await correoPorSmtp(datos)));
-  return { correo, guardado: google.guardado };
+  return { correo, guardado: google.guardado, via: google.correo ? 'apps-script' : correo ? 'smtp' : undefined };
 }

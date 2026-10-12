@@ -70,6 +70,7 @@ export const ID_AUTOMATIZACIONES = AUTOMATIZACIONES.map((a) => a.id) as IdAutoma
 export const ETIQUETA_CORREO: Record<string, string> = {
   ...Object.fromEntries(AUTOMATIZACIONES.map((a) => [a.id, a.nombre])),
   campana: 'Aviso o programado',
+  'aviso-interno': 'Aviso para ti',
   prueba: 'Prueba',
   manual: 'A mano',
 };

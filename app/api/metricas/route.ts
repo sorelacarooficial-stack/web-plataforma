@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
 import { COLECCION_DIAS, COLECCION_VIDEOS, diaDe } from '@/lib/metricas';
+import { FieldPath } from 'firebase-admin/firestore';
+import { ETIQUETA_TIPO, TIPOS, origenCorto, tipoDeOrigen, type Tipo } from '@/lib/origenes';
 
 /**
  * Las métricas para el panel de Sorela.
@@ -39,13 +41,31 @@ export async function GET(peticion: Request) {
   if (!sesion) return NextResponse.json({ ok: false, motivo: 'sin-sesion' }, { status: 401 });
   if (sesion.rol !== 'sorela') return NextResponse.json({ ok: false, motivo: 'sin-permiso' }, { status: 403 });
 
-  const pedido = Number(new URL(peticion.url).searchParams.get('dias'));
-  const n = [7, 30, 90].includes(pedido) ? pedido : 30;
+  const crudo = new URL(peticion.url).searchParams.get('dias');
+  const todo = crudo === 'todo';
+  const pedido = Number(crudo);
   const db = baseDeDatos();
   const col = db.collection(COLECCION_DIAS);
 
+  /* «Desde el inicio»: desde el primer día que el medidor guardó algo. El id
+     de cada documento es la fecha, así que el primero en orden es el primero. */
+  let desdeMedidor: string | null = null;
+  try {
+    const primero = await col.orderBy(FieldPath.documentId()).limit(1).get();
+    desdeMedidor = primero.docs[0]?.id ?? null;
+  } catch {
+    desdeMedidor = null;
+  }
+  const hoy = diaDe();
+  const n = todo
+    ? Math.min(730, Math.max(1, desdeMedidor ? Math.round((Date.parse(hoy) - Date.parse(desdeMedidor)) / 86400000) + 1 : 1))
+    : [7, 30, 90].includes(pedido)
+      ? pedido
+      : 30;
+
   const actuales = diasHacia(0, n);
-  const previos = diasHacia(n, n);
+  // Antes del inicio no hay nada con qué comparar.
+  const previos = todo ? [] : diasHacia(n, n);
   const docs = await db.getAll(...[...previos, ...actuales].map((d) => col.doc(d)));
   const porDia = new Map(docs.filter((d) => d.exists).map((d) => [d.id, d.data() ?? {}]));
 
@@ -161,6 +181,9 @@ export async function GET(peticion: Request) {
     {
       ok: true,
       dias: n,
+      todo,
+      desdeMedidor,
+      historia: todo ? await historia(db).catch((e) => (console.error('[metricas] historia', e), null)) : null,
       serie,
       totales: total(actuales),
       anteriores: total(previos),
@@ -178,4 +201,88 @@ export async function GET(peticion: Request) {
     },
     { headers: { 'Cache-Control': 'no-store' } }
   );
+}
+
+
+/**
+ * La historia de la web con lo que SÍ estaba guardado desde el principio:
+ * contactos, cuentas, acuerdos y correos. Las visitas no: esas solo existen
+ * desde que se instaló el medidor.
+ */
+async function historia(db: FirebaseFirestore.Firestore) {
+  const [contactos, usuarios, acuerdos, correos] = await Promise.all([
+    db.collection(COLECCIONES.contactos).get(),
+    db.collection(COLECCIONES.usuarios).get(),
+    db.collection('acuerdos').get(),
+    db.collection('correos').where('estado', '==', 'enviado').count().get().catch(() => null),
+  ]);
+
+  const fecha = (v: FirebaseFirestore.DocumentData, campo = 'creado'): string | null => {
+    const x = v[campo];
+    const d = x?.toDate?.() ?? (typeof x === 'string' && x ? new Date(x) : null);
+    return d && !Number.isNaN(d.getTime()) ? diaDe(d) : null;
+  };
+  /* La semana empieza en lunes: la clave es el lunes de cada semana. */
+  const lunes = (dia: string) => {
+    const d = new Date(`${dia}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+    return d.toISOString().slice(0, 10);
+  };
+
+  const semanas = new Map<string, { contactos: number; cuentas: number; acuerdos: number }>();
+  const anotar = (dia: string | null, k: 'contactos' | 'cuentas' | 'acuerdos') => {
+    if (!dia) return;
+    const s = lunes(dia);
+    const v = semanas.get(s) ?? { contactos: 0, cuentas: 0, acuerdos: 0 };
+    v[k]++;
+    semanas.set(s, v);
+  };
+
+  const porOrigen: Mapa = {};
+  const porFuente: Mapa = {};
+  const porTipo: Mapa = {};
+  let primero: string | null = null;
+  for (const d of contactos.docs) {
+    const v = d.data();
+    const f = fecha(v);
+    anotar(f, 'contactos');
+    if (f && (!primero || f < primero)) primero = f;
+    const o = origenCorto(v.origen);
+    porOrigen[o] = (porOrigen[o] ?? 0) + 1;
+    const fu = typeof v.fuente === 'string' ? v.fuente : 'Sin dato (antes del 12 oct)';
+    porFuente[fu] = (porFuente[fu] ?? 0) + 1;
+    const t = ETIQUETA_TIPO[TIPOS.includes(v.tipoManual) ? (v.tipoManual as Tipo) : tipoDeOrigen(v.origen)];
+    porTipo[t] = (porTipo[t] ?? 0) + 1;
+  }
+  const cuentas = usuarios.docs.filter((d) => d.get('rol') !== 'sorela');
+  for (const d of cuentas) anotar(fecha(d.data()), 'cuentas');
+  const firmados = acuerdos.docs.filter((d) => !d.get('borrado'));
+  for (const d of firmados) anotar(fecha(d.data(), 'firmadoEl'), 'acuerdos');
+
+  // Todas las semanas desde la primera, también las vacías: un hueco es un dato.
+  const claves = [...semanas.keys()].sort();
+  const serieSemanas: { semana: string; contactos: number; cuentas: number; acuerdos: number }[] = [];
+  if (claves.length) {
+    const fin = lunes(diaDe());
+    for (let s = claves[0]; s <= fin; ) {
+      serieSemanas.push({ semana: s, ...(semanas.get(s) ?? { contactos: 0, cuentas: 0, acuerdos: 0 }) });
+      const d = new Date(`${s}T12:00:00Z`);
+      d.setUTCDate(d.getUTCDate() + 7);
+      s = d.toISOString().slice(0, 10);
+      if (serieSemanas.length > 120) break;
+    }
+  }
+
+  return {
+    primerContacto: primero,
+    contactos: contactos.size,
+    cuentas: cuentas.length,
+    conAcceso: cuentas.filter((d) => Array.isArray(d.get('accesos')) && d.get('accesos').length > 0).length,
+    acuerdos: firmados.length,
+    correos: correos?.data().count ?? 0,
+    semanas: serieSemanas,
+    porOrigen: ordenar(porOrigen),
+    porFuente: ordenar(porFuente),
+    porTipo: ordenar(porTipo),
+  };
 }

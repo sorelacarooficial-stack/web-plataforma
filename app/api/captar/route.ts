@@ -125,11 +125,12 @@ export async function POST(peticion: Request) {
 
   // Queda en el historial de correos de la persona, para que el CRM diga si
   // le llegó la información y cuándo.
-  await apuntarCorreo({
+  // Con Resend ya lo apunta el propio envío; por Gmail hay que apuntarlo aquí.
+  if (google.via !== 'resend') await apuntarCorreo({
     para: datos.correo,
     tipo: 'bienvenida',
     asunto: 'Información de la Técnica Divine',
-    via: 'apps-script',
+    via: google.via ?? 'apps-script',
     estado: correoEnviado ? 'enviado' : 'fallido',
     contactoId: datos.correo.replace(/\//g, '_'),
   });

@@ -30,7 +30,7 @@ export type EstadoCorreo = 'enviado' | 'fallido' | 'omitido';
 
 export type RegistroCorreo = {
   para: string;
-  tipo: IdAutomatizacion | 'campana' | 'prueba' | 'manual';
+  tipo: IdAutomatizacion | 'campana' | 'prueba' | 'manual' | 'aviso-interno';
   asunto: string;
   via: Via | null;
   estado: EstadoCorreo;
@@ -41,6 +41,9 @@ export type RegistroCorreo = {
 };
 
 const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
+
+/** Si hay Resend: entonces TODO sale desde el dominio, también la bienvenida y el acuerdo. */
+export const hayResend = () => Boolean(process.env.RESEND_API_KEY);
 
 /** La vía por la que saldría un correo ahora mismo, o null si no hay ninguna. */
 export function viaDeEnvio(): Via | null {
@@ -94,8 +97,11 @@ async function porResend(c: Correo): Promise<void> {
       html: c.html,
       reply_to: c.responderA || correoDeSorela() || undefined,
       ...(c.baja ? { headers: { 'List-Unsubscribe': `<${c.baja}>` } } : {}),
+      ...(c.adjuntos?.length
+        ? { attachments: c.adjuntos.map((a) => ({ filename: a.nombre, content: a.contenido.toString('base64'), content_type: a.tipo })) }
+        : {}),
     }),
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(30_000),
   });
   if (!r.ok) throw new Error(`Resend ${r.status}: ${(await r.text()).slice(0, 200)}`);
 }
@@ -140,6 +146,8 @@ export type Correo = {
   responderA?: string;
   /** Enlace de baja: va en los correos que no son respuesta a algo que pidió. */
   baja?: string;
+  /** PDF adjuntos (el acuerdo y el dossier). Solo por Resend o SMTP. */
+  adjuntos?: { nombre: string; contenido: Buffer; tipo: string }[];
 };
 
 export type Opciones = {
@@ -181,7 +189,7 @@ export async function mandarCorreo(c: Correo, o: Opciones): Promise<Resultado> {
 
   try {
     if (via === 'resend') await porResend(c);
-    else if (via === 'smtp') await enviarSmtp({ para: c.para, asunto: c.asunto, texto: c.texto, html: c.html, responderA: c.responderA });
+    else if (via === 'smtp') await enviarSmtp({ para: c.para, asunto: c.asunto, texto: c.texto, html: c.html, responderA: c.responderA, adjuntos: c.adjuntos });
     else await porAppsScript(c);
     await apuntarCorreo(limpio({ ...base, via, estado: 'enviado' }), o.clave);
     return { estado: 'enviado', via };

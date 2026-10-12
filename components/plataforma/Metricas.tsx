@@ -22,8 +22,23 @@ type Aula = {
   lecciones: { id: string; titulo: string; empezadas: number; completadas: number; minutosMedios: number }[];
   alumnas: { uid: string; nombre: string; correo: string; completadas: number; minutos: number; ultima: string | null }[];
 };
+type Historia = {
+  primerContacto: string | null;
+  contactos: number;
+  cuentas: number;
+  conAcceso: number;
+  acuerdos: number;
+  correos: number;
+  semanas: { semana: string; contactos: number; cuentas: number; acuerdos: number }[];
+  porOrigen: Par[];
+  porFuente: Par[];
+  porTipo: Par[];
+};
 type Datos = {
   dias: number;
+  todo?: boolean;
+  desdeMedidor?: string | null;
+  historia?: Historia | null;
   serie: Dia[];
   totales: Totales;
   anteriores: Totales;
@@ -194,12 +209,103 @@ const cuando = (iso: string | null) => {
   return dias <= 0 ? 'Hoy' : dias === 1 ? 'Ayer' : `Hace ${dias} días`;
 };
 
+function fechaLarga(dia: string) {
+  const [a, mm, d] = dia.split('-').map(Number);
+  return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(a, mm - 1, d));
+}
+
+/** Lo que ha pasado desde que existe la web, semana a semana. */
+function Historia({ h, desdeMedidor }: { h: Historia; desdeMedidor: string | null }) {
+  const max = Math.max(1, ...h.semanas.map((s) => s.contactos + s.cuentas + s.acuerdos));
+  const corta = (dia: string) => {
+    const [a, mm, d] = dia.split('-').map(Number);
+    return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' }).format(new Date(a, mm - 1, d));
+  };
+  return (
+    <>
+      <section className={m.tarjeta}>
+        <header className={m.cabecera}>
+          <h3>Tu web desde el principio</h3>
+          <span className={m.nota}>{h.primerContacto ? `Primer contacto: ${fechaLarga(h.primerContacto)}` : 'Aún no hay contactos'}</span>
+        </header>
+        <div className={m.historiaCifras}>
+          {[
+            { k: 'Contactos', v: h.contactos, n: 'han dejado sus datos' },
+            { k: 'Cuentas', v: h.cuentas, n: `${h.conAcceso} con acceso a algo` },
+            { k: 'Acuerdos firmados', v: h.acuerdos, n: 'de confidencialidad' },
+            { k: 'Correos enviados', v: h.correos, n: desdeMedidor ? 'desde el historial de correos' : '' },
+          ].map((c) => (
+            <div key={c.k} className={m.historiaCifra}>
+              <span className={m.cifraEtiqueta}>{c.k}</span>
+              <strong className={m.cifraValor}>{num(c.v)}</strong>
+              <span className={m.cifraNota}>{c.n}</span>
+            </div>
+          ))}
+        </div>
+
+        <h4 className={m.subtitulo}>Semana a semana</h4>
+        {h.semanas.length === 0 ? (
+          <p className={m.vacio}>Todavía no hay nada que contar.</p>
+        ) : (
+          <div className={m.semanas} role="list">
+            {h.semanas.map((s, i) => {
+              const total = s.contactos + s.cuentas + s.acuerdos;
+              return (
+                <div key={s.semana} className={m.semana} role="listitem" title={`Semana del ${corta(s.semana)}: ${s.contactos} contactos, ${s.cuentas} cuentas, ${s.acuerdos} acuerdos`}>
+                  <span className={m.semanaNumero}>{total || ''}</span>
+                  <div className={m.semanaColumna}>
+                    {(['acuerdos', 'cuentas', 'contactos'] as const).map((k) =>
+                      s[k] ? (
+                        <motion.span
+                          key={k}
+                          className={m.semanaTrozo}
+                          data-k={k}
+                          initial={{ height: 0 }}
+                          animate={{ height: `${(s[k] / max) * 100}%` }}
+                          transition={{ delay: i * 0.04, type: 'spring', stiffness: 160, damping: 22 }}
+                        />
+                      ) : null
+                    )}
+                  </div>
+                  <span className={m.semanaFecha}>{corta(s.semana)}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div className={m.leyenda}>
+          <span data-k="contactos">Contactos</span>
+          <span data-k="cuentas">Cuentas</span>
+          <span data-k="acuerdos">Acuerdos</span>
+        </div>
+      </section>
+
+      <div className={m.rejilla}>
+        <section className={m.tarjeta}>
+          <header className={m.cabecera}>
+            <h3>Por dónde entraron</h3>
+          </header>
+          <Barras pares={h.porOrigen} vacio="Aún no hay contactos." />
+        </section>
+        <section className={m.tarjeta}>
+          <header className={m.cabecera}>
+            <h3>Qué buscan</h3>
+          </header>
+          <Barras pares={h.porTipo} vacio="Aún no hay contactos." />
+          <h4 className={m.subtitulo}>Desde dónde llegaron a la web</h4>
+          <Barras pares={h.porFuente} vacio="Aún no hay datos." />
+        </section>
+      </div>
+    </>
+  );
+}
+
 export default function Metricas() {
-  const [dias, setDias] = useState(30);
+  const [dias, setDias] = useState<number | 'todo'>(30);
   const [datos, setDatos] = useState<Datos | null>(null);
   const [fallo, setFallo] = useState(false);
 
-  const cargar = useCallback(async (n: number) => {
+  const cargar = useCallback(async (n: number | 'todo') => {
     setFallo(false);
     try {
       const j = await (await fetch(`/api/metricas?dias=${n}`)).json();
@@ -240,10 +346,10 @@ export default function Metricas() {
       <div className={m.barraSuperior}>
         <LayoutGroup id="periodo">
           <div className={m.periodo} role="tablist" aria-label="Periodo">
-            {[7, 30, 90].map((n) => (
+            {([7, 30, 90, 'todo'] as const).map((n) => (
               <button key={n} type="button" role="tab" aria-selected={dias === n} onClick={() => setDias(n)}>
                 {dias === n && <motion.span layoutId="periodo-activo" className={m.periodoActivo} transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
-                <span>{n === 7 ? '7 días' : n === 30 ? '30 días' : '3 meses'}</span>
+                <span>{n === 7 ? '7 días' : n === 30 ? '30 días' : n === 90 ? '3 meses' : 'Desde el inicio'}</span>
               </button>
             ))}
           </div>
@@ -251,7 +357,17 @@ export default function Metricas() {
         {datos?.prueba && <span className={m.prueba}>Datos de prueba</span>}
       </div>
 
-      {sinDatos && (
+      {datos?.todo && datos.historia && <Historia h={datos.historia} desdeMedidor={datos.desdeMedidor ?? null} />}
+
+      {datos?.todo && datos.desdeMedidor && (
+        <div className={m.aviso}>
+          <strong>Visitas de la web: desde el {fechaLarga(datos.desdeMedidor)}.</strong> Ese día se instaló el medidor; lo
+          anterior no se guardó en ningún sitio y no se puede recuperar. Lo de arriba (contactos, cuentas, acuerdos) sí está
+          completo desde el principio.
+        </div>
+      )}
+
+      {sinDatos && !datos?.todo && (
         <div className={m.aviso}>
           <strong>Las métricas empiezan a contar desde hoy.</strong> Lo de antes no se midió, así que irás viendo
           números a medida que entre gente en la web.
@@ -270,7 +386,7 @@ export default function Metricas() {
             <span className={m.cifraEtiqueta}>{c.label}</span>
             <strong className={m.cifraValor}>{datos ? num(c.valor ?? 0) : '—'}</strong>
             <span className={m.cifraNota}>
-              {datos && <Cambio ahora={c.valor ?? 0} antes={c.antes ?? 0} />} {c.nota}
+              {datos && !datos.todo && <Cambio ahora={c.valor ?? 0} antes={c.antes ?? 0} />} {c.nota}
             </span>
           </motion.article>
         ))}
