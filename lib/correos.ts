@@ -297,7 +297,7 @@ export async function quitarDelHistorial(docs: FirebaseFirestore.DocumentSnapsho
 export async function purgarHistorial(ahora = new Date()): Promise<{ lineas: number; marcas: number }> {
   if (!hayFirebase()) return { lineas: 0, marcas: 0 };
   const db = baseDeDatos();
-  const limite = new Date(ahora.getTime() - DIAS_HISTORIAL * 86_400_000);
+  const limite = new Date(ahora.getTime() - MS_HISTORIAL);
   let lineas = 0;
   let marcas = 0;
   // Por tandas y con tope de vueltas: una purga atascada no puede colgar el cron.
@@ -307,16 +307,15 @@ export async function purgarHistorial(ahora = new Date()): Promise<{ lineas: num
     lineas += await quitarDelHistorial(viejos.docs);
     if (viejos.size < POR_LOTE) break;
   }
+  // Solo las marcas con caducidad (las de un día): las demás no salen en la consulta.
   for (let vuelta = 0; vuelta < 25; vuelta++) {
-    const viejas = await db.collection(COLECCION_MARCAS).where('cuando', '<', limite).limit(400).get();
-    const deUnDia = viejas.docs.filter((d) => CLAVE_CON_DIA.test(d.id));
-    if (deUnDia.length) {
-      const lote = db.batch();
-      for (const d of deUnDia) lote.delete(d.ref);
-      await lote.commit();
-      marcas += deUnDia.length;
-    }
-    if (viejas.size < 400) break;
+    const caducadas = await db.collection(COLECCION_MARCAS).where('caduca', '<', ahora).limit(400).get();
+    if (caducadas.empty) break;
+    const lote = db.batch();
+    for (const d of caducadas.docs) lote.delete(d.ref);
+    await lote.commit();
+    marcas += caducadas.size;
+    if (caducadas.size < 400) break;
   }
   return { lineas, marcas };
 }
