@@ -347,7 +347,8 @@
   transition:
     background 0.3s,
     transform 0.3s,
-    box-shadow 0.3s;
+    box-shadow 0.3s,
+    opacity 0.25s;
 }
 
 .lanzador:hover {
@@ -408,6 +409,28 @@
   .lanzador {
     padding: 13px;
   }
+}
+
+/* Lo mismo cuando tiene debajo un campo o un botón de un formulario: primero
+   la burbuja y, si ni así lo deja libre, fuera de la vista. Lo decide el
+   componente midiendo qué tiene debajo. Escondido sigue en el orden del
+   teclado, y al llegar a él con el tabulador vuelve a verse. */
+.compacto .reclamo {
+  display: none;
+}
+
+.compacto {
+  padding: 13px;
+}
+
+.oculto {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.oculto:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* El botón que acompaña a una respuesta. Va pegado debajo de la burbuja y con

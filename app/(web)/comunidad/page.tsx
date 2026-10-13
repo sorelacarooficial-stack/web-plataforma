@@ -24,6 +24,14 @@ export const metadata: Metadata = {
     'Lista de espera de la Comunidad Divine. Si quieres formar parte, apúntate: el día de la apertura hago una masterclass en directo por Zoom y te mando el enlace.',
 };
 
+/**
+ * Las horas por país van separadas por « · », y en el móvil la línea podía
+ * partir justo antes del punto y dejarlo colgado al principio de la
+ * siguiente («· 14:00 en Venezuela»). Con un espacio duro delante, el punto
+ * se queda siempre al final de su línea. El texto que se ve es el mismo.
+ */
+const sinPuntoSuelto = (texto: string) => texto.replaceAll(' · ', '\u00a0· ');
+
 export default function Comunidad() {
   return (
     <main className="pagina">
@@ -71,13 +79,15 @@ export default function Comunidad() {
           negro, quedaban dos bandas negras seguidas. */}
       <section className={`${css.piezasSeccion} panel-oscuro`}>
         <div className="wrap">
-          <p className={css.antetitulo}>La masterclass de la apertura</p>
+          {/* h2 y no un rótulo: las piezas llevan h3, y sin esto colgaban del
+              h2 del formulario («Apúntate a la lista»). */}
+          <h2 className={`titulo-sm ${css.seccionTitulo}`}>La masterclass de la apertura</h2>
           <div className={css.piezas}>
             {PIEZAS_MASTERCLASS.map((m) => (
               <article key={m.titulo} className={css.pieza}>
                 <span className={css.estado}>{m.estado}</span>
                 <h3 className={css.piezaTitulo}>{m.titulo}</h3>
-                <p className={css.piezaTexto}>{m.texto}</p>
+                <p className={css.piezaTexto}>{sinPuntoSuelto(m.texto)}</p>
               </article>
             ))}
           </div>
@@ -92,14 +102,12 @@ export default function Comunidad() {
           arriba y la página se veía torcida. */}
       <section className={css.preguntas}>
         <div className="wrap">
-          <h2 className="titulo-sm" style={{ marginBottom: 'clamp(26px,3vw,44px)', fontSize: 'clamp(26px,3.4vw,42px)' }}>
-            Preguntas de la lista
-          </h2>
+          <h2 className={`titulo-sm ${css.seccionTitulo}`}>Preguntas de la lista</h2>
           <div className="columna">
             {OBJECIONES.map((o) => (
               <div key={o.q} className={css.objecion}>
                 <p className={css.objecionP}>{o.q}</p>
-                <p className={css.objecionR}>{o.a}</p>
+                <p className={css.objecionR}>{sinPuntoSuelto(o.a)}</p>
               </div>
             ))}
           </div>

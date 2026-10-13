@@ -72,6 +72,7 @@
   padding-top: 24px;
   border-top: 1px solid var(--line-inverse);
   font-size: 12px;
-  font-weight: 300;
+  /* 400 y no 300: a 12 px el trazo fino de Jost no se lee sobre el oscuro. */
+  font-weight: 400;
   color: var(--on-inverse-3);
 }

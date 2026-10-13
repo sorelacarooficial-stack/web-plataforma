@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import {
   Mensaje,
   SALUDO,
@@ -25,6 +26,9 @@ export default function Asistente() {
   const panelRef = useRef<HTMLDivElement>(null);
   const entradaRef = useRef<HTMLInputElement>(null);
   const temporizador = useRef<number | null>(null);
+  const lanzadorRef = useRef<HTMLButtonElement>(null);
+  const [apartado, setApartado] = useState<'no' | 'burbuja' | 'oculto'>('no');
+  const ruta = usePathname();
 
   // El panel baja al último mensaje al enviar y al recibir.
   useEffect(() => {
@@ -51,6 +55,102 @@ export default function Asistente() {
     },
     []
   );
+
+  /*
+   * El lanzador se aparta de los formularios.
+   *
+   * Flota abajo a la derecha, y ahí mismo suele caer el final de un formulario.
+   * En /comunidad, en un portátil, la pastilla «Te ayudo a decidir» tapaba
+   * «Apuntarme a la lista» nada más cargar, y en el móvil la burbuja se comía
+   * el final del campo «Nombre» y se abría el asistente al tocarlo. Achicar la
+   * página para dejarle sitio no sirve: cada pantalla deja el botón en otra
+   * altura, y basta un mensaje de error para que la tarjeta crezca.
+   *
+   * Así que mira qué tiene debajo. Si es un campo, un botón o el texto de un
+   * formulario de la página, primero se queda en la burbuja, sin el reclamo;
+   * si ni así deja libre lo de debajo, se esconde hasta que se baja un poco.
+   * Con el teclado sigue a mano: al enfocarlo vuelve a verse
+   * (Asistente.module.css).
+   */
+  useEffect(() => {
+    if (abierto) return;
+    const HOLGURA = 8;
+    let marco = 0;
+    let vivo = true;
+    // El ancho del lanzador tal y como lo deja el CSS (pastilla en escritorio,
+    // burbuja en el móvil). Mientras está apartado mide menos, y entonces se
+    // sigue usando el último ancho natural: si no, en cuanto se achicara
+    // dejaría de tocar el botón, volvería a crecer y se pondría a parpadear.
+    let anchoNatural = 0;
+
+    const medir = () => {
+      marco = 0;
+      const boton = lanzadorRef.current;
+      if (!boton) return;
+      const r = boton.getBoundingClientRect();
+      if (!boton.classList.contains(css.compacto)) anchoNatural = r.width;
+      const lado = Math.min(r.width, r.height);
+      const toca = (c: DOMRect, izquierda: number) =>
+        c.width > 0 &&
+        c.height > 0 &&
+        c.right > izquierda - HOLGURA &&
+        c.left < r.right + HOLGURA &&
+        c.bottom > r.top - HOLGURA &&
+        c.top < r.bottom + HOLGURA;
+
+      // Los controles por su caja, y los textos (la nota de debajo del botón,
+      // el consentimiento, los errores) por sus líneas: la caja de un párrafo
+      // centrado ocupa todo el ancho aunque la frase sea corta.
+      const cajas: DOMRect[] = [];
+      for (const el of document.querySelectorAll(
+        'main form :is(input, select, textarea, button, summary)'
+      )) {
+        cajas.push(el.getBoundingClientRect());
+      }
+      const rango = document.createRange();
+      for (const el of document.querySelectorAll('main form :is(p, label)')) {
+        rango.selectNodeContents(el);
+        cajas.push(...rango.getClientRects());
+      }
+
+      let tocaPastilla = false;
+      let tocaBurbuja = false;
+      for (const c of cajas) {
+        if (toca(c, r.right - lado)) {
+          tocaBurbuja = true;
+          break;
+        }
+        if (toca(c, r.right - anchoNatural)) tocaPastilla = true;
+      }
+      setApartado(tocaBurbuja ? 'oculto' : tocaPastilla && anchoNatural > lado + 1 ? 'burbuja' : 'no');
+    };
+    const programar = () => {
+      if (vivo && !marco) marco = window.requestAnimationFrame(medir);
+    };
+
+    programar();
+    window.addEventListener('scroll', programar, { passive: true });
+    window.addEventListener('resize', programar);
+    // Lo que mueve el formulario sin que la página se desplace: los mensajes
+    // de error que lo alargan, la confirmación que lo encoge y las entradas
+    // animadas de las secciones al bajar.
+    document.addEventListener('transitionend', programar);
+    document.addEventListener('focusin', programar);
+    const observador = new ResizeObserver(programar);
+    const principal = document.querySelector('main');
+    if (principal) observador.observe(principal);
+    document.fonts?.ready.then(programar);
+
+    return () => {
+      vivo = false;
+      if (marco) window.cancelAnimationFrame(marco);
+      window.removeEventListener('scroll', programar);
+      window.removeEventListener('resize', programar);
+      document.removeEventListener('transitionend', programar);
+      document.removeEventListener('focusin', programar);
+      observador.disconnect();
+    };
+  }, [abierto, ruta]);
 
   // Otros puntos de la web («Agendar cita», «Consultar fechas») abren el
   // asistente con la pregunta ya escrita. El oyente se registra una sola vez,
@@ -190,10 +290,17 @@ export default function Asistente() {
 
       {!abierto && (
         <button
+          ref={lanzadorRef}
           type="button"
           onClick={() => setAbierto(true)}
           aria-label="Abrir el asistente Divine"
-          className={css.lanzador}
+          className={[
+            css.lanzador,
+            apartado !== 'no' && css.compacto,
+            apartado === 'oculto' && css.oculto,
+          ]
+            .filter(Boolean)
+            .join(' ')}
         >
           <span className={css.marca}>
             <svg

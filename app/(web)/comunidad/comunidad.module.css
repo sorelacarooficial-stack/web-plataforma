@@ -13,8 +13,9 @@
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  /* Abajo, 40-56 px de más: la sección siguiente sube y tapa ese trozo con
-     sus esquinas redondeadas (.panel-oscuro). */
+  /* Abajo, 40 px de más: la sección siguiente (.panel-oscuro) sube y tapa
+     ese trozo con sus esquinas redondeadas. En pantallas anchas sube hasta
+     56, que salen del margen normal, que ahí sobra. */
   padding: clamp(56px, 9vw, 140px) 0 calc(clamp(64px, 8vw, 120px) + 40px);
   background: #0c0c0c;
   color: #ede3d3;
@@ -164,8 +165,72 @@
   box-shadow: none;
 }
 
+/* Con error, el borde el doble de grueso y en el bronce oscuro, no en el oro
+   del foco: con el mismo oro, un campo con error y sin foco se confundía con
+   uno enfocado. */
 .caja :global(.campo)[aria-invalid='true'] {
+  border-color: #6e5327;
+  box-shadow: inset 0 0 0 1px #6e5327;
+}
+
+/* Con error y con foco a la vez (el primero que falla se enfoca solo), el
+   foco de siempre y nada más: con el borde doble y el anillo eran tres líneas
+   doradas. Ya avisa el mensaje de debajo. */
+.caja :global(.campo)[aria-invalid='true']:focus-visible {
   border-color: #8a6a32;
+  box-shadow: none;
+}
+
+/* El mensaje de error, el párrafo que sigue a un campo o a la casilla con
+   error: en el bronce oscuro (6,8 a 1, el de los rótulos se quedaba en 4,8) y
+   con un filete a la izquierda, para que se vea que es un aviso aunque no se
+   distinga el color. */
+.caja :global(.campo)[aria-invalid='true'] + p,
+.caja label:has(input[aria-invalid='true']) + p {
+  padding-left: 10px;
+  border-left: 2px solid #6e5327;
+  color: #6e5327;
+}
+
+/* Sin tirador para estirar el campo: el navegador lo dibuja en la esquina
+   cuadrada y asomaba por fuera de la curva del borde. */
+.caja textarea:global(.campo) {
+  resize: none;
+}
+
+/* El aviso de protección de datos, con el mismo borde que los campos: con el
+   suyo (1,5 a 1) se perdía en el blanco y parecía un campo desactivado. Y el
+   resumen en 400 y gris tinta, no en 500 y negro: era la línea con más peso
+   de la tarjeta y competía con el título y con el botón. */
+.caja details {
+  border-color: #8c8377;
+}
+
+.caja details summary {
+  font-weight: 400;
+  color: #3e3831;
+  text-wrap: balance;
+}
+
+/* El mensaje de después de enviar, en 400 como el consentimiento y la nota:
+   es lo único que se lee al apuntarse y en 300 era lo más flojo de la
+   tarjeta. */
+.caja [role='status'] p,
+.caja [role='alert'] p {
+  font-weight: 400;
+}
+
+/* El desplegable con su propia flecha. La del navegador mete un relleno
+   interior distinto en cada sistema, y el texto quedaba unos píxeles más
+   adentro que el de los campos de arriba. */
+.caja select:global(.campo) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 46px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%233e3831' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  background-size: 12px 8px;
 }
 
 /* El botón, plano: tinta con letras claras, sin el filo blanco ni la luz del
@@ -214,30 +279,25 @@
   text-wrap: balance;
 }
 
-/* Aire bajo el botón de enviar. El asistente flota abajo a la derecha (60 px
-   en el móvil), y al bajar hasta el final del formulario tapaba la esquina
-   del botón. Con este margen, cuando el final de la tarjeta toca el borde de
-   la pantalla, el botón queda por encima de la burbuja. */
-@media (max-width: 959px) {
-  .caja {
-    padding-bottom: 36px;
-  }
-}
-
 /* Dos columnas a partir de 960 px: el texto a la izquierda y alineado a la
    izquierda, la tarjeta a la derecha. Por debajo de eso, la cuenta atrás y la
    tarjeta no caben juntas sin apretarse. */
 @media (min-width: 960px) {
-  /* Menos aire arriba que en el móvil: en un portátil (1440×900) la tarjeta
-     entera, con su botón, tiene que caber en la primera pantalla y por
-     encima de la burbuja del asistente, que en escritorio es una pastilla
-     ancha abajo a la derecha, justo debajo de esta columna. */
+  /* El mismo aire encima de la tarjeta que debajo de ella, contando los 56 px
+     que tapa la sección siguiente al subir. Antes se le quitaba aire arriba
+     para que el botón quedara por encima del asistente, y la banda se veía
+     metida a presión bajo la cabecera; ahora es el asistente el que se
+     aparta del formulario (components/Asistente.tsx). */
   .portada {
-    padding-top: clamp(36px, 3.2vw, 64px);
+    padding: clamp(56px, 5vw, 96px) 0 calc(clamp(56px, 5vw, 96px) + 56px);
   }
 
+  /* Arriba y no centradas: la fecha empieza a la altura del filo de la
+     tarjeta en todos los anchos, y el texto no salta cuando la tarjeta crece
+     con los mensajes de error o encoge con la confirmación. */
   .portadaRejilla {
     grid-template-columns: minmax(0, 1fr) minmax(380px, 460px);
+    align-items: start;
   }
 
   .caja {
@@ -286,6 +346,19 @@
   }
 }
 
+/* Lo mismo con dos columnas en pantallas medianas (un portátil pequeño, una
+   tableta apaisada): la columna del texto se queda en unos 420 px y la frase
+   pide 470. */
+@media (min-width: 960px) and (max-width: 1199px) {
+  .fecha {
+    border-radius: 22px;
+  }
+
+  .fecha > span {
+    display: block;
+  }
+}
+
 .contador {
   margin: 0;
   font-weight: 300;
@@ -295,37 +368,49 @@
 }
 
 /* ---------- Piezas ----------
-   Papel, después de la banda negra. Las tarjetas ya no son relieve crema
-   sobre crema: blancas, con un filo que se ve y texto oscuro (11,6 a 1). */
+   Papel, después de la banda negra, y sin cajas. Eran tarjetas blancas sobre
+   el papel (1,14 a 1 el relleno, 1,40 el filo): en el móvil, tres manchas
+   claras seguidas sin canto, el «mucho blanco» de la queja. Ahora cada pieza
+   es una columna de texto oscuro sobre el papel, con un filete de bronce
+   encima (4,3 a 1) que marca dónde empieza cada una. */
 .piezasSeccion {
   padding: clamp(64px, 8vw, 110px) 0 clamp(52px, 7vw, 90px);
 }
 
-.antetitulo {
-  margin: 0 0 clamp(26px, 3.6vw, 44px);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  /* El bronce oscuro y no el de los rótulos: sobre el papel, el normal se
-     queda en 4,4 a 1 y a 12 px no llega. */
-  color: #6e5327;
+/* Los dos titulares de sección del papel, iguales: el de la masterclass era
+   un rótulo de 12 px y la sección no tenía cabecera al lado de la de las
+   preguntas. Con h2 y no con clase: así gana a .titulo-sm, que es global. */
+h2.seccionTitulo {
+  margin-bottom: clamp(26px, 3vw, 44px);
+  font-size: clamp(26px, 3.4vw, 42px);
 }
 
+/* Una, dos o tres columnas, a mano y no con auto-fit: con dos columnas la
+   tercera pieza se quedaba sola a la izquierda con un hueco al lado. Ahí
+   ocupa el ancho entero. El hueco entre columnas es el mismo que el de las
+   preguntas de abajo, que se apoyan en estas columnas. */
 .piezas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: clamp(14px, 2vw, 22px);
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(36px, 5vw, 48px) clamp(24px, 3vw, 44px);
+}
+
+@media (min-width: 600px) {
+  .piezas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pieza:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .pieza {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: clamp(24px, 3vw, 36px);
-  background: #ffffff;
-  border: 1px solid rgba(20, 18, 16, 0.16);
-  border-radius: clamp(22px, 2.6vw, 32px);
+  padding-top: clamp(18px, 2vw, 24px);
+  border-top: 2px solid var(--arcilla);
 }
 
 .estado {
@@ -333,7 +418,9 @@
   font-weight: 500;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #6e5327;
+  /* El bronce oscuro y no el de los filetes: a 11 px, el normal se queda en
+     4,3 a 1 sobre el papel. */
+  color: var(--arcilla-ink);
 }
 
 .piezaTitulo {
@@ -343,8 +430,8 @@
   text-transform: uppercase;
   font-size: clamp(22px, 2.4vw, 30px);
   line-height: 1.18;
-  color: #141210;
-  text-wrap: pretty;
+  color: var(--ink);
+  text-wrap: balance;
 }
 
 .piezaTexto {
@@ -352,8 +439,35 @@
   font-weight: 400;
   font-size: 16px;
   line-height: 1.6;
-  color: #3e3831;
+  color: var(--ink-2);
   text-wrap: pretty;
+}
+
+/* En tres columnas, rótulo, título y texto comparten fila con los de al lado
+   (subgrid): si un título ocupa dos líneas, los textos siguen empezando a la
+   misma altura. Antes el de la primera arrancaba 36 px más abajo. */
+@media (min-width: 900px) {
+  /* Aquí hay una sola fila de piezas, así que el hueco entre filas es el
+     que separa rótulo, título y texto dentro de cada una. */
+  .piezas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 12px;
+  }
+
+  .pieza,
+  .pieza:last-child {
+    grid-column: auto;
+    grid-row: span 3;
+    display: grid;
+    grid-template-rows: subgrid;
+  }
+
+  /* Con la columna más estrecha (de 900 a 1200 px), el título encoge antes
+     que en una columna, para que «6 de noviembre, 19:00» quepa en una línea
+     y no deje «19:00» sola debajo. */
+  .piezaTitulo {
+    font-size: clamp(20px, 2.1vw, 30px);
+  }
 }
 
 /* ---------- Precio ---------- */
@@ -401,12 +515,39 @@
   background: rgba(20, 18, 16, 0.14);
 }
 
+/* Las mismas columnas que la masterclass de encima, con el mismo hueco: la
+   pregunta en la primera y la respuesta desde la segunda. Con auto-fit, las
+   respuestas empezaban justo a la mitad y no compartían ninguna línea
+   vertical con las piezas. */
 .objecion {
   border-top: 1px solid rgba(20, 18, 16, 0.16);
   padding: clamp(20px, 2.4vw, 30px) 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: clamp(10px, 2vw, 36px);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px clamp(24px, 3vw, 44px);
+}
+
+/* Sin raya encima de la primera: el filete de la sección ya separa, y con
+   las dos el titular quedaba entre dos líneas, como la cabecera de una
+   tabla. */
+.objecion:first-child {
+  border-top: 0;
+}
+
+@media (min-width: 600px) {
+  .objecion {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .objecion {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .objecionR {
+    grid-column: 2 / -1;
+  }
 }
 
 .objecionP {
