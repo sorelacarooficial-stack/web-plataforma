@@ -98,6 +98,8 @@ export default function Aula({ correo }: { correo?: string | null }) {
   /* Por dónde iba al renovar el enlace, para seguir en el mismo segundo. */
   const reanudar = useRef<{ t: number; jugando: boolean } | null>(null);
   const renovaciones = useRef(0);
+  /* Las clases que ya se han mandado como vistas en esta visita. */
+  const vistas = useRef(new Set<string>());
 
   const cargar = useCallback(async () => {
     setFallo(null);
@@ -358,9 +360,15 @@ export default function Aula({ correo }: { correo?: string | null }) {
                   onError={renovarEnlace}
                   onTimeUpdate={(e) => {
                     const v = e.currentTarget;
-                    if (Math.abs(v.currentTime - ultimoGuardado.current) >= GUARDAR_CADA) {
+                    const pasada = v.duration > 0 && v.currentTime / v.duration > 0.9;
+                    /* Al pasar del 90 % por primera vez, se apunta como vista
+                       en el acto, sin esperar al siguiente guardado: si cierra
+                       justo ahí (los créditos, la despedida), ya cuenta. */
+                    const recien = pasada && !pActual?.completada && !vistas.current.has(actual.id);
+                    if (recien || Math.abs(v.currentTime - ultimoGuardado.current) >= GUARDAR_CADA) {
                       ultimoGuardado.current = v.currentTime;
-                      guardar(actual.id, v.currentTime, v.duration > 0 && v.currentTime / v.duration > 0.9);
+                      if (recien) vistas.current.add(actual.id);
+                      guardar(actual.id, v.currentTime, pasada);
                     }
                   }}
                   onEnded={(e) => guardar(actual.id, e.currentTarget.duration, true)}
