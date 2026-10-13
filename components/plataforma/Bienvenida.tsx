@@ -41,8 +41,10 @@ function ComoSeSuma() {
             <span className={c.formaIcono} aria-hidden="true">
               <Icono nombre={ICONO_FUENTE[f.fuente]} size={17} grosor={1.7} />
             </span>
-            <span className={c.formaTexto}>{f.corto}</span>
-            <b>+{formatoPuntos(f.puntos)}</b>
+            <span className={c.formaTexto}>
+              <b>+{formatoPuntos(f.puntos)}</b>
+              {f.corto}
+            </span>
           </li>
         ))}
       </ul>

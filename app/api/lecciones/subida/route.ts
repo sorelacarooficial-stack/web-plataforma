@@ -8,6 +8,7 @@ import { almacen, barrerHuerfanas } from '@/lib/aula-almacen';
  * Subir el vídeo de una clase, directamente del navegador al almacén.
  *
  *   POST   { nombre, tipo, tamano }  → { ok, id, sesion, trozo }
+ *   GET    ?id=<id>                  → { ok, tamano }   (¿sigue arriba el vídeo?)
  *   DELETE ?id=<id>                  → { ok }   (cancelar: no deja nada)
  *
  * El vídeo NO pasa por aquí. Vercel corta cualquier petición de más de 4,5 MB
@@ -25,7 +26,7 @@ import { almacen, barrerHuerfanas } from '@/lib/aula-almacen';
  * /api/lecciones, que antes comprueba en el almacén que está y que mide lo que
  * tiene que medir. Si se cancela o se abandona, no queda nada a medias: una
  * sesión sin terminar no crea ningún archivo, y lo que sí llegó entero pero no
- * se guardó lo recoge `barrerHuerfanas` al día siguiente.
+ * se guardó lo recoge `barrerHuerfanas` pasada una semana (ver allí por qué).
  */
 
 export const runtime = 'nodejs';
@@ -92,6 +93,30 @@ export async function POST(peticion: Request) {
   } catch (e) {
     console.error('[subida] no se ha podido abrir la sesión', e);
     return NextResponse.json({ ok: false, texto: 'No he podido preparar la subida. Prueba en un momento.' }, { status: 503 });
+  }
+}
+
+/**
+ * Cuánto mide el vídeo de una subida en el almacén (0 si no está).
+ *
+ * Lo pregunta la pantalla al retomar una subida que Google da por terminada:
+ * Google la recuerda toda la semana aunque el archivo ya no exista, y sin
+ * mirarlo la pantalla diría «subido entero» de un vídeo que no está.
+ */
+export async function GET(peticion: Request) {
+  const g = await exigirAdmin();
+  if (g.error) return g.error;
+
+  const id = new URL(peticion.url).searchParams.get('id') ?? '';
+  if (!ID.test(id)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
+
+  try {
+    const [archivos] = await almacen().getFiles({ prefix: `${carpetaDeClase(id)}video.` });
+    const tamano = archivos[0] ? Number(archivos[0].metadata.size) || 0 : 0;
+    return NextResponse.json({ ok: true, tamano }, { headers: { 'Cache-Control': 'no-store' } });
+  } catch (e) {
+    console.error('[subida] no se ha podido mirar el vídeo', id, e);
+    return NextResponse.json({ ok: false }, { status: 503 });
   }
 }
 

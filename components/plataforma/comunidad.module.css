@@ -1921,13 +1921,19 @@
   color: var(--divine);
 }
 
+/* El valor encima y el nombre debajo, como en la leyenda del ranking: así
+   caben dos por fila en el móvil sin que se monten. */
 .formaTexto {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.25;
 }
 
 .formas b {
-  flex: none;
+  font-size: 14px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--divine);

@@ -706,6 +706,21 @@ async function seguirPendiente(archivo: File, p: Pendiente) {
   }
 }
 
+/**
+ * Si el vídeo de una subida terminada sigue en el almacén y mide lo que tiene
+ * que medir. Si no se puede preguntar (sin conexión), se da por bueno: al
+ * guardar, la API lo vuelve a comprobar y lo dice.
+ */
+async function sigueArriba(id: string, tamano: number): Promise<boolean> {
+  try {
+    const r = await fetch(`/api/lecciones/subida?id=${encodeURIComponent(id)}`, { cache: 'no-store' });
+    const j = await r.json();
+    return !j.ok || j.tamano === tamano;
+  } catch {
+    return true;
+  }
+}
+
 /* Cerrar la pestaña a medias pierde lo que lleva: el navegador lo pregunta. */
 function alCerrar(e: BeforeUnloadEvent) {
   if (!hayQueAvisar()) return;
