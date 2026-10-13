@@ -11,8 +11,8 @@
 export const AUTOMATIZACIONES = [
   {
     id: 'bienvenida',
-    nombre: 'Información al dejar sus datos',
-    cuando: 'Alguien deja su nombre y correo en un formulario de la web.',
+    nombre: 'Gracias por apuntarte · grupo de WhatsApp',
+    cuando: 'Alguien deja sus datos en cualquier formulario de la web: el mismo correo para todas (lista de espera de la masterclass + botón del grupo de WhatsApp). Solo «Reservar plaza» en una formación lleva su confirmación.',
     quien: 'La persona que lo ha rellenado',
     porDefecto: true,
     /** Estos no se apagan desde aquí: van por su propio camino. */
@@ -41,8 +41,8 @@ export const AUTOMATIZACIONES = [
   },
   {
     id: 'registro',
-    nombre: 'Hemos recibido tu registro',
-    cuando: 'Alguien se crea una cuenta sola, sin enlace, y todavía no tiene acceso a nada.',
+    nombre: 'Gracias por apuntarte (al crearse la cuenta)',
+    cuando: 'Alguien se crea una cuenta sola, sin enlace. Recibe el mismo correo de la lista de espera y el grupo de WhatsApp.',
     quien: 'La persona que se registra',
     porDefecto: true,
   },

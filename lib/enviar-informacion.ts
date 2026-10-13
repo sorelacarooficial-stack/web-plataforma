@@ -161,7 +161,10 @@ export async function mandarInformacion(datos: Contacto & { origen: string; rese
   if (hayResend()) {
     const contactoId = datos.correo.replace(/\//g, '_');
     const r = await mandarCorreo(
-      { para: datos.correo, ...(datos.reserva ? correoReservaPlaza(datos.nombre, datos.reserva) : correoBienvenidaPorOrigen(datos.nombre, datos.origen)) },
+      /* Un solo correo, venga de donde venga: gracias por apuntarte a la lista
+         de espera + el grupo de WhatsApp. Solo la reserva de plaza en una
+         formación lleva el suyo, que confirma esa fecha. */
+      { para: datos.correo, ...(datos.reserva ? correoReservaPlaza(datos.nombre, datos.reserva) : correoBienvenidaPorOrigen(datos.nombre, 'lista-comunidad')) },
       // Una vez al día como mucho: quien escanea el QR dos veces no recibe dos.
       { tipo: 'bienvenida', clave: `bienvenida:${contactoId.slice(0, 80)}:${diaDe()}`, contactoId }
     );

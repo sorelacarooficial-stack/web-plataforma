@@ -1,6 +1,7 @@
 import 'server-only';
 import { APERTURA } from './apertura';
 import { CURSO_DIVINE, revisarAccesos, type Acceso } from './accesos';
+import { correoBienvenidaPorOrigen } from './plantillas-bienvenida';
 import { baseDeDatos, COLECCIONES, hayFirebase } from './firebase-servidor';
 import { diaDe } from './metricas';
 import { comoLlego, tipoDeOrigen } from './origenes';
@@ -9,7 +10,6 @@ import {
   correoAccesoComunidad,
   correoAccesoFormacion,
   correoInvitacion,
-  correoRegistro,
   correoResumen,
   type ResumenDatos,
 } from './plantillas-automaticas';
@@ -113,8 +113,8 @@ export async function alCrearInvitacion(i: {
 export async function alRegistrarse(p: { uid: string; correo: string; nombre: string | null; pide: string | null }) {
   try {
     if (!(await estaActiva('registro'))) return;
-    const pide = p.pide === 'comunidad' || p.pide === 'curso' ? p.pide : null;
-    await mandarCorreo({ para: p.correo, ...correoRegistro(p.nombre, pide) }, {
+    // El mismo correo que desde cualquier formulario: lista de espera + grupo de WhatsApp.
+    await mandarCorreo({ para: p.correo, ...correoBienvenidaPorOrigen(p.nombre, 'lista-comunidad') }, {
       tipo: 'registro',
       clave: `registro:${p.uid}`,
       uid: p.uid,
@@ -156,7 +156,7 @@ export async function listaDeEspera(): Promise<{ correo: string; nombre: string 
     // (art. 21 LSSI). Ver el POST de app/api/contactos.
     if (v.aMano && !v.pidioInformacion) continue;
     const tipo = ['clienta', 'alumna', 'comunidad', 'otro'].includes(v.tipoManual) ? v.tipoManual : tipoDeOrigen(v.origen);
-    if (tipo === 'comunidad' && !salida.has(correo)) salida.set(correo, { correo, nombre: v.nombre || null });
+    if ((tipo === 'comunidad' || v.lista === true) && !salida.has(correo)) salida.set(correo, { correo, nombre: v.nombre || null });
   }
   for (const m of miembros) salida.delete(m);
   return [...salida.values()];

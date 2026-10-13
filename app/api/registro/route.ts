@@ -317,6 +317,8 @@ export async function POST(peticion: Request) {
            distinguirla de quien solo ha dejado su contacto: una ya está
            dentro esperando, la otra todavía no ha dado ese paso. */
         registrada: true,
+        // Su correo de bienvenida es el de la lista de espera: queda en ella.
+        lista: true,
         /* Qué aceptó y cuándo (art. 7.1 RGPD): la versión de la política que
            tenía delante y si se negó a las novedades. */
         pruebaRegistro: {

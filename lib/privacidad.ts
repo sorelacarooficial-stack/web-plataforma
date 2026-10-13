@@ -422,15 +422,15 @@ const NOVEDADES =
 
 /** La ventana de «Apuntarme» (portada, formaciones, asistente) y la lista de espera. */
 export const CAPA_INFORMACION: PrimeraCapa = {
-  finalidad: `Guardar tu sitio en la lista de espera y avisarte de la apertura, o darte la información que pides. ${NOVEDADES}`,
+  finalidad: `Guardar tu sitio en la lista de espera de la masterclass y escribirte hasta ese día (un correo por semana y, la última semana, uno al día), con baja en cada correo. ${NOVEDADES}`,
   base: 'Tu petición y tu consentimiento; las novedades, solo con su casilla. Puedes retirarlo cuando quieras.',
   destinatarios: `${DESTINATARIOS_GENERAL} Si entras en el grupo de WhatsApp, tu número y tu nombre los verán las demás participantes y WhatsApp (Meta).`,
 };
 
 /** El formulario de contacto. Contestar no necesita permiso: es lo que pides. */
 export const CAPA_CONTACTO: PrimeraCapa = {
-  finalidad: `Contestar tu mensaje. ${NOVEDADES}`,
-  base: 'Tu petición (art. 6.1.b RGPD); las novedades, tu consentimiento con su casilla, que puedes retirar cuando quieras.',
+  finalidad: `Contestar tu mensaje y guardar tu sitio en la lista de espera de la masterclass, con los correos hasta ese día (baja en cada uno). ${NOVEDADES}`,
+  base: 'Tu petición (art. 6.1.b RGPD) y tu consentimiento para la lista de espera; las novedades, con su casilla. Puedes retirarlo cuando quieras.',
 };
 
 export const CAPA_CITA: PrimeraCapa = {

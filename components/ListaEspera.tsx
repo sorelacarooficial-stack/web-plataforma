@@ -209,7 +209,7 @@ export default function ListaEspera() {
           aria-invalid={errores.consentimiento ? true : undefined}
         />
         <span>
-          Tengo 14 años o más y acepto que Sorela Caro use mis datos para guardar mi sitio en la lista de espera.{' '}
+          Tengo 14 años o más y acepto que Sorela Caro use mis datos para guardar mi sitio en la lista de espera de la masterclass y escribirme hasta ese día.{' '}
           <Link href="/legal/privacidad" target="_blank">
             Cómo se tratan
           </Link>

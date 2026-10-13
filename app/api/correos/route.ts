@@ -21,7 +21,6 @@ import {
   correoAccesoComunidad,
   correoAccesoFormacion,
   correoInvitacion,
-  correoRegistro,
   correoResumen,
   type Plantilla,
 } from '@/lib/plantillas-automaticas';
@@ -67,7 +66,7 @@ async function muestra(id: IdAutomatizacion): Promise<Plantilla | null> {
         caduca: new Date(Date.now() + 30 * 86_400_000).toISOString(),
       });
     case 'registro':
-      return correoRegistro('María López', 'comunidad');
+      return correoBienvenidaPorOrigen('María López', 'lista-comunidad');
     case 'acuerdo':
       // Lo escribe el Apps Script con el PDF del acuerdo: aquí no hay vista previa.
       return null;

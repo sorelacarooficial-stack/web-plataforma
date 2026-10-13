@@ -96,6 +96,12 @@ export async function POST(peticion: Request) {
   /* ---------- 1. Guardar en Firestore ---------- */
   let enFirestore = false;
 
+  /* Ahora mismo todo lo que entra por la web es para la masterclass: quien
+     deja sus datos queda en la lista de espera (recibe la serie hasta el día
+     de la masterclass). Menos quien solo pide un aviso por su ciudad y quien
+     reserva plaza en una formación: eso es otra cosa. */
+  const aLista = !soloAviso(datos.origen) && !convocatoriaDeOrigen(datos.origen);
+
   if (hayFirebase()) {
     try {
       // El identificador del documento es el propio correo: si la misma
@@ -114,6 +120,7 @@ export async function POST(peticion: Request) {
           actualizado: FieldValue.serverTimestamp(),
           creado: FieldValue.serverTimestamp(),
           estado: 'Nuevo',
+          ...(aLista ? { lista: true } : {}),
           ...procedenciaDe(cuerpo.llegada),
           veces: 1,
           pruebaConsentimiento: { ...prueba, fecha: FieldValue.serverTimestamp() },
@@ -134,7 +141,7 @@ export async function POST(peticion: Request) {
            cambia nada: la baja va por el enlace de cada correo. */
         const altaNovedades = datos.comercial === true && v.comercial !== true ? { comercial: true } : {};
         await ref.set(
-          { ...huecos, ...altaNovedades, actualizado: FieldValue.serverTimestamp(), veces: FieldValue.increment(1) },
+          { ...huecos, ...altaNovedades, ...(aLista ? { lista: true } : {}), actualizado: FieldValue.serverTimestamp(), veces: FieldValue.increment(1) },
           { merge: true }
         );
         await ref.collection('envios').add({ ...datos, pruebaConsentimiento: prueba, cuando: FieldValue.serverTimestamp() });
