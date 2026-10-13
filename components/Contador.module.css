@@ -17,8 +17,13 @@
 .contador {
   display: flex;
   flex-direction: column;
-  align-items: inherit;
-  gap: clamp(12px, 1.6vw, 18px);
+  /* Tan ancho como la fila de bloques y no más: así las horas de debajo se
+     reparten exactamente bajo ellos. Dónde se coloca (centrado en la portada,
+     a la izquierda en /comunidad) lo decide el contenedor de fuera. */
+  align-items: stretch;
+  width: fit-content;
+  max-width: 100%;
+  gap: clamp(14px, 1.8vw, 20px);
 }
 
 .bloques {
@@ -59,41 +64,39 @@
 }
 
 .unidad {
-  font-size: 9.5px;
-  font-weight: 300;
+  font-size: 10px;
+  font-weight: 400;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--tinta-suave);
 }
 
 /* ---------- La hora en cada país ----------
-   Cuatro pastillas sueltas y no una barra maciza. La barra era un rectángulo
-   blanco cruzando la banda de parte a parte, que es exactamente lo que hacía
-   que esto pareciera un widget pegado encima. Sueltas y redondas respiran, y
-   además se reparten solas en dos filas cuando no caben, sin necesitar una
-   rejilla aparte para el móvil. */
+   Dos columnas del mismo ancho que la fila de bloques: cada hora queda justo
+   debajo de dos cajas y las cuatro alineadas entre sí. Sin pastillas ni
+   fondos: eran cuatro cápsulas de anchos distintos que se apilaban torcidas
+   en el móvil. Solo texto, con una línea fina que lo separa de los bloques;
+   la de España, en oro. */
 .husos {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: inherit;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
   margin: 0;
-  padding: 0;
+  padding: clamp(12px, 1.4vw, 16px) 0 0;
+  border-top: 1px solid var(--borde-pieza);
   list-style: none;
 }
 
 .huso {
   display: flex;
   align-items: baseline;
-  gap: 7px;
-  padding: 8px 15px;
-  border-radius: 999px;
-  background: var(--fondo-pieza);
-  border: 1px solid var(--borde-pieza);
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .husoHora {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
   color: var(--tinta-pieza);
   font-variant-numeric: tabular-nums;
@@ -101,21 +104,20 @@
 
 /* La hora de España va en oro: es la referencia de la que se habla en el resto
    de la web, y sin destacarla las cuatro se leen como una lista sin jefe. */
-.husoPrincipal {
-  background: var(--fondo-oro);
-  border-color: var(--borde-oro);
-}
-
 .husoPrincipal .husoHora {
   color: var(--tinta-oro);
 }
 
 .husoLugar {
-  font-size: 9.5px;
-  font-weight: 300;
-  letter-spacing: 0.14em;
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--tinta-suave);
+}
+
+.husoPrincipal .husoLugar {
+  color: var(--tinta-oro);
 }
 
 .abierta {
@@ -163,8 +165,7 @@
   --tinta-oro: #e3c696;
 }
 
-.oscuro .bloque,
-.oscuro .huso {
+.oscuro .bloque {
   backdrop-filter: blur(12px) saturate(1.2);
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
 }
@@ -226,11 +227,16 @@
   }
 
   .unidad {
-    font-size: 8px;
+    font-size: 9px;
     letter-spacing: 0.1em;
   }
 
-  .huso {
-    padding: 7px 12px;
+  .husoHora {
+    font-size: 14px;
+  }
+
+  .husoLugar {
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
   }
 }

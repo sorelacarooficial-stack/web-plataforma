@@ -492,7 +492,7 @@ function cierreMembresia(quien, apertura) {
     return (
       'Y por si te sirve para decidirte: la formación no termina en el certificado. ' +
       Cuando +
-      ' abro la Comunidad Divine, que es donde sigo enseñando después del curso. La presento ese día en una masterclass en directo: apúntate a la lista de espera y te mando el enlace.'
+      ' abro la Comunidad Divine con una masterclass en directo. Si quieres formar parte, apúntate a la lista de espera y te mando el enlace.'
     );
   }
 
@@ -500,7 +500,7 @@ function cierreMembresia(quien, apertura) {
     return (
       'Y si además de clienta trabajas con las manos —eres terapeuta o esteticista—, dímelo: ' +
       cuando +
-      ' abro la Membresía Divine, que es donde enseño el método a quien ya trabaja.'
+      ' abro la Comunidad Divine con una masterclass en directo para terapeutas.'
     );
   }
 

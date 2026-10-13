@@ -31,9 +31,9 @@ function cierreComunidad(t: Tipo) {
     // Lo que hay dentro NO se cuenta: se presenta ese día en la masterclass.
     return `${CUANDO} abro la Comunidad Divine${fuera ? ` (${fuera})` : ''} con una masterclass en directo por Zoom: te hablo de mi técnica y del alto impacto de lo digital en las terapeutas, y al final te cuento qué hay dentro. Estás en la lista: hasta entonces te escribo con ideas para tu cabina, y ese mismo día te mando el enlace para entrar.`;
   if (t === 'alumna')
-    return `Y por si te sirve para decidirte: la formación no termina en el certificado. ${CUANDO} abro la Comunidad Divine, que es donde sigo enseñando después del curso. La presento ese día en una masterclass en directo.`;
+    return `Y por si te sirve para decidirte: la formación no termina en el certificado. ${CUANDO} abro la Comunidad Divine con una masterclass en directo. Si quieres formar parte, apúntate a la lista de espera y te mando el enlace.`;
   if (t === 'clienta')
-    return `Y si además de clienta trabajas con las manos —eres terapeuta o esteticista—, dímelo: ${cuando} abro la Comunidad Divine, que es donde enseño el método a quien ya trabaja.`;
+    return `Y si además de clienta trabajas con las manos —eres terapeuta o esteticista—, dímelo: ${cuando} abro la Comunidad Divine con una masterclass en directo para terapeutas.`;
   return `Por si te viene al caso: ${cuando} abro la Comunidad Divine, para terapeutas que ya trabajan con las manos.`;
 }
 

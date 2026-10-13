@@ -338,9 +338,11 @@
   /* Pastilla en relieve sobre el papel, como el resto de botones. */
   background: var(--neu-base);
   color: var(--ink);
-  border: 1px solid transparent;
+  /* Un filete y una sombra corta, sin el relieve neumórfico: su luz blanca
+     se veía como un halo cuando el botón flota sobre las bandas negras. */
+  border: 1px solid rgba(20, 18, 16, 0.1);
   border-radius: 999px;
-  box-shadow: var(--neu-fuera);
+  box-shadow: 0 6px 18px -6px rgba(12, 10, 9, 0.28);
   cursor: pointer;
   transition:
     background 0.3s,
@@ -350,9 +352,8 @@
 
 .lanzador:hover {
   background: var(--neu-base);
-  box-shadow: var(--neu-fuera-hover);
-  transform: translateY(-3px);
-  box-shadow: 0 24px 52px rgba(12, 10, 9, 0.34);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -8px rgba(12, 10, 9, 0.34);
 }
 
 .marca {

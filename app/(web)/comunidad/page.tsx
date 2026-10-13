@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: { absolute: 'La Comunidad Divine para terapeutas ya certificadas' },
   // Sin lo que incluye: se presenta en la masterclass de la apertura (lib/contenido.ts).
   description:
-    'Donde sigo enseñando cuando acaba el curso. La presento en una masterclass en directo por Zoom: apúntate a la lista de espera y te mando el enlace.',
+    'Lista de espera de la Comunidad Divine. Si quieres formar parte, apúntate: el día de la apertura hago una masterclass en directo por Zoom y te mando el enlace.',
 };
 
 export default function Comunidad() {
@@ -37,13 +37,11 @@ export default function Comunidad() {
                 tercera persona como si lo contara otro; aquí quien escribe es
                 ella y quien lee es una terapeuta a la que conoce. */}
             <h1 className={`${css.titulo} degradado`}>Estoy preparando algo especial para ti.</h1>
+            {/* Es una lista de espera y nada más: se dice así, sin describir la
+                comunidad. Lo de dentro se cuenta el día de la masterclass. */}
             <p className="lede max-540" style={{ lineHeight: 1.62 }}>
-              El sitio donde sigo enseñando después del curso. Te lo presento el {DIA_APERTURA} en
-              una masterclass en directo por Zoom, sobre mi técnica y el alto impacto de lo digital
-              en las terapeutas.
-            </p>
-            <p className="texto max-540">
-              Apúntate a la lista de espera y te mando el enlace.
+              Esta es la lista de espera de la Comunidad Divine. Si quieres formar parte, apúntate:
+              el {DIA_APERTURA} hago una masterclass en directo por Zoom y te mando el enlace.
             </p>
             <Contador />
           </div>

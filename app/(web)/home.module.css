@@ -810,6 +810,10 @@
    hacer hoy es apuntarse, así que la sección entera empuja a eso.
    ========================================================================== */
 .lanzamiento {
+  /* Banda negra: el relieve de lo que haya dentro, en oscuro (sin la luz
+     blanca del papel, que aquí se veía como un halo). */
+  --neu-luz: rgba(255, 255, 255, 0.045);
+  --neu-sombra: rgba(0, 0, 0, 0.65);
   position: relative;
   overflow: hidden;
   padding: clamp(80px, 12vw, 170px) 0;
@@ -889,16 +893,33 @@
    botón desaparecería justo en la sección que existe para que se pulse. */
 .lanzamientoBoton {
   margin-top: 6px;
-  padding: 19px 40px;
+  padding: 18px 40px;
   font-size: 12.5px;
+  letter-spacing: 0.14em;
   background: var(--inverse-ink);
   color: var(--inverse-bg);
   border-color: transparent;
 }
 
+/* Plano, sin halo: el relieve de .btn lleva una luz blanca pensada para el
+   papel, y sobre esta banda negra se veía como un resplandor alrededor. */
+.lanzamientoBoton,
+.lanzamientoBoton:hover,
+.lanzamientoBoton:active {
+  box-shadow: none;
+  outline: none;
+  filter: none;
+  transform: none;
+}
+
 .lanzamientoBoton:hover {
   background: var(--oro-claro, #e0c28e);
   color: var(--inverse-bg);
+}
+
+.lanzamientoBoton:focus-visible {
+  outline: 2px solid var(--oro-claro, #e0c28e);
+  outline-offset: 3px;
 }
 
 /* ==========================================================================
