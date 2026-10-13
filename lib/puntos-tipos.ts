@@ -87,22 +87,40 @@ export const ETIQUETA_FUENTE: Record<FuentePuntos, string> = {
  * Cómo se suma, en frases cortas y con los valores de PUNTOS (nunca copiados a
  * mano): lo leen «Cómo sumar», la leyenda del ranking, la bienvenida del muro
  * y su correo. El icono de cada una está en IconosDivine (ICONO_FUENTE).
+ * `corto`: el nombre en dos palabras, para la leyenda del ranking, donde no
+ * cabe la frase entera.
  */
-export const FORMAS_DE_SUMAR: { fuente: FuentePuntos; texto: string; puntos: number }[] = [
-  { fuente: 'clases', texto: 'Terminar una clase', puntos: PUNTOS.clase },
-  { fuente: 'curso', texto: 'Completar la formación', puntos: PUNTOS.curso },
-  { fuente: 'publicaciones', texto: 'Publicar en la comunidad', puntos: PUNTOS.publicacion },
-  { fuente: 'respuestas', texto: 'Responder a una compañera', puntos: PUNTOS.respuesta },
-  { fuente: 'meGusta', texto: 'Cada «me gusta» que recibes', puntos: PUNTOS.meGusta },
-  { fuente: 'dias', texto: 'Cada día que entras', puntos: PUNTOS.dia },
-  { fuente: 'racha', texto: `7 días seguidos (y +${PUNTOS.racha30} a los 30)`, puntos: PUNTOS.racha7 },
-  { fuente: 'logros', texto: 'Cada trofeo que ganas', puntos: PUNTOS.logro },
-  { fuente: 'perfil', texto: 'Completar tu perfil', puntos: PUNTOS.perfil },
-  { fuente: 'fotos', texto: `Cada foto de tu trabajo (hasta ${PUNTOS.fotosMax})`, puntos: PUNTOS.foto },
+export const FORMAS_DE_SUMAR: { fuente: FuentePuntos; texto: string; corto: string; puntos: number }[] = [
+  { fuente: 'clases', texto: 'Terminar una clase', corto: 'Clase terminada', puntos: PUNTOS.clase },
+  { fuente: 'curso', texto: 'Completar la formación', corto: 'Formación completa', puntos: PUNTOS.curso },
+  { fuente: 'publicaciones', texto: 'Publicar en la comunidad', corto: 'Publicar', puntos: PUNTOS.publicacion },
+  { fuente: 'respuestas', texto: 'Responder a una compañera', corto: 'Responder', puntos: PUNTOS.respuesta },
+  { fuente: 'meGusta', texto: 'Cada «me gusta» que recibes', corto: '«Me gusta» recibido', puntos: PUNTOS.meGusta },
+  { fuente: 'dias', texto: 'Cada día que entras', corto: 'Cada día', puntos: PUNTOS.dia },
+  { fuente: 'racha', texto: `7 días seguidos (y +${PUNTOS.racha30} a los 30)`, corto: 'Racha de 7 días', puntos: PUNTOS.racha7 },
+  { fuente: 'logros', texto: 'Cada trofeo que ganas', corto: 'Trofeo', puntos: PUNTOS.logro },
+  { fuente: 'perfil', texto: 'Completar tu perfil', corto: 'Perfil completo', puntos: PUNTOS.perfil },
+  { fuente: 'fotos', texto: `Cada foto de tu trabajo (hasta ${PUNTOS.fotosMax})`, corto: 'Foto', puntos: PUNTOS.foto },
 ];
 
-/** Lo que suma al ranking del mes («Más activas este mes»): lo que se hace en la comunidad y el aula. */
-export const SUMAN_AL_MES: FuentePuntos[] = ['publicaciones', 'respuestas', 'meGusta', 'clases'];
+/**
+ * Lo que suma al ranking del mes («Más activas este mes»): lo que se hace en
+ * la comunidad y el aula. Cada fila del ranking guarda cuántas de cada una
+ * lleva en el mes (lib/actividad.ts), y así se enseña de dónde salen sus puntos.
+ */
+export const SUMAN_AL_MES = ['publicaciones', 'respuestas', 'meGusta', 'clases'] as const satisfies readonly FuentePuntos[];
+export type FuenteMes = (typeof SUMAN_AL_MES)[number];
+
+/** Cuántas de cada cosa lleva alguien en el mes (las que no tiene, no están). */
+export type PorFuenteMes = Partial<Record<FuenteMes, number>>;
+
+/** Cómo se cuenta cada una: «1 publicación», «3 publicaciones». */
+export const UNIDAD_MES: Record<FuenteMes, readonly [string, string]> = {
+  publicaciones: ['publicación', 'publicaciones'],
+  respuestas: ['respuesta', 'respuestas'],
+  meGusta: ['«me gusta» recibido', '«me gusta» recibidos'],
+  clases: ['clase terminada', 'clases terminadas'],
+};
 
 /** Lo que hace falta saber de una persona para contar sus puntos. */
 export type EntradaPuntos = {

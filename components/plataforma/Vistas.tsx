@@ -15,7 +15,6 @@ import { useState } from 'react';
  * no las miraba nadie, pero Next seguía metiéndolas en el paquete.
  */
 import {
-  CONVOCATORIAS,
   FILTROS_FEED,
   POSTS,
   RANKING,
@@ -91,14 +90,6 @@ function Chips({
         </button>
       ))}
     </div>
-  );
-}
-
-function Barra({ pct, gruesa }: { pct: number; gruesa?: boolean }) {
-  return (
-    <span className={`${css.barra} ${gruesa ? css.barraGruesa : ''}`}>
-      <span className={css.barraRelleno} style={{ width: `${pct}%` }} />
-    </span>
   );
 }
 
@@ -307,63 +298,13 @@ export { PanelSorela } from './PanelSorela';
 
 /* ==========================================================================
    Formaciones (admin)
+   Las convocatorias de verdad viven en Convocatorias.tsx: plazas, inscritas,
+   pagos y el acceso al curso de cada inscrita. Aquí había una maqueta que
+   decía «esta pantalla todavía no guarda nada» y leía una lista vacía de
+   lib/plataforma.ts. Se reexporta con el mismo nombre para que Plataforma.tsx
+   no tenga que cambiar.
    ========================================================================== */
-export function FormacionesAdmin() {
-  return (
-    <div className={css.columna}>
-      {/* Aquí había un botón de «Nueva convocatoria» que no guardaba nada:
-          se pulsaba, no pasaba nada, y no lo decía. Un botón que miente es
-          peor que un hueco, porque el hueco no se cree nadie. Vuelve cuando
-          haya dónde guardar la convocatoria. */}
-      <p className={css.intro} style={{ maxWidth: 560 }}>
-        Cada convocatoria con sus plazas vendidas, lo cobrado y quién falta por pagar.
-      </p>
-
-      <div className={css.aviso} role="note">
-        <p className={css.parrafo} style={{ margin: 0, flex: '1 1 320px' }}>
-          <strong>Esta pantalla todavía no guarda nada.</strong> Está preparada para cuando cierres
-          la primera fecha: entonces podrás crear la convocatoria aquí, con sus plazas y sus pagos.
-          Mientras tanto, quien pida sitio te llega a <em>Clientes</em>.
-        </p>
-      </div>
-
-      {CONVOCATORIAS.length === 0 && (
-        <Vacio>
-          Todavía no hay ninguna convocatoria abierta. Cuando crees la primera, aquí verás sus
-          plazas vendidas, lo cobrado y quién falta por pagar.
-        </Vacio>
-      )}
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 'clamp(14px,1.8vw,20px)' }}>
-        {CONVOCATORIAS.map((c) => (
-          <article key={c.curso} className={css.tarjeta} style={{ gap: 14 }}>
-            <span className={css.cursoEtiqueta}>{c.ciudad}</span>
-            <h2 className={css.h2}>{c.curso}</h2>
-            <p style={{ margin: 0, fontSize: 13.5, fontWeight: 300, color: 'var(--muted-2)' }}>{c.fechas}</p>
-            <Barra pct={c.pct} />
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 300, color: 'var(--ink-3)' }}>
-              {c.vendidas} de {c.total} plazas · {c.ingreso}
-            </p>
-            <p className={css.apunte}>{c.pendiente}</p>
-            <div className={css.acciones} style={{ marginTop: 4 }}>
-              <button type="button" className={`${css.btn} ${css.btnSm}`}>
-                Ver inscritas
-              </button>
-              <button type="button" className={`${css.btnLinea} ${css.btnSm}`}>
-                Editar
-              </button>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      {/* Aquí había un bloque «Tu calendario» que salía siempre vacío: leía una
-          lista escrita a mano en lib/plataforma.ts, no la agenda de verdad. Con
-          la semana llena de sesiones seguía diciendo «sin nada apuntado», y eso
-          es peor que no estar. El calendario está en su apartado. */}
-    </div>
-  );
-}
+export { default as FormacionesAdmin } from './Convocatorias';
 
 /*
  * Aquí vivían nueve pantallas más: InicioAlumna, Aula, InicioMiembro, Clases,

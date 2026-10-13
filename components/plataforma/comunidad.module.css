@@ -8,7 +8,13 @@
    y el oro pequeño en #6f5323 (7:1), porque el --oro de la marca (#8a6a32) se
    queda en 4,4:1 sobre los fondos dorados claros. Campos con borde #8c8173
    (3,8:1, se ve dónde se escribe) y marcador de posición #7d7468 (4,6:1).
-   Peligro y errores en #9a2f1a (7,4:1), el mismo rojo en toda la plataforma. */
+   Peligro y errores en #9a2f1a (7,4:1), el mismo rojo en toda la plataforma.
+
+   La Jost solo está cargada hasta 500: aquí no hay 600 ni 700 en Jost (el
+   navegador la engordaba a mano y se emborronaba). El 600 que queda es de la
+   Cormorant. Lo de los puntos (iconos, «+20», el desglose) va en el vino de la
+   gamificación (--divine, 8,9:1 sobre blanco; ver app/globals.css). Tarjetas
+   planas con borde fino y sombra baja: sin halos neumórficos. */
 
 .comunidad {
   display: grid;
@@ -187,14 +193,19 @@
   text-underline-offset: 3px;
 }
 
-.selloSorela {
-  padding: 2px 9px;
-  border-radius: 999px;
+.nombreFila {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+/* El distintivo «Creadora de la Técnica Divine» (IconosDivine), un punto
+   más pequeño junto al nombre de las publicaciones. */
+.distintivo {
+  padding: 3px 10px 3px 7px;
   font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  background: linear-gradient(140deg, #f3e2c4, #d9b47c);
-  color: #3b2a12;
 }
 
 .cuando {
@@ -204,17 +215,22 @@
 }
 
 .cuando b {
-  font-weight: 600;
+  font-weight: 500;
   color: #6f5323;
 }
 
-/* ---------- Escribir ---------- */
+/* ---------- Escribir ----------
+   La caja de escribir tiene que verse a la primera: tarjeta blanca con borde,
+   el campo blanco con borde de verdad (#8c8173, 3,8:1), la invitación en
+   --ink-3 (9,3:1) y el botón en negro. Debajo, atajos por tipo y lo que suma. */
 
 .escribir {
-  border-radius: 26px;
-  background: #fffdf9;
-  border: 1px solid var(--line-1);
-  box-shadow: 0 18px 40px -30px rgba(60, 45, 25, 0.55);
+  border-radius: 22px;
+  background: #fff;
+  border: 1px solid var(--line-3);
+  box-shadow:
+    0 1px 2px rgba(60, 45, 25, 0.06),
+    0 14px 34px -24px rgba(60, 45, 25, 0.5);
   overflow: hidden;
 }
 
@@ -224,38 +240,210 @@
 
 .escribirCerrado {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
+  flex-direction: column;
+  gap: 12px;
   padding: 16px 18px;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  text-align: left;
-  cursor: text;
 }
 
-.escribirCerrado > span:nth-child(2) {
+.escribirFila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.escribirCampo {
   flex: 1;
-  font-size: 15px;
-  font-weight: 400;
-  color: var(--muted-2);
-}
-
-.escribirBoton {
-  padding: 9px 18px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 12px 20px;
+  border: 1px solid #8c8173;
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  background: var(--oro-tint);
-  border: 1px solid var(--oro-line);
-  color: #6f5323;
+  background: #fff;
+  font: inherit;
+  font-size: 15.5px;
+  font-weight: 400;
+  color: var(--ink-3);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: text;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
 }
 
-.escribirCerrado:hover .escribirBoton {
-  background: #efe5d2;
+.escribirCampo:hover {
+  border-color: #141210;
+}
+
+.campoCorto {
+  display: none;
+}
+
+.escribirCampo:focus-visible {
+  outline: none;
+  border-color: #8a6a32;
+  box-shadow: 0 0 0 3px rgba(217, 180, 124, 0.45);
+}
+
+/* Negro y crema (14:1), como los botones de los correos: se ve que es EL botón. */
+.escribirBoton {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #17140f;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #f3e3c3;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.escribirBoton:hover {
+  background: #2e2923;
+}
+
+.escribirBoton:active {
+  transform: scale(0.96);
+}
+
+.escribirBoton:focus-visible,
+.atajo:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+.escribirDebajo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  /* Alineados con el campo, no con la foto. */
+  padding-left: 56px;
+}
+
+.escribirAtajos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.atajo {
+  padding: 7px 14px;
+  border: 1px solid var(--line-4);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    color 0.18s;
+}
+
+.atajo:hover {
+  border-color: #141210;
+  background: #fff;
+  color: var(--ink);
+}
+
+.escribirPuntos {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--divine);
+}
+
+.escribirPuntos b {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 560px) {
+  .escribirCerrado {
+    padding: 14px;
+  }
+
+  .escribirFila {
+    gap: 10px;
+  }
+
+  .escribirCampo {
+    padding: 12px 16px;
+    font-size: 15px;
+  }
+
+  .campoLargo {
+    display: none;
+  }
+
+  .campoCorto {
+    display: inline;
+  }
+
+  /* En el móvil, el botón se queda en la pluma (con su nombre para el lector). */
+  .escribirBoton {
+    width: 48px;
+    padding: 0;
+  }
+
+  .escribirBoton span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Los atajos, en una fila que se desliza (con el borde derecho que se
+     desvanece para que se note que hay más). */
+  .escribirDebajo {
+    flex-direction: column;
+    align-items: stretch;
+    padding-left: 0;
+  }
+
+  .escribirPuntos {
+    margin-left: 0;
+  }
+
+  .escribirAtajos {
+    flex-wrap: nowrap;
+    margin: 0 -14px;
+    padding: 2px 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    mask-image: linear-gradient(90deg, #000 85%, transparent);
+  }
+
+  .escribirAtajos::-webkit-scrollbar {
+    display: none;
+  }
+
+  .atajo {
+    flex: none;
+  }
+
 }
 
 .escribirAbierto {
@@ -464,19 +652,20 @@
 }
 
 .visita strong {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
 }
 
 /* ---------- Filtros ---------- */
 
+/* Control segmentado plano: fondo tostado (la tinta encima, 7,6:1) y la
+   pestaña elegida en blanco con una sombra baja. */
 .filtros {
   display: flex;
   gap: 4px;
-  padding: 5px;
+  padding: 4px;
   border-radius: 999px;
-  background: var(--neu-base);
-  box-shadow: var(--neu-dentro-sm);
+  background: #ebe5db;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -501,7 +690,6 @@
 
 .filtros button[aria-selected='true'] {
   color: var(--ink);
-  font-weight: 600;
 }
 
 .filtros button > span:last-child {
@@ -559,11 +747,38 @@
 
 .selloFijada,
 .selloResuelta {
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px 4px 8px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
+}
+
+/* En el móvil, los sellos se quedan en su icono (el texto lo sigue oyendo
+   el lector): así caben junto al nombre y al distintivo de Sorela. */
+@media (max-width: 560px) {
+  .selloFijada,
+  .selloResuelta {
+    padding: 6px;
+  }
+
+  .selloTexto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .distintivo {
+    gap: 5px;
+    padding: 3px 9px 3px 6px;
+    font-size: 11px;
+  }
 }
 
 .selloFijada {
@@ -705,7 +920,7 @@
   background: none;
   font: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: #6f5323;
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -960,7 +1175,7 @@
 .claseRotulo {
   margin: 0;
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #d9b47c;
@@ -1003,7 +1218,7 @@
   background: linear-gradient(135deg, #ecd2a2, #d9b47c 55%, #c29a5b);
   color: #17140f;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   text-decoration: none;
 }
 
@@ -1086,15 +1301,18 @@
   flex-direction: column;
   gap: 10px;
   padding: clamp(18px, 2.2vw, 22px);
-  border-radius: 24px;
-  background: var(--neu-base);
-  box-shadow: var(--neu-fuera-sm);
+  border-radius: 22px;
+  background: #fffdf9;
+  border: 1px solid var(--line-2);
+  box-shadow:
+    0 1px 2px rgba(60, 45, 25, 0.05),
+    0 14px 34px -26px rgba(60, 45, 25, 0.45);
 }
 
 .ladoRotulo {
   margin: 0;
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.1em;
   line-height: 1.3;
   text-transform: uppercase;
@@ -1135,7 +1353,7 @@
 }
 
 .pendientes button:hover {
-  background: #fffdf9;
+  background: var(--surface-2);
 }
 
 .pendientes strong {
@@ -1151,62 +1369,123 @@
 }
 
 /* ---------- Ranking del mes ----------
-   Las barras crecen en proporción a la primera. Oro, plata y bronce para el
-   podio; el resto en un tostado neutro. Cifras en Jost con dígitos de igual
-   ancho, para que no bailen al cambiar. */
+   Tarjeta blanca con titular en Cormorant: lo que más se ve del lateral.
+   Cada fila: medalla del podio (o el puesto), la foto con la insignia del
+   nivel en la esquina, nombre en tinta, los puntos en Cormorant grande, una
+   barra en proporción a la primera y el desglose con los iconos en vino.
+   Cifras con dígitos de igual ancho, para que no bailen al cambiar. */
 
-.ranking {
-  gap: 2px;
+.rankingTarjeta {
+  gap: 14px;
 }
 
-.ranking li {
+.rankingCabecera {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  margin: 0 -10px;
-  padding: 9px 10px;
-  border-radius: 14px;
 }
 
-.ranking li[data-yo] {
-  background: #fffdf9;
-  box-shadow: inset 0 0 0 1px var(--oro-line);
-}
-
-.puesto {
+.rankingSello {
   flex: none;
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--divine-tint);
+  color: var(--divine);
+}
+
+.rankingTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.rankingMes {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--muted-2);
+}
+
+.ranking {
+  gap: 0;
+  margin: 0 -8px;
+}
+
+.ranking > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 8px;
+  border-top: 1px solid transparent;
+}
+
+/* Separadores finos y rectos entre filas; la tuya, redondeada con su fondo
+   (y sin raya encima ni debajo). */
+.ranking > li + li {
+  border-top-color: var(--line-2);
+}
+
+.ranking > li[data-yo] {
+  border-radius: 16px;
+  border-top-color: transparent;
+  background: var(--oro-tint);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
+}
+
+.ranking > li[data-yo] + li {
+  border-top-color: transparent;
+}
+
+.rankingPuesto {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 40px;
+}
+
+.puesto {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
   border-radius: 999px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
-  background: #e7e1d7;
-  color: #4f4840;
-}
-
-.puesto[data-p='0'] {
-  background: radial-gradient(circle at 34% 28%, #fbf1dc 0%, #e6c890 40%, #c49a5a 100%);
-  box-shadow: 0 4px 10px -4px rgba(196, 154, 90, 0.8);
-  color: #3b2a12;
-}
-
-.puesto[data-p='1'] {
-  background: radial-gradient(circle at 34% 28%, #ffffff 0%, #e4e0d9 45%, #c4beb4 100%);
+  background: #ebe5db;
   color: #3e3831;
 }
 
-.puesto[data-p='2'] {
-  background: radial-gradient(circle at 34% 28%, #fbe7d6 0%, #e6bf9c 45%, #c08a5f 100%);
-  color: #4a2e16;
+.rankingFoto {
+  position: relative;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+}
+
+.rankingInsignia {
+  position: absolute;
+  right: -6px;
+  bottom: -5px;
+  filter: drop-shadow(0 1px 1.5px rgba(40, 30, 15, 0.35));
 }
 
 .rankingCuerpo {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   flex: 1;
   min-width: 0;
 }
@@ -1214,7 +1493,7 @@
 .rankingLinea {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -1225,7 +1504,7 @@
   border: 0;
   background: none;
   font: inherit;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 500;
   text-align: left;
   color: var(--ink);
@@ -1242,21 +1521,33 @@
 
 .puntos {
   flex: none;
-  font-size: 14.5px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 22px;
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
   color: var(--ink);
 }
 
 .puntos small {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--muted-2);
 }
 
+.rankingNivel {
+  margin-top: -2px;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--muted-2);
+}
+
 .rankingPista {
   display: block;
-  height: 6px;
+  height: 5px;
+  margin-top: 2px;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(20, 18, 16, 0.08);
@@ -1282,80 +1573,133 @@
   background: linear-gradient(90deg, #9a6440, #e0b48f);
 }
 
-.chipNivel {
-  align-self: flex-start;
+.desgloseMes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 1px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.desgloseMes li {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  max-width: 100%;
-  padding: 2px 9px 2px 3px;
-  border-radius: 999px;
-  background: var(--oro-tint);
-  border: 1px solid var(--oro-line);
-  font-size: 12px;
+  gap: 4px;
+  font-size: 13px;
   font-weight: 500;
-  line-height: 1.5;
-  color: #6f5323;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.chipNumero {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 34% 28%, #fbf1dc 0%, #e6c890 45%, #c49a5a 100%);
-  font-size: 11px;
-  font-weight: 700;
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
-  color: #17140f;
+  color: var(--ink-3);
 }
 
+.desgloseMes svg {
+  color: var(--divine);
+}
+
+/* Cómo vas tú: negro y crema; la pista de lo que falta, en el rosé (9,2:1). */
 .rankingYo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #17140f;
+  color: #efe6d8;
+}
+
+.rankingYo p {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 8px;
-  margin: 2px 0 0;
-  padding: 11px 14px;
-  border-radius: 14px;
-  background: #17140f;
+  margin: 0;
   font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
   font-variant-numeric: tabular-nums;
-  color: #efe6d8;
 }
 
 .rankingYo b {
-  font-weight: 600;
+  font-weight: 500;
   color: #f7f0e4;
 }
 
-.rankingYo > b:first-child {
+.rankingYo p > b:first-child {
   color: #d9b47c;
 }
 
-.rankingYo > span[aria-hidden] {
+.rankingYo p > span[aria-hidden] {
   color: rgba(239, 230, 216, 0.72);
 }
 
-.rankingComo {
-  margin: 0;
+.rankingYo .rankingPistaTexto {
   font-size: 13px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: var(--muted-2);
+  color: var(--divine-claro);
 }
 
-.rankingComo b {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+/* La leyenda: cada forma de sumar al mes con su icono y sus puntos. */
+.leyenda {
+  padding-top: 14px;
+  border-top: 1px solid var(--line-2);
+}
+
+.leyendaTitulo {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: #6f5323;
+}
+
+.leyenda ul {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.leyenda li {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 9px;
+  align-items: center;
+  min-width: 0;
+}
+
+.leyendaIcono {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--divine-tint);
+  color: var(--divine);
+}
+
+.leyendaPuntos {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--divine);
+}
+
+.leyendaTexto {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--ink-3);
 }
 
 .normas li {
@@ -1465,14 +1809,14 @@
 .bienvenidaBloques section {
   padding: 16px 18px;
   border-radius: 18px;
-  background: var(--neu-base);
-  box-shadow: var(--neu-fuera-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line-1);
 }
 
 .bienvenidaBloques h4 {
   margin: 0 0 8px;
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #6f5323;
@@ -1508,8 +1852,120 @@
 }
 
 .bienvenidaBloques b {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
+}
+
+/* Puntos, niveles y trofeos: el bloque del juego, en blanco con el vino. */
+.bienvenidaPuntos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 18px 20px 20px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid var(--divine-line);
+}
+
+.bienvenidaPuntos h4 {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--divine);
+}
+
+.bienvenidaPuntos p {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* Una rejilla de fichas iguales (no una ristra de píldoras): se lee por
+   columnas y en el móvil son dos por fila. */
+.formas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+  margin: 2px 0 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.formas li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 6px 10px 6px 6px;
+  border-radius: 12px;
+  background: var(--divine-tint);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--ink-2);
+}
+
+.formaIcono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--divine);
+}
+
+.formaTexto {
+  flex: 1;
+  min-width: 0;
+}
+
+.formas b {
+  flex: none;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--divine);
+}
+
+@media (max-width: 560px) {
+  .formas {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Cada línea con su muestra (las insignias, los trofeos, la medalla) a la
+   izquierda en una columna fija, para que los textos queden alineados. */
+.bienvenidaPuntos .bienvenidaLinea {
+  display: grid;
+  grid-template-columns: 162px 1fr;
+  align-items: center;
+  gap: 14px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-1);
+}
+
+.bienvenidaMuestra {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  color: var(--divine);
+}
+
+@media (max-width: 560px) {
+  .bienvenidaPuntos {
+    padding: 16px;
+  }
+
+  .bienvenidaPuntos .bienvenidaLinea {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }
 
 .bienvenidaCierre {

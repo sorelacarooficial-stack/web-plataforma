@@ -68,7 +68,6 @@ export type Fase =
   | 'sin-red'
   | 'subida' // el vídeo está arriba entero; falta guardar la clase
   | 'guardando'
-  | 'guardada'
   | 'error';
 
 /** Una subida que se quedó a medias en una visita anterior. */
@@ -170,9 +169,17 @@ export function suscribir(oyente: () => void) {
 export const foto = () => estado;
 export const fotoServidor = () => INICIAL;
 
-/** Si hay algo en marcha que se perdería al cerrar la pestaña. */
+/** Si hay algo en marcha: la subida o el guardado de la clase. */
 export const enMarcha = (f: Fase = estado.fase) =>
   f === 'preparando' || f === 'subiendo' || f === 'reintentando' || f === 'sin-red' || f === 'guardando';
+
+/**
+ * Si cerrar la pestaña ahora pierde algo: lo que está en marcha y, también, un
+ * vídeo que ya está arriba entero pero cuya clase aún no se ha guardado. Ese
+ * es el olvido más fácil (la barra ya está llena y parece hecho) y el que más
+ * duele, porque es la subida entera.
+ */
+const hayQueAvisar = (f: Fase = estado.fase) => enMarcha(f) || f === 'subida';
 
 /* ==========================================================================
    Lo apuntado en este navegador, para seguir tras cerrar la pestaña
@@ -629,7 +636,7 @@ async function arrancar(archivo: File, f: NonNullable<typeof ficha>, desde: numb
     poner({ fase: 'error', error: aFrase(e), reintentoEn: null, id: caducada ? null : estado.id });
   } finally {
     window.removeEventListener('offline', alCaer);
-    if (!enMarcha()) aguantarPestaña(false);
+    if (!hayQueAvisar()) aguantarPestaña(false);
   }
 }
 
@@ -675,6 +682,17 @@ async function seguirPendiente(archivo: File, p: Pendiente) {
   try {
     const desde = await consultar(f, archivo.size);
     if (f.cancelada) return;
+    /* Google recuerda una subida terminada toda la semana, pero el vídeo de
+       una clase que nunca se guardó lo recoge antes el barrido de huérfanas.
+       Sin mirarlo, la pantalla diría «subido entero» y al guardar contestaría
+       que no lo encuentra: mejor empezar de cero ya. */
+    if (desde >= archivo.size && !(await sigueArriba(p.id, archivo.size))) {
+      if (f.cancelada) return;
+      apuntar(null);
+      sesionActual = null;
+      return empezar(archivo);
+    }
+    if (f.cancelada) return;
     await arrancar(archivo, f, desde);
   } catch (e) {
     if (f.cancelada) return;
@@ -690,7 +708,7 @@ async function seguirPendiente(archivo: File, p: Pendiente) {
 
 /* Cerrar la pestaña a medias pierde lo que lleva: el navegador lo pregunta. */
 function alCerrar(e: BeforeUnloadEvent) {
-  if (!enMarcha()) return;
+  if (!hayQueAvisar()) return;
   e.preventDefault();
   e.returnValue = '';
 }
@@ -715,11 +733,11 @@ export function revisarArchivo(archivo: File): string | null {
 export async function elegir(archivo: File) {
   const malo = revisarArchivo(archivo);
   if (malo) {
-    poner({ error: malo, fase: estado.fase === 'error' ? 'libre' : estado.fase });
+    poner({ error: malo });
     return;
   }
   // Si ya había otra en marcha, se cancela entera antes de empezar esta.
-  if (estado.fase !== 'libre' && estado.fase !== 'guardada') await cancelar(true);
+  if (estado.fase !== 'libre') await cancelar(true);
   limpiarAnalisis();
   archivoActual = archivo;
   poner({
@@ -740,16 +758,30 @@ export async function elegir(archivo: File) {
   if (archivoActual !== archivo) return;
   poner({ analisis });
   if (analisis.problema) {
-    poner({ fase: 'aviso' });
+    /* Si pulsó «Guardar» mientras se leía el vídeo, aquí se deshace: con el
+       aviso delante no se sube nada, y dejar puesto «se guardará sola» la
+       haría irse tranquila con una clase que no se va a guardar nunca. */
+    const habiaPulsado = estado.guardarAlTerminar;
+    envio = null;
+    poner({ fase: 'aviso', guardarAlTerminar: false, errores: habiaPulsado ? { video: fraseDelAviso(analisis.problema) } : {} });
     return;
   }
   await subir();
+}
+
+/** Lo que se le dice si quiere guardar con un aviso del vídeo sin resolver. */
+function fraseDelAviso(p: Problema): string {
+  return p.tipo === 'ilegible'
+    ? 'Este vídeo no se puede subir así. Elige otro vídeo y después guarda la clase.'
+    : 'Antes de guardar, decide qué hacer con el vídeo: «Subirlo igualmente» o «Elegir otro vídeo».';
 }
 
 /** Empieza a subir el vídeo elegido (tras un aviso, si lo hubo). */
 export async function subir() {
   const archivo = archivoActual;
   if (!archivo) return;
+  // El «decide qué hacer con el vídeo» ya está contestado.
+  if (estado.errores.video) poner({ errores: {} });
   const p = estado.pendiente ?? leerPendiente()?.pendiente ?? null;
   const mismo = p && p.nombre === archivo.name && p.tamano === archivo.size && p.modificado === archivo.lastModified;
   if (p && mismo) return seguirPendiente(archivo, p);
@@ -844,11 +876,19 @@ let envio: Envio | null = null;
 /**
  * Guardar. Si el vídeo ya está arriba, ahora; si todavía sube, se apunta y se
  * guarda sola al terminar: así puede rellenar, pulsar y olvidarse.
+ *
+ * Con un aviso del vídeo sin resolver, no: ahí no se está subiendo nada, y
+ * prometer que se guardará sola sería mentirle. Se le dice qué falta.
  */
 export async function guardar(datos: Envio) {
+  if (estado.fase === 'aviso') {
+    const problema = estado.analisis?.problema;
+    if (problema) poner({ errores: { video: fraseDelAviso(problema) } });
+    return;
+  }
   envio = datos;
   if (estado.fase === 'subida') return guardarYa(datos);
-  if (enMarcha() || estado.fase === 'analizando' || estado.fase === 'aviso') poner({ guardarAlTerminar: true, errores: {} });
+  if (enMarcha() || estado.fase === 'analizando') poner({ guardarAlTerminar: true, errores: {} });
 }
 
 /** Se arrepiente de «guardar al terminar» para cambiar algo. */
@@ -881,7 +921,6 @@ async function guardarYa(datos: Envio) {
   } catch {
     r = { ok: false };
   }
-  aguantarPestaña(false);
   if (!r.ok) {
     envio = null;
     const errores = r.errores ?? {};
@@ -891,8 +930,10 @@ async function guardarYa(datos: Envio) {
       errores,
       error: Object.keys(errores).length ? null : 'No se ha podido guardar la clase. El vídeo sigue subido: vuelve a pulsar «Guardar la clase».',
     });
+    // El vídeo sigue arriba sin clase: cerrar la pestaña ahora aún pregunta.
     return;
   }
+  aguantarPestaña(false);
 
   // Hecho. Se olvida la subida y se deja el formulario listo para la
   // siguiente, con el mismo destino y apartado: lo normal es subir varias del
@@ -906,13 +947,12 @@ async function guardarYa(datos: Envio) {
   envio = null;
   poner({
     ...INICIAL,
-    fase: 'guardada',
     guardada: { id, titulo: datos.titulo, publicada: datos.publicada },
     borrador: { ...BORRADOR_VACIO, destino: estado.borrador.destino, cursoNuevo: estado.borrador.cursoNuevo, modulo: estado.borrador.modulo },
   });
 }
 
-/** Tras ver el «guardada», vuelve a la zona de soltar. */
+/** Quita el aviso de la última clase guardada. */
 export function otra() {
-  if (estado.fase === 'guardada') poner({ fase: 'libre', guardada: null });
+  poner({ guardada: null });
 }

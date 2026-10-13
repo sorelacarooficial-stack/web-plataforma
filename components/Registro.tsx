@@ -372,10 +372,6 @@ export default function Registro({ invitacion }: { invitacion?: string }) {
               He leído y acepto la{' '}
               <Link href="/legal/privacidad" className={css.enlaceFino}>
                 política de privacidad
-              </Link>{' '}
-              y las{' '}
-              <Link href="/legal/condiciones" className={css.enlaceFino}>
-                condiciones
               </Link>
               .
             </span>

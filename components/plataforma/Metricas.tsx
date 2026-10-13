@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { motion, LayoutGroup } from 'framer-motion';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { motion, LayoutGroup, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { nombreDePagina as pagina } from '@/lib/informe-paginas';
 import m from './metricas.module.css';
 
 /**
@@ -11,6 +12,9 @@ import m from './metricas.module.css';
  * Los números salen de /api/metricas, que los suma de los contadores diarios
  * de la web (ver lib/metricas.ts). Empiezan a contar el día que se publica el
  * medidor: lo anterior no existe.
+ *
+ * «Descargar informe (PDF)» saca lo mismo, del periodo elegido, en un PDF
+ * largo y explicado (/api/metricas/informe).
  */
 
 type Par = [string, number];
@@ -54,22 +58,13 @@ type Datos = {
   prueba: boolean;
 };
 
-const PAGINAS: Record<string, string> = {
-  '·': 'Portada',
-  '/': 'Portada',
-  '·formaciones': 'Formaciones',
-  '·metodo': 'El método',
-  '·comunidad': 'Comunidad',
-  '·terapeutas': 'Terapeutas',
-  '·sobre': 'Sobre Sorela',
-  '·contacto': 'Contacto',
-  '·presentacion': 'Presentación',
-  '·registro': 'Crear cuenta',
-  '·entrar': 'Entrar',
-  '·alumnas': 'Landing de alumnas',
-  '·blog': 'Blog',
-};
-const pagina = (k: string) => PAGINAS[k] ?? k.replace(/·/g, '/');
+type Periodo = 7 | 30 | 90 | 'todo';
+const PERIODOS: { valor: Periodo; corto: string; largo: string }[] = [
+  { valor: 7, corto: '7 días', largo: 'Últimos 7 días' },
+  { valor: 30, corto: '30 días', largo: 'Últimos 30 días' },
+  { valor: 90, corto: '3 meses', largo: 'Últimos 3 meses' },
+  { valor: 'todo', corto: 'Desde el inicio', largo: 'Desde el inicio' },
+];
 
 const PAISES = new Intl.DisplayNames(['es'], { type: 'region' });
 const bandera = (cc: string) =>
@@ -300,12 +295,104 @@ function Historia({ h, desdeMedidor }: { h: Historia; desdeMedidor: string | nul
   );
 }
 
+type EstadoInforme = 'listo' | 'preparando' | 'hecho' | 'fallo';
+
+/**
+ * El botón del informe. Lo pide al servidor, que lo genera en el momento
+ * (tarda un par de segundos), y lo guarda con su nombre:
+ * «Informe-Divine-30-dias-2026-10-13.pdf». Mientras tanto dice que lo está
+ * preparando; si falla, lo dice debajo y se puede reintentar.
+ */
+function BotonInforme({ periodo }: { periodo: Periodo }) {
+  const [estado, setEstado] = useState<EstadoInforme>('listo');
+  const reducir = useReducedMotion();
+  const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (temporizador.current && clearTimeout(temporizador.current)), []);
+  const etiqueta = PERIODOS.find((p) => p.valor === periodo)?.largo ?? '';
+
+  const descargar = async () => {
+    if (estado === 'preparando') return;
+    setEstado('preparando');
+    try {
+      const r = await fetch(`/api/metricas/informe?dias=${periodo}`);
+      if (!r.ok || !(r.headers.get('Content-Type') ?? '').includes('pdf')) throw new Error(String(r.status));
+      const pdf = await r.blob();
+      const nombre = /filename="([^"]+)"/.exec(r.headers.get('Content-Disposition') ?? '')?.[1] ?? 'Informe-Divine.pdf';
+      const url = URL.createObjectURL(pdf);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nombre;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // Se suelta cuando el navegador ya lo ha guardado.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      setEstado('hecho');
+      temporizador.current = setTimeout(() => setEstado((e) => (e === 'hecho' ? 'listo' : e)), 3200);
+    } catch {
+      setEstado('fallo');
+    }
+  };
+
+  const textos: Record<EstadoInforme, string> = {
+    listo: 'Descargar informe (PDF)',
+    preparando: 'Preparando el informe…',
+    hecho: 'Informe descargado',
+    fallo: 'Descargar informe (PDF)',
+  };
+
+  return (
+    <div className={m.informeCaja}>
+      <motion.button
+        type="button"
+        className={m.informe}
+        onClick={descargar}
+        aria-busy={estado === 'preparando'}
+        whileTap={reducir ? undefined : { scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 520, damping: 30 }}
+      >
+        <span className={m.informeIcono} data-estado={estado} aria-hidden="true">
+          {estado === 'preparando' ? (
+            <span className={m.girando} />
+          ) : estado === 'hecho' ? (
+            <svg viewBox="0 0 20 20" width="16" height="16">
+              <path d="M4.5 10.5l3.5 3.5 7.5-8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 20 20" width="16" height="16">
+              <path d="M6 2.75h5.2L15.25 6.8v9.45a1 1 0 0 1-1 1h-8.5a1 1 0 0 1-1-1V3.75a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+              <path d="M11 2.9V6.5a.5.5 0 0 0 .5.5h3.6M10 9.25v5M7.75 12.25 10 14.5l2.25-2.25" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </span>
+        <span className={m.informeTexto}>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.strong
+              key={estado === 'fallo' ? 'listo' : estado}
+              initial={reducir ? { opacity: 0 } : { opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reducir ? { opacity: 0 } : { opacity: 0, y: -6 }}
+              transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+            >
+              {textos[estado]}
+            </motion.strong>
+          </AnimatePresence>
+          <span>{etiqueta} · con explicaciones</span>
+        </span>
+      </motion.button>
+      <p className={m.informeFallo} role="alert">
+        {estado === 'fallo' ? 'No he podido preparar el informe. Vuelve a intentarlo en un momento.' : ''}
+      </p>
+    </div>
+  );
+}
+
 export default function Metricas() {
-  const [dias, setDias] = useState<number | 'todo'>(30);
+  const [dias, setDias] = useState<Periodo>(30);
   const [datos, setDatos] = useState<Datos | null>(null);
   const [fallo, setFallo] = useState(false);
 
-  const cargar = useCallback(async (n: number | 'todo') => {
+  const cargar = useCallback(async (n: Periodo) => {
     setFallo(false);
     try {
       const j = await (await fetch(`/api/metricas?dias=${n}`)).json();
@@ -346,15 +433,16 @@ export default function Metricas() {
       <div className={m.barraSuperior}>
         <LayoutGroup id="periodo">
           <div className={m.periodo} role="tablist" aria-label="Periodo">
-            {([7, 30, 90, 'todo'] as const).map((n) => (
+            {PERIODOS.map(({ valor: n, corto }) => (
               <button key={n} type="button" role="tab" aria-selected={dias === n} onClick={() => setDias(n)}>
                 {dias === n && <motion.span layoutId="periodo-activo" className={m.periodoActivo} transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
-                <span>{n === 7 ? '7 días' : n === 30 ? '30 días' : n === 90 ? '3 meses' : 'Desde el inicio'}</span>
+                <span>{corto}</span>
               </button>
             ))}
           </div>
         </LayoutGroup>
         {datos?.prueba && <span className={m.prueba}>Datos de prueba</span>}
+        <BotonInforme periodo={dias} />
       </div>
 
       {datos?.todo && datos.historia && <Historia h={datos.historia} desdeMedidor={datos.desdeMedidor ?? null} />}

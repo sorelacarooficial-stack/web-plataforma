@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { INSTAGRAM, INSTAGRAM_USUARIO } from '@/lib/contenido';
 import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
 import { CORREO_PRIVACIDAD, ENCARGADOS, REVISADA, TRATAMIENTOS } from '@/lib/privacidad';
 
@@ -12,9 +10,10 @@ import { CORREO_PRIVACIDAD, ENCARGADOS, REVISADA, TRATAMIENTOS } from '@/lib/pri
  * Privacidad, cookies y aviso legal están REDACTADOS a partir de lo que la
  * web hace de verdad —ver `lib/privacidad.ts`—, no copiados de una plantilla:
  * cada tratamiento es un formulario real y cada destinatario un servicio que
- * se usa. Las condiciones de contratación siguen pendientes, y a propósito:
- * dependen de precios, cancelaciones y devoluciones que solo puede fijar
- * Sorela, y unas condiciones inventadas obligan a cumplir lo que nadie decidió.
+ * se usa. Las condiciones de contratación no están, y a propósito: dependen
+ * de precios, cancelaciones y devoluciones que solo puede fijar Sorela, unas
+ * condiciones inventadas obligan a cumplir lo que nadie decidió, y una página
+ * pública de «pendiente de redacción» no se deja a la vista.
  *
  * LA IDENTIDAD DE SORELA —nombre, NIF y domicilio— NO ESTÁ EN ESTE ARCHIVO.
  * La ley obliga a publicarla en estas páginas, pero el repositorio es público
@@ -45,7 +44,10 @@ const TITULOS = {
   'aviso-legal': 'Aviso legal',
   privacidad: 'Política de privacidad',
   cookies: 'Política de cookies',
-  condiciones: 'Condiciones de contratación',
+  /* Aquí estaban las «Condiciones de contratación», con un aviso de «texto
+     pendiente de redacción». Se retiran: una página pública que dice que algo
+     no está redactado da peor imagen que no tenerla. Vuelven cuando Sorela
+     fije precios, reservas, cancelaciones y devoluciones. */
 } as const;
 
 type Doc = keyof typeof TITULOS;
@@ -271,29 +273,6 @@ function AvisoLegal({ id }: { id: Identidad | null }) {
   );
 }
 
-function Pendiente() {
-  return (
-    <>
-      <P>
-        Este texto está pendiente de redacción. Depende de precios, reservas, cancelaciones y
-        devoluciones que tiene que fijar Sorela, y no se publica una versión inventada: unas
-        condiciones de relleno obligan a cumplir lo que nadie decidió.
-      </P>
-      <P>
-        Mientras tanto, para cualquier cuestión sobre una reserva:{' '}
-        <Link href="/contacto" className="enlace-fino">
-          el formulario de contacto
-        </Link>{' '}
-        o{' '}
-        <a href={INSTAGRAM} className="enlace-fino" target="_blank" rel="noopener">
-          {INSTAGRAM_USUARIO}
-        </a>
-        .
-      </P>
-    </>
-  );
-}
-
 export default async function Legal({ params }: { params: Promise<{ doc: string }> }) {
   const { doc } = await params;
   const titulo = TITULOS[doc as Doc];
@@ -308,15 +287,12 @@ export default async function Legal({ params }: { params: Promise<{ doc: string 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <p className="antetitulo">Legal</p>
             <h1 className="titulo-lg">{titulo}</h1>
-            {doc !== 'condiciones' && (
-              <p style={{ ...parrafo, fontSize: 13.5, color: 'var(--muted)' }}>Última revisión: {REVISADA}.</p>
-            )}
+            <p style={{ ...parrafo, fontSize: 13.5, color: 'var(--muted)' }}>Última revisión: {REVISADA}.</p>
           </div>
 
           {doc === 'privacidad' && <Privacidad id={id} />}
           {doc === 'cookies' && <Cookies />}
           {doc === 'aviso-legal' && <AvisoLegal id={id} />}
-          {doc === 'condiciones' && <Pendiente />}
         </div>
       </section>
     </main>

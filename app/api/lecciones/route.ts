@@ -191,7 +191,7 @@ export async function POST(peticion: Request) {
   const archivo = archivos[0];
   if (!archivo) {
     return NextResponse.json(
-      { ok: false, motivo: 'sin-video', errores: { video: 'El vídeo todavía no ha terminado de subir.' } },
+      { ok: false, motivo: 'sin-video', errores: { video: 'No encuentro el vídeo subido. Quítalo y vuelve a subirlo.' } },
       { status: 409 }
     );
   }

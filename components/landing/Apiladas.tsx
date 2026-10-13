@@ -15,10 +15,18 @@ import css from './landing.module.css';
 export default function Apiladas({
   tarjetas,
   claseTarjeta,
+  clasesTarjetas,
 }: {
   tarjetas: ReactNode[];
   /** Una clase más para cada tarjeta: la web le da relieve; las landings no la usan. */
   claseTarjeta?: string;
+  /**
+   * Una clase propia para cada tarjeta, por orden. Es para cuando las tarjetas
+   * tienen que distinguirse entre sí (en la portada, la etapa online en papel
+   * y la presencial en negro): la clase va en la caja que se pega, que es la
+   * que lleva el fondo, el filo y la sombra.
+   */
+  clasesTarjetas?: (string | undefined)[];
 }) {
   const zona = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: zona, offset: ['start start', 'end end'] });
@@ -34,7 +42,7 @@ export default function Apiladas({
             total={tarjetas.length}
             escalaFinal={final}
             progreso={scrollYProgress}
-            clase={claseTarjeta}
+            clase={[claseTarjeta, clasesTarjetas?.[i]].filter(Boolean).join(' ') || undefined}
           >
             {t}
           </Tarjeta>

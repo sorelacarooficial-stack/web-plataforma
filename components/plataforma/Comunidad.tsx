@@ -12,8 +12,9 @@ import {
   type Publicacion,
   type Respuesta,
 } from '@/lib/comunidad-tipos';
-import { PUNTOS, formatoPuntos } from '@/lib/puntos-tipos';
-import Bienvenida from './Bienvenida';
+import { FORMAS_DE_SUMAR, PUNTOS, SUMAN_AL_MES, UNIDAD_MES, formatoPuntos, type PorFuenteMes } from '@/lib/puntos-tipos';
+import Bienvenida, { SelloFijada } from './Bienvenida';
+import { DistintivoCreadora, ICONO_FUENTE, Icono, InsigniaNivel, Medalla } from './IconosDivine';
 import { useAviso, useConfirmar, type OpcionesConfirmar } from './Confirmar';
 import css from './plataforma.module.css';
 import c from './comunidad.module.css';
@@ -29,14 +30,22 @@ import { leerRespuesta, prepararImagen } from '@/lib/imagen-cliente';
  * antes de dar el paso. Ver app/api/comunidad.
  */
 
-type FilaRanking = { uid: string; nombre: string; puntos: number; nivel?: { n: number; nombre: string } | null };
+type FilaRanking = {
+  uid: string;
+  nombre: string;
+  foto?: string | null;
+  puntos: number;
+  nivel?: { n: number; nombre: string } | null;
+  /** Cuántas publicaciones, respuestas, «me gusta» y clases lleva en el mes. */
+  por?: PorFuenteMes;
+};
 
 type Datos = {
   puedeEscribir: boolean;
   modera: boolean;
   /* Quién eres y cómo vas este mes en el ranking. Sorela no puntúa: le llega
      `puntua: false` y no se le enseña la fila «Tú». */
-  yo: { uid: string; nombre: string; foto: string | null; puntua?: boolean; puesto?: number | null; puntos?: number };
+  yo: { uid: string; nombre: string; foto: string | null; puntua?: boolean; puesto?: number | null; puntos?: number; por?: PorFuenteMes };
   publicaciones: Publicacion[];
   ranking: FilaRanking[];
   proximaClase: ProximaClase;
@@ -109,12 +118,15 @@ function Avatar({ a, tam = 40 }: { a: Pick<Autora, 'nombre' | 'foto' | 'esSorela
 }
 
 function Nombre({ a }: { a: Autora }) {
-  // Tocar el nombre abre su perfil, como en Instagram.
+  // Tocar el nombre abre su perfil, como en Instagram. Sorela no compite: en
+  // lugar de nivel o puntos lleva su distintivo de creadora.
   return (
-    <button type="button" className={c.nombre} onClick={() => verPerfil(a.uid)} title={`Ver el perfil de ${a.nombre}`}>
-      {a.nombre}
-      {a.esSorela && <span className={c.selloSorela}>✦ Sorela</span>}
-    </button>
+    <span className={c.nombreFila}>
+      <button type="button" className={c.nombre} onClick={() => verPerfil(a.uid)} title={`Ver el perfil de ${a.nombre}`}>
+        {a.nombre}
+      </button>
+      {a.esSorela && <DistintivoCreadora className={c.distintivo} />}
+    </span>
   );
 }
 
@@ -168,6 +180,15 @@ function Visor({ fotos, inicio, cerrar }: { fotos: string[]; inicio: number; cer
 
 /* ---------- Escribir ---------- */
 
+/* Los atajos de debajo de la caja: abren el borrador con su tipo ya elegido. */
+const ATAJO: Record<CategoriaComunidad, string> = {
+  Caso: 'Un caso',
+  Duda: 'Una duda',
+  Resultado: 'Un resultado',
+  Recurso: 'Un recurso',
+  Anuncio: 'Un anuncio',
+};
+
 function Escribir({ yo, modera, alPublicar, confirmar }: { yo: Datos['yo']; modera: boolean; alPublicar: () => void; confirmar: Confirmar }) {
   const [abierto, setAbierto] = useState(false);
   const [categoria, setCategoria] = useState<CategoriaComunidad>('Caso');
@@ -207,6 +228,13 @@ function Escribir({ yo, modera, alPublicar, confirmar }: { yo: Datos['yo']; mode
   }, []);
 
   const categorias = CATEGORIAS_COMUNIDAD.filter((x) => modera || x !== 'Anuncio');
+
+  /* Abrir el borrador; desde un atajo («Un caso», «Una duda»…), ya con su
+     tipo elegido. */
+  function abrir(cat?: CategoriaComunidad) {
+    if (cat) setCategoria(cat);
+    setAbierto(true);
+  }
 
   async function subir(lista: FileList | null) {
     if (!lista) return;
@@ -286,13 +314,41 @@ function Escribir({ yo, modera, alPublicar, confirmar }: { yo: Datos['yo']; mode
   }
 
   return (
-    <motion.section layout className={c.escribir} data-abierto={abierto ? '' : undefined}>
+    <motion.section layout className={c.escribir} data-abierto={abierto ? '' : undefined} aria-label="Escribir en la comunidad">
       {!abierto ? (
-        <button type="button" className={c.escribirCerrado} onClick={() => setAbierto(true)}>
-          <Avatar a={{ nombre: yo.nombre || 'Tú', foto: yo.foto, esSorela: modera }} />
-          <span>{modera ? 'Escribe a la comunidad: un anuncio, un consejo, una respuesta…' : 'Comparte un caso, una duda o un resultado…'}</span>
-          <span className={c.escribirBoton}>Publicar</span>
-        </button>
+        /* Cerrada se ve a la primera que aquí se escribe: un campo blanco con
+           borde de verdad (3,8:1), la invitación en tinta legible y un botón
+           negro que dice lo que hace. Debajo, atajos por tipo y lo que suma. */
+        <div className={c.escribirCerrado}>
+          <div className={c.escribirFila}>
+            <Avatar a={{ nombre: yo.nombre || 'Tú', foto: yo.foto, esSorela: modera }} tam={44} />
+            <button type="button" className={c.escribirCampo} onClick={() => abrir()}>
+              {/* En el móvil, la invitación corta: la larga se cortaba a media frase. */}
+              <span className={c.campoLargo}>{modera ? 'Escribe a la comunidad: un anuncio, un consejo…' : 'Comparte un caso, una duda o un resultado…'}</span>
+              <span className={c.campoCorto}>{modera ? 'Escribe a la comunidad…' : '¿Qué quieres compartir?'}</span>
+            </button>
+            <button type="button" className={c.escribirBoton} onClick={() => abrir()} aria-label="Publicar: escribir una publicación nueva">
+              <Icono nombre="publicaciones" size={18} grosor={1.7} />
+              <span>Publicar</span>
+            </button>
+          </div>
+          <div className={c.escribirDebajo}>
+            <div className={c.escribirAtajos}>
+              {categorias.map((x) => (
+                <button key={x} type="button" className={c.atajo} onClick={() => abrir(x)}>
+                  {ATAJO[x]}
+                </button>
+              ))}
+            </div>
+            {/* Sorela no compite: a ella no se le dice lo que suma. */}
+            {!modera && (
+              <span className={c.escribirPuntos}>
+                <Icono nombre="publicaciones" size={15} grosor={1.8} />
+                Publicar suma <b>+{PUNTOS.publicacion}</b>
+              </span>
+            )}
+          </div>
+        </div>
       ) : (
         <motion.div className={c.escribirAbierto} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <LayoutGroup id="cat">
@@ -591,8 +647,15 @@ function Tarjeta({
           </span>
         </span>
         <span className={c.sellos}>
-          {p.fijada && <span className={c.selloFijada}>📌 Fijada</span>}
-          {p.resuelta && <span className={c.selloResuelta}>✓ Resuelta</span>}
+          {p.fijada && <SelloFijada />}
+          {p.resuelta && (
+            <span className={c.selloResuelta} title="Resuelta">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
+                <path d="M5 12.5l4.5 4.5L19 7.5" />
+              </svg>
+              <span className={c.selloTexto}>Resuelta</span>
+            </span>
+          )}
         </span>
         {(datos.modera || p.esMia) && <MenuPublicacion p={p} modera={datos.modera} puedeEscribir={datos.puedeEscribir} elegir={moderar} />}
       </header>
@@ -777,41 +840,107 @@ function Clase({ clase, modera, puedeEntrar, guardado }: { clase: ProximaClase; 
 
 /* ---------- Más activas este mes ---------- */
 
+const MES = new Intl.DateTimeFormat('es-ES', { month: 'long', timeZone: 'UTC' });
+const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+/** «Octubre · se reinicia el día 1»: el ranking es del mes (en UTC, como lib/actividad). */
+const rotuloDelMes = (ahora = new Date()) => `${mayuscula(MES.format(ahora))} · se reinicia el día 1`;
+
+const cuantasDe = (f: keyof typeof UNIDAD_MES, n: number) => `${formatoPuntos(n)} ${n === 1 ? UNIDAD_MES[f][0] : UNIDAD_MES[f][1]}`;
+
 /**
- * El ranking del mes: barras que crecen en proporción a la primera, oro,
- * plata y bronce para el podio, el nivel de cada una y, debajo, cómo vas tú.
- * Así se entiende de un vistazo quién lleva cuánto y qué hace falta para
- * entrar.
+ * De dónde salen los puntos del mes de alguien, con los iconos de cada forma
+ * de sumar: «✎ 2 · ↩ 5 · ♥ 9 · ▶ 1». El lector de pantalla oye la frase
+ * entera («2 publicaciones, 5 respuestas…»). Lo que no tiene, no sale.
+ */
+function DesgloseMes({ por }: { por?: PorFuenteMes }) {
+  const fuentes = SUMAN_AL_MES.filter((f) => (por?.[f] ?? 0) > 0);
+  if (!por || !fuentes.length) return null;
+  return (
+    <ul className={c.desgloseMes} aria-label="De dónde salen sus puntos">
+      {fuentes.map((f) => (
+        <li key={f} title={cuantasDe(f, por[f]!)}>
+          <Icono nombre={ICONO_FUENTE[f]} size={15} grosor={1.8} />
+          <span aria-hidden="true">{formatoPuntos(por[f]!)}</span>
+          <span className={c.soloLector}>{cuantasDe(f, por[f]!)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * Lo que le falta a quien mira para subir un puesto (o para entrar): es lo
+ * que engancha. Solo con lo que ya trae el ranking: nada de pedir más.
+ */
+function pistaDelPuesto(filas: FilaRanking[], mio: { puesto: number | null; puntos: number }): string {
+  if (mio.puesto === 1) return filas.length > 1 ? `Vas la primera, ${formatoPuntos(mio.puntos - filas[1].puntos)} pts por delante.` : 'Vas la primera.';
+  if (mio.puesto && mio.puesto <= filas.length) {
+    const arriba = filas[mio.puesto - 2];
+    const falta = arriba.puntos - mio.puntos;
+    return falta <= 0 ? `Empatada con ${arriba.nombre}.` : `A ${formatoPuntos(falta)} pts de ${arriba.nombre}, puesto ${mio.puesto - 1}.`;
+  }
+  if (filas.length >= 5) return `Te faltan ${formatoPuntos(filas[4].puntos - mio.puntos + 1)} pts para entrar en las cinco.`;
+  return 'Con lo próximo que sumes ya entras en la lista.';
+}
+
+/**
+ * El ranking del mes. Cada fila: la medalla del podio (o el puesto), la foto
+ * con la insignia de su nivel, sus puntos del mes en grande, una barra en
+ * proporción a la primera y, con iconos, de dónde salen. Debajo, cómo vas tú
+ * y la leyenda de cómo se suma (los valores salen de PUNTOS, no escritos a
+ * mano). Sorela no aparece: no compite (lo filtra el servidor).
  */
 function Ranking({ filas, yo }: { filas: FilaRanking[]; yo: Datos['yo'] | null }) {
   const reducir = useReducedMotion();
   const max = Math.max(1, filas[0]?.puntos ?? 0);
   const mio = yo?.puntua ? { puesto: yo.puesto ?? null, puntos: Math.max(0, yo.puntos ?? 0) } : null;
+  const leyenda = SUMAN_AL_MES.map((f) => FORMAS_DE_SUMAR.find((x) => x.fuente === f)!).filter(Boolean);
 
   return (
-    <section className={c.ladoTarjeta} aria-labelledby="ranking-titulo">
-      <h2 id="ranking-titulo" className={c.ladoRotulo}>
-        Más activas este mes
-      </h2>
+    <section className={`${c.ladoTarjeta} ${c.rankingTarjeta}`} aria-labelledby="ranking-titulo">
+      <header className={c.rankingCabecera}>
+        <span className={c.rankingSello} aria-hidden="true">
+          <Icono nombre="medalla" size={20} grosor={1.6} />
+        </span>
+        <span>
+          <h2 id="ranking-titulo" className={c.rankingTitulo}>
+            Más activas este mes
+          </h2>
+          <span className={c.rankingMes}>{rotuloDelMes()}</span>
+        </span>
+      </header>
+
       {filas.length === 0 ? (
-        <p className={c.ladoTexto}>Suma quien publica casos, responde a las demás y termina clases. Todavía no hay nadie: la primera se lleva el oro.</p>
+        <p className={c.ladoTexto}>Todavía no ha sumado nadie este mes. La primera que publique, responda o termine una clase se lleva el oro.</p>
       ) : (
         <ol className={c.ranking}>
           {filas.map((r, i) => (
-            <li key={r.uid} data-yo={yo && r.uid === yo.uid ? '' : undefined}>
+            <li key={r.uid} data-yo={yo && r.uid === yo.uid ? '' : undefined} data-p={i}>
               {/* El puesto ya lo dice la lista ordenada al lector de pantalla. */}
-              <span className={c.puesto} data-p={i} aria-hidden="true">
-                {i + 1}
+              <span className={c.rankingPuesto} aria-hidden="true">
+                {i < 3 ? <Medalla puesto={(i + 1) as 1 | 2 | 3} size={30} /> : <span className={c.puesto}>{i + 1}</span>}
               </span>
+              {/* La foto también abre el perfil; para el teclado y el lector ya está el nombre. */}
+              <button type="button" className={c.rankingFoto} onClick={() => verPerfil(r.uid)} tabIndex={-1} aria-hidden="true">
+                <Avatar a={{ nombre: r.nombre, foto: r.foto ?? null, esSorela: false }} tam={40} />
+                {r.nivel && <InsigniaNivel n={r.nivel.n} size={20} className={c.rankingInsignia} />}
+              </button>
               <div className={c.rankingCuerpo}>
                 <div className={c.rankingLinea}>
                   <button type="button" className={c.rankingNombre} onClick={() => verPerfil(r.uid)} title={`Ver el perfil de ${r.nombre}`}>
                     {r.nombre}
                   </button>
                   <span className={c.puntos}>
-                    {formatoPuntos(r.puntos)} <small>pts</small>
+                    {formatoPuntos(r.puntos)}
+                    <small> pts</small>
                   </span>
                 </div>
+                {r.nivel && (
+                  <span className={c.rankingNivel}>
+                    Nivel {r.nivel.n} · {r.nivel.nombre}
+                  </span>
+                )}
                 <span className={c.rankingPista} aria-hidden="true">
                   <motion.span
                     className={c.rankingRelleno}
@@ -821,35 +950,42 @@ function Ranking({ filas, yo }: { filas: FilaRanking[]; yo: Datos['yo'] | null }
                     transition={reducir ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 17, delay: 0.15 + i * 0.09 }}
                   />
                 </span>
-                {r.nivel && (
-                  <span className={c.chipNivel}>
-                    <span className={c.chipNumero} aria-hidden="true">
-                      {r.nivel.n}
-                    </span>
-                    <span className={c.soloLector}>Nivel {r.nivel.n}: </span>
-                    {r.nivel.nombre}
-                  </span>
-                )}
+                <DesgloseMes por={r.por} />
               </div>
             </li>
           ))}
         </ol>
       )}
-      {mio && (filas.length > 0 || mio.puntos > 0) && (
-        <p className={c.rankingYo}>
-          <b>Tú</b>
-          <span aria-hidden="true">·</span>
-          {mio.puesto ? `puesto ${mio.puesto}` : 'aún sin puesto'}
-          <span aria-hidden="true">·</span>
-          <span>
-            <b>{formatoPuntos(mio.puntos)} pts</b> este mes
-          </span>
-        </p>
+
+      {mio && (
+        <div className={c.rankingYo}>
+          <p>
+            <b>Tú</b>
+            <span aria-hidden="true">·</span>
+            {mio.puesto ? `puesto ${mio.puesto}` : 'aún sin puesto'}
+            <span aria-hidden="true">·</span>
+            <span>
+              <b>{formatoPuntos(mio.puntos)} pts</b> este mes
+            </span>
+          </p>
+          <p className={c.rankingPistaTexto}>{pistaDelPuesto(filas, mio)}</p>
+        </div>
       )}
-      <p className={c.rankingComo}>
-        Publicar <b>+{PUNTOS.publicacion}</b> · Responder a otra <b>+{PUNTOS.respuesta}</b> · Cada «me gusta» que recibes{' '}
-        <b>+{PUNTOS.meGusta}</b> · Terminar una clase <b>+{PUNTOS.clase}</b>
-      </p>
+
+      <div className={c.leyenda}>
+        <p className={c.leyendaTitulo}>Cómo se suma este mes</p>
+        <ul>
+          {leyenda.map((x) => (
+            <li key={x.fuente}>
+              <span className={c.leyendaIcono} aria-hidden="true">
+                <Icono nombre={ICONO_FUENTE[x.fuente]} size={17} grosor={1.7} />
+              </span>
+              <span className={c.leyendaTexto}>{x.corto}</span>
+              <b className={c.leyendaPuntos}>+{formatoPuntos(x.puntos)}</b>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

@@ -17,6 +17,9 @@ const nextConfig: NextConfig = {
     '/api/acuerdos': ['./fotos/logo-sorela.png'],
     '/api/acuerdos/**': ['./fotos/logo-sorela.png'],
     '/api/certificado': ['./fotos/logo-sorela.png'],
+    /* El informe de Métricas en PDF lleva las tipografías de la marca en
+       TTF (un PDF no puede llevar las woff2 de la web) y el logotipo. */
+    '/api/metricas/informe': ['./fuentes/*.ttf', './fotos/logo-sorela.png'],
   },
   /* Cabeceras de seguridad en todas las páginas:
      · nadie puede meter la web dentro de un marco ajeno (evita que engañen a

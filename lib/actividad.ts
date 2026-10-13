@@ -1,6 +1,7 @@
 import 'server-only';
 import { FieldValue, type DocumentData, type DocumentReference } from 'firebase-admin/firestore';
 import { baseDeDatos, COLECCIONES } from './firebase-servidor';
+import type { FuenteMes } from './puntos-tipos';
 
 /**
  * Los dos marcadores de la comunidad, en un solo sitio:
@@ -10,8 +11,11 @@ import { baseDeDatos, COLECCIONES } from './firebase-servidor';
  *     sus logros y de sus puntos, así que tienen que ser EXACTOS: lo que se
  *     borra se resta.
  *   · `comunidad_actividad/{YYYY-MM}` — el ranking del mes. Un documento por
- *     mes con `{ [uid]: { nombre, puntos } }`. Sorela no puntúa: el ranking es
- *     de las terapeutas.
+ *     mes con `{ [uid]: { nombre, puntos, por } }`. `por` dice de dónde salen
+ *     esos puntos: cuántas publicaciones, respuestas, «me gusta» recibidos y
+ *     clases lleva en el mes (`{ publicaciones: 2, clases: 1 }`), para que el
+ *     ranking lo enseñe con sus iconos. Sube y baja a la vez que los puntos,
+ *     en la misma escritura. Sorela no puntúa: el ranking es de las terapeutas.
  *
  * Lo usan la comunidad (publicar, responder, «me gusta», borrar) y el aula
  * (terminar una clase).
@@ -72,9 +76,11 @@ export type QuienPuntua = { uid: string; nombre?: string; esSorela?: boolean };
  * Se agrupa por persona y por mes: borrar una publicación con cien respuestas
  * de cinco compañeras son cinco escrituras de contadores, no cien.
  */
+type EnElMes = { puntos: number; nombre?: string; por: Partial<Record<FuenteMes, number>> };
+
 export class Cuentas {
   private stats = new Map<string, Partial<Record<CampoStats, number>>>();
-  private meses = new Map<string, Map<string, { puntos: number; nombre?: string }>>();
+  private meses = new Map<string, Map<string, EnElMes>>();
 
   contar(uid: string, campo: CampoStats, n = 1) {
     if (!uid || !n) return this;
@@ -84,12 +90,17 @@ export class Cuentas {
     return this;
   }
 
-  /** Suma (o resta, con negativo) puntos del ranking en un mes concreto. */
-  puntuar(quien: QuienPuntua, puntos: number, mes: string = mesDe()) {
+  /**
+   * Suma (o resta, con negativo) puntos del ranking en un mes concreto.
+   * `fuente`: de dónde vienen (una publicación, una respuesta…); cuenta una
+   * más (o una menos, al restar) en el `por` de ese mes.
+   */
+  puntuar(quien: QuienPuntua, puntos: number, mes: string = mesDe(), fuente?: FuenteMes) {
     if (!quien.uid || !puntos || quien.esSorela || !esMes(mes)) return this;
-    const m = this.meses.get(mes) ?? new Map<string, { puntos: number; nombre?: string }>();
-    const x = m.get(quien.uid) ?? { puntos: 0 };
+    const m = this.meses.get(mes) ?? new Map<string, EnElMes>();
+    const x = m.get(quien.uid) ?? { puntos: 0, por: {} };
     x.puntos += puntos;
+    if (fuente) x.por[fuente] = (x.por[fuente] ?? 0) + Math.sign(puntos);
     // El nombre solo se refresca al sumar: al restar puede venir sin él.
     if (quien.nombre && puntos > 0) x.nombre = quien.nombre;
     m.set(quien.uid, x);
@@ -126,7 +137,13 @@ export class Cuentas {
       const datos: Record<string, unknown> = {};
       for (const [uid, x] of m) {
         if (!x.puntos || sorela.has(uid) || (vivas && !vivas.has(uid))) continue;
-        datos[uid] = { ...(x.nombre ? { nombre: x.nombre } : {}), puntos: FieldValue.increment(x.puntos) };
+        const por: Record<string, FieldValue> = {};
+        for (const [f, n] of Object.entries(x.por)) if (n) por[f] = FieldValue.increment(n);
+        datos[uid] = {
+          ...(x.nombre ? { nombre: x.nombre } : {}),
+          puntos: FieldValue.increment(x.puntos),
+          ...(Object.keys(por).length ? { por } : {}),
+        };
       }
       if (Object.keys(datos).length) poner(db.collection(COLECCION_ACTIVIDAD).doc(mes), datos);
     }
@@ -161,7 +178,8 @@ export async function contar(uid: string, campo: CampoStats, n = 1) {
 /**
  * Suma (o resta, con negativo) puntos al ranking de un mes. Por defecto, el
  * de ahora; al borrar algo, el mes en que se creó, que es donde se sumó.
+ * `fuente`: de dónde vienen (el aula manda 'clases'), para el desglose.
  */
-export async function sumarActividad(autora: QuienPuntua, puntos: number, mes: string = mesDe()) {
-  await new Cuentas().puntuar(autora, puntos, mes).guardar();
+export async function sumarActividad(autora: QuienPuntua, puntos: number, mes: string = mesDe(), fuente?: FuenteMes) {
+  await new Cuentas().puntuar(autora, puntos, mes, fuente).guardar();
 }

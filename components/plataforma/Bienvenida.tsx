@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { FORMAS_DE_SUMAR, NIVELES, SUMAN_AL_MES, formatoPuntos, type FuentePuntos } from '@/lib/puntos-tipos';
+import { LOGROS, OROS_PARA_DIVINE } from '@/lib/logros-tipos';
+import { DistintivoCreadora, ICONO_FUENTE, Icono, InsigniaNivel, Trofeo } from './IconosDivine';
 import c from './comunidad.module.css';
 
 /**
@@ -11,7 +14,85 @@ import c from './comunidad.module.css';
  * pantalla, así nunca se borra por error y la ve todo el mundo desde el
  * primer día: quien tiene la Comunidad y quien entra de visita con su curso,
  * cada una con su final.
+ *
+ * También explica el juego en cuatro líneas: cómo se ganan los puntos (con
+ * los iconos y los valores de lib/puntos-tipos.ts, nunca escritos a mano), los
+ * niveles, los trofeos y el ranking del mes. Lo de la comunidad y el aula va
+ * primero, que es lo que mueve «Más activas este mes».
  */
+
+const PRIMERO = new Set<FuentePuntos>(SUMAN_AL_MES);
+const FORMAS = [
+  ...SUMAN_AL_MES.map((f) => FORMAS_DE_SUMAR.find((x) => x.fuente === f)!).filter(Boolean),
+  ...FORMAS_DE_SUMAR.filter((f) => !PRIMERO.has(f.fuente)),
+];
+const PRIMER_NIVEL = NIVELES[0];
+const ULTIMO_NIVEL = NIVELES[NIVELES.length - 1];
+const TROFEO_DIVINE = LOGROS.find((l) => l.escalon === 'divine')?.nombre ?? 'Divine';
+
+function ComoSeSuma() {
+  return (
+    <section className={c.bienvenidaPuntos} aria-labelledby="bienvenida-puntos">
+      <h4 id="bienvenida-puntos">Puntos, niveles y trofeos</h4>
+      <p>Todo lo que haces aquí y en el aula suma puntos:</p>
+      <ul className={c.formas}>
+        {FORMAS.map((f) => (
+          <li key={f.fuente} title={f.texto}>
+            <span className={c.formaIcono} aria-hidden="true">
+              <Icono nombre={ICONO_FUENTE[f.fuente]} size={17} grosor={1.7} />
+            </span>
+            <span className={c.formaTexto}>{f.corto}</span>
+            <b>+{formatoPuntos(f.puntos)}</b>
+          </li>
+        ))}
+      </ul>
+      <p className={c.bienvenidaLinea}>
+        <span className={c.bienvenidaMuestra} aria-hidden="true">
+          {NIVELES.map((n) => (
+            <InsigniaNivel key={n.n} n={n.n} size={24} />
+          ))}
+        </span>
+        <span>
+          Con los puntos subes de nivel: son {NIVELES.length}, de «{PRIMER_NIVEL.nombre}» a «{ULTIMO_NIVEL.nombre}» (desde{' '}
+          {formatoPuntos(ULTIMO_NIVEL.desde)} puntos).
+        </span>
+      </p>
+      <p className={c.bienvenidaLinea}>
+        <span className={c.bienvenidaMuestra} aria-hidden="true">
+          <Trofeo escalon="bronce" glifo="publicacion" size={28} />
+          <Trofeo escalon="plata" glifo="respuesta" size={28} />
+          <Trofeo escalon="oro" glifo="clase" size={28} />
+          <Trofeo escalon="divine" glifo="divine" size={28} />
+        </span>
+        <span>
+          Y ganas trofeos de bronce, plata y oro; con {OROS_PARA_DIVINE} oros, el trofeo «{TROFEO_DIVINE}». Los tienes en tu perfil.
+        </span>
+      </p>
+      <p className={c.bienvenidaLinea}>
+        <span className={c.bienvenidaMuestra} aria-hidden="true">
+          <Icono nombre="medalla" size={24} grosor={1.6} />
+        </span>
+        <span>Cada mes, las que más comparten y ayudan salen en «Más activas este mes». Empieza de cero el día 1.</span>
+      </p>
+    </section>
+  );
+}
+
+/**
+ * El sello «Fijada»: la chincheta dibujada (la misma del menú «Fijar arriba»)
+ * en lugar del emoji, que cada móvil pinta a su manera. En el móvil se queda
+ * en la chincheta, para que quepa el distintivo de Sorela al lado del nombre.
+ */
+export function SelloFijada() {
+  return (
+    <span className={c.selloFijada} title="Fijada arriba">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
+        <path d="M9 4h6l-1 6 3 3H7l3-3zM12 13v7" />
+      </svg>
+      <span className={c.selloTexto}>Fijada</span>
+    </span>
+  );
+}
 
 export default function Bienvenida({
   sorela,
@@ -36,16 +117,16 @@ export default function Bienvenida({
           )}
         </span>
         <span className={c.quien}>
-          <span className={c.nombre}>
-            {sorela.nombre}
-            <span className={c.selloSorela}>✦ Sorela</span>
+          <span className={c.nombreFila}>
+            <span className={c.nombre}>{sorela.nombre}</span>
+            <DistintivoCreadora className={c.distintivo} />
           </span>
           <span className={c.cuando}>
             Para todas · <b>Bienvenida</b>
           </span>
         </span>
         <span className={c.sellos}>
-          <span className={c.selloFijada}>📌 Fijada</span>
+          <SelloFijada />
         </span>
       </header>
 
@@ -88,7 +169,6 @@ export default function Bienvenida({
                   <li>Leo todo lo que se publica y respondo las dudas técnicas.</li>
                   <li>Cada mes hay una clase en vivo: la fecha y el enlace salen aquí, en la tarjeta «Próxima clase en vivo».</li>
                   <li>Puedes subir hasta cuatro fotos por publicación y responder en cada caso.</li>
-                  <li>Quien más comparte y ayuda a las demás sube en «Más activas este mes».</li>
                 </ul>
               </section>
               <section>
@@ -100,6 +180,7 @@ export default function Bienvenida({
                 </ul>
               </section>
             </div>
+            <ComoSeSuma />
             <p className={c.bienvenidaCierre}>
               {puedeEscribir
                 ? 'Para empezar, preséntate en tu primera publicación: quién eres, desde dónde trabajas y qué te gustaría aprender. Te estaba esperando.'

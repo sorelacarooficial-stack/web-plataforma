@@ -256,12 +256,11 @@ export default function DatosEstructurados({
       provider: refNegocio,
       author: refSorela,
       /**
-       * Aquí NO va `hasCourseInstance`. Una convocatoria en schema.org pide
-       * fecha, modalidad y duración o lugar, y hoy no hay ninguna fecha
-       * cerrada: la propia página lo dice. Inventar una convocatoria para
-       * rellenar el hueco sería prometer en Google un curso con fecha que al
-       * entrar no existe. Cuando haya convocatorias reales, entran aquí con
-       * sus fechas, su ciudad y su precio, y no antes.
+       * Aquí NO va `hasCourseInstance`. Las convocatorias reales (las que
+       * Sorela marca para la web) las declara /formaciones con
+       * `nodosConvocatorias` de lib/convocatorias.ts, junto al curso
+       * presencial, que entonces se quita de este bloque. Sin convocatorias
+       * no se inventa ninguna: sería prometer en Google una fecha que no existe.
        *
        * Tampoco va `offers`: no hay precio público de la formación.
        */

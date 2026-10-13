@@ -10,6 +10,7 @@ import {
   useSyncExternalStore,
   type DragEvent,
   type FormEvent,
+  type KeyboardEvent as TeclaReact,
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
@@ -270,168 +271,166 @@ function NuevaClase({ est, datos }: { est: Estado; datos: Respuesta }) {
     subida.editar(c);
   };
 
-  if (est.fase === 'guardada' && est.guardada) {
-    return (
-      <section className={s.nueva} aria-live="polite">
-        <div className={s.hecho}>
-          <span className={s.hechoIcono} aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12.5l4.5 4.5L19 7.5" />
-            </svg>
-          </span>
-          <div className={s.hechoTexto}>
-            <h2 className={s.hechoTitulo}>«{est.guardada.titulo}» ya está en el aula</h2>
-            <p className={s.ayuda}>
-              {est.guardada.publicada
-                ? 'Está publicada: la ve ya quien tenga acceso.'
-                : 'Está en borrador: solo la ves tú. Publícala desde la lista cuando esté lista.'}
-            </p>
-          </div>
-          <button type="button" className={s.botonPrimario} onClick={subida.otra}>
-            Subir otra clase
-          </button>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section className={s.nueva} aria-labelledby={`${id}-titulo`}>
       <header className={s.cabeza}>
         <h2 id={`${id}-titulo`} className={s.titulo}>
           Nueva clase
         </h2>
-        <p className={s.ayuda}>
-          Elige el vídeo y se pone a subir solo. Mientras sube, rellena el resto.
-        </p>
+        <p className={s.ayuda}>Elige el vídeo y se pone a subir solo. Mientras sube, rellena el resto.</p>
       </header>
 
-      <div className={s.nuevaCuerpo}>
-      <div className={s.columnaVideo}>
-
-      {est.pendiente && est.fase === 'libre' && (
-        <div className={s.pendiente} role="status">
-          <p>
-            <strong>Se quedó a medias la subida de «{est.pendiente.nombre}».</strong> Vuelve a elegir ese
-            mismo archivo y seguirá donde se quedó, sin empezar de cero.
-          </p>
-          <button type="button" className={s.botonSecundario} onClick={() => subida.descartarPendiente()}>
-            Olvidarla
-          </button>
-        </div>
-      )}
-
-      {est.fase === 'libre' ? (
-        <ZonaSoltar error={est.error ?? errores.video} />
-      ) : (
-        <TarjetaVideo est={est} />
-      )}
-      </div>
-
-      <form className={s.campos} onSubmit={enviar} noValidate>
-        <label className={s.campo}>
-          <span className={s.rotulo}>Título de la clase</span>
-          <input
-            ref={titulo}
-            value={b.titulo}
-            onChange={(e) => editar({ titulo: e.target.value })}
-            placeholder="Lipodrenaje: protocolo completo"
-            className={s.caja}
-            maxLength={140}
-            disabled={bloqueado}
-            aria-invalid={errores.titulo ? true : undefined}
-            aria-describedby={errores.titulo ? `${id}-e-titulo` : undefined}
-          />
-          {errores.titulo && (
-            <span id={`${id}-e-titulo`} className={s.error} role="alert">
-              {errores.titulo}
+      {/* La última que se ha guardado: se dice aquí arriba, y debajo ya se
+          puede soltar la siguiente sin pulsar nada más. */}
+      <AnimatePresence initial={false}>
+        {est.guardada && est.fase === 'libre' && (
+          <motion.div
+            key={est.guardada.id}
+            className={s.hecho}
+            role="status"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <span className={s.hechoIcono} aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12.5l4.5 4.5L19 7.5" />
+              </svg>
             </span>
+            <span className={s.hechoTexto}>
+              <span className={s.hechoTitulo}>«{est.guardada.titulo}» ya está en el aula</span>
+              <span className={s.ayuda}>
+                {est.guardada.publicada
+                  ? 'Está publicada: la ve ya quien tenga acceso.'
+                  : 'Está en borrador: solo la ves tú. Publícala desde la lista cuando esté lista.'}
+              </span>
+            </span>
+            <button type="button" className={s.botonTexto} onClick={subida.otra}>
+              Vale
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className={s.nuevaCuerpo}>
+        <div className={s.columnaVideo}>
+          {est.pendiente && est.fase === 'libre' && (
+            <div className={s.pendiente} role="status">
+              <p>
+                <strong>Se quedó a medias la subida de «{est.pendiente.nombre}».</strong> Vuelve a elegir ese
+                mismo archivo y seguirá donde se quedó, sin empezar de cero.
+              </p>
+              <button type="button" className={s.botonSecundario} onClick={() => subida.descartarPendiente()}>
+                Olvidarla
+              </button>
+            </div>
           )}
-        </label>
+          {est.fase === 'libre' ? <ZonaSoltar error={est.error ?? errores.video} /> : <TarjetaVideo est={est} />}
+        </div>
 
-        <label className={s.campo}>
-          <span className={s.rotulo}>
-            De qué va <span className={s.opcional}>opcional</span>
-          </span>
-          <textarea
-            rows={3}
-            value={b.descripcion}
-            onChange={(e) => editar({ descripcion: e.target.value })}
-            placeholder="Lo que se ve en esta clase, en una o dos frases."
-            className={s.caja}
-            maxLength={600}
-            disabled={bloqueado}
-          />
-        </label>
+        <form className={s.campos} onSubmit={enviar} noValidate>
+          <label className={s.campo}>
+            <span className={s.rotulo}>Título de la clase</span>
+            <input
+              ref={titulo}
+              value={b.titulo}
+              onChange={(e) => editar({ titulo: e.target.value })}
+              placeholder="Lipodrenaje: protocolo completo"
+              className={s.caja}
+              maxLength={140}
+              disabled={bloqueado}
+              aria-invalid={errores.titulo ? true : undefined}
+              aria-describedby={errores.titulo ? `${id}-e-titulo` : undefined}
+            />
+            {errores.titulo && (
+              <span id={`${id}-e-titulo`} className={s.error} role="alert">
+                {errores.titulo}
+              </span>
+            )}
+          </label>
 
-        <Destinos b={b} cursos={datos.cursos} editar={editar} deshabilitado={bloqueado} error={errores.para} />
-
-        {paraDe(b)?.tipo === 'curso' && (
           <label className={s.campo}>
             <span className={s.rotulo}>
-              Apartado del curso <span className={s.opcional}>opcional</span>
+              De qué va <span className={s.opcional}>opcional</span>
             </span>
-            <input
-              value={b.modulo}
-              onChange={(e) => editar({ modulo: e.target.value })}
-              placeholder={apartados[0] ?? 'Día 1 · Desbloqueo'}
+            <textarea
+              rows={3}
+              value={b.descripcion}
+              onChange={(e) => editar({ descripcion: e.target.value })}
+              placeholder="Lo que se ve en esta clase, en una o dos frases."
               className={s.caja}
-              maxLength={80}
-              list={apartados.length ? `${id}-apartados` : undefined}
+              maxLength={600}
               disabled={bloqueado}
             />
-            {apartados.length > 0 && (
-              <datalist id={`${id}-apartados`}>
-                {apartados.map((a) => (
-                  <option key={a} value={a} />
-                ))}
-              </datalist>
-            )}
-            <span className={s.ayuda}>En el aula, las clases se agrupan por apartado. Si lo dejas vacío, va con el resto del curso.</span>
           </label>
-        )}
 
-        <div className={s.interruptorFila}>
-          <span className={s.interruptorTexto}>
-            <span className={s.interruptorTitulo} id={`${id}-publicar`}>
-              Publicarla ya
-            </span>
-            <span className={s.ayuda} id={`${id}-publicar-ayuda`}>
-              Si no, queda en borrador y solo la ves tú.
-            </span>
-          </span>
-          <Interruptor
-            encendido={b.publicar}
-            alCambiar={(v) => editar({ publicar: v })}
-            etiquetaId={`${id}-publicar`}
-            descritoId={`${id}-publicar-ayuda`}
-            deshabilitado={bloqueado}
-          />
-        </div>
+          <Destinos b={b} cursos={datos.cursos} editar={editar} deshabilitado={bloqueado} error={errores.para} />
 
-        <div className={s.pie}>
-          {est.guardarAlTerminar ? (
-            <>
-              <p className={s.esperando} role="status">
-                <span className={s.punto} aria-hidden="true" />
-                Se guardará sola en cuanto termine de subir. Puedes irte a otra pantalla.
-              </p>
-              <button type="button" className={s.botonSecundario} onClick={subida.noGuardarAun}>
-                Cambiar algo
-              </button>
-            </>
-          ) : (
-            <button
-              type="submit"
-              className={s.botonPrimario}
-              disabled={est.fase === 'guardando' || est.fase === 'error'}
-            >
-              {est.fase === 'guardando' ? 'Guardando…' : 'Guardar la clase'}
-            </button>
+          {paraDe(b)?.tipo === 'curso' && (
+            <label className={s.campo}>
+              <span className={s.rotulo}>
+                Apartado del curso <span className={s.opcional}>opcional</span>
+              </span>
+              <input
+                value={b.modulo}
+                onChange={(e) => editar({ modulo: e.target.value })}
+                placeholder={apartados[0] ?? 'Día 1 · Desbloqueo'}
+                className={s.caja}
+                maxLength={80}
+                list={apartados.length ? `${id}-apartados` : undefined}
+                disabled={bloqueado}
+              />
+              {apartados.length > 0 && (
+                <datalist id={`${id}-apartados`}>
+                  {apartados.map((a) => (
+                    <option key={a} value={a} />
+                  ))}
+                </datalist>
+              )}
+              <span className={s.ayuda}>
+                En el aula, las clases se agrupan por apartado. Si lo dejas vacío, va con el resto del curso.
+              </span>
+            </label>
           )}
-          {!est.archivo && !est.guardarAlTerminar && <span className={s.ayuda}>Primero elige el vídeo.</span>}
-        </div>
-      </form>
+
+          <div className={s.interruptorFila}>
+            <span className={s.interruptorTexto}>
+              <span className={s.interruptorTitulo} id={`${id}-publicar`}>
+                Publicarla ya
+              </span>
+              <span className={s.ayuda} id={`${id}-publicar-ayuda`}>
+                Si no, queda en borrador y solo la ves tú.
+              </span>
+            </span>
+            <Interruptor
+              encendido={b.publicar}
+              alCambiar={(v) => editar({ publicar: v })}
+              etiquetaId={`${id}-publicar`}
+              descritoId={`${id}-publicar-ayuda`}
+              deshabilitado={bloqueado}
+            />
+          </div>
+
+          <div className={s.pie}>
+            {est.guardarAlTerminar ? (
+              <>
+                <p className={s.esperando} role="status">
+                  <span className={s.punto} aria-hidden="true" />
+                  Se guardará sola en cuanto termine de subir. Puedes irte a otra pantalla.
+                </p>
+                <button type="button" className={s.botonSecundario} onClick={subida.noGuardarAun}>
+                  Cambiar algo
+                </button>
+              </>
+            ) : (
+              <button type="submit" className={s.botonPrimario} disabled={est.fase === 'guardando' || est.fase === 'error'}>
+                {est.fase === 'guardando' ? 'Guardando…' : 'Guardar la clase'}
+              </button>
+            )}
+            {!est.archivo && !est.guardarAlTerminar && <span className={s.ayuda}>Primero elige el vídeo.</span>}
+          </div>
+        </form>
       </div>
     </section>
   );
@@ -473,7 +472,17 @@ function ZonaSoltar({ error }: { error?: string | null }) {
             <path d="M4.5 14.5v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3" />
           </svg>
         </span>
-        <p className={s.zonaTitulo}>{encima ? 'Suéltalo aquí' : 'Arrastra aquí el vídeo de la clase'}</p>
+        <p className={s.zonaTitulo}>
+          {encima ? (
+            'Suéltalo aquí'
+          ) : (
+            <>
+              {/* En el móvil no se arrastra nada: allí se elige. */}
+              <span className={s.conRaton}>Arrastra aquí el vídeo de la clase</span>
+              <span className={s.tactil}>El vídeo de la clase</span>
+            </>
+          )}
+        </p>
         <button
           type="button"
           className={s.botonPrimario}
@@ -668,18 +677,32 @@ function Destinos({
   // Si lo elegido ya no está en la lista (un curso que se dejó de usar), cuenta como «otra».
   const actual = opciones.some((o) => o.valor === b.destino) ? b.destino : NUEVO;
 
+  /* Como un grupo de opciones de verdad: con las flechas se cambia de una a
+     otra, y el tabulador entra y sale del grupo de una vez. */
+  const grupo = useRef<HTMLDivElement>(null);
+  function flechas(e: TeclaReact<HTMLDivElement>) {
+    const paso = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+    if (!paso || deshabilitado) return;
+    e.preventDefault();
+    const i = opciones.findIndex((o) => o.valor === actual);
+    const siguiente = opciones[(i + paso + opciones.length) % opciones.length];
+    editar({ destino: siguiente.valor });
+    requestAnimationFrame(() => grupo.current?.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus());
+  }
+
   return (
     <div className={s.campo}>
       <span className={s.rotulo} id={`${id}-r`}>
         Quién puede verla
       </span>
-      <div className={s.chips} role="radiogroup" aria-labelledby={`${id}-r`}>
+      <div ref={grupo} className={s.chips} role="radiogroup" aria-labelledby={`${id}-r`} onKeyDown={flechas}>
         {opciones.map((o) => (
           <button
             key={o.valor}
             type="button"
             role="radio"
             aria-checked={actual === o.valor}
+            tabIndex={actual === o.valor ? 0 : -1}
             className={s.chip}
             disabled={deshabilitado}
             onClick={() => editar({ destino: o.valor })}

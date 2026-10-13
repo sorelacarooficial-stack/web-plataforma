@@ -123,6 +123,8 @@ export const sobrePeriodo = (p: Periodo) => PERIODOS[String(p)];
 export const num = (n: number) => Math.round(n).toLocaleString('es-ES');
 export const decimal = (n: number, d = 1) =>
   n.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: d });
+/** Siempre con un decimal: «2,0» páginas por visita dice más que «2». */
+export const unDecimal = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 export const porcentaje = (parte: number, total: number) => (total > 0 ? Math.round((parte / total) * 100) : 0);
 export const minutos = (s: number) => (s >= 3600 ? `${decimal(s / 3600)} h` : s >= 60 ? `${Math.round(s / 60)} min` : `${Math.round(s)} s`);
 
@@ -160,6 +162,17 @@ export function nombreDePais(cc: string) {
 }
 export { nombreDePagina };
 
+/** «Vigo, ES» → «Vigo»; «Bogotá, CO» → «Bogotá (Colombia)». El medidor guarda la ciudad con su país. */
+export function nombreDeCiudad(k: string) {
+  const m = /^(.*), ([A-Z]{2})$/.exec(k);
+  if (!m) return k;
+  return m[2] === 'ES' ? m[1] : `${m[1]} (${nombreDePais(m[2])})`;
+}
+
+const LISTA = new Intl.ListFormat('es', { type: 'conjunction' });
+/** «Argentina, Colombia y México». */
+export const enLista = (cosas: string[]) => LISTA.format(cosas);
+
 /** Lo que dice cada tipo de correo, como lo llama la pantalla Correos. */
 export const TIPOS_CORREO: Record<string, string> = {
   bienvenida: 'Información al dejar sus datos',
@@ -181,8 +194,8 @@ export type Cambio = { tipo: 'sube' | 'baja' | 'igual' | 'nuevo'; p: number } | 
 
 /** Cuánto ha cambiado respecto al periodo anterior. Sin periodo anterior, null. */
 export function cambio(ahora: number, antes: number | null | undefined): Cambio {
-  if (antes === null || antes === undefined) return null;
-  if (!antes && !ahora) return { tipo: 'igual', p: 0 };
+  // Cero contra cero no es «igual»: es que no hay nada que comparar.
+  if (antes === null || antes === undefined || (!antes && !ahora)) return null;
   if (!antes) return { tipo: 'nuevo', p: 0 };
   const p = Math.round(((ahora - antes) / antes) * 100);
   return { tipo: p > 0 ? 'sube' : p < 0 ? 'baja' : 'igual', p: Math.abs(p) };
@@ -194,7 +207,8 @@ function comparar(ahora: number, antes: number | null, periodo: Periodo, femenin
   const ant = sobrePeriodo(periodo).anterior;
   if (!c || !ant) return '';
   if (c.tipo === 'nuevo') return `; en ${ant} no hubo ${femenino ? 'ninguna' : 'ninguno'}`;
-  if (c.tipo === 'igual' || c.p < 3) return `, prácticamente ${ahora === antes ? 'lo mismo' : 'igual'} que en ${ant}`;
+  if (ahora === antes) return `, igual que en ${ant}`;
+  if (c.tipo === 'igual' || c.p < 3) return `, prácticamente igual que en ${ant}`;
   return `, **un ${c.p} % ${c.tipo === 'sube' ? 'más' : 'menos'}** que en ${ant} (${num(antes ?? 0)})`;
 }
 
@@ -296,22 +310,21 @@ export function textosDe(d: DatosInforme, a: Analisis): Record<IdSeccion, Textos
   );
   if (hayWeb) {
     visitas.significa.push(
-      `En estos ${a.dias} días has tenido **${num(t.visitas)} visitas** de **${num(t.personas)} personas**${comparar(t.visitas, ant?.visitas ?? null, p)}. Son unas ${decimal(a.mediaDia)} visitas al día.`
+      `En estos ${a.dias} días has tenido **${num(t.visitas)} visitas** de **${num(t.personas)} personas**${comparar(t.visitas, ant?.visitas ?? null, p)}.`
     );
     const ppv = a.paginasPorVisita;
     visitas.significa.push(
-      `En cada visita se miran de media **${decimal(ppv)} páginas**${ppv >= 2 ? ': la web invita a seguir mirando.' : ppv < 1.5 ? ': la mayoría mira una página y se va.' : '.'}`
+      `En cada visita se miran de media **${unDecimal(ppv)} páginas**${ppv >= 2 ? ': la web invita a seguir mirando.' : ppv < 1.5 ? ': la mayoría mira una página y se va.' : '.'}`
     );
     if (a.mejor) {
       const destaca = a.mejor.visitas >= a.mediaDia * 2 && a.mejor.visitas >= 5;
-      visitas.significa.push(
-        `Tu mejor día fue el **${fechaConSemana(a.mejor.dia)}**, con ${num(a.mejor.visitas)} visitas${destaca ? ', más del doble de lo normal' : ''}.`
-      );
-      if (destaca)
+      if (destaca) {
+        visitas.significa.push(`Tu mejor día fue el **${fechaConSemana(a.mejor.dia)}**, con ${num(a.mejor.visitas)} visitas: más del doble de lo normal.`);
         visitas.haria.push({
           texto: `El ${fechaDiaMes(a.mejor.dia)} entró más del doble de gente de lo normal. Si ese día publicaste algo o mandaste un correo, **eso funcionó: repítelo**.`,
           prioridad: 55,
         });
+      }
     }
     const c = cambio(t.visitas, ant?.visitas ?? null);
     if (c?.tipo === 'baja' && c.p >= 15)
@@ -410,13 +423,13 @@ export function textosDe(d: DatosInforme, a: Analisis): Record<IdSeccion, Textos
     const fuera = d.web.paises.filter(([c, n]) => c !== 'ES' && c !== '—' && porcentaje(n, a.totalPaises) >= 8);
     if (fuera.length)
       quien.haria.push({
-        texto: `Tienes público en **${fuera.map(([c]) => nombreDePais(c)).join(', ')}**. Al anunciar fechas o directos, pondría también la hora de allí.`,
+        texto: `Tienes público en **${enLista(fuera.map(([c]) => nombreDePais(c)))}**. Al anunciar fechas o directos, pondría también la hora de allí.`,
         prioridad: 28,
       });
   }
   if (d.web.ciudades.length >= 2)
     quien.haria.push({
-      texto: `Si organizas una formación presencial, **${d.web.ciudades[0][0]} y ${d.web.ciudades[1][0]}** son las ciudades desde donde más te miran: tenlas en cuenta al elegir sitio.`,
+      texto: `Si organizas una formación presencial, **${enLista([nombreDeCiudad(d.web.ciudades[0][0]), nombreDeCiudad(d.web.ciudades[1][0])])}** son las ciudades desde donde más te miran: tenlas en cuenta al elegir sitio.`,
       prioridad: 26,
     });
   if (a.totalDispositivos) {
@@ -479,7 +492,8 @@ export function textosDe(d: DatosInforme, a: Analisis): Record<IdSeccion, Textos
   contactos.significa.push(
     'Un **contacto** es alguien que te ha dejado su nombre y su correo en un formulario de la web, en el asistente o en la exposición, o que apuntaste tú.'
   );
-  if (p === 'todo') contactos.significa.push(`Desde el primero${c.primero ? ` (${fechaLarga(c.primero)})` : ''} te han dejado sus datos **${num(c.total)} personas**.`);
+  if (!c.total) contactos.significa.push('Todavía no hay nadie en tu lista de contactos.');
+  else if (p === 'todo') contactos.significa.push(`Desde el primero${c.primero ? ` (${fechaLarga(c.primero)})` : ''} te han dejado sus datos **${num(c.total)} ${plural(c.total, 'persona', 'personas')}**.`);
   else
     contactos.significa.push(
       `En este periodo han llegado **${num(c.nuevos)} ${plural(c.nuevos, 'contacto nuevo', 'contactos nuevos')}**${comparar(c.nuevos, c.nuevosAntes, p, false)}. En total tienes ${num(c.total)} en tu lista.`
@@ -545,10 +559,16 @@ export function textosDe(d: DatosInforme, a: Analisis): Record<IdSeccion, Textos
     'Una **cuenta** es alguien que puede entrar en la plataforma. Tener cuenta no es tener acceso: el acceso a la formación (sus clases y su material) y la Comunidad Divine se dan por separado.'
   );
   cuentas.significa.push(
-    `Hay **${num(cu.total)} ${plural(cu.total, 'cuenta', 'cuentas')}**: ${num(cu.conCurso)} con la formación, ${num(cu.conComunidad)} con la Comunidad y ${num(cu.sinAcceso)} sin acceso a nada todavía.${p !== 'todo' ? ` En este periodo se han abierto ${num(cu.nuevas)}.` : ''}`
+    cu.total
+      ? `Hay **${num(cu.total)} ${plural(cu.total, 'cuenta', 'cuentas')}**: ${num(cu.conCurso)} con la formación, ${num(cu.conComunidad)} con la Comunidad y ${num(cu.sinAcceso)} sin acceso a nada todavía.${p !== 'todo' ? ` En este periodo se ${plural(cu.nuevas, 'ha abierto', 'han abierto')} ${num(cu.nuevas)}.` : ''}`
+      : 'Todavía no hay cuentas de alumnas ni de miembros (las tuyas y las de prueba no cuentan).'
   );
   cuentas.significa.push(
-    `El **acuerdo de confidencialidad** se firma antes de recibir el dossier. ${p === 'todo' ? `Se han firmado ${num(ac.total)}` : `En este periodo se han firmado ${num(ac.nuevos)} (${num(ac.total)} en total)`}, y el dossier se ha descargado ${num(ac.descargas)} ${plural(ac.descargas, 'vez', 'veces')}.`
+    `El **acuerdo de confidencialidad** se firma antes de recibir el dossier. ${
+      !ac.total
+        ? 'Todavía no se ha firmado ninguno.'
+        : `${p === 'todo' ? `Se ${plural(ac.total, 'ha firmado', 'han firmado')} ${num(ac.total)}` : `En este periodo se ${plural(ac.nuevos, 'ha firmado', 'han firmado')} ${num(ac.nuevos)} (${num(ac.total)} en total)`}, y el dossier se ha descargado ${num(ac.descargas)} ${plural(ac.descargas, 'vez', 'veces')}.`
+    }`
   );
   if (ac.porAprobar)
     cuentas.haria.push({
@@ -670,10 +690,15 @@ export function destacados(d: DatosInforme, a: Analisis): string[] {
     if (a.totalDispositivos) s.push(`El **${a.movil} %** te mira desde el móvil.`);
   } else s.push('Todavía no hay visitas registradas en este periodo.');
   const c = d.contactos;
+  const esperan = c.porAtender ? `; ${num(c.porAtender)} ${plural(c.porAtender, 'espera', 'esperan')} respuesta` : '';
   s.push(
     d.periodo === 'todo'
-      ? `Tienes **${num(c.total)} contactos** en tu lista; ${num(c.porAtender)} esperan respuesta.`
-      : `**${num(c.nuevos)} ${c.nuevos === 1 ? 'persona nueva te ha' : 'personas nuevas te han'} dejado sus datos**${c.porAtender ? `; ${num(c.porAtender)} esperan respuesta` : ''}.`
+      ? c.total
+        ? `Tienes **${num(c.total)} ${plural(c.total, 'contacto', 'contactos')}** en tu lista${esperan}.`
+        : 'Todavía no hay nadie en tu lista de contactos.'
+      : c.nuevos
+        ? `**${num(c.nuevos)} ${c.nuevos === 1 ? 'persona nueva te ha' : 'personas nuevas te han'} dejado sus datos**${esperan}.`
+        : `Nadie nuevo te ha dejado sus datos en este periodo${esperan}.`
   );
   if (d.espera.total) s.push(`**${num(d.espera.total)}** ${d.espera.total === 1 ? 'persona espera' : 'personas esperan'} la apertura de la Comunidad.`);
   return s.slice(0, 5);
