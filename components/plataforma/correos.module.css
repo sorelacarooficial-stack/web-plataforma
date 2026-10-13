@@ -654,3 +654,13 @@
   color: var(--muted-2);
   border-top: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
 }
+
+/* El asunto de lo que se le mandó: dice qué versión le llegó. */
+.filaAsunto {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

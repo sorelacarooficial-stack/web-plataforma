@@ -32,6 +32,14 @@ type Auto = {
   fijo?: boolean;
 };
 
+/* El correo del curso tiene tres versiones, según lo que se le abre. */
+type ModoCurso = 'precurso' | 'completo' | 'desbloqueo';
+const MODOS_CURSO: { modo: ModoCurso; texto: string }[] = [
+  { modo: 'precurso', texto: 'Con el abono (precurso)' },
+  { modo: 'completo', texto: 'Curso completo' },
+  { modo: 'desbloqueo', texto: 'Al marcarla «Pagado»' },
+];
+
 type Fila = {
   id: string;
   para: string;
@@ -111,21 +119,21 @@ export default function Correos() {
     }
   }
 
-  async function ver(id: IdAutomatizacion) {
+  async function ver(id: IdAutomatizacion, modo?: ModoCurso) {
     setOcupado(`ver:${id}`);
     try {
-      const j = await (await fetch(`/api/correos?ver=${id}`)).json();
+      const j = await (await fetch(`/api/correos?ver=${id}${modo ? `&modo=${modo}` : ''}`)).json();
       if (j.ok) setVista({ id, asunto: j.asunto, html: j.html });
     } finally {
       setOcupado(null);
     }
   }
 
-  async function probar(id: IdAutomatizacion) {
+  async function probar(id: IdAutomatizacion, modo?: ModoCurso) {
     setOcupado(`probar:${id}`);
     try {
       const j = await (
-        await fetch('/api/correos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accion: 'prueba', id }) })
+        await fetch('/api/correos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accion: 'prueba', id, modo }) })
       ).json();
       setAviso(j.ok ? `Te he mandado la prueba a ${j.para}.` : `La prueba no ha salido: ${j.detalle || 'revisa cómo se envían'}.`);
       await cargar();
@@ -257,7 +265,16 @@ export default function Correos() {
                   <span className={k.autoCuando}>
                     <b>A quién:</b> {a.quien}
                   </span>
-                  {a.id !== 'acuerdo' && <span className={k.autoBotones}>
+                  {a.id === 'acceso-formacion' && (
+                    <span className={k.autoBotones}>
+                      {MODOS_CURSO.map((m) => (
+                        <button key={m.modo} type="button" className={k.enlace} onClick={() => ver(a.id, m.modo)} disabled={ocupado === `ver:${a.id}`}>
+                          Ver: {m.texto}
+                        </button>
+                      ))}
+                    </span>
+                  )}
+                  {a.id !== 'acuerdo' && a.id !== 'acceso-formacion' && <span className={k.autoBotones}>
                     <button type="button" className={k.enlace} onClick={() => ver(a.id)} disabled={ocupado === `ver:${a.id}`}>
                       Ver correo
                     </button>
@@ -331,6 +348,7 @@ export default function Correos() {
                   </span>
                   <span className={k.filaTexto}>
                     <span className={k.filaQue}>{ETIQUETA_CORREO[f.tipo] ?? f.tipo}</span>
+                    {f.asunto && <span className={k.filaAsunto}>«{f.asunto}»</span>}
                     <span className={k.filaPara}>{f.para}</span>
                     {f.detalle && f.estado !== 'enviado' && <span className={k.filaDetalle}>{f.detalle}</span>}
                   </span>
