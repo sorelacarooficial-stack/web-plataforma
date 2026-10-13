@@ -556,6 +556,20 @@
   position: relative;
 }
 
+/* El vídeo, justo debajo de «Qué es la Técnica Divine»: mismo fondo, para
+   que se lea como parte de ella, y el ancho del resto de la portada (en el
+   móvil ocupa todo; en el ordenador no pasa de 1040 px). */
+.metodoVideo {
+  display: flex;
+  justify-content: center;
+  padding: 0 20px clamp(72px, 9vw, 128px);
+}
+
+.metodoVideoCaja {
+  width: 100%;
+  max-width: 1040px;
+}
+
 /* En pantallas estrechas las fotos de las esquinas caen detrás del texto.
    Se quedan, pero veladas, y el texto va sobre un cristal esmerilado: se lee
    entero y las fotos siguen asomando, desenfocadas, por detrás. */
