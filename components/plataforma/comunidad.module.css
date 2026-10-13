@@ -2005,3 +2005,471 @@
     animation: none;
   }
 }
+
+/* ==========================================================================
+   Perfiles y «me gusta» (fase 3)
+   ========================================================================== */
+
+/* La foto que abre el perfil: un botón sin aspecto de botón. */
+.avatarBoton {
+  flex: none;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.18s;
+}
+
+.avatarBoton:hover {
+  transform: scale(1.04);
+}
+
+/* ---------- El corazón ---------- */
+
+.corazon {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 13px 8px 11px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    transform 0.15s;
+}
+
+.corazon:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.corazon:active {
+  transform: scale(0.94);
+}
+
+/* Dado: el vino del acento sobre su tinte, con su filo. No se confunde. */
+.corazon[data-on] {
+  background: var(--divine-tint);
+  border-color: var(--divine-line);
+  color: var(--divine-ink);
+}
+
+.corazon[data-on] .corazonIcono {
+  color: var(--divine);
+}
+
+.corazon:focus-visible {
+  outline: 2px solid var(--divine);
+  outline-offset: 2px;
+}
+
+.corazon[data-pequeno] {
+  min-height: 32px;
+  padding: 6px 10px 6px 8px;
+  font-size: 13px;
+}
+
+.corazonIcono {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+}
+
+.corazonIcono svg {
+  display: block;
+  overflow: visible;
+}
+
+/* El estallido sale del centro del corazón y no ocupa sitio. */
+.estallido {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.estallidoAnillo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  border: 2px solid var(--divine-borde);
+}
+
+.chispa {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+}
+
+.chispa svg {
+  display: block;
+}
+
+.chispaPunto {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* El número rueda dentro de su ventana: solo se ve el que toca. */
+.rueda {
+  position: relative;
+  display: inline-flex;
+  min-width: 1ch;
+  height: 1.3em;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3em;
+}
+
+.rueda > span {
+  display: block;
+}
+
+.rueda[data-vacia] {
+  min-width: 0;
+  margin-left: -7px;
+}
+
+/* ---------- «Le gusta a Lucía, Ana y 3 más» ---------- */
+
+.gustanFila {
+  overflow: hidden;
+}
+
+.gustan {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  padding: 4px 12px 4px 4px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--ink-2);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.gustan:hover {
+  background: var(--divine-tint);
+}
+
+.gustan:focus-visible {
+  outline: 2px solid var(--divine);
+  outline-offset: 2px;
+}
+
+.gustan b {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.gustanTexto {
+  min-width: 0;
+}
+
+/* Las caras, apiladas como en una baraja: cada una pisa un poco la anterior. */
+.gustanCaras {
+  display: inline-flex;
+  flex: none;
+  padding-left: 7px;
+}
+
+.gustanCaras > span {
+  margin-left: -7px;
+}
+
+.gustanCaras .avatar {
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.gustan[data-compacto] {
+  padding: 3px 6px 3px 4px;
+}
+
+.gustan[data-compacto] .gustanCaras > span {
+  margin-left: -6px;
+}
+
+/* ---------- La hoja de quién ha dado «me gusta» ---------- */
+
+.hojaVelo {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 18, 16, 0.45);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.hoja {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(440px, 100%);
+  max-height: min(620px, calc(100dvh - 32px));
+  border-radius: 22px;
+  overflow: hidden;
+  background: #fffdf9;
+  box-shadow: 0 30px 80px -30px rgba(20, 18, 16, 0.6);
+}
+
+.hoja:focus {
+  outline: none;
+}
+
+.hojaAsa {
+  display: none;
+}
+
+.hojaCabecera {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px 14px 20px;
+  border-bottom: 1px solid var(--line-1);
+}
+
+.hojaSello {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--divine-tint);
+  border: 1px solid var(--divine-line);
+  color: var(--divine);
+}
+
+.hojaTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.hojaSub {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.hojaCerrar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.hojaCerrar:hover {
+  background: #ebe4d8;
+}
+
+.hojaLista {
+  margin: 0;
+  padding: 6px 8px 10px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.hojaFantasma {
+  height: 60px;
+  margin: 4px 6px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, var(--surface-2) 0%, #fbf8f2 50%, var(--surface-2) 100%);
+  background-size: 200% 100%;
+  animation: brillar 1.3s linear infinite;
+}
+
+.hojaVacia {
+  margin: 0;
+  padding: 26px 22px 30px;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+.hojaFila {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.hojaFila:hover {
+  background: var(--surface-2);
+}
+
+.hojaFila:focus-visible {
+  outline: 2px solid var(--divine);
+  outline-offset: -2px;
+}
+
+.hojaFoto {
+  position: relative;
+  flex: none;
+}
+
+.hojaInsignia {
+  position: absolute;
+  left: -5px;
+  bottom: -4px;
+  filter: drop-shadow(0 1px 1.5px rgba(40, 30, 15, 0.35));
+}
+
+/* El corazoncito en la esquina de la foto: le ha dado «me gusta». */
+.hojaCorazon {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--divine);
+  box-shadow: 0 0 0 2px #fffdf9;
+  color: #fff;
+}
+
+.hojaQuien {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.hojaNombre {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  font-size: 15.5px;
+  font-weight: 500;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.hojaTu {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--divine-tint);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--divine-ink);
+}
+
+.hojaNivel {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.hojaVer {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+@media (max-width: 560px) {
+  /* En el móvil, la hoja sube desde abajo, con su asa. */
+  .hojaVelo {
+    place-items: end stretch;
+    padding: 0;
+  }
+
+  .hoja {
+    width: 100%;
+    max-height: 78dvh;
+    border-radius: 22px 22px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .hojaAsa {
+    display: block;
+    width: 38px;
+    height: 5px;
+    margin: 8px auto 0;
+    border-radius: 99px;
+    background: #d9d1c4;
+  }
+
+  .hojaCabecera {
+    padding-top: 10px;
+  }
+
+  .hojaVer {
+    font-size: 0;
+    gap: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hojaFantasma {
+    animation: none;
+  }
+
+  .corazon,
+  .avatarBoton {
+    transition: none;
+  }
+
+  .corazon:active,
+  .avatarBoton:hover {
+    transform: none;
+  }
+}

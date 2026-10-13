@@ -8,7 +8,8 @@ import '@/lib/llegada';
 /**
  * El medidor de la web: cuenta páginas vistas y cuánto se ven los vídeos.
  *
- * Sin cookies y sin terceros (ver lib/metricas.ts). Manda un aviso pequeño a
+ * Sin cookies, sin guardar nada en el navegador y sin terceros (ver
+ * lib/metricas.ts y la política de cookies). Manda un aviso pequeño a
  * /api/m con `sendBeacon`, que no retrasa nada y llega aunque la persona esté
  * cerrando la pestaña.
  *
@@ -98,19 +99,33 @@ function vigilar(v: HTMLVideoElement) {
   window.addEventListener('pagehide', soltar);
 }
 
+/*
+ * Si esta vista abre una visita. Antes se apuntaba en `sessionStorage`, y
+ * eso es guardar algo en el navegador para hacer estadística: la ley de
+ * cookies (art. 22.2 LSSI) lo trata igual que una cookie de análisis y
+ * pediría un aviso de consentimiento solo por esto. Se decide sin guardar
+ * nada: es visita nueva la primera vista de esta carga de la página, salvo
+ * que se llegue desde otra página de la propia web (una recarga, o un enlace
+ * abierto en otra pestaña). Las navegaciones internas comparten esta
+ * variable, que vive en memoria y desaparece con la pestaña.
+ */
+let primeraVista = true;
+
+function desdeLaPropiaWeb(referente: string) {
+  try {
+    return Boolean(referente) && new URL(referente).host === location.host;
+  } catch {
+    return false;
+  }
+}
+
 export default function Medidor() {
   const ruta = usePathname();
 
   useEffect(() => {
     if (!ruta || ruta.startsWith('/plataforma')) return;
-    let nueva = false;
-    try {
-      nueva = !sessionStorage.getItem('divine-visita');
-      sessionStorage.setItem('divine-visita', '1');
-    } catch {
-      /* sin memoria de sesión: cada página cuenta como visita */
-      nueva = true;
-    }
+    const nueva = primeraVista && !desdeLaPropiaWeb(document.referrer);
+    primeraVista = false;
     const q = new URLSearchParams(location.search);
     mandar({
       t: 'vista',

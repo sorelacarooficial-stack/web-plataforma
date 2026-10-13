@@ -11,6 +11,7 @@ import {
   type Progreso,
 } from '@/lib/aula';
 import { Lector, TarjetasMaterial, type DocumentoVisible } from './Material';
+import VideoYoutube from '@/components/VideoYoutube';
 import css from './plataforma.module.css';
 import a from './aula.module.css';
 
@@ -379,13 +380,11 @@ export default function Aula({ correo }: { correo?: string | null }) {
                 </div>
               )
             ) : (
-              <iframe
+              /* YouTube no se carga hasta que se pulsa (ver components/VideoYoutube). */
+              <VideoYoutube
                 key={`${actual.id}-${inicioYoutube}`}
                 src={`${urlDeVideo(actual.video)}${inicioYoutube ? `&start=${Math.floor(inicioYoutube)}&autoplay=1` : ''}`}
-                title={actual.titulo}
-                allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen; autoplay"
-                allowFullScreen
-                referrerPolicy="strict-origin-when-cross-origin"
+                titulo={actual.titulo}
               />
             )}
             {/* Quién está mirando. Si alguien graba la pantalla, la grabación

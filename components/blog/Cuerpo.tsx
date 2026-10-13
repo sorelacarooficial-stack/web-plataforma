@@ -1,4 +1,5 @@
 import { idYoutube, trocear, type Bloque } from '@/lib/blog-tipos';
+import VideoYoutube from '@/components/VideoYoutube';
 import css from './cuerpo.module.css';
 
 /**
@@ -80,13 +81,8 @@ export default function Cuerpo({ bloques, capitular = true }: { bloques: Bloque[
             const id = idYoutube(b.youtube);
             return id ? (
               <div key={i} className={css.video}>
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${id}?rel=0`}
-                  title="Vídeo"
-                  loading="lazy"
-                  allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                  allowFullScreen
-                />
+                {/* Hasta que se pulsa, sin nada de YouTube: ver VideoYoutube. */}
+                <VideoYoutube src={`https://www.youtube-nocookie.com/embed/${id}?rel=0`} titulo="Vídeo" />
               </div>
             ) : null;
           }

@@ -228,7 +228,10 @@
   transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1.2), box-shadow 0.25s ease;
 }
 
+/* El color se repite aquí porque el `a:hover` global (tinta) gana a una sola
+   clase, y en móvil el toque deja el enlace en :hover: el texto desaparecía. */
 .grupoWhatsapp:hover {
+  color: var(--bg);
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(20, 18, 16, 0.18);
 }

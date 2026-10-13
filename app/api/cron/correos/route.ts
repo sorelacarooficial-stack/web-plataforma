@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { tareasDelDia } from '@/lib/automatizar';
 import { purgarHistorial } from '@/lib/correos';
+import { purgarPersonasMetricas } from '@/lib/purga-metricas';
 
 /**
  * Lo que Vercel llama cada mañana (ver `crons` en vercel.json): recordatorios
@@ -38,5 +39,12 @@ export async function GET(peticion: Request) {
     console.error('[cron] la purga del historial de correos ha fallado:', e);
     return null;
   });
-  return NextResponse.json({ ok: true, ...informe, purga });
+  /* Y lo que la política de privacidad promete borrar de las estadísticas
+     (ver lib/purga-metricas.ts). Aparte por lo mismo: si falla, no arrastra
+     nada de lo anterior. */
+  const metricas = await purgarPersonasMetricas().catch((e) => {
+    console.error('[cron] la purga de las métricas ha fallado:', e);
+    return null;
+  });
+  return NextResponse.json({ ok: true, ...informe, purga, metricas });
 }

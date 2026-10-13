@@ -1,10 +1,5 @@
 import { getApp, getApps, initializeApp, type FirebaseApp } from 'firebase/app';
-import {
-  browserLocalPersistence,
-  getAuth,
-  setPersistence,
-  type Auth,
-} from 'firebase/auth';
+import { getAuth, inMemoryPersistence, initializeAuth, type Auth } from 'firebase/auth';
 
 /**
  * Firebase visto desde el navegador. Solo autenticación: a Firestore no se
@@ -36,21 +31,32 @@ function app(): FirebaseApp {
   return cacheApp;
 }
 
-let persistenciaPedida = false;
+/*
+ * La sesión de la web NO es la de Firebase: es la cookie `divine_sesion`, que
+ * crea el servidor (ver lib/sesion-servidor.ts). Del navegador solo hace falta
+ * el usuario de Firebase un instante, para sacar el token con el que se pide
+ * esa cookie. Por eso se guarda solo en memoria.
+ *
+ * Antes se pedía `browserLocalPersistence`, que deja al usuario de Firebase
+ * (con su token de renovación) guardado en el navegador para siempre, también
+ * después de «Salir», porque nadie llamaba a signOut: en un ordenador
+ * compartido, la siguiente persona heredaba ese acceso. Y es almacenamiento
+ * que la política de cookies tendría que justificar sin necesitarlo.
+ *
+ * `initializeAuth` solo se puede llamar una vez por app; si Next recarga el
+ * módulo y ya estaba creada, se recupera con getAuth (que ya la tiene en
+ * memoria).
+ */
+let cacheAuth: Auth | null = null;
 
 export function auth(): Auth {
-  const a = getAuth(app());
-  // La sesión sobrevive a cerrar la pestaña. Sin esto, cada vez que Sorela
-  // vuelve a abrir el navegador tendría que entrar otra vez. Se pide una sola
-  // vez y sin bloquear: si falla (modo incógnito, almacenamiento bloqueado),
-  // la sesión dura lo que la pestaña, que es peor pero no rompe nada.
-  if (!persistenciaPedida) {
-    persistenciaPedida = true;
-    setPersistence(a, browserLocalPersistence).catch((e) =>
-      console.warn('[auth] No se pudo recordar la sesión:', e?.code ?? e)
-    );
+  if (cacheAuth) return cacheAuth;
+  try {
+    cacheAuth = initializeAuth(app(), { persistence: inMemoryPersistence });
+  } catch {
+    cacheAuth = getAuth(app());
   }
-  return a;
+  return cacheAuth;
 }
 
 /*
