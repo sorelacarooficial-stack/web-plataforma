@@ -1257,3 +1257,57 @@ textarea.campo {
     transform: none;
   }
 }
+
+/* ==========================================================================
+   Gamificación: el acento VINO y los metales de los trofeos
+   (puntos, niveles, trofeos y «me gusta»; lo usan Puntos, Logros, Celebración,
+   el panel, el perfil y la comunidad de la plataforma)
+
+   Un segundo color para que el oro no se repita en todo. Se probaron tres en
+   maqueta: rosé empolvado (se confundía con el bronce de los trofeos), salvia
+   (un corazón verde no se entiende) y vino. Gana el VINO: con el negro, la
+   crema y el oro es una pareja clásica de joyería, y su rosé hace de versión
+   para fondos oscuros. Los mismos valores, para SVG y lienzo, en
+   components/plataforma/IconosDivine.tsx (COLORES).
+
+   Contraste medido (WCAG):
+     --divine sobre crema #f4efe7 7,8:1 · sobre blanco 8,9:1 · sobre su tinte 7,5:1
+     --divine-ink sobre su tinte 9,2:1
+     --divine-claro sobre #17140f 9,2:1 · sobre #241f1a 8,2:1
+     --divine-borde sobre blanco 3,6:1 (bordes de controles ≥ 3:1)
+     textos de metal sobre crema: bronce 6,5:1 · plata 6,0:1 · oro 6,3:1
+   ========================================================================== */
+:root {
+  --divine: #7e2f40;
+  --divine-ink: #6a2534;
+  --divine-tint: #f6e8ea;
+  --divine-line: rgba(126, 47, 64, 0.28);
+  --divine-borde: #b0788a;
+  /* Para fondos oscuros (negro #17140f de los bloques de puntos). */
+  --divine-claro: #e6a7b2;
+  --divine-claro-tint: rgba(230, 167, 178, 0.14);
+  --divine-claro-line: rgba(230, 167, 178, 0.42);
+  --divine-degradado: linear-gradient(135deg, #bd5d71 0%, #7e2f40 55%, #4a1722 100%);
+
+  /* Los metales de los trofeos: texto (sobre claro) y degradado. */
+  --bronce-texto: #7a4a26;
+  --bronce-degradado: linear-gradient(135deg, #f6dcc2 0%, #d29a68 45%, #9a6338 100%);
+  --plata-texto: #5f5a53;
+  --plata-degradado: linear-gradient(135deg, #ffffff 0%, #e4e1dc 45%, #aaa59d 100%);
+  --oro-texto: #6f5323;
+  --oro-degradado: linear-gradient(135deg, #fff6e2 0%, #ecd09a 45%, #c19650 100%);
+}
+
+:root[data-tema='oscuro'] {
+  --divine: #e6a7b2;
+  --divine-ink: #f0c3cb;
+  --divine-tint: rgba(230, 167, 178, 0.14);
+  --divine-line: rgba(230, 167, 178, 0.38);
+  --divine-borde: #c98795;
+  --divine-claro: #e6a7b2;
+  --divine-claro-tint: rgba(230, 167, 178, 0.14);
+  --divine-claro-line: rgba(230, 167, 178, 0.42);
+  --bronce-texto: #e0b48d;
+  --plata-texto: #d6d2cb;
+  --oro-texto: #e6c890;
+}

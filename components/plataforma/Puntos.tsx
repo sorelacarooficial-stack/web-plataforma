@@ -22,7 +22,9 @@ import {
   type FuentePuntos,
   type ResumenPuntos,
 } from '@/lib/puntos-tipos';
+import type { EstadoLogro } from '@/lib/logros-tipos';
 import { irA } from '@/lib/navegar';
+import { ICONO_FUENTE, Icono, InsigniaNivel, type NombreIcono } from './IconosDivine';
 import s from './puntos.module.css';
 
 /**
@@ -32,8 +34,13 @@ import s from './puntos.module.css';
  * (`/api/logros`) y llegan con el evento `divine:puntos`, que lanza la
  * Celebración cada vez que algo cambia. Esto solo los enseña, y los enseña
  * con ganas: números que cuentan hacia arriba, una barra dorada que se llena
- * con muelle, un «+N» que sube y se desvanece. Dopamina, pero con clase: oro
- * sobre negro, la Cormorant para los nombres y la Jost para las cifras.
+ * con muelle, un «+N» que sube y se desvanece, la insignia propia de cada
+ * nivel y el camino de los seis. Dopamina, pero con clase: oro sobre negro y
+ * el vino de la gamificación para los iconos, la Cormorant para nombres y
+ * cifras grandes y la Jost para lo demás.
+ *
+ * Sorela no compite: a ella /api/logros no le manda puntos, así que nada de
+ * esto llega a pintarse en su sesión (ni el marcador).
  */
 
 /* ==========================================================================
@@ -60,8 +67,25 @@ function alLlegarPuntos(e: Event) {
 // no se pierde el primer aviso aunque llegue antes que el componente.
 if (typeof window !== 'undefined') window.addEventListener('divine:puntos', alLlegarPuntos);
 
+/* Los trofeos (los escalones de cada vitrina) llegan igual, con
+   `divine:trofeos`: el panel enseña la vitrina en pequeño sin pedirla. */
+let ultimosTrofeos: EstadoLogro[] | null = null;
+const oyentesTrofeos = new Set<() => void>();
+
+function publicarTrofeos(t: EstadoLogro[]) {
+  ultimosTrofeos = t;
+  oyentesTrofeos.forEach((f) => f());
+}
+
+if (typeof window !== 'undefined')
+  window.addEventListener('divine:trofeos', (e: Event) => {
+    const d = (e as CustomEvent<EstadoLogro[]>).detail;
+    if (Array.isArray(d)) publicarTrofeos(d);
+  });
+
 /* Respaldo: si en unos segundos nadie ha avisado (Sorela mirando «Ver como»,
-   donde no hay Celebración), se piden una vez sin marcar nada como visto. */
+   donde no hay Celebración), se piden una vez sin marcar nada como visto. De
+   Sorela no llega nada: es la creadora y no compite. */
 let respaldoPedido = false;
 function pedirRespaldo() {
   if (respaldoPedido || ultimo) return;
@@ -72,6 +96,7 @@ function pedirRespaldo() {
       .then((r) => r.json())
       .then((j) => {
         if (!ultimo && j?.ok && j.puntos) publicar(j.puntos as ResumenPuntos);
+        if (!ultimosTrofeos && j?.ok && Array.isArray(j.logros)) publicarTrofeos(j.logros as EstadoLogro[]);
       })
       .catch(() => {
         /* sin red: ya llegará con el próximo aviso */
@@ -85,6 +110,23 @@ function suscribir(f: () => void) {
   return () => {
     oyentes.delete(f);
   };
+}
+
+function suscribirTrofeos(f: () => void) {
+  oyentesTrofeos.add(f);
+  pedirRespaldo();
+  return () => {
+    oyentesTrofeos.delete(f);
+  };
+}
+
+/** Los últimos trofeos que han llegado (los de quien mira), o null mientras no llegan. */
+export function useTrofeos(): EstadoLogro[] | null {
+  return useSyncExternalStore(
+    suscribirTrofeos,
+    () => ultimosTrofeos,
+    () => null
+  );
 }
 
 /** El último resumen de puntos que ha llegado, o null mientras no llega ninguno. */
@@ -149,14 +191,6 @@ export function ContadorPuntos({ valor, desde, className }: { valor: number; des
   );
 }
 
-/** La moneda dorada con el número de nivel. */
-function Insignia({ n, grande }: { n: number; grande?: boolean }) {
-  return (
-    <span className={s.insignia} data-grande={grande ? '' : undefined} data-n={n} aria-hidden="true">
-      {n}
-    </span>
-  );
-}
 
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const siguienteNivel = (e: EstadoNivel) => nivelDe(NIVELES.find((x) => x.n === e.n + 1)?.desde ?? e.desde);
@@ -313,6 +347,69 @@ export function BarraNivel({
   );
 }
 
+/* ---------- El camino de los seis niveles ---------- */
+
+/**
+ * Los seis niveles en fila, cada uno con su insignia: los pasados en su
+ * color, el actual más grande y con su anillo, los que faltan en gris con
+ * los puntos desde los que se entra. Una línea dorada une la fila y llega
+ * hasta donde va (dentro del nivel actual, en proporción).
+ *
+ * `compacto`: sin nombres (el panel del marcador). `ajena`: de otra persona.
+ * Hereda el color del bloque donde va, como la barra.
+ */
+export function CaminoNiveles({ total, compacto = false, ajena = false }: { total: number; compacto?: boolean; ajena?: boolean }) {
+  const reducir = useReducedMotion();
+  const e = nivelDe(total);
+  // De 0 (primer nivel, sin empezar) a 1 (último): la parte de la línea que va dorada.
+  const avance = Math.min(1, ((e.n - 1) + (e.siguiente ? e.progreso : 0)) / (NIVELES.length - 1));
+  return (
+    <div className={s.camino} data-compacto={compacto ? '' : undefined}>
+      {/* La línea va fuera de la lista (dentro de un <ol> solo caben <li>). */}
+      <span className={s.caminoLinea} aria-hidden="true">
+        <motion.span
+          className={s.caminoRelleno}
+          initial={{ scaleX: reducir ? avance : 0 }}
+          whileInView={{ scaleX: avance }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.1, delay: 0.1, ease: EASE_SALIDA }}
+        />
+      </span>
+      <ol className={s.caminoLista} aria-label="Camino de niveles">
+        {NIVELES.map((nv) => {
+          const estado = nv.n < e.n ? 'hecho' : nv.n === e.n ? 'actual' : 'falta';
+          const lector =
+            estado === 'actual'
+              ? ajena
+                ? 'está aquí'
+                : 'estás aquí'
+              : estado === 'hecho'
+                ? 'superado'
+                : `desde ${formatoPuntos(nv.desde)} puntos`;
+          return (
+            <li key={nv.n} className={s.caminoPaso} data-estado={estado} aria-current={estado === 'actual' ? 'step' : undefined}>
+              <span className={s.caminoInsignia}>
+                <InsigniaNivel n={nv.n} size={estado === 'actual' ? (compacto ? 40 : 46) : compacto ? 28 : 32} apagada={estado === 'falta'} />
+              </span>
+              {!compacto && (
+                <span className={s.caminoNombre} aria-hidden="true">
+                  {nv.nombre}
+                </span>
+              )}
+              <span className={s.caminoDesde} aria-hidden="true">
+                {estado === 'actual' ? (ajena ? 'Aquí' : 'Tú') : formatoPuntos(nv.desde)}
+              </span>
+              <span className={s.soloLector}>
+                Nivel {nv.n}, {nv.nombre}: {lector}.
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
 /* ---------- De dónde vienen los puntos ---------- */
 
 const plural = (n: number, uno: string, varios: string) => `${formatoPuntos(n)} ${n === 1 ? uno : varios}`;
@@ -375,6 +472,9 @@ export function DesglosePuntos({
     <ul className={s.desglose}>
       {filas.map(({ f, v }, i) => (
         <li key={f}>
+          <span className={s.desgloseIcono} aria-hidden="true">
+            <Icono nombre={ICONO_FUENTE[f]} size={18} />
+          </span>
           <span className={s.desgloseTexto}>
             <strong>{(ajena && ETIQUETA_AJENA[f]) || ETIQUETA_FUENTE[f]}</strong>
             <em>{detalle(f, v)}</em>
@@ -398,7 +498,7 @@ export function DesglosePuntos({
 
 type Accion = {
   id: string;
-  icono: 'perfil' | 'clase' | 'comunidad' | 'racha' | 'foto';
+  icono: NombreIcono;
   titulo: string;
   texto: string;
   puntos: number;
@@ -406,46 +506,6 @@ type Accion = {
   /** En lugar de botón, una etiqueta (lo que no se puede hacer ahora mismo). */
   etiqueta?: string;
 };
-
-function IconoAccion({ icono }: { icono: Accion['icono'] }) {
-  const p = { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, 'aria-hidden': true } as const;
-  switch (icono) {
-    case 'perfil':
-      return (
-        <svg {...p}>
-          <circle cx="12" cy="8.5" r="3.8" />
-          <path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4" strokeLinecap="round" />
-        </svg>
-      );
-    case 'clase':
-      return (
-        <svg {...p}>
-          <rect x="3" y="5" width="18" height="14" rx="3" />
-          <path d="M10 9.3v5.4l4.6-2.7z" fill="currentColor" stroke="none" />
-        </svg>
-      );
-    case 'comunidad':
-      return (
-        <svg {...p}>
-          <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z" strokeLinejoin="round" />
-        </svg>
-      );
-    case 'racha':
-      return (
-        <svg {...p}>
-          <path d="M12 3c.6 3.2 4.8 5.2 4.8 10a4.8 4.8 0 0 1-9.6 0c0-2.2 1-3.6 2.2-4.8.2 1.6 1 2.6 2 3 0-2.8-.6-5.6.6-8.2z" strokeLinejoin="round" />
-        </svg>
-      );
-    case 'foto':
-      return (
-        <svg {...p}>
-          <rect x="3" y="6" width="18" height="14" rx="3" />
-          <circle cx="12" cy="13" r="3.6" />
-          <path d="M8.5 6l1.4-2h4.2l1.4 2" strokeLinejoin="round" />
-        </svg>
-      );
-  }
-}
 
 /**
  * Qué hacer para sumar más, con sus puntos y un botón que lleva a hacerlo.
@@ -481,7 +541,7 @@ export function ComoGanarPuntos({
   if (!d || d.curso <= 0) {
     acciones.push({
       id: 'clase',
-      icono: 'clase',
+      icono: 'clases',
       titulo: 'Termina tu siguiente clase',
       texto: `Y +${formatoPuntos(PUNTOS.curso)} más cuando completes la formación entera.`,
       puntos: PUNTOS.clase,
@@ -492,7 +552,7 @@ export function ComoGanarPuntos({
     puedePublicar
       ? {
           id: 'comunidad',
-          icono: 'comunidad',
+          icono: 'publicaciones',
           titulo: 'Comparte en la comunidad',
           texto: `Responder a una compañera, +${PUNTOS.respuesta}. Cada me gusta que recibes, +${PUNTOS.meGusta}.`,
           puntos: PUNTOS.publicacion,
@@ -500,7 +560,7 @@ export function ComoGanarPuntos({
         }
       : {
           id: 'comunidad',
-          icono: 'comunidad',
+          icono: 'publicaciones',
           titulo: 'Comparte en la comunidad',
           texto: `Cuando entres en la Comunidad Divine: publicar, +${PUNTOS.publicacion}; responder a una compañera, +${PUNTOS.respuesta}.`,
           puntos: PUNTOS.publicacion,
@@ -510,7 +570,7 @@ export function ComoGanarPuntos({
   if (d && d.perfil > 0 && d.fotos < PUNTOS.foto * PUNTOS.fotosMax) {
     acciones.push({
       id: 'foto',
-      icono: 'foto',
+      icono: 'fotos',
       titulo: 'Sube fotos de tu trabajo',
       texto: `+${PUNTOS.foto} por foto, hasta ${PUNTOS.fotosMax}.`,
       puntos: PUNTOS.foto,
@@ -553,8 +613,8 @@ export function ComoGanarPuntos({
       <ul className={s.acciones}>
         {acciones.map((a) => (
           <li key={a.id} className={s.accion}>
-            <span className={s.accionIcono}>
-              <IconoAccion icono={a.icono} />
+            <span className={s.accionIcono} aria-hidden="true">
+              <Icono nombre={a.icono} size={20} />
             </span>
             <span className={s.accionTexto}>
               <strong>{a.titulo}</strong>
@@ -700,7 +760,7 @@ export function MarcadorPuntos({ compacto, puedePublicar = true }: { compacto?: 
         aria-controls={abierto ? idPanel : undefined}
         onClick={() => setAbierto((a) => !a)}
       >
-        <Insignia n={r.nivel.n} />
+        <InsigniaNivel n={r.nivel.n} size={32} className={s.hudInsignia} />
         <span className={s.hudTexto} aria-hidden="true">
           <span className={s.hudPuntos}>
             <ContadorPuntos valor={r.total} desde={r.antes ?? undefined} />
@@ -751,7 +811,8 @@ export function MarcadorPuntos({ compacto, puedePublicar = true }: { compacto?: 
               transition={{ duration: 0.22, ease: EASE_SALIDA }}
             >
               <div className={s.panelCabecera}>
-                <div>
+                <InsigniaNivel n={r.nivel.n} size={56} className={s.panelInsignia} />
+                <div className={s.panelCifra}>
                   <p className={s.rotulo}>Tus puntos</p>
                   <p className={s.panelTotal}>
                     <ContadorPuntos valor={r.total} desde={0} />
@@ -765,6 +826,7 @@ export function MarcadorPuntos({ compacto, puedePublicar = true }: { compacto?: 
                 </button>
               </div>
               <BarraNivel total={r.total} tamano="grande" />
+              <CaminoNiveles total={r.total} compacto />
               <div className={s.bloquePanel}>
                 <p className={s.rotulo}>De dónde vienen</p>
                 <DesglosePuntos desglose={r.desglose} />

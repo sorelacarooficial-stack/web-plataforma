@@ -95,6 +95,9 @@ export default function Aula({ correo }: { correo?: string | null }) {
   const [leyendo, setLeyendo] = useState<{ id: string; desde: number } | null>(null);
   const video = useRef<HTMLVideoElement>(null);
   const ultimoGuardado = useRef(0);
+  /* Por dónde iba al renovar el enlace, para seguir en el mismo segundo. */
+  const reanudar = useRef<{ t: number; jugando: boolean } | null>(null);
+  const renovaciones = useRef(0);
 
   const cargar = useCallback(async () => {
     setFallo(null);
@@ -156,25 +159,56 @@ export default function Aula({ correo }: { correo?: string | null }) {
   const segundosVistos = Object.values(progreso).reduce((s, p) => s + (p.visto || 0), 0);
 
   /* El enlace del vídeo propio, que caduca: se pide al abrir cada clase. */
+  const pedirEnlace = useCallback((id: string, alAcabar: (url: string | null) => void) => {
+    fetch(`/api/lecciones/video?id=${encodeURIComponent(id)}`)
+      .then((r) => r.json())
+      .then((j) => alAcabar(j.ok ? j.url : null))
+      .catch(() => alAcabar(null));
+  }, []);
+
   useEffect(() => {
     setFalloVideo(false);
+    reanudar.current = null;
+    renovaciones.current = 0;
     if (!actual || !esVideoPropio(actual.video)) {
       setFuente(null);
       return;
     }
     let vivo = true;
-    fetch(`/api/lecciones/video?id=${encodeURIComponent(actual.id)}`)
-      .then((r) => r.json())
-      .then((j) => {
-        if (!vivo) return;
-        if (j.ok) setFuente({ id: actual.id, url: j.url });
-        else setFalloVideo(true);
-      })
-      .catch(() => vivo && setFalloVideo(true));
+    pedirEnlace(actual.id, (url) => {
+      if (!vivo) return;
+      if (url) setFuente({ id: actual.id, url });
+      else setFalloVideo(true);
+    });
     return () => {
       vivo = false;
     };
   }, [actual?.id, actual?.video]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* El enlace dura quince minutos (que no se pueda reenviar). Una clase larga
+     dura más, y una pausa para el café también: pasado ese rato, el siguiente
+     trozo que pide el reproductor sale con error. Entonces se pide un enlace
+     nuevo y se sigue en el mismo segundo, sin que ella tenga que hacer nada.
+     Tres veces seguidas sin suerte ya no es el enlace: se dice. */
+  const renovarEnlace = useCallback(() => {
+    const v = video.current;
+    if (!actual || !v) return;
+    if (renovaciones.current >= 3) {
+      setFalloVideo(true);
+      setFuente(null);
+      return;
+    }
+    renovaciones.current++;
+    reanudar.current = { t: v.currentTime, jugando: !v.paused || v.seeking };
+    const id = actual.id;
+    pedirEnlace(id, (url) => {
+      if (url) setFuente((f) => (f?.id === id ? { id, url } : f));
+      else {
+        setFalloVideo(true);
+        setFuente(null);
+      }
+    });
+  }, [actual, pedirEnlace]);
 
   const guardar = useCallback((id: string, visto: number, completada = false) => {
     setProgreso((p) => ({
@@ -302,13 +336,26 @@ export default function Aula({ correo }: { correo?: string | null }) {
                   poster={actual.portada}
                   controls
                   playsInline
+                  preload="metadata"
                   controlsList="nodownload noremoteplayback"
                   disablePictureInPicture
                   onLoadedMetadata={(e) => {
                     const v = e.currentTarget;
+                    // Con el enlace renovado, se sigue justo donde estaba.
+                    const vuelta = reanudar.current;
+                    if (vuelta) {
+                      reanudar.current = null;
+                      v.currentTime = vuelta.t;
+                      if (vuelta.jugando) v.play().catch(() => {});
+                      return;
+                    }
                     const desde = pActual?.visto ?? 0;
                     if (desde > 5 && desde < v.duration - 10) v.currentTime = desde;
                   }}
+                  onPlaying={() => {
+                    renovaciones.current = 0;
+                  }}
+                  onError={renovarEnlace}
                   onTimeUpdate={(e) => {
                     const v = e.currentTarget;
                     if (Math.abs(v.currentTime - ultimoGuardado.current) >= GUARDAR_CADA) {

@@ -1,0 +1,93 @@
+/*
+ * El distintivo de Sorela («Creadora de la Técnica Divine»).
+ *
+ * Negro y oro, como la marca: no lleva el vino de la gamificación a
+ * propósito, porque ella no está en el juego. Contraste medido sobre
+ * #17140f: oro claro #ecd2a2 11,6:1, texto #f7f2ea 16,5:1, nota #cfc6b8 10,9:1.
+ */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 8px;
+  border-radius: 999px;
+  background: #17140f;
+  border: 1px solid rgba(217, 180, 124, 0.45);
+  color: #ecd2a2;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.bloque {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 22px);
+  padding: clamp(20px, 2.6vw, 28px);
+  border-radius: 22px;
+  background:
+    radial-gradient(90% 120% at 0% 0%, rgba(217, 180, 124, 0.2), transparent 60%),
+    #17140f;
+  color: #f7f2ea;
+  box-shadow: 0 24px 50px -34px rgba(20, 16, 10, 0.8);
+}
+
+.bloqueSello {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid rgba(217, 180, 124, 0.55);
+  background: radial-gradient(circle at 35% 30%, rgba(236, 210, 162, 0.22), rgba(236, 210, 162, 0.04) 70%);
+  color: #ecd2a2;
+}
+
+.bloqueTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bloqueRotulo {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ecd2a2;
+}
+
+.bloqueTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(24px, 2.6vw, 30px);
+  font-weight: 600;
+  line-height: 1.1;
+  color: #f7f2ea;
+}
+
+.bloqueNota {
+  margin: 2px 0 0;
+  max-width: 52ch;
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #cfc6b8;
+}
+
+@media (max-width: 420px) {
+  .bloque {
+    align-items: flex-start;
+  }
+  .bloqueSello {
+    width: 52px;
+    height: 52px;
+  }
+}

@@ -78,10 +78,31 @@ export const ETIQUETA_FUENTE: Record<FuentePuntos, string> = {
   meGusta: '«Me gusta» recibidos',
   dias: 'Días que has entrado',
   racha: 'Rachas',
-  logros: 'Logros',
+  logros: 'Trofeos',
   perfil: 'Perfil completo',
   fotos: 'Fotos del perfil',
 };
+
+/**
+ * Cómo se suma, en frases cortas y con los valores de PUNTOS (nunca copiados a
+ * mano): lo leen «Cómo sumar», la leyenda del ranking, la bienvenida del muro
+ * y su correo. El icono de cada una está en IconosDivine (ICONO_FUENTE).
+ */
+export const FORMAS_DE_SUMAR: { fuente: FuentePuntos; texto: string; puntos: number }[] = [
+  { fuente: 'clases', texto: 'Terminar una clase', puntos: PUNTOS.clase },
+  { fuente: 'curso', texto: 'Completar la formación', puntos: PUNTOS.curso },
+  { fuente: 'publicaciones', texto: 'Publicar en la comunidad', puntos: PUNTOS.publicacion },
+  { fuente: 'respuestas', texto: 'Responder a una compañera', puntos: PUNTOS.respuesta },
+  { fuente: 'meGusta', texto: 'Cada «me gusta» que recibes', puntos: PUNTOS.meGusta },
+  { fuente: 'dias', texto: 'Cada día que entras', puntos: PUNTOS.dia },
+  { fuente: 'racha', texto: `7 días seguidos (y +${PUNTOS.racha30} a los 30)`, puntos: PUNTOS.racha7 },
+  { fuente: 'logros', texto: 'Cada trofeo que ganas', puntos: PUNTOS.logro },
+  { fuente: 'perfil', texto: 'Completar tu perfil', puntos: PUNTOS.perfil },
+  { fuente: 'fotos', texto: `Cada foto de tu trabajo (hasta ${PUNTOS.fotosMax})`, puntos: PUNTOS.foto },
+];
+
+/** Lo que suma al ranking del mes («Más activas este mes»): lo que se hace en la comunidad y el aula. */
+export const SUMAN_AL_MES: FuentePuntos[] = ['publicaciones', 'respuestas', 'meGusta', 'clases'];
 
 /** Lo que hace falta saber de una persona para contar sus puntos. */
 export type EntradaPuntos = {

@@ -4,6 +4,7 @@ import { sesionActual } from '@/lib/sesion-servidor';
 import { COLECCION_DIAS, COLECCION_VIDEOS, diaDe } from '@/lib/metricas';
 import { FieldPath } from 'firebase-admin/firestore';
 import { ETIQUETA_TIPO, TIPOS, origenCorto, tipoDeOrigen, type Tipo } from '@/lib/origenes';
+import { correosEnviadosTotal } from '@/lib/correos';
 
 /**
  * Las métricas para el panel de Sorela.
@@ -214,7 +215,8 @@ async function historia(db: FirebaseFirestore.Firestore) {
     db.collection(COLECCIONES.contactos).get(),
     db.collection(COLECCIONES.usuarios).get(),
     db.collection('acuerdos').get(),
-    db.collection('correos').where('estado', '==', 'enviado').count().get().catch(() => null),
+    // El historial de correos se purga a los 30 días: el total suma también lo ya purgado.
+    correosEnviadosTotal().catch(() => null),
   ]);
 
   const fecha = (v: FirebaseFirestore.DocumentData, campo = 'creado'): string | null => {
@@ -279,7 +281,7 @@ async function historia(db: FirebaseFirestore.Firestore) {
     cuentas: cuentas.length,
     conAcceso: cuentas.filter((d) => Array.isArray(d.get('accesos')) && d.get('accesos').length > 0).length,
     acuerdos: firmados.length,
-    correos: correos?.data().count ?? 0,
+    correos: correos ?? 0,
     semanas: serieSemanas,
     porOrigen: ordenar(porOrigen),
     porFuente: ordenar(porFuente),

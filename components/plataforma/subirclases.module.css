@@ -1,0 +1,1041 @@
+/*
+ * Subir clases (SubirClases.tsx).
+ *
+ * Tarjetas claras sobre el crema de la plataforma, filetes de 1 px, sombras
+ * bajas y botones planos: negro para lo principal, contorno para lo
+ * secundario y texto bronce para lo pequeño. Los títulos en Cormorant; todo
+ * lo demás en Jost 400–500 (Jost no está cargada por encima de 500).
+ *
+ * Contraste medido sobre la tarjeta (#fffdf9): títulos #141210 (18:1), texto
+ * #3e3831 (11:1), ayudas #5e564c (7,1:1), bronce pequeño #6e5327 (7,2:1),
+ * errores #9a2f1a (7,4:1). Bordes de campos y botones de contorno #8c8173
+ * (3,8:1, por encima del 3:1 que se pide a un borde). Botón principal: crema
+ * #fffdf9 sobre #141210 (18:1).
+ */
+
+.nueva,
+.bloque,
+.vacio {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: clamp(18px, 2.4vw, 28px);
+  border-radius: 22px;
+  background: #fffdf9;
+  border: 1px solid rgba(20, 18, 16, 0.07);
+  box-shadow:
+    0 1px 2px rgba(60, 45, 25, 0.05),
+    0 14px 34px -24px rgba(60, 45, 25, 0.35);
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  color: #141210;
+  min-width: 0;
+}
+
+.cabeza {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titulo,
+.bloqueTitulo,
+.vacioTitulo,
+.hechoTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  line-height: 1.15;
+  color: #141210;
+  text-wrap: balance;
+}
+
+.titulo {
+  font-size: clamp(26px, 2.6vw, 30px);
+}
+
+.ayuda {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #5e564c;
+  text-wrap: pretty;
+}
+
+.error {
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #9a2f1a;
+  margin: 0;
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Botones
+   ========================================================================== */
+
+.botonPrimario,
+.botonSecundario,
+.botonTexto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.18s,
+    border-color 0.18s,
+    color 0.18s,
+    transform 0.18s;
+}
+
+.botonPrimario {
+  min-height: 44px;
+  padding: 12px 22px;
+  border: 0;
+  background: #141210;
+  color: #fffdf9;
+  font-size: 15px;
+}
+
+.botonPrimario:hover:not(:disabled) {
+  background: #2a2620;
+}
+
+.botonPrimario:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.botonPrimario:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.botonSecundario {
+  min-height: 40px;
+  padding: 9px 16px;
+  border: 1px solid #8c8173;
+  background: #ffffff;
+  color: #141210;
+  font-size: 14px;
+}
+
+.botonSecundario:hover:not(:disabled) {
+  border-color: #141210;
+}
+
+.botonTexto {
+  min-height: 40px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: #6e5327;
+  font-size: 14px;
+}
+
+.botonTexto:hover {
+  background: rgba(138, 106, 50, 0.09);
+}
+
+.botonPrimario:focus-visible,
+.botonSecundario:focus-visible,
+.botonTexto:focus-visible,
+.chip:focus-visible,
+.interruptor:focus-visible,
+.papelera:focus-visible,
+.mini:focus-visible,
+.cerrar:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+/* ==========================================================================
+   La zona de soltar
+   ========================================================================== */
+
+.zona {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: clamp(28px, 4vw, 44px) 20px;
+  border: 1.5px dashed #8c8173;
+  border-radius: 18px;
+  background: #f8f4ec;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.zona:hover,
+.zona[data-encima] {
+  border-color: #6e5327;
+  background: #f5efe2;
+}
+
+.zonaIcono {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(20, 18, 16, 0.08);
+  box-shadow: 0 6px 16px -10px rgba(60, 45, 25, 0.45);
+  color: #6e5327;
+}
+
+.zonaTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(21px, 2.2vw, 24px);
+  font-weight: 600;
+  line-height: 1.2;
+  color: #141210;
+  text-wrap: balance;
+}
+
+.zonaNota {
+  margin: 0;
+  font-size: 13px;
+  color: #5e564c;
+}
+
+.pendiente {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #f5efe2;
+  border: 1px solid rgba(138, 106, 50, 0.35);
+}
+
+.pendiente p {
+  margin: 0;
+  flex: 1 1 280px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #3e3831;
+}
+
+.pendiente strong {
+  font-weight: 500;
+  color: #141210;
+}
+
+/* ==========================================================================
+   El vídeo elegido y su subida
+   ========================================================================== */
+
+.video {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  padding: 14px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(20, 18, 16, 0.08);
+}
+
+@media (max-width: 640px) {
+  .video {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+}
+
+.portada {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1c1916;
+}
+
+.portada img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.portadaVacia {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 253, 249, 0.75);
+}
+
+.girando {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 253, 249, 0.25);
+  border-top-color: #fffdf9;
+  animation: girar 0.9s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.duracion,
+.miniDuracion {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 3px 7px;
+  border-radius: 7px;
+  background: rgba(20, 18, 16, 0.78);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+
+.videoTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.archivo {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15.5px;
+  font-weight: 500;
+  color: #141210;
+}
+
+.archivoMeta {
+  margin: -4px 0 0;
+  font-size: 13px;
+  color: #5e564c;
+  font-variant-numeric: tabular-nums;
+}
+
+.progreso {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.barra {
+  position: relative;
+  flex: 1 1 auto;
+  height: 8px;
+  border-radius: 999px;
+  background: #ebe4d8;
+  overflow: hidden;
+}
+
+.barraValor {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6e5327, #a98551);
+}
+
+.barraValor[data-listo] {
+  background: #3d6b4c;
+}
+
+.pct {
+  display: inline-flex;
+  justify-content: flex-end;
+  min-width: 58px;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  color: #141210;
+  font-variant-numeric: tabular-nums;
+}
+
+.video[data-fase='subida'] .pct,
+.video[data-fase='guardando'] .pct {
+  color: #3d6b4c;
+}
+
+.linea {
+  margin: 0;
+  min-height: 1.5em;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #3e3831;
+  font-variant-numeric: tabular-nums;
+}
+
+.problema {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #f8f0e2;
+  border: 1px solid rgba(138, 106, 50, 0.4);
+}
+
+.problema[data-tipo='ilegible'] {
+  background: #f9ebe4;
+  border-color: rgba(154, 47, 26, 0.32);
+}
+
+.problemaTitulo {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: #141210;
+}
+
+.problemaTexto {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #3e3831;
+  text-wrap: pretty;
+}
+
+.problema .botones {
+  margin-top: 6px;
+}
+
+/* ==========================================================================
+   Los datos de la clase
+   ========================================================================== */
+
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rotulo {
+  font-size: 14px;
+  font-weight: 500;
+  color: #3e3831;
+}
+
+.opcional {
+  margin-left: 6px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #5e564c;
+}
+
+.caja {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #8c8173;
+  border-radius: 14px;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: #141210;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+textarea.caja {
+  resize: vertical;
+  min-height: 84px;
+}
+
+.caja::placeholder {
+  color: #726a60;
+}
+
+.caja:focus {
+  outline: none;
+  border-color: #6e5327;
+  box-shadow: 0 0 0 3px rgba(138, 106, 50, 0.2);
+}
+
+.caja[aria-invalid='true'] {
+  border-color: #9a2f1a;
+}
+
+.caja:disabled {
+  background: #f5f2ec;
+  color: #4f4840;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 9px 15px;
+  border: 1px solid #8c8173;
+  border-radius: 999px;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #3e3831;
+  cursor: pointer;
+  transition:
+    background-color 0.18s,
+    color 0.18s,
+    border-color 0.18s;
+}
+
+.chip:hover:not(:disabled) {
+  border-color: #141210;
+  color: #141210;
+}
+
+.chip[aria-checked='true'] {
+  background: #141210;
+  border-color: #141210;
+  color: #fffdf9;
+}
+
+.chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.interruptorFila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #f8f4ec;
+}
+
+.interruptorTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.interruptorTitulo {
+  font-size: 15px;
+  font-weight: 500;
+  color: #141210;
+}
+
+.interruptor {
+  position: relative;
+  flex: 0 0 auto;
+  width: 51px;
+  height: 31px;
+  padding: 0;
+  border: 1px solid #8c8173;
+  border-radius: 999px;
+  background: #ddd5c8;
+  cursor: pointer;
+  transition:
+    background-color 0.22s,
+    border-color 0.22s;
+}
+
+.interruptor[data-encendido] {
+  background: #6e5327;
+  border-color: #6e5327;
+}
+
+.interruptor:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.interruptorBola {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 5px rgba(20, 18, 16, 0.28);
+  transition: transform 0.32s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.interruptor[data-encendido] .interruptorBola {
+  transform: translateX(20px);
+}
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding-top: 4px;
+}
+
+.esperando {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3e3831;
+}
+
+.punto {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #8a6a32;
+  animation: latir 1.4s ease-in-out infinite;
+}
+
+@keyframes latir {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+}
+
+/* Hecho: lo que se ve al guardar. */
+.hecho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+}
+
+.hechoIcono {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e7f0e8;
+  color: #2f5c3e;
+}
+
+.hechoTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.hechoTitulo {
+  font-size: clamp(22px, 2.4vw, 26px);
+}
+
+/* ==========================================================================
+   La lista de clases
+   ========================================================================== */
+
+.bloque {
+  gap: 6px;
+}
+
+.bloqueCabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 14px;
+  padding-bottom: 8px;
+}
+
+.bloqueTitulo {
+  font-size: clamp(23px, 2.4vw, 27px);
+}
+
+.bloqueCuenta {
+  font-size: 13px;
+  color: #5e564c;
+}
+
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fila {
+  padding: 14px 0;
+  border-top: 1px solid rgba(20, 18, 16, 0.09);
+}
+
+.filaCuerpo {
+  display: grid;
+  grid-template-columns: 152px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+}
+
+@media (max-width: 860px) {
+  .filaCuerpo {
+    grid-template-columns: 116px minmax(0, 1fr);
+    gap: 12px 14px;
+    align-items: start;
+  }
+
+  .filaAcciones {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+.mini {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1c1916;
+  cursor: pointer;
+}
+
+.mini img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mini:hover img {
+  transform: scale(1.04);
+}
+
+.miniVacia {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 253, 249, 0.7);
+}
+
+.miniPlay {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 253, 249, 0.94);
+  color: #141210;
+  padding-left: 2px;
+}
+
+.miniDuracion {
+  right: 6px;
+  bottom: 6px;
+  font-size: 11.5px;
+}
+
+.filaTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.filaTitulo {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: #141210;
+  overflow-wrap: anywhere;
+}
+
+.filaMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  margin: 0;
+  font-size: 12.5px;
+  color: #5e564c;
+}
+
+.filaMeta span + span::before {
+  content: '·';
+  margin-right: 6px;
+}
+
+.filaDescripcion {
+  margin: 2px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #3e3831;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.filaAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px 8px;
+}
+
+.estado {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(20, 18, 16, 0.14);
+  background: #f2eee7;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #4f4840;
+}
+
+.estado[data-visible] {
+  background: #f5efe2;
+  border-color: rgba(138, 106, 50, 0.4);
+  color: #6e5327;
+}
+
+.papelera {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: #5e564c;
+  cursor: pointer;
+  transition:
+    background-color 0.18s,
+    color 0.18s;
+}
+
+.papelera:hover {
+  background: #fbeee9;
+  color: #9a2f1a;
+}
+
+.editar {
+  overflow: hidden;
+}
+
+.editarDentro {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #f8f4ec;
+}
+
+.vacio {
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding-block: clamp(28px, 4vw, 40px);
+}
+
+.vacioIcono {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #f5efe2;
+  color: #6e5327;
+}
+
+.vacioTitulo {
+  font-size: 24px;
+}
+
+.vacioTexto {
+  margin: 0;
+  max-width: 420px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #3e3831;
+}
+
+.esqueleto {
+  border-radius: 22px;
+  background: linear-gradient(100deg, #efe9df 30%, #f7f3ec 50%, #efe9df 70%);
+  background-size: 300% 100%;
+  animation: brillo 1.4s ease-in-out infinite;
+}
+
+@keyframes brillo {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+/* ==========================================================================
+   Ver una clase
+   ========================================================================== */
+
+.velo {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 18, 16, 0.62);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.visor {
+  width: min(980px, 100%);
+  border-radius: 22px;
+  overflow: hidden;
+  background: #141210;
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7);
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+}
+
+.visorCabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 10px 10px 18px;
+}
+
+.visorTitulo {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 500;
+  color: #fffdf9;
+}
+
+.cerrar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 253, 249, 0.12);
+  color: #fffdf9;
+  cursor: pointer;
+}
+
+.cerrar:hover {
+  background: rgba(255, 253, 249, 0.2);
+}
+
+.visorPantalla {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  background: #000000;
+}
+
+.visorPantalla video {
+  width: 100%;
+  height: 100%;
+  background: #000000;
+}
+
+.visorNota {
+  margin: 0;
+  font-size: 14.5px;
+  color: rgba(255, 253, 249, 0.82);
+}
+
+.visorPantalla .botonPrimario {
+  background: #fffdf9;
+  color: #141210;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .girando,
+  .punto,
+  .esqueleto {
+    animation: none;
+  }
+
+  .interruptorBola,
+  .mini img,
+  .zona {
+    transition: none;
+  }
+
+  .mini:hover img {
+    transform: none;
+  }
+}
