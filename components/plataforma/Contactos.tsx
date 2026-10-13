@@ -505,7 +505,7 @@ function PanelContacto({
                 onChange={(e) => setBorrador((b) => ({ ...b, busca: e.target.value as Tipo }))}
                 className={css.campoCaja}
               >
-                {TIPOS.map((t) => (
+                {TIPOS.filter((t) => t !== 'clienta' || borrador.busca === 'clienta').map((t) => (
                   <option key={t} value={t}>
                     {ETIQUETA_TIPO[t]}
                   </option>
@@ -515,9 +515,9 @@ function PanelContacto({
           </div>
 
           <p className={css.apunte}>
-            Esto es lo que separa la lista en tres: a quien quiere una sesión no se le escribe
-            igual que a quien quiere formarse. Si no lo sabes, déjalo sin clasificar y
-            pregúntaselo.
+            Hoy la web solo capta para la masterclass (lista de espera); quien entra por un
+            enlace a un curso o a la membresía ya tiene su cuenta y no pasa por aquí. Si no
+            sabes qué busca, déjalo sin clasificar.
             {editando && ' Cambiarlo aquí no toca de dónde llegó: eso se queda como está.'}
           </p>
 
@@ -1186,7 +1186,10 @@ export default function Contactos() {
           />
         </label>
         <div className={k.segmentos} role="group" aria-label="Qué busca">
-          {(['Todos', ...TIPOS.filter((t) => t !== 'otro' || (lista ?? []).some((c) => c.tipo === 'otro'))] as const).map((t) => (
+          {/* «Quiere tratarse» (sesiones) y «Sin clasificar» solo salen si hay
+              alguien así: hoy la web solo capta para la masterclass y el resto
+              entra por un enlace a un curso o a la membresía. */}
+          {(['Todos', ...TIPOS.filter((t) => (t !== 'otro' && t !== 'clienta') || (lista ?? []).some((c) => c.tipo === t))] as const).map((t) => (
             <button
               key={t}
               type="button"

@@ -127,7 +127,7 @@ export default function PanelAlumna({
     json('/api/progreso').then((j) => j.ok && setProgreso(j.progreso ?? {}));
     json('/api/material').then((j) => j.ok && setDocs(j.documentos ?? []));
     json('/api/agenda').then((j) => setEventos(j.ok ? j.eventos ?? [] : []));
-    json('/api/comunidad').then((j) => j.ok && setCom({ publicaciones: j.publicaciones ?? [], proximaClase: j.proximaClase ?? null }));
+    if (tieneMembresia(accesos)) json('/api/comunidad').then((j) => j.ok && setCom({ publicaciones: j.publicaciones ?? [], proximaClase: j.proximaClase ?? null }));
   }, []);
 
   const ordenadas = useMemo(
@@ -351,18 +351,23 @@ export default function PanelAlumna({
         <motion.section className={`${p.tarjeta} ${p.oscura}`} {...aparecer(5)}>
           <header className={p.cabecera}>
             <h3>Comunidad</h3>
-            <button type="button" className={p.enlace} onClick={() => ir('comunidad')}>
-              Entrar →
-            </button>
+            {miembro && (
+              <button type="button" className={p.enlace} onClick={() => ir('comunidad')}>
+                Entrar →
+              </button>
+            )}
           </header>
-          {com?.proximaClase ? (
+          {/* Sin membresía no se enseña nada de dentro: solo que viene. */}
+          {!miembro ? (
+            <p className={p.vacioClaro}>Próximamente. Se presenta en la masterclass de apertura.</p>
+          ) : com?.proximaClase ? (
             <div className={p.claseVivo}>
               <span>Próxima clase en vivo</span>
               <strong>{com.proximaClase.titulo}</strong>
               <em>{mayus(DIA.format(new Date(com.proximaClase.cuando)))} · {HORA.format(new Date(com.proximaClase.cuando))}</em>
             </div>
           ) : null}
-          {com && com.publicaciones.length > 0 ? (
+          {!miembro ? null : com && com.publicaciones.length > 0 ? (
             <ul className={p.posts}>
               {com.publicaciones.slice(0, 2).map((x) => (
                 <li key={x.id}>
@@ -377,7 +382,7 @@ export default function PanelAlumna({
             </ul>
           ) : (
             <p className={p.vacioClaro}>
-              {miembro ? 'Sé la primera en compartir un caso.' : 'Puedes leer la comunidad de terapeutas. Para escribir, entras al terminar tu formación.'}
+              Sé la primera en compartir un caso.
             </p>
           )}
         </motion.section>

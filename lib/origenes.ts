@@ -25,7 +25,7 @@ export type Tipo = (typeof TIPOS)[number];
 export const ETIQUETA_TIPO: Record<Tipo, string> = {
   clienta: 'Quiere tratarse',
   alumna: 'Quiere formarse',
-  comunidad: 'Quiere la Comunidad',
+  comunidad: 'Lista de espera · masterclass',
   otro: 'Sin clasificar',
 };
 
@@ -33,7 +33,7 @@ export const ETIQUETA_TIPO: Record<Tipo, string> = {
 export const QUE_QUIERE: Record<Tipo, string> = {
   clienta: 'Quiere que le traten. Busca una sesión, no aprender la técnica.',
   alumna: 'Quiere formarse en la Técnica Divine.',
-  comunidad: 'Quiere entrar en la Comunidad Divine: espera a la apertura.',
+  comunidad: 'Se apuntó a la lista de espera: va a la masterclass de apertura de la Comunidad Divine.',
   otro: 'No se sabe qué busca: hay que preguntárselo.',
 };
 

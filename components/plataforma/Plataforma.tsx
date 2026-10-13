@@ -43,7 +43,7 @@ import PanelAlumna from './PanelAlumna';
 import BlogAdmin from './BlogAdmin';
 import Contactos from './Contactos';
 import Acuerdos from './Acuerdos';
-import Proximamente from './Proximamente';
+import Proximamente, { ComunidadProximamente } from './Proximamente';
 import Aula from './Aula';
 import SubirClases from './SubirClases';
 import Agenda from './Agenda';
@@ -449,8 +449,11 @@ export default function Plataforma({
           {esAdmin && actual === 'correos' && <Correos />}
           {esAdmin && actual === 'buzon' && <Buzon />}
           {esAdmin && actual === 'blog' && <BlogAdmin />}
-          {/* La misma para todas: el servidor decide quién lee, quién escribe y quién modera. */}
-          {actual === 'comunidad' && <Comunidad />}
+          {/* Solo con la membresía (o Sorela). A quien no la tiene no se le
+              enseña el espacio: ve que viene y nada más. El servidor tampoco
+              le da nada. */}
+          {actual === 'comunidad' &&
+            (esAdmin || tieneMembresia(accesosVistos) ? <Comunidad /> : <ComunidadProximamente nombre={usuario} />)}
           {actual === 'perfil' && <Perfil />}
           </motion.div>
           </AnimatePresence>

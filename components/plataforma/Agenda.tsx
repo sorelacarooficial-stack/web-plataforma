@@ -51,6 +51,8 @@ type Evento = {
   telefono: string;
   estado: Estado;
   creado: string | null;
+  /** Las fechas de una formación a la que Sorela le dio acceso: no se tocan aquí. */
+  fija?: boolean;
 };
 
 /* Se reutilizan los distintivos que ya tiene la plataforma: lo pendiente
@@ -557,16 +559,22 @@ export default function Agenda({
                             WhatsApp
                           </a>
                         )}
-                        <button
-                          type="button"
-                          className={css.btnLinea}
-                          onClick={() => marcar(ev.id, hecho ? 'Pendiente' : 'Hecho')}
-                        >
-                          {hecho ? 'Volver a pendiente' : 'Marcar hecho'}
-                        </button>
-                        <button type="button" className={css.enlaceAccion} onClick={() => borrar(ev)}>
-                          Borrar
-                        </button>
+                        {ev.fija ? (
+                          <span style={{ fontSize: 12.5, color: 'var(--ink-3)' }}>Tu formación</span>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              className={css.btnLinea}
+                              onClick={() => marcar(ev.id, hecho ? 'Pendiente' : 'Hecho')}
+                            >
+                              {hecho ? 'Volver a pendiente' : 'Marcar hecho'}
+                            </button>
+                            <button type="button" className={css.enlaceAccion} onClick={() => borrar(ev)}>
+                              Borrar
+                            </button>
+                          </>
+                        )}
                       </span>
                     </article>
                   );

@@ -1,10 +1,14 @@
 import 'server-only';
 import { FieldPath } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from './firebase-servidor';
-import { COLECCION_DIAS, diaDe } from './metricas';
+import { COLECCION_DIAS, COLECCION_MESES, diaDe } from './metricas';
 
 /**
- * Borra los resúmenes de «personas distintas» de los días ya cerrados.
+ * Borra los resúmenes de «personas distintas» de los días y meses ya cerrados.
+ *
+ * Hoy el conteo es por MES (metricas_meses/{mes}/personas): se borran cuando
+ * el mes ha cerrado y han pasado DIAS_PERSONAS. Los de día son los de antes
+ * del cambio y se siguen limpiando.
  *
  * Para contar cuántas personas distintas entran cada día, `/api/m` guarda en
  * `metricas_dias/{día}/personas` un documento por cada resumen irreversible de
@@ -43,6 +47,22 @@ export async function purgarPersonasMetricas(): Promise<{ dias: number; borrados
       borrados += tanda.size;
       if (tanda.size < 400) break;
     }
+  }
+  /* Los resúmenes del mes (los que evitan contar dos veces a quien vuelve):
+     se borran en cuanto el mes ha cerrado y han pasado los DIAS_PERSONAS. */
+  const mesCerrado = corte.slice(0, 7);
+  const meses = await db.collection(COLECCION_MESES).where(FieldPath.documentId(), '<', mesCerrado).select().get();
+  for (const mes of meses.docs) {
+    for (;;) {
+      const tanda = await mes.ref.collection('personas').limit(400).select().get();
+      if (tanda.empty) break;
+      const lote = db.batch();
+      tanda.docs.forEach((d) => lote.delete(d.ref));
+      await lote.commit();
+      borrados += tanda.size;
+      if (tanda.size < 400) break;
+    }
+    await mes.ref.delete().catch(() => {});
   }
   return { dias: dias.size, borrados };
 }

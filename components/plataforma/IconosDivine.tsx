@@ -627,11 +627,12 @@ export function DistintivoCreadora({
       </span>
       <div className={d.bloqueTexto}>
         <p className={d.bloqueRotulo}>Creadora de la Técnica Divine</p>
-        <p className={d.bloqueTitulo}>{ajena ? `${pila} no compite` : 'Tu perfil no compite'}</p>
+        {/* Sin «no compite»: decía lo que no es en vez de lo que es. */}
+        <p className={d.bloqueTitulo}>{ajena ? `${pila} creó el método` : 'Tú creaste el método'}</p>
         <p className={d.bloqueNota}>
           {ajena
-            ? `${pila} creó el método. Los puntos, los niveles y los trofeos son de sus alumnas.`
-            : 'Eres la creadora del método. Los puntos, los niveles y los trofeos son de tus alumnas: tú los ves en ellas.'}
+            ? `Aquí aprendes con ella. Los puntos, los niveles y los trofeos son de las alumnas.`
+            : 'Los puntos, los niveles y los trofeos son de tus alumnas: aquí ves cómo avanzan.'}
         </p>
       </div>
     </section>

@@ -214,12 +214,12 @@ export const TRATAMIENTOS: Tratamiento[] = [
   {
     donde: 'Estadísticas de visitas de la web',
     datos:
-      'La página que visitas, desde dónde llegas (otra web o un enlace de campaña), el tipo de dispositivo, el país y la ciudad aproximados que deduce el servidor a partir de tu IP, y qué parte de los vídeos de la web se ve. Para contar personas distintas en un día se calcula un resumen cifrado (seudonimizado) de tu IP, tu navegador y la fecha, con una clave secreta; la IP en sí no se guarda.',
+      'La página que visitas, desde dónde llegas (otra web o un enlace de campaña), el tipo de dispositivo, el país y la ciudad aproximados que deduce el servidor a partir de tu IP, y qué parte de los vídeos de la web se ve. Para contar personas distintas sin contar dos veces a quien vuelve en el mismo mes se calcula un resumen cifrado (seudonimizado) de tu IP, tu navegador y el mes, con una clave secreta; la IP en sí no se guarda y no se usa ninguna cookie.',
     finalidad: 'Saber cuántas personas visitan la web, qué páginas y vídeos interesan y de dónde llega la gente, solo en cifras totales.',
     base:
       'El interés legítimo de Sorela en saber cómo se usa su web (art. 6.1.f RGPD). No se guarda nada en tu navegador para esto ni se comparte con nadie.',
     conservacion:
-      'El resumen cifrado se borra a los dos días. Lo que queda son contadores (por ejemplo, «35 visitas desde Madrid el martes») que ya no se refieren a nadie.',
+      'El resumen cifrado se borra a los dos días de cerrar el mes. Lo que queda son contadores (por ejemplo, «35 visitas desde Madrid el martes») que ya no se refieren a nadie.',
   },
   {
     donde: 'Seguridad y funcionamiento',

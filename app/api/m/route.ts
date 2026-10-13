@@ -4,6 +4,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
 import {
   COLECCION_DIAS,
+  COLECCION_MESES,
   COLECCION_VIDEOS,
   claveLimpia,
   diaDe,
@@ -83,17 +84,24 @@ export async function POST(peticion: Request) {
       }
       const nueva = c.nueva === true;
 
-      /* Personas distintas del día: un resumen de IP + navegador + día que
-         no se puede deshacer. Si ya existía, no se cuenta otra vez. */
+      /* Personas distintas: un resumen de IP + navegador + MES, con clave
+         secreta. Quien vuelve dentro del mes no se cuenta otra vez como
+         persona: suma a «vuelven». Sin cookies ni nada en el navegador; el
+         resumen se borra al cerrar el mes (lib/purga-metricas.ts). */
       let persona = false;
+      let vuelve = false;
       if (nueva && ip && SAL) {
-        const h = createHash('sha256').update(`${SAL}|${dia}|${ip}|${ua}`).digest('hex').slice(0, 24);
-        persona = await refDia
+        const mes = dia.slice(0, 7);
+        const h = createHash('sha256').update(`${SAL}|${mes}|${ip}|${ua}`).digest('hex').slice(0, 24);
+        persona = await db
+          .collection(COLECCION_MESES)
+          .doc(mes)
           .collection('personas')
           .doc(h)
           .create({ en: FieldValue.serverTimestamp() })
           .then(() => true)
           .catch(() => false);
+        vuelve = !persona;
       }
 
       const uno = FieldValue.increment(1);
@@ -103,6 +111,7 @@ export async function POST(peticion: Request) {
           vistas: uno,
           ...(nueva ? { visitas: uno } : {}),
           ...(persona ? { personas: uno } : {}),
+          ...(vuelve ? { vuelven: uno } : {}),
           rutas: { [claveLimpia(ruta)]: uno },
           horas: { [horaDe()]: uno },
           ...(nueva

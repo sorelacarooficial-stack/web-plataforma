@@ -474,7 +474,7 @@ export default function Metricas() {
       {/* ---------- Las cifras ---------- */}
       <section className={m.cifras}>
         {[
-          { label: 'Personas', valor: t?.personas, antes: a?.personas, nota: 'distintas que han entrado' },
+          { label: 'Personas', valor: t?.personas, antes: a?.personas, nota: 'distintas: quien vuelve en el mes cuenta una vez' },
           { label: 'Visitas', valor: t?.visitas, antes: a?.visitas, nota: 'veces que han entrado' },
           { label: 'Páginas vistas', valor: t?.vistas, antes: a?.vistas, nota: t && t.visitas ? `${(t.vistas / t.visitas).toFixed(1).replace('.', ',')} por visita` : 'por visita' },
           { label: 'Vídeos reproducidos', valor: t?.reproducciones, antes: a?.reproducciones, nota: t ? `${minutos(t.segundosVideo)} vistos en total` : '' },

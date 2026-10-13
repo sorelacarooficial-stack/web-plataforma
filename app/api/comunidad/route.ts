@@ -25,8 +25,8 @@ import {
  *   POST { accion, … }        → publicar, responder, meGusta, fijar, resolver,
  *                               borrar, proximaClase
  *
- * QUIÉN: lee quien tiene la Comunidad Divine o un curso (las alumnas la ven
- * de visita); escribe quien tiene la Comunidad, y Sorela, que además modera:
+ * QUIÉN: lee y escribe solo quien tiene la Comunidad Divine, y Sorela, que
+ * además modera:
  * fija, marca resuelto y borra lo que haga falta. Lo PROPIO se puede borrar
  * siempre, aunque ya no se tenga la Comunidad: es suyo.
  *
@@ -77,7 +77,10 @@ async function permisos(): Promise<Permisos | NextResponse> {
   if (sesion.rol === 'sorela') return { sesion, leer: true, escribir: true, modera: true };
   const accesos = await accesosDe(sesion.uid);
   const miembro = tieneMembresia(accesos);
-  return { sesion, leer: accesos.length > 0, escribir: miembro, modera: false };
+  /* Solo quien tiene la membresía entra: el espacio de la comunidad no se
+     enseña a quien no la ha pagado (antes las alumnas de curso lo veían de
+     visita). Lo suyo lo puede seguir borrando por la ruta de borrar. */
+  return { sesion, leer: miembro, escribir: miembro, modera: false };
 }
 
 function almacen() {

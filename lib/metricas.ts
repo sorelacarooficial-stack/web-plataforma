@@ -5,8 +5,9 @@
  * que no hace falta pedir permiso con un banner. Lo que se guarda son
  * CONTADORES por día —cuántas visitas, de qué país, desde dónde llegan— y no
  * a cada persona. La IP no se guarda nunca: solo se usa, mezclada con el
- * navegador y el día, para contar personas distintas, y ese resumen cambia
- * cada día, así que no sirve para seguir a nadie de un día a otro.
+ * navegador y el MES, para contar personas distintas sin contar dos veces a
+ * quien vuelve dentro del mes. Ese resumen cambia cada mes y se borra al
+ * cerrarlo, así que no sirve para seguir a nadie de un mes a otro.
  *
  * Lo que se mide desde un ordenador de pruebas va a otras colecciones, para
  * no ensuciar los números de verdad.
@@ -16,6 +17,8 @@ const PRODUCCION = process.env.VERCEL_ENV === 'production';
 
 export const COLECCION_DIAS = PRODUCCION ? 'metricas_dias' : 'metricas_dias_prueba';
 export const COLECCION_VIDEOS = PRODUCCION ? 'metricas_videos' : 'metricas_videos_prueba';
+/** Los resúmenes del mes para no contar dos veces a la misma persona. */
+export const COLECCION_MESES = PRODUCCION ? 'metricas_meses' : 'metricas_meses_prueba';
 
 /** El día en España, `2026-10-12`: lo que importa es el día de Sorela, no el de Londres. */
 export function diaDe(fecha = new Date()): string {

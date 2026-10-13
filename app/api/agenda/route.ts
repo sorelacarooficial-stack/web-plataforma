@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { accesoGuardado, aConvocatoria, coleccion as coleccionConvocatorias } from '@/lib/convocatorias';
+import { diasEntre } from '@/lib/convocatorias-tipos';
 import { FieldValue, Timestamp, type Query } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
@@ -313,7 +315,68 @@ export async function GET(peticion: Request) {
     };
   });
 
-  return NextResponse.json({ ok: true, eventos, total: eventos.length });
+  /* Las fechas de la formación presencial a la que Sorela le ha dado acceso
+     desde una convocatoria: salen en su agenda sin que tenga que apuntarlas.
+     No se guardan en su agenda (si Sorela cambia la fecha, cambia aquí
+     sola): se calculan al pedirla y van marcadas como fijas. */
+  const deCurso = await fechasDeFormacion(guardia.sesion.uid, guardia.sesion.correo ?? '', corte).catch(() => []);
+  const todas = [...eventos, ...deCurso].sort((a, b) => String(a.cuando).localeCompare(String(b.cuando)));
+
+  return NextResponse.json({ ok: true, eventos: todas, total: todas.length });
+}
+
+/** «2026-10-24» + «08:00» en hora de España, como instante. */
+function enMadrid(dia: string, hora: string): Date {
+  const tentativa = new Date(`${dia}T${hora}:00Z`);
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+      .formatToParts(tentativa)
+      .map((x) => [x.type, x.value])
+  );
+  const visto = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute);
+  return new Date(tentativa.getTime() - (visto - tentativa.getTime()));
+}
+
+async function fechasDeFormacion(uid: string, correo: string, corte: Date) {
+  const mio = correo.trim().toLowerCase();
+  const snap = await coleccionConvocatorias().get();
+  const salida: Array<Record<string, unknown>> = [];
+  for (const d of snap.docs) {
+    const v = d.data();
+    const c = aConvocatoria(d.id, v);
+    const crudas = (v.inscritas ?? {}) as Record<string, { acceso?: unknown; correo?: unknown }>;
+    const suya = Object.values(crudas).some((x) => {
+      const a = accesoGuardado(x?.acceso);
+      if (!a) return false; // sin acceso creado, todavía no es suya
+      return (a.tipo === 'cuenta' && a.uid === uid) || (!!mio && String(x?.correo ?? '').trim().toLowerCase() === mio);
+    });
+    if (!suya) continue;
+    const dias = diasEntre(c.inicio, c.fin);
+    dias.forEach((dia, i) => {
+      const j = c.horario[dia];
+      const desde = j?.desde ?? '09:00';
+      const cuando = enMadrid(dia, desde);
+      if (cuando.getTime() < corte.getTime() - 86_400_000) return;
+      const [h1, m1] = desde.split(':').map(Number);
+      const [h2, m2] = (j?.hasta ?? '').split(':').map(Number);
+      const duracion = j && !Number.isNaN(h2) ? (h2 * 60 + m2) - (h1 * 60 + m1) : 480;
+      salida.push({
+        id: `formacion-${d.id}-${dia}`,
+        titulo: `Formación presencial${dias.length > 1 ? ` · día ${i + 1}` : ''}`,
+        cuando: cuando.toISOString(),
+        duracionMin: duracion > 0 ? duracion : 480,
+        tipo: 'Formación',
+        lugar: [c.ciudad, c.lugar].filter(Boolean).join(' · '),
+        nota: '',
+        conQuien: 'Sorela Caro',
+        telefono: '',
+        estado: 'Pendiente',
+        creado: null,
+        fija: true,
+      });
+    });
+  }
+  return salida;
 }
 
 export async function POST(peticion: Request) {

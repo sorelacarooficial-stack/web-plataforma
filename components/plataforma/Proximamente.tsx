@@ -1,4 +1,5 @@
 import { cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
+import { DIA_APERTURA, GRUPO_WHATSAPP, HORA_ESPANA } from '@/lib/apertura';
 import Noticias from './Noticias';
 import css from './proximamente.module.css';
 
@@ -58,8 +59,8 @@ const ALUMNA: Pieza[] = [
     texto: 'La reserva, el pago final y las facturas, en un sitio.',
   },
   {
-    titulo: 'La comunidad de terapeutas',
-    texto: 'Entras al terminar la formación. Casos reales, resueltos entre todas.',
+    titulo: 'La Comunidad Divine',
+    texto: 'Se presenta en la masterclass de apertura. Ese día se cuenta qué hay dentro.',
   },
 ];
 
@@ -178,6 +179,37 @@ export default function Proximamente({
             sorelacarooficial@gmail.com
           </a>
           .
+        </p>
+      </section>
+    </div>
+  );
+}
+
+/**
+ * Lo que ve en «Comunidad» quien no tiene la membresía: solo que viene, nada
+ * de dentro. El espacio de la comunidad no se enseña a quien no lo ha pagado.
+ */
+export function ComunidadProximamente({ nombre }: { nombre?: string }) {
+  const pila = (nombre || '').trim().split(/\s+/)[0];
+  return (
+    <div className={css.envoltura}>
+      <section className={css.centro}>
+        <span className={css.sello}>
+          <span className={css.selloPunto} aria-hidden="true" />
+          Próximamente
+        </span>
+        <h2 className={css.titulo}>
+          {pila ? `${pila}, la Comunidad Divine` : 'La Comunidad Divine'}
+          <em className={css.tituloEnfasis}>abre muy pronto</em>
+        </h2>
+        <p className={css.entradilla}>
+          {`El ${DIA_APERTURA} a las ${HORA_ESPANA} (hora de España) la presento en una masterclass en directo por Zoom. Ese día cuento qué hay dentro y cómo entrar.`}
+        </p>
+        <span className={css.filete} aria-hidden="true" />
+        <p className={css.pie}>
+          <a href={GRUPO_WHATSAPP} target="_blank" rel="noopener" className="btn btn-sm">
+            Entrar al grupo de WhatsApp
+          </a>
         </p>
       </section>
     </div>
