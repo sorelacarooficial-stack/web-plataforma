@@ -174,6 +174,36 @@
   gap: 6px 8px;
 }
 
+/* El vídeo a la izquierda y los datos a la derecha en pantalla grande: se
+   ven a la vez la subida y lo que se está escribiendo. En el móvil, uno
+   debajo de otro. */
+.nuevaCuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+@media (min-width: 1080px) {
+  .nuevaCuerpo {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 28px;
+  }
+
+  .columnaVideo {
+    position: sticky;
+    top: 20px;
+  }
+}
+
+.columnaVideo {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  container-type: inline-size;
+}
+
 /* ==========================================================================
    La zona de soltar
    ========================================================================== */
@@ -182,7 +212,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
+  min-height: 260px;
   padding: clamp(28px, 4vw, 44px) 20px;
   border: 1.5px dashed #8c8173;
   border-radius: 18px;
@@ -259,8 +291,8 @@
 
 .video {
   display: grid;
-  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
   align-items: start;
   padding: 14px;
   border-radius: 18px;
@@ -268,10 +300,12 @@
   border: 1px solid rgba(20, 18, 16, 0.08);
 }
 
-@media (max-width: 640px) {
+/* Portada al lado de los datos solo si hay sitio de verdad (tableta, o el
+   formulario en una sola columna); en la columna estrecha, encima. */
+@container (min-width: 600px) {
   .video {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
+    grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+    gap: 18px;
   }
 }
 
@@ -389,7 +423,9 @@
   font-weight: 600;
   line-height: 1;
   color: #141210;
-  font-variant-numeric: tabular-nums;
+  /* Cifras de caja alta y del mismo ancho: las de estilo antiguo de
+     Cormorant bailan arriba y abajo mientras el número cambia. */
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .video[data-fase='subida'] .pct,

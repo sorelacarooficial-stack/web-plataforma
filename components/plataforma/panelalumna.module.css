@@ -163,7 +163,7 @@
 
 .seguirRotulo {
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #d9b47c;
@@ -235,7 +235,7 @@
 .anilloNumero {
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 500;
   fill: #f7f0e4;
 }
 
@@ -251,7 +251,7 @@
 .datos b {
   margin-right: 4px;
   font-family: var(--fuente-jost), system-ui, sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: #f0d4a6;
 }
@@ -314,7 +314,7 @@
   background: none;
   font: inherit;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #6f5323;
@@ -451,7 +451,7 @@
   padding: 4px 8px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   text-align: center;
   background: var(--oro-tint);
@@ -536,7 +536,7 @@
 
 .eventoDia b {
   font-size: 19px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
   color: var(--ink);
 }
@@ -544,7 +544,7 @@
 .eventoDia em {
   font-style: normal;
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #6f5323;
@@ -562,7 +562,7 @@
 
 .claseVivo span {
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #d9b47c;
@@ -631,21 +631,46 @@
   min-width: 0;
 }
 
+/* La cabecera de «Tu nivel»: la insignia del nivel, el título y los puntos. */
+.nivelCabecera {
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+}
+
+.nivelInsignia {
+  flex: none;
+  filter: drop-shadow(0 8px 16px rgba(217, 180, 124, 0.35));
+}
+
+.nivelCabecera h3 {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Cifra grande: Cormorant con números de caja alta (la Jost solo llega a 500). */
 .nivelTotal {
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
-  font-size: clamp(26px, 2.6vw, 32px);
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(32px, 3.2vw, 40px);
   font-weight: 600;
   line-height: 1;
-  font-variant-numeric: tabular-nums;
   color: #f7f2ea;
 }
 
+.nivelTotal > span,
+.nivelTotal > span > span {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
+}
+
 .nivelTotal small {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   color: #cfc6b8;
 }
 

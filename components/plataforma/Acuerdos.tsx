@@ -220,7 +220,8 @@ export default function Acuerdos() {
                     </span>
                     <span className={a.estados}>
                       <span className={a.estado} data-tono={aprobado ? 'bien' : 'espera'}>
-                        {aprobado ? 'Aprobado' : 'Pendiente de tu aprobación'}
+                        {/* «Por aprobar», como la cifra de arriba: así cabe junto al estado del correo. */}
+                        {aprobado ? 'Aprobado' : 'Por aprobar'}
                       </span>
                       <span className={a.estado} data-tono={f.correoEnviado ? 'bien' : 'mal'}>
                         {f.correoEnviado ? 'Correo enviado' : 'Correo no enviado'}

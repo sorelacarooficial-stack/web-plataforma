@@ -115,6 +115,7 @@ export const carpetaDeClase = (id: string) => `privado/clases/${id}/`;
 
 /** «850 MB», «1,2 GB». */
 export function peso(bytes: number): string {
+  if (!(bytes > 0)) return '0 MB';
   const mb = bytes / 1024 ** 2;
   if (mb < 1) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   if (mb < 1000) return `${mb < 10 ? mb.toFixed(1).replace('.', ',') : Math.round(mb)} MB`;

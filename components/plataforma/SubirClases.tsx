@@ -302,9 +302,12 @@ function NuevaClase({ est, datos }: { est: Estado; datos: Respuesta }) {
           Nueva clase
         </h2>
         <p className={s.ayuda}>
-          Elige el vídeo y empieza a subir solo. Mientras, rellena lo de abajo.
+          Elige el vídeo y se pone a subir solo. Mientras sube, rellena el resto.
         </p>
       </header>
+
+      <div className={s.nuevaCuerpo}>
+      <div className={s.columnaVideo}>
 
       {est.pendiente && est.fase === 'libre' && (
         <div className={s.pendiente} role="status">
@@ -323,6 +326,7 @@ function NuevaClase({ est, datos }: { est: Estado; datos: Respuesta }) {
       ) : (
         <TarjetaVideo est={est} />
       )}
+      </div>
 
       <form className={s.campos} onSubmit={enviar} noValidate>
         <label className={s.campo}>
@@ -428,6 +432,7 @@ function NuevaClase({ est, datos }: { est: Estado; datos: Respuesta }) {
           {!est.archivo && !est.guardarAlTerminar && <span className={s.ayuda}>Primero elige el vídeo.</span>}
         </div>
       </form>
+      </div>
     </section>
   );
 }

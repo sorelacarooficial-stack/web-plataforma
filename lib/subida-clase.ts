@@ -606,6 +606,12 @@ function aFrase(e: unknown): string {
 
 async function arrancar(archivo: File, f: NonNullable<typeof ficha>, desde: number) {
   aguantarPestaña(true);
+  /* Si el navegador avisa de que se ha quedado sin red, el trozo que iba de
+     camino se da por perdido ya, en vez de esperar al minuto del vigía: así
+     la pantalla dice «sin conexión» en el momento y, al volver, se pregunta a
+     Google por dónde iba. */
+  const alCaer = () => f.xhr?.abort();
+  window.addEventListener('offline', alCaer);
   try {
     await bucle(f, archivo, desde);
     if (f.cancelada) return;
@@ -620,6 +626,7 @@ async function arrancar(archivo: File, f: NonNullable<typeof ficha>, desde: numb
     }
     poner({ fase: 'error', error: aFrase(e), reintentoEn: null, id: caducada ? null : estado.id });
   } finally {
+    window.removeEventListener('offline', alCaer);
     if (!enMarcha()) aguantarPestaña(false);
   }
 }
@@ -886,7 +893,9 @@ async function guardarYa(datos: Envio) {
   }
 
   // Hecho. Se olvida la subida y se deja el formulario listo para la
-  // siguiente, con el mismo destino: lo normal es subir varias del mismo curso.
+  // siguiente, con el mismo destino y apartado: lo normal es subir varias del
+  // mismo curso seguidas. «Publicarla ya» vuelve a apagado: publicar es una
+  // decisión de cada clase, y una que se cuela a medias la ven las alumnas.
   apuntar(null);
   limpiarAnalisis();
   archivoActual = null;
@@ -897,7 +906,7 @@ async function guardarYa(datos: Envio) {
     ...INICIAL,
     fase: 'guardada',
     guardada: { id, titulo: datos.titulo, publicada: datos.publicada },
-    borrador: { ...BORRADOR_VACIO, destino: estado.borrador.destino, cursoNuevo: estado.borrador.cursoNuevo, modulo: estado.borrador.modulo, publicar: estado.borrador.publicar },
+    borrador: { ...BORRADOR_VACIO, destino: estado.borrador.destino, cursoNuevo: estado.borrador.cursoNuevo, modulo: estado.borrador.modulo },
   });
 }
 

@@ -14,7 +14,7 @@ import {
 } from '@/lib/logros-tipos';
 import { PUNTOS, formatoPuntos, type ResumenPuntos } from '@/lib/puntos-tipos';
 import { irA } from '@/lib/navegar';
-import { BarraNivel, CaminoNiveles, ContadorPuntos, DesglosePuntos } from './Puntos';
+import { BarraNivel, CaminoNiveles, ContadorPuntos, DesglosePuntos, useVisto } from './Puntos';
 import { DistintivoCreadora, Icono, InsigniaNivel, Trofeo } from './IconosDivine';
 import l from './logros.module.css';
 
@@ -29,7 +29,8 @@ import l from './logros.module.css';
  * persona, que se ven igual pero hablando de ella. De Sorela no hay nada que
  * contar: es la creadora y lleva su distintivo.
  *
- * Las barras y el camino se llenan cuando entran en pantalla, no antes.
+ * Las barras, el anillo y el camino se llenan cuando entran en pantalla, no
+ * antes (`useVisto`).
  */
 
 type Datos = (Resumen & { esMio: boolean }) | { esMio: boolean; creadora: true };
@@ -186,11 +187,12 @@ export default function Logros({ uid, nombre }: { uid?: string; nombre?: string 
 /** El anillo del curso: se dibuja al entrar en pantalla. */
 function Anillo({ valor }: { valor: number }) {
   const reducir = useReducedMotion();
+  const [ref, visto] = useVisto<SVGSVGElement>();
   const radio = 50;
   const c = 2 * Math.PI * radio;
   const fin = c * (1 - Math.max(0, Math.min(100, valor)) / 100);
   return (
-    <svg viewBox="0 0 120 120" className={l.anillo} role="img" aria-label={`${valor}% del curso`}>
+    <svg ref={ref} viewBox="0 0 120 120" className={l.anillo} role="img" aria-label={`${valor}% del curso`}>
       <circle cx="60" cy="60" r={radio} className={l.anilloFondo} />
       <motion.circle
         cx="60"
@@ -199,9 +201,8 @@ function Anillo({ valor }: { valor: number }) {
         className={l.anilloValor}
         strokeDasharray={c}
         initial={{ strokeDashoffset: reducir ? fin : c }}
-        whileInView={{ strokeDashoffset: fin }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.2, ease: EASE, delay: 0.15 }}
+        animate={{ strokeDashoffset: visto || reducir ? fin : c }}
+        transition={reducir ? { duration: 0 } : { duration: 1.2, ease: EASE, delay: 0.15 }}
       />
       <text x="60" y="64" textAnchor="middle" className={l.anilloNumero}>
         {valor}%
@@ -269,8 +270,7 @@ function TarjetaDivine({ v, ajena, oros }: { v: EstadoVitrina; ajena: boolean; o
       className={l.divine}
       data-hecho={hecho ? '' : undefined}
       initial={reducir ? false : { opacity: 0, y: 10 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: EASE }}
     >
       <Trofeo escalon="divine" glifo="divine" size={92} apagado={!hecho} className={l.divineCopa} />
@@ -299,6 +299,7 @@ function TarjetaDivine({ v, ajena, oros }: { v: EstadoVitrina; ajena: boolean; o
 function TarjetaVitrina({ v, i, ajena }: { v: EstadoVitrina; i: number; ajena: boolean }) {
   const reducir = useReducedMotion();
   const [abierta, setAbierta] = useState(false);
+  const [ref, visto] = useVisto<HTMLSpanElement>();
   const idLista = useId();
   const sig = v.siguiente;
   const actual = v.actual;
@@ -311,9 +312,8 @@ function TarjetaVitrina({ v, i, ajena }: { v: EstadoVitrina; i: number; ajena: b
       className={l.copa}
       data-escalon={actual ? actual.escalon : 'ninguno'}
       initial={reducir ? false : { opacity: 0, y: 10 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '0px 0px -40px 0px' }}
-      transition={{ delay: i * 0.05, duration: 0.45, ease: EASE }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 + i * 0.05, duration: 0.45, ease: EASE }}
     >
       <div className={l.copaCabeza}>
         <Trofeo
@@ -350,12 +350,11 @@ function TarjetaVitrina({ v, i, ajena }: { v: EstadoVitrina; i: number; ajena: b
         </p>
       ) : (
         <div className={l.copaProgreso}>
-          <span className={l.barra} role="progressbar" aria-label={`${sig.nombre}`} aria-valuemin={0} aria-valuemax={sig.meta} aria-valuenow={Math.min(sig.progreso, sig.meta)}>
+          <span ref={ref} className={l.barra} role="progressbar" aria-label={`${sig.nombre}`} aria-valuemin={0} aria-valuemax={sig.meta} aria-valuenow={Math.min(sig.progreso, sig.meta)}>
             <motion.span
               initial={{ scaleX: reducir ? parte : 0 }}
-              whileInView={{ scaleX: parte }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.9, delay: 0.15 + i * 0.05, ease: EASE }}
+              animate={{ scaleX: visto || reducir ? parte : 0 }}
+              transition={reducir ? { duration: 0 } : { duration: 0.9, delay: 0.15 + i * 0.05, ease: EASE }}
             />
           </span>
           <p className={l.falta}>

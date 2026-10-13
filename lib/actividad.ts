@@ -36,10 +36,10 @@ export const esMes = (v: unknown): v is string => typeof v === 'string' && /^\d{
 
 export type CampoStats = 'publicaciones' | 'respuestas' | 'meGustaRecibidos';
 
-/* Las cuentas de Sorela, guardadas unos minutos en la memoria del servidor:
+/* Las cuentas de Sorela, guardadas un minuto en la memoria del servidor:
    el rol se cambia una vez en la vida y así no cuesta una lectura por cada
    «me gusta». Una consulta pequeña (hay una o dos cuentas con ese rol). */
-const VIGENCIA_SORELA_MS = 5 * 60_000;
+const VIGENCIA_SORELA_MS = 60_000;
 let sorelaGuardada: { uids: Set<string>; hasta: number } | null = null;
 
 /**

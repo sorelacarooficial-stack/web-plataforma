@@ -5,15 +5,20 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import Logros from './Logros';
 import { BarraNivel, ContadorPuntos, useResumenPuntos } from './Puntos';
+import { DistintivoCreadora, InsigniaNivel } from './IconosDivine';
 import { useAviso, useConfirmar } from './Confirmar';
 import { formatoPuntos, nivelDe, type EstadoNivel } from '@/lib/puntos-tipos';
 import { leerRespuesta, prepararImagen } from '@/lib/imagen-cliente';
 import p from './perfil.module.css';
 
 /**
- * El perfil, tipo Instagram: portada, foto, quién es, su nivel y sus fotos.
- * Se ve solo dentro de la plataforma. `?u=uid` abre el de otra persona; sin
- * nada, el propio. Lo cuenta `app/api/perfiles`.
+ * El perfil, tipo Instagram: portada, foto, quién es, su nivel (con su
+ * insignia), sus fotos y su vitrina de trofeos. Se ve solo dentro de la
+ * plataforma. `?u=uid` abre el de otra persona; sin nada, el propio;
+ * `?t=trofeos` abre directamente la vitrina. Lo cuenta `app/api/perfiles`.
+ *
+ * El de Sorela no tiene puntos, nivel ni trofeos: es la creadora y no
+ * compite. Lleva su distintivo «Creadora de la Técnica Divine».
  *
  * Los puntos del propio llegan al día con el evento `divine:puntos` (los
  * reparte la Celebración); los de otra persona, con la foto fija que guarda
@@ -48,6 +53,9 @@ const CAMPOS = ['bio', 'especialidad', 'ciudad', 'instagram'] as const;
 type Campo = (typeof CAMPOS)[number];
 
 const uidDeLaDireccion = () => (typeof window === 'undefined' ? '' : new URLSearchParams(window.location.search).get('u') || '');
+type Pestana = 'fotos' | 'trofeos';
+const pestanaDeLaDireccion = (): Pestana =>
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('t') === 'trofeos' ? 'trofeos' : 'fotos';
 const abrirOnboarding = () => window.dispatchEvent(new Event('divine:onboarding'));
 const avisarLogros = () => window.dispatchEvent(new Event('divine:logros'));
 
@@ -89,7 +97,7 @@ export default function Perfil() {
   const [uid, setUid] = useState(uidDeLaDireccion);
   const [datos, setDatos] = useState<Datos | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
-  const [pestana, setPestana] = useState<'fotos' | 'logros'>('fotos');
+  const [pestana, setPestana] = useState<Pestana>(pestanaDeLaDireccion);
   const [editando, setEditando] = useState(false);
   const [abierta, setAbierta] = useState<number | null>(null);
   const [subiendo, setSubiendo] = useState<string | null>(null);
@@ -103,7 +111,10 @@ export default function Perfil() {
 
   useEffect(() => {
     setMontado(true);
-    const leer = () => setUid(uidDeLaDireccion());
+    const leer = () => {
+      setUid(uidDeLaDireccion());
+      setPestana(pestanaDeLaDireccion());
+    };
     window.addEventListener('popstate', leer);
     return () => window.removeEventListener('popstate', leer);
   }, []);
@@ -121,7 +132,7 @@ export default function Perfil() {
 
   useEffect(() => {
     setDatos(null);
-    setPestana('fotos');
+    setPestana(pestanaDeLaDireccion());
     cargar();
   }, [cargar]);
 
@@ -263,6 +274,8 @@ export default function Perfil() {
   const ini = perfil.nombre.split(/\s+/).slice(0, 2).map((x) => x[0] ?? '').join('').toUpperCase();
   const puedeBorrar = esMio || datos.puedeModerar;
   const conPuntos = !perfil.esSorela;
+  // Sorela solo tiene la pestaña de fotos, aunque la dirección pida la vitrina.
+  const pestanaVista: Pestana = conPuntos ? pestana : 'fotos';
   const total = esMio && resumen ? resumen.total : (datos.puntos?.total ?? 0);
   const nivel = nivelDe(total);
   const vacio = !perfil.bio && !perfil.especialidad && !perfil.ciudad && fotos.length === 0;
@@ -302,7 +315,7 @@ export default function Perfil() {
           <div className={p.nombreBloque}>
             <h2>
               {perfil.nombre}
-              {perfil.esSorela && <span className={p.sello}>✦ Creadora de la Técnica Divine</span>}
+              {perfil.esSorela && <DistintivoCreadora />}
             </h2>
             {(perfil.especialidad || perfil.ciudad) && <p className={p.sub}>{[perfil.especialidad, perfil.ciudad].filter(Boolean).join(' · ')}</p>}
           </div>
@@ -328,24 +341,27 @@ export default function Perfil() {
 
         {conPuntos && (
           <div className={p.nivel}>
-            <BarraNivel total={total} tamano="compacta" conTexto={false} />
-            <p className={p.nivelTexto}>
-              {nivel.siguiente ? (
-                esMio ? (
-                  <>
-                    Te faltan <b>{formatoPuntos(nivel.falta)} pts</b> para <b>{nivel.siguiente.nombre}</b>
-                  </>
+            <InsigniaNivel n={nivel.n} size={46} className={p.nivelInsignia} title={`Nivel ${nivel.n}: ${nivel.nombre}`} />
+            <div className={p.nivelBarra}>
+              <BarraNivel total={total} tamano="compacta" conTexto={false} />
+              <p className={p.nivelTexto}>
+                {nivel.siguiente ? (
+                  esMio ? (
+                    <>
+                      Te faltan <b>{formatoPuntos(nivel.falta)} pts</b> para <b>{nivel.siguiente.nombre}</b>
+                    </>
+                  ) : (
+                    <>
+                      A <b>{formatoPuntos(nivel.falta)} pts</b> de <b>{nivel.siguiente.nombre}</b>
+                    </>
+                  )
+                ) : esMio ? (
+                  'Has llegado al nivel más alto.'
                 ) : (
-                  <>
-                    A <b>{formatoPuntos(nivel.falta)} pts</b> de <b>{nivel.siguiente.nombre}</b>
-                  </>
-                )
-              ) : esMio ? (
-                'Has llegado al nivel más alto.'
-              ) : (
-                'Está en el nivel más alto.'
-              )}
-            </p>
+                  'Está en el nivel más alto.'
+                )}
+              </p>
+            </div>
           </div>
         )}
 
@@ -365,9 +381,7 @@ export default function Perfil() {
                 puntos
               </span>
               <span className={p.chipNivel}>
-                <span className={p.chipNumero} aria-hidden="true">
-                  {nivel.n}
-                </span>
+                <InsigniaNivel n={nivel.n} size={24} />
                 <span className={p.soloLector}>Nivel {nivel.n}: </span>
                 {nivel.nombre}
               </span>
@@ -401,22 +415,27 @@ export default function Perfil() {
         )}
       </section>
 
-      {/* ---------- Pestañas ---------- */}
-      <nav className={p.pestanas} aria-label="Contenido del perfil">
-        {(
-          [
-            ['fotos', 'Fotos'],
-            ['logros', 'Logros'],
-          ] as const
-        ).map(([id, nombre]) => (
-          <button key={id} type="button" aria-current={pestana === id ? 'page' : undefined} onClick={() => setPestana(id)}>
-            {nombre}
-            {pestana === id && <motion.span layoutId="perfil-pestana" className={p.subrayado} />}
-          </button>
-        ))}
-      </nav>
+      {/* El sitio de los puntos y la vitrina, en el de Sorela: su distintivo. */}
+      {perfil.esSorela && <DistintivoCreadora variante="bloque" ajena={!esMio} nombre={perfil.nombre} />}
 
-      {pestana === 'fotos' &&
+      {/* ---------- Pestañas (Sorela no tiene trofeos: solo sus fotos, sin pestañas) ---------- */}
+      {conPuntos && (
+        <nav className={p.pestanas} aria-label="Contenido del perfil">
+          {(
+            [
+              ['fotos', 'Fotos'],
+              ['trofeos', 'Trofeos'],
+            ] as const
+          ).map(([id, nombre]) => (
+            <button key={id} type="button" aria-current={pestanaVista === id ? 'page' : undefined} onClick={() => setPestana(id)}>
+              {nombre}
+              {pestanaVista === id && <motion.span layoutId="perfil-pestana" className={p.subrayado} />}
+            </button>
+          ))}
+        </nav>
+      )}
+
+      {pestanaVista === 'fotos' &&
         (!esMio && fotos.length === 0 ? (
           <Vacio titulo="Todavía no hay fotos">Cuando suba fotos de su trabajo, las verás aquí.</Vacio>
         ) : (
@@ -451,7 +470,7 @@ export default function Perfil() {
           </div>
         ))}
 
-      {pestana === 'logros' && <Logros uid={esMio ? undefined : perfil.uid} />}
+      {pestanaVista === 'trofeos' && <Logros uid={esMio ? undefined : perfil.uid} nombre={perfil.nombre} />}
 
       <input ref={entradaFoto} type="file" accept="image/*" hidden onChange={(e) => { subir('foto', e.target.files?.[0]); e.target.value = ''; }} />
       <input ref={entradaPortada} type="file" accept="image/*" hidden onChange={(e) => { subir('portada', e.target.files?.[0]); e.target.value = ''; }} />

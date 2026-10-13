@@ -6,6 +6,7 @@ import {
   AnimatePresence,
   animate,
   motion,
+  useInView,
   useMotionValue,
   useReducedMotion,
   useTransform,
@@ -162,6 +163,18 @@ export function useDesdeUnaVez(sitio: string, r: ResumenPuntos | null): number |
    ========================================================================== */
 
 const EASE_SALIDA = [0.16, 1, 0.3, 1] as const;
+
+/**
+ * Para las barras que se llenan al verse. Con `whileInView` a secas, framer
+ * devuelve la barra a su valor de base (llena) en cuanto ve que AÚN no está en
+ * pantalla, así que todo lo de más abajo aparecía lleno y sin animar. Con esto
+ * se queda vacía hasta que se ve, y entonces se llena.
+ */
+export function useVisto<T extends Element>() {
+  const ref = useRef<T>(null);
+  const visto = useInView(ref, { once: true, margin: '0px 0px -30px 0px' });
+  return [ref, visto] as const;
+}
 
 /** Una cifra de puntos que cuenta hacia arriba (o hacia abajo) hasta `valor`. */
 export function ContadorPuntos({ valor, desde, className }: { valor: number; desde?: number; className?: string }) {
@@ -360,19 +373,19 @@ export function BarraNivel({
  */
 export function CaminoNiveles({ total, compacto = false, ajena = false }: { total: number; compacto?: boolean; ajena?: boolean }) {
   const reducir = useReducedMotion();
+  const [ref, visto] = useVisto<HTMLDivElement>();
   const e = nivelDe(total);
   // De 0 (primer nivel, sin empezar) a 1 (último): la parte de la línea que va dorada.
   const avance = Math.min(1, ((e.n - 1) + (e.siguiente ? e.progreso : 0)) / (NIVELES.length - 1));
   return (
-    <div className={s.camino} data-compacto={compacto ? '' : undefined}>
+    <div ref={ref} className={s.camino} data-compacto={compacto ? '' : undefined}>
       {/* La línea va fuera de la lista (dentro de un <ol> solo caben <li>). */}
       <span className={s.caminoLinea} aria-hidden="true">
         <motion.span
           className={s.caminoRelleno}
           initial={{ scaleX: reducir ? avance : 0 }}
-          whileInView={{ scaleX: avance }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.1, delay: 0.1, ease: EASE_SALIDA }}
+          animate={{ scaleX: visto || reducir ? avance : 0 }}
+          transition={reducir ? { duration: 0 } : { duration: 1.1, delay: 0.1, ease: EASE_SALIDA }}
         />
       </span>
       <ol className={s.caminoLista} aria-label="Camino de niveles">
@@ -432,9 +445,9 @@ function detalle(f: FuentePuntos, v: number): string {
     case 'racha':
       return v >= PUNTOS.racha7 + PUNTOS.racha30 ? '30 días seguidos' : '7 días seguidos';
     case 'logros':
-      return plural(Math.round(v / PUNTOS.logro), 'logro', 'logros');
+      return plural(Math.round(v / PUNTOS.logro), 'trofeo', 'trofeos');
     case 'perfil':
-      return 'Perfil completo';
+      return 'Foto, quién eres y dónde';
     case 'fotos':
       return plural(Math.round(v / PUNTOS.foto), 'foto', 'fotos');
   }
@@ -459,6 +472,7 @@ export function DesglosePuntos({
   ajena?: boolean;
 }) {
   const reducir = useReducedMotion();
+  const [ref, visto] = useVisto<HTMLUListElement>();
   const filas = FUENTES.map((f) => ({ f, v: desglose[f] ?? 0 }))
     .filter((x) => x.v > 0)
     .sort((a, b) => b.v - a.v);
@@ -469,7 +483,7 @@ export function DesglosePuntos({
   }
 
   return (
-    <ul className={s.desglose}>
+    <ul ref={ref} className={s.desglose}>
       {filas.map(({ f, v }, i) => (
         <li key={f}>
           <span className={s.desgloseIcono} aria-hidden="true">
@@ -482,9 +496,8 @@ export function DesglosePuntos({
           <span className={s.desglosePista} aria-hidden="true">
             <motion.span
               initial={{ scaleX: reducir ? v / mayor : 0 }}
-              whileInView={{ scaleX: v / mayor }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: reducir ? 0 : 0.05 * i, ease: EASE_SALIDA }}
+              animate={{ scaleX: visto || reducir ? v / mayor : 0 }}
+              transition={reducir ? { duration: 0 } : { duration: 0.8, delay: 0.05 * i, ease: EASE_SALIDA }}
             />
           </span>
           <b className={s.desgloseValor}>+{formatoPuntos(v)}</b>
