@@ -29,7 +29,6 @@ const COLUMNAS = [
       { href: '/legal/aviso-legal', texto: 'Aviso legal' },
       { href: '/legal/privacidad', texto: 'Privacidad' },
       { href: '/legal/cookies', texto: 'Cookies' },
-      { href: '/legal/condiciones', texto: 'Condiciones de contratación' },
     ],
   },
 ];

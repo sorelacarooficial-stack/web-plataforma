@@ -69,8 +69,8 @@ export default function Asistente() {
    * Así que mira qué tiene debajo. Si es un campo, un botón o el texto de un
    * formulario de la página, primero se queda en la burbuja, sin el reclamo;
    * si ni así deja libre lo de debajo, se esconde hasta que se baja un poco.
-   * Con el teclado sigue a mano: al enfocarlo vuelve a verse
-   * (Asistente.module.css).
+   * En la primera pantalla también va en burbuja (ver más abajo). Con el
+   * teclado sigue a mano: al enfocarlo vuelve a verse (Asistente.module.css).
    */
   useEffect(() => {
     if (abierto) return;
@@ -98,14 +98,26 @@ export default function Asistente() {
         c.bottom > r.top - HOLGURA &&
         c.top < r.bottom + HOLGURA;
 
-      // Los controles por su caja, y los textos (la nota de debajo del botón,
+      // Los controles por su caja (los de los formularios y los de las
+      // llamadas marcadas con data-aparta-asistente, como las de la portada),
+      // y los textos (la nota de debajo del botón,
       // el consentimiento, los errores) por sus líneas: la caja de un párrafo
       // centrado ocupa todo el ancho aunque la frase sea corta.
+      // Lo que todavía está entrando (un FadeIn a medio camino, con su
+      // opacidad por debajo de 1) no cuenta: está más abajo de donde se va a
+      // quedar y, si se midiera, el lanzador se escondería un momento para
+      // nada. Las medidas de más abajo lo recogen cuando ya ha llegado.
+      const entrando = (el: Element) => {
+        for (let n: Element | null = el, i = 0; n && i < 6; n = n.parentElement, i++) {
+          if (Number(getComputedStyle(n).opacity) < 0.98) return true;
+        }
+        return false;
+      };
       const cajas: DOMRect[] = [];
       for (const el of document.querySelectorAll(
-        'main form :is(input, select, textarea, button, summary)'
+        'main form :is(input, select, textarea, button, summary), main [data-aparta-asistente] :is(a, button)'
       )) {
-        cajas.push(el.getBoundingClientRect());
+        if (!entrando(el)) cajas.push(el.getBoundingClientRect());
       }
       const rango = document.createRange();
       for (const el of document.querySelectorAll('main form :is(p, label)')) {
@@ -122,7 +134,14 @@ export default function Asistente() {
         }
         if (toca(c, r.right - anchoNatural)) tocaPastilla = true;
       }
-      setApartado(tocaBurbuja ? 'oculto' : tocaPastilla && anchoNatural > lado + 1 ? 'burbuja' : 'no');
+      // En la primera pantalla, además, va en burbuja aunque no tape nada: ahí
+      // están el titular y las llamadas de cada página, y la pastilla «Te
+      // ayudo a decidir» debajo de ellas se leía como un botón más. El reclamo
+      // sale en cuanto se baja un poco.
+      const arriba = window.scrollY < window.innerHeight * 0.4;
+      setApartado(
+        tocaBurbuja ? 'oculto' : (tocaPastilla || arriba) && anchoNatural > lado + 1 ? 'burbuja' : 'no'
+      );
     };
     const programar = () => {
       if (vivo && !marco) marco = window.requestAnimationFrame(medir);
@@ -140,9 +159,15 @@ export default function Asistente() {
     const principal = document.querySelector('main');
     if (principal) observador.observe(principal);
     document.fonts?.ready.then(programar);
+    // Las entradas de framer-motion (FadeIn) mueven las llamadas con
+    // transform y no avisan al terminar: midiendo solo al cargar, el botón de
+    // la portada quedaba 20 px más abajo de donde acaba y el lanzador se
+    // escondía sin tapar nada. Se vuelve a medir cuando ya han llegado.
+    const tardes = [700, 1600, 3000].map((ms) => window.setTimeout(programar, ms));
 
     return () => {
       vivo = false;
+      tardes.forEach((t) => window.clearTimeout(t));
       if (marco) window.cancelAnimationFrame(marco);
       window.removeEventListener('scroll', programar);
       window.removeEventListener('resize', programar);

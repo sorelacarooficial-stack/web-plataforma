@@ -35,7 +35,9 @@ export default function LlamadaDivine({
   const oscuro = sobre === 'oscuro';
 
   return (
-    <div className={`${css.acciones} ${alineacion === 'centro' ? css.centro : ''}`}>
+    // data-aparta-asistente: el botón flotante del asistente se aparta de lo
+    // que lleve esta marca igual que de los formularios (Asistente.tsx).
+    <div className={`${css.acciones} ${alineacion === 'centro' ? css.centro : ''}`} data-aparta-asistente="">
       <BotonCaptacion className={`btn ${oscuro ? 'btn-claro ' : ''}btn-latido`}>
         {textoPrincipal}
       </BotonCaptacion>

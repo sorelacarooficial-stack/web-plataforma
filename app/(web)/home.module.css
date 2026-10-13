@@ -72,16 +72,15 @@
 }
 
 
+/* Un rótulo, no un botón: antes era una pastilla en relieve y, junto a las
+   dos llamadas y el asistente, la portada parecía tener cuatro botones. */
 .sello {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 16px 8px 12px;
-  background: var(--surface);
-  border: 1px solid var(--oro-line);
-  border-radius: 999px;
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--oro-b);
 }
@@ -662,6 +661,50 @@
   border-radius: 40px;
 }
 
+/*
+ * Las cajas de las dos etapas (la parte que se pega al bajar). Doble clase
+ * para ganar al fondo de las tarjetas de las landings, que va en otro módulo.
+ *
+ * La online, en papel claro con filo y sombra baja; la presencial, en la banda
+ * negra de la marca con el halo dorado. Antes las dos eran relieve crema sobre
+ * el mismo crema y no se veía dónde acababa una y empezaba la otra.
+ */
+.etapaCajaClara.etapaCajaClara {
+  background: #fbf9f6;
+  border: 1px solid rgba(20, 18, 16, 0.12);
+  box-shadow: 0 28px 60px -34px rgba(60, 45, 25, 0.35);
+}
+
+.etapaCajaOscura.etapaCajaOscura {
+  /* Los mismos tokens que la banda negra, para que el texto de dentro
+     (que usa los de la página) salga claro sin tocar cada regla. */
+  --ink: #f8f4ec;
+  --ink-3: #ddd3c4;
+  --crema: #ede3d3;
+  --oro-b: #d9b47c;
+  --arcilla: #cfa765;
+  --degradado-titulo: var(--degradado-claro);
+  background:
+    radial-gradient(90% 70% at 100% 0%, rgba(217, 180, 124, 0.16), transparent 62%),
+    #0c0c0c;
+  border: 1px solid rgba(217, 180, 124, 0.28);
+  box-shadow: 0 34px 70px -30px rgba(12, 10, 9, 0.55);
+  color: var(--ink);
+}
+
+/* El halo ya lo pone la caja: el del artículo, encima, lo duplicaba. */
+.etapaCajaOscura .etapaDestacada {
+  background: none;
+}
+
+/* El texto de las dos, a 400: a este tamaño el 300 de Jost se deshilacha. */
+.etapaCajaClara :global(.texto-fijo),
+.etapaCajaOscura :global(.texto-fijo),
+.etapaCajaClara .etapaLista li,
+.etapaCajaOscura .etapaLista li {
+  font-weight: 400;
+}
+
 .etapaOrden {
   font-size: 12px;
   font-weight: 500;
@@ -1075,8 +1118,9 @@
   align-items: flex-end;
   gap: 24px;
   /* Abajo deja sitio al botón flotante del asistente, que si no tapa la
-     segunda llamada. */
-  padding: 24px clamp(18px, 3vw, 40px) calc(clamp(28px, 4vw, 44px) + 64px);
+     segunda llamada (y entonces se aparta y no se ve). Con las dos llamadas
+     una encima de otra hace falta algo más que antes. */
+  padding: 24px clamp(18px, 3vw, 40px) calc(clamp(28px, 4vw, 44px) + 92px);
 }
 
 .portadaLema {
@@ -1085,6 +1129,33 @@
   align-items: flex-start;
   gap: 14px;
   max-width: 290px;
+}
+
+/* Las dos llamadas, una encima de la otra y pegadas a la derecha: en fila
+   medían 500 px y, en portátiles, se metían por encima del retrato. Apiladas
+   caben en el hueco que deja a su lado y forman pareja con el rótulo y la
+   firma de la izquierda. */
+.portadaAcciones > div {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* El botón, plano: sin el aro blanco de dentro, sin el relieve neumórfico
+   (su luz blanca hacía un halo claro alrededor) y sin el pulso de fuera.
+   Se queda el degradado dorado y el brillo lento que lo cruza, que es lo que
+   lo distingue. */
+.portadaAcciones :global(.btn),
+.portadaAcciones :global(.btn:hover),
+.portadaAcciones :global(.btn:active) {
+  outline: none;
+  box-shadow: 0 14px 28px -16px rgba(60, 45, 25, 0.6);
+  animation: none;
+}
+
+.portadaAcciones :global(.btn:focus-visible) {
+  outline: 2px solid var(--arcilla);
+  outline-offset: 3px;
 }
 
 .centro {
@@ -1120,11 +1191,20 @@
     padding-top: 28px;
     padding-bottom: 36px;
   }
+
+  /* Debajo del retrato ya no hay nada al lado: las llamadas se alinean a la
+     izquierda, con el rótulo y la firma. */
+  .portadaAcciones > div {
+    align-items: flex-start;
+  }
 }
 
-/* Neumorfismo en la portada: el sello en relieve. */
-.sello {
-  border-color: transparent;
-  background: var(--neu-base);
-  box-shadow: var(--neu-fuera-sm);
+/* En el móvil, el botón a todo el ancho (lo que ya hace LlamadaDivine; esta
+   regla solo deshace la alineación de arriba, que pesa más). */
+@media (max-width: 480px) {
+  .portadaAcciones > div {
+    align-items: stretch;
+  }
 }
+
+

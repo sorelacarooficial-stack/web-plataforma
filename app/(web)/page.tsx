@@ -108,13 +108,16 @@ export default async function Home() {
           </FadeIn>
 
           {/* Dos salidas y una jerarquía clara: la información abre una ventana
-              aquí mismo, la cita abre el asistente. Nadie sale de la página. */}
-          <FadeIn delay={0.5} y={20}>
+              aquí mismo, la cita abre el asistente. Nadie sale de la página.
+              `sobre="claro"` porque la portada ya es de papel: con «oscuro»
+              salían un botón dorado con aro blanco y una pastilla en relieve,
+              y entre los dos y el asistente parecían cuatro botones. Así es un
+              botón y, debajo, un enlace. */}
+          <FadeIn delay={0.5} y={20} className={css.portadaAcciones}>
             <LlamadaDivine
               textoPrincipal="Quiero la información"
               textoCita="Agendar una cita"
               preguntaCita="Quiero agendar una cita. ¿Cómo lo hacemos?"
-              sobre="oscuro"
             />
           </FadeIn>
         </div>
@@ -234,8 +237,14 @@ export default async function Home() {
           </FadeIn>
 
           <div>
+            {/* Una clara y otra oscura: con las dos en relieve crema sobre el
+                papel no se distinguía dónde acababa una y empezaba la otra. La
+                presencial va en la banda negra de la marca porque es el destino
+                (la que tiene fechas); la online, en papel con filo, es el paso
+                previo. Al apilarse, la oscura tapa a la clara y se nota el
+                cambio de etapa. */}
             <Apiladas
-              claseTarjeta="neu-apilada"
+              clasesTarjetas={[css.etapaCajaClara, css.etapaCajaOscura]}
               tarjetas={[
                 <article key="online" className={css.etapa}>
                   <span className={css.etapaOrden}>Primera etapa</span>
