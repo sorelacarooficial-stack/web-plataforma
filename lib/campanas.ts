@@ -6,6 +6,7 @@ import { baseDeDatos, COLECCIONES, hayFirebase } from './firebase-servidor';
 import { diaDe } from './metricas';
 import { enlaceBaja, estaDeBaja, mandarCorreo } from './correos';
 import { listaDeEspera } from './automatizar';
+import { correoBienvenidaPorOrigen } from './plantillas-bienvenida';
 import { AUDIENCIAS, faltaEnlace, plantillaCampana, type Audiencia, type Campana, type EstadoCampana } from './plantillas-campana';
 import { serieLanzamiento } from './serie-lanzamiento';
 
@@ -46,6 +47,7 @@ export function aCampana(id: string, v: FirebaseFirestore.DocumentData): Campana
     fecha: String(v.fecha ?? ''),
     estado: (['borrador', 'programada', 'enviada', 'pausada', 'caducada'].includes(v.estado) ? v.estado : 'borrador') as EstadoCampana,
     serie: v.serie ?? null,
+    plantilla: v.plantilla === 'lista-espera' ? 'lista-espera' : null,
     resultado: r
       ? { enviados: r.enviados ?? 0, fallidos: r.fallidos ?? 0, omitidos: r.omitidos ?? 0, cuando: r.cuando?.toDate?.().toISOString() ?? null }
       : null,
@@ -140,8 +142,12 @@ export async function enviarCampana(id: string): Promise<InformeCampana> {
 
   for (const p of await destinatarios(c.audiencia)) {
     const baja = enlaceBaja(p.correo);
+    const contenido =
+      c.plantilla === 'lista-espera'
+        ? correoBienvenidaPorOrigen(p.nombre, 'lista-comunidad')
+        : plantillaCampana(c, p.nombre, baja);
     const x = await mandarCorreo(
-      { para: p.correo, ...plantillaCampana(c, p.nombre, baja), baja },
+      { para: p.correo, ...contenido, baja },
       { tipo: 'campana', clave: `campana:${id}:${hash(p.correo)}`, campanaId: id }
     );
     if (x.estado === 'enviado') r.enviados++;
