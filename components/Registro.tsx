@@ -369,7 +369,10 @@ export default function Registro({ invitacion }: { invitacion?: string }) {
               className={css.casilla}
             />
             <span>
-              He leído y acepto la{' '}
+              {/* «Acepto la política» no es dar permiso para nada concreto: lo
+                  que se confirma aquí es la edad (la plataforma es para
+                  adultas) y que se ha tenido delante la información. */}
+              Soy mayor de edad y he leído la{' '}
               <Link href="/legal/privacidad" className={css.enlaceFino}>
                 política de privacidad
               </Link>

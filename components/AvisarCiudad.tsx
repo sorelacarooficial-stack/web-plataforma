@@ -5,19 +5,42 @@ import { useId, useState } from 'react';
 import { revisar } from '@/lib/captacion';
 import css from './Formularios.module.css';
 import InfoPrivacidad from '@/components/InfoPrivacidad';
-import { CAPA_CITA } from '@/lib/privacidad';
+import { CAPA_AVISO_CONVOCATORIA, CAPA_CITA } from '@/lib/privacidad';
 import { conLlegada } from '@/lib/llegada';
 
 type Estado = 'quieto' | 'enviando' | 'hecho' | 'fallo';
 
 /**
- * «Avísame cuando haya convocatoria por mi zona».
+ * «Avísame cuando haya algo en mi ciudad».
  *
- * Antes no enviaba nada. Ahora pasa por la misma ruta que el resto y lleva
- * consentimiento. Pide el nombre además del correo porque el aviso lo escribe
- * Sorela a mano y un correo suelto no se puede saludar.
+ * Sirve para dos avisos distintos y por eso lleva `para`: en el buscador de
+ * terapeutas es «cuando haya una terapeuta cerca» y en /formaciones es
+ * «cuando haya una convocatoria cerca». La casilla, la información de
+ * privacidad y el origen tienen que decir el aviso que se pide de verdad:
+ * prometer uno y apuntar para otro es un consentimiento que no vale.
+ *
+ * Pasa por la misma ruta que el resto y lleva consentimiento. Pide el nombre
+ * además del correo porque el aviso lo escribe Sorela a mano y un correo
+ * suelto no se puede saludar. A esta persona no le llega la bienvenida (ver
+ * soloAviso en lib/enviar-informacion.ts) ni las campañas (lib/campanas.ts).
  */
-export default function AvisarCiudad() {
+const AVISOS = {
+  terapeuta: {
+    origen: 'avisar-ciudad',
+    casilla: 'Tengo 14 años o más y acepto que Sorela Caro use mis datos para avisarme cuando haya una terapeuta cerca.',
+    hecho: 'Gracias, te apunto. Cuando haya una terapeuta certificada en tu zona, te lo digo.',
+    capa: CAPA_CITA,
+  },
+  convocatoria: {
+    origen: 'avisar-ciudad-formacion',
+    casilla: 'Tengo 14 años o más y acepto que Sorela Caro use mis datos para avisarme cuando haya una formación cerca.',
+    hecho: 'Gracias, te apunto. Cuando haya una convocatoria en tu zona, te lo digo.',
+    capa: CAPA_AVISO_CONVOCATORIA,
+  },
+} as const;
+
+export default function AvisarCiudad({ para = 'terapeuta' }: { para?: keyof typeof AVISOS }) {
+  const aviso = AVISOS[para];
   const id = useId();
   const [v, setV] = useState({ nombre: '', correo: '', ciudad: '' });
   const [acepta, setAcepta] = useState(false);
@@ -39,7 +62,7 @@ export default function AvisarCiudad() {
     e.preventDefault();
     if (estado === 'enviando') return;
 
-    const datos = { ...v, consentimiento: acepta, origen: 'avisar-ciudad', empresa: senuelo };
+    const datos = { ...v, consentimiento: acepta, origen: aviso.origen, empresa: senuelo };
     const revision = revisar(datos);
     if (!revision.ok) {
       setError(Object.values(revision.errores)[0] ?? 'Revisa los datos.');
@@ -69,7 +92,7 @@ export default function AvisarCiudad() {
   if (estado === 'hecho') {
     return (
       <p className={css.confirmacion} role="status">
-        Gracias, te apunto. Te escribo en cuanto abra fecha por tu zona.{' '}
+        {aviso.hecho}{' '}
         <button
           type="button"
           className={css.deshacer}
@@ -143,14 +166,14 @@ export default function AvisarCiudad() {
       <label className={css.consentimiento}>
         <input type="checkbox" checked={acepta} onChange={(e) => setAcepta(e.target.checked)} />
         <span>
-          Acepto que Sorela trate mis datos para avisarme.{' '}
+          {aviso.casilla}{' '}
           <Link href="/legal/privacidad" target="_blank">
             Cómo se tratan
           </Link>
           .
         </span>
       </label>
-      <InfoPrivacidad capa={CAPA_CITA} />
+      <InfoPrivacidad capa={aviso.capa} />
 
       {error && (
         <p className={css.error} role="alert">

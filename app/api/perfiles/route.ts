@@ -5,7 +5,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { aplicacion, baseDeDatos, COLECCIONES, hayFirebase } from '@/lib/firebase-servidor';
 import { accesosDe, sesionActual, type Sesion } from '@/lib/sesion-servidor';
-import { nivelDe } from '@/lib/puntos-tipos';
+import { nivelDe, puntosAlDia } from '@/lib/puntos-tipos';
 
 /**
  * Los perfiles, tipo Instagram, SOLO dentro de la plataforma.
@@ -18,7 +18,8 @@ import { nivelDe } from '@/lib/puntos-tipos';
  *   DELETE ?portada=1[&uid=]   → quitar la portada (la propia; Sorela, cualquiera)
  *
  * Los puntos que se enseñan aquí son la foto fija que guarda lib/logros.ts
- * (`usuarios.puntosTotal`): el desglose completo lo da /api/logros. Sorela no
+ * puesta al día con lo ganado después (lib/puntos-tipos.ts, puntosAlDia): el
+ * desglose completo lo da /api/logros. Sorela no
  * lleva `puntos`: es la creadora y no compite (aunque le quede una foto fija
  * de antes, no se manda).
  *
@@ -98,7 +99,7 @@ export async function GET(peticion: Request) {
 
   const foto = typeof u.foto === 'string' && u.foto.startsWith('data:image/') ? u.foto : null;
   const esSorela = u.rol === 'sorela';
-  const puntosTotal = typeof u.puntosTotal === 'number' ? Math.max(0, Math.round(u.puntosTotal)) : 0;
+  const puntosTotal = puntosAlDia(u);
   const stats = (u.stats ?? {}) as { meGustaRecibidos?: unknown };
   const meGustaRecibidos = Math.max(0, Math.round(Number(stats.meGustaRecibidos) || 0));
   /* Las últimas, con su primera foto (firmada una hora) y sus «me gusta». */

@@ -2112,6 +2112,7 @@
 
 .chispa {
   position: absolute;
+  z-index: 1;
   left: 0;
   top: 0;
   display: grid;

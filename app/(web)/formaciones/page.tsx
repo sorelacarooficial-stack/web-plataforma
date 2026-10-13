@@ -216,7 +216,7 @@ export default async function Formaciones() {
                 Dime dónde estás y lo tengo en cuenta al montar las próximas convocatorias. Si se
                 juntan varias en una misma zona, la abro ahí.
               </p>
-              <AvisarCiudad />
+              <AvisarCiudad para="convocatoria" />
             </div>
           </div>
         </div>

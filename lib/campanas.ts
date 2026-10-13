@@ -108,6 +108,17 @@ export async function destinatarios(a: Audiencia): Promise<Persona[]> {
     const cs = await db.collection(COLECCIONES.contactos).get();
     for (const c of cs.docs) {
       const v = c.data();
+      /* Quien dejó su correo en «avísame cuando haya terapeuta (o
+         convocatoria) en mi ciudad» pidió UN aviso, no publicidad: escribirle
+         una campaña sería una comunicación comercial sin consentimiento
+         (art. 21 LSSI). Con startsWith, que hay más de un aviso. */
+      if (String(v.origen ?? '').startsWith('avisar-ciudad')) continue;
+      /* Apuntada a mano por Sorela sin marcar que pidió la información. */
+      if (v.aMano && !v.pidioInformacion) continue;
+      /* Dejó sin marcar la casilla de novedades. Los contactos anteriores a
+         esa casilla no llevan el campo: aceptaron un texto que ya incluía las
+         formaciones, así que solo se excluye el `false` explícito. */
+      if (v.comercial === false) continue;
       if (v.estado !== 'Descartado') meter(v.correo, v.nombre);
     }
   }

@@ -176,7 +176,7 @@ export default function FormularioContacto() {
               aria-invalid={errores.consentimiento ? true : undefined}
             />
             <span>
-              Acepto que Sorela trate mis datos para contestarme y escribirme sobre sus formaciones y la membresía.{' '}
+              Tengo 14 años o más y acepto que Sorela Caro use mis datos para contestarme y avisarme de las formaciones.{' '}
               <Link href="/legal/privacidad" target="_blank">
                 Cómo se tratan
               </Link>

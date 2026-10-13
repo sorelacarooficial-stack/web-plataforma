@@ -5,8 +5,8 @@ import { revisarAccesos, type Acceso } from './accesos';
 import { puedeVerla } from './aula';
 import { diaDe } from './metricas';
 import { COLECCION_ACTIVIDAD, cuentasDeSorela, mesDe } from './actividad';
-import { LOGROS, OROS_PARA_DIVINE, type EstadoLogro, type Resumen } from './logros-tipos';
-import { calcularPuntos, nivelDe, type ResumenPuntos } from './puntos-tipos';
+import { LOGROS, MESES_PODIO, OROS_PARA_DIVINE, PODIO_MINIMO, type EstadoLogro, type Resumen } from './logros-tipos';
+import { calcularPuntos, nivelDe, puntosDeLaFicha, type ResumenPuntos } from './puntos-tipos';
 
 /**
  * Calcula los logros (los escalones de sus trofeos, lib/logros-tipos.ts) de
@@ -26,6 +26,15 @@ import { calcularPuntos, nivelDe, type ResumenPuntos } from './puntos-tipos';
  */
 
 const DIA = 86_400_000;
+
+/**
+ * Los últimos meses YA CERRADOS (sin el de ahora), del más reciente al más
+ * antiguo: «2026-09», «2026-08»… El podio solo se gana con un mes terminado.
+ * Se miran varios por si no entró el mes siguiente a ganarlo.
+ */
+function mesesCerrados(n: number, ahora: Date = new Date()): string[] {
+  return Array.from({ length: n }, (_, i) => mesDe(new Date(Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth() - 1 - i, 1))));
+}
 
 export type Actividad = { ultimoDia?: string; racha?: number; mejor?: number; dias?: number };
 
@@ -100,12 +109,12 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
   const ref = db.collection(COLECCIONES.usuarios).doc(uid);
   /* Todo de una vez. Del progreso solo hacen falta los identificadores de las
      terminadas, y de las clases dos campos: se piden así para no traer de más. */
-  const [usuario, terminadas, lecciones, guardados, ranking, fotos, sorela] = await Promise.all([
+  const [usuario, terminadas, lecciones, guardados, rankings, fotos, sorela] = await Promise.all([
     ref.get(),
     ref.collection('progreso').where('completada', '==', true).select().get(),
     db.collection(COLECCIONES.lecciones).select('publicada', 'para').get(),
     ref.collection('logros').get(),
-    db.collection(COLECCION_ACTIVIDAD).doc(mesDe()).get(),
+    db.getAll(...mesesCerrados(MESES_PODIO).map((m) => db.collection(COLECCION_ACTIVIDAD).doc(m))),
     db
       .collection('perfiles')
       .doc(uid)
@@ -138,15 +147,22 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
   const dias = typeof act.dias === 'number' ? act.dias : Math.max(act.racha ?? 0, act.mejor ?? 0);
   const perfilCompleto = Boolean((u.onboarding as { completado?: unknown } | undefined)?.completado);
 
-  const puesto = (() => {
+  /* El podio: entre las 3 primeras de un mes YA CERRADO y con al menos
+     PODIO_MINIMO compañeras puntuando ese mes. Con el mes en curso bastaba
+     publicar una vez el día 1 (o ser de las pocas activas) para llevarse un
+     oro para siempre; así cuesta lo que dice. */
+  const puesto = rankings.some((ranking) => {
     const mapa = (ranking.data() ?? {}) as Record<string, { puntos?: number }>;
     const orden = Object.entries(mapa)
-      .filter(([k, v]) => (v?.puntos ?? 0) > 0 && !sorela.has(k))
-      .sort((a, b) => (b[1].puntos ?? 0) - (a[1].puntos ?? 0))
+      .filter(([k, v]) => (Number(v?.puntos) || 0) > 0 && !sorela.has(k))
+      .sort((a, b) => (Number(b[1].puntos) || 0) - (Number(a[1].puntos) || 0))
       .map(([k]) => k);
+    if (orden.length < PODIO_MINIMO) return false;
     const i = orden.indexOf(uid);
-    return i >= 0 && i < 3 ? 1 : 0;
-  })();
+    return i >= 0 && i < 3;
+  })
+    ? 1
+    : 0;
 
   const publicaciones = Math.max(0, stats.publicaciones ?? 0);
   const respuestas = Math.max(0, stats.respuestas ?? 0);
@@ -213,7 +229,10 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
   const nivel = nivelDe(puntosTotal);
   let antes: number | null = null;
   let subioNivel = false;
-  const fotoFijaCambia = u.puntosTotal !== puntosTotal || u.nivel !== nivel.n;
+  /* Lo que su ficha valía al hacer la foto fija: con eso las listas suman lo
+     que gane después sin que ella abra la plataforma (lib/puntos-tipos.ts, puntosAlDia). */
+  const puntosBase = puntosDeLaFicha({ ...u, actividad: act });
+  const fotoFijaCambia = u.puntosTotal !== puntosTotal || u.nivel !== nivel.n || u.puntosBase !== puntosBase;
 
   if (celebrar) {
     const vistos = typeof u.puntosVistos === 'number' ? u.puntosVistos : 0;
@@ -241,6 +260,7 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
                  vuelve a subir, ese mismo nivel no se celebra dos veces. */
               nivelVisto: Math.max(nvAntes, nivel.n),
               puntosTotal,
+              puntosBase,
               nivel: nivel.n,
             },
             { merge: true }
@@ -255,7 +275,7 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
       }
     }
   } else if (propia && fotoFijaCambia) {
-    await ref.set({ puntosTotal, nivel: nivel.n }, { merge: true }).catch((e) => console.error('[logros] foto de puntos', e));
+    await ref.set({ puntosTotal, puntosBase, nivel: nivel.n }, { merge: true }).catch((e) => console.error('[logros] foto de puntos', e));
   }
 
   const puntos: ResumenPuntos = { total: puntosTotal, desglose, nivel, antes, subioNivel };

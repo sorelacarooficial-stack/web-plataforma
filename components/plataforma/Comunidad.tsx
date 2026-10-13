@@ -169,14 +169,14 @@ function Estallido({ radio }: { radio: number }) {
         className={c.estallidoAnillo}
         initial={{ scale: 0.2, opacity: 0.9 }}
         animate={{ scale: 1, opacity: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         style={{ width: radio * 2, height: radio * 2, marginLeft: -radio, marginTop: -radio }}
       />
       {Array.from({ length: 10 }, (_, i) => {
         const angulo = (i / 10) * Math.PI * 2 - Math.PI / 2 + (i % 2 ? 0.18 : 0);
         const lejos = radio * (i % 2 ? 0.78 : 1);
         const estrella = i % 2 === 0;
-        const t = estrella ? 9 : 5;
+        const t = estrella ? 11 : 6;
         return (
           <motion.span
             key={i}
@@ -184,7 +184,7 @@ function Estallido({ radio }: { radio: number }) {
             style={{ width: t, height: t, marginLeft: -t / 2, marginTop: -t / 2, color: CHISPAS[i % CHISPAS.length] }}
             initial={{ x: 0, y: 0, scale: 0, opacity: 1, rotate: 0 }}
             animate={{ x: Math.cos(angulo) * lejos, y: Math.sin(angulo) * lejos, scale: [0, 1.15, 0], opacity: [1, 1, 0], rotate: estrella ? 90 : 0 }}
-            transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1], delay: 0.04 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.04 }}
           >
             {estrella ? (
               <svg viewBox="0 0 10 10" width={t} height={t}>
@@ -252,7 +252,7 @@ function Corazon({ dado, cuenta, alPulsar, pequeno }: { dado: boolean; cuenta: n
     if (!dado && !reducir) {
       const k = Date.now();
       setEstallidos((l) => [...l.slice(-2), k]);
-      window.setTimeout(() => setEstallidos((l) => l.filter((x) => x !== k)), 900);
+      window.setTimeout(() => setEstallidos((l) => l.filter((x) => x !== k)), 1000);
     }
     alPulsar();
   }
@@ -269,7 +269,7 @@ function Corazon({ dado, cuenta, alPulsar, pequeno }: { dado: boolean; cuenta: n
     >
       <span className={c.corazonIcono}>
         {estallidos.map((k) => (
-          <Estallido key={k} radio={pequeno ? 17 : 22} />
+          <Estallido key={k} radio={pequeno ? 20 : 27} />
         ))}
         <motion.svg
           key={dado ? 'si' : 'no'}

@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revisar, type Contacto, type Fallo } from '@/lib/captacion';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
-import { hayAppsScript, mandarInformacion } from '@/lib/enviar-informacion';
+import { hayAppsScript, mandarInformacion, soloAviso } from '@/lib/enviar-informacion';
 import { procedenciaDe } from '@/lib/llegada-servidor';
 import { apuntarCorreo } from '@/lib/correos';
+import { REVISADA } from '@/lib/privacidad';
 
 /**
  * Recibe el formulario de captación, guarda el contacto y manda los correos.
@@ -76,6 +77,15 @@ export async function POST(peticion: Request) {
   if (!revision.ok) return falla('datos', 400, { errores: revision.errores });
   const datos = revision.datos;
 
+  /* La prueba del consentimiento (art. 7.1 RGPD): no basta con un `true`,
+     hay que poder decir QUÉ se aceptó. Va la versión de la política vigente
+     (su fecha de revisión) y el formulario, que fija el texto de la casilla. */
+  const prueba = {
+    version: REVISADA,
+    formulario: datos.origen,
+    ...(typeof datos.comercial === 'boolean' ? { comercial: datos.comercial } : {}),
+  };
+
   const ip =
     peticion.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
     peticion.headers.get('x-real-ip') ||
@@ -105,6 +115,7 @@ export async function POST(peticion: Request) {
           estado: 'Nuevo',
           ...procedenciaDe(cuerpo.llegada),
           veces: 1,
+          pruebaConsentimiento: { ...prueba, fecha: FieldValue.serverTimestamp() },
         });
       } else {
         /* Si ya estaba, NO se pisa lo que hay: el formulario es público y
@@ -117,11 +128,15 @@ export async function POST(peticion: Request) {
             .filter((k) => datos[k] && !v[k])
             .map((k) => [k, datos[k]])
         );
+        /* Marcar ahora la casilla de novedades SÍ se apunta: es dar un
+           permiso, no quitarlo ni cambiar datos de nadie. Desmarcarla no
+           cambia nada: la baja va por el enlace de cada correo. */
+        const altaNovedades = datos.comercial === true && v.comercial !== true ? { comercial: true } : {};
         await ref.set(
-          { ...huecos, actualizado: FieldValue.serverTimestamp(), veces: FieldValue.increment(1) },
+          { ...huecos, ...altaNovedades, actualizado: FieldValue.serverTimestamp(), veces: FieldValue.increment(1) },
           { merge: true }
         );
-        await ref.collection('envios').add({ ...datos, cuando: FieldValue.serverTimestamp() });
+        await ref.collection('envios').add({ ...datos, pruebaConsentimiento: prueba, cuando: FieldValue.serverTimestamp() });
       }
       enFirestore = true;
     } catch (e) {
@@ -139,7 +154,8 @@ export async function POST(peticion: Request) {
   // Queda en el historial de correos de la persona, para que el CRM diga si
   // le llegó la información y cuándo.
   // Con Resend ya lo apunta el propio envío; por Gmail hay que apuntarlo aquí.
-  if (google.via !== 'resend') await apuntarCorreo({
+  // Los avisos de ciudad no llevan bienvenida (ver lib/enviar-informacion.ts).
+  if (google.via !== 'resend' && !soloAviso(datos.origen)) await apuntarCorreo({
     para: datos.correo,
     tipo: 'bienvenida',
     asunto: 'Información de la Técnica Divine',

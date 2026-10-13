@@ -457,6 +457,8 @@ export async function POST(peticion: Request) {
    * selector de «qué busca» del formulario.
    */
   const origen = recortar(cuerpo.origen, 40) || 'a-mano';
+  /* Lo marca Sorela si esa persona le ha pedido la información. */
+  const pidioInformacion = cuerpo.pidioInformacion === true && Boolean(datos.correo);
 
   const id = identificador(datos.correo ?? '', datos.whatsapp ?? '');
   const ref = baseDeDatos().collection(COLECCIONES.contactos).doc(id);
@@ -538,6 +540,9 @@ export async function POST(peticion: Request) {
        * que se toque.
        */
       aMano: true,
+      /* Constancia de que pidió la información (y con ella, las campañas):
+         cuándo y quién lo marcó. Sin esto no se le escribe. */
+      ...(pidioInformacion ? { pidioInformacion: { cuando: FieldValue.serverTimestamp(), por: 'sorela' } } : {}),
       /*
        * Sin esto el contacto se guardaría y no aparecería por ninguna parte:
        * el GET ordena por `creado`, y Firestore deja fuera de una consulta
@@ -598,6 +603,15 @@ export async function POST(peticion: Request) {
    * Que el envío falle NO tumba el alta: se contesta ok con `correo: false` y
    * la pantalla avisa de que hay que escribirle a mano.
    */
+  /*
+   * PERO solo si esa persona se lo ha pedido. El correo de bienvenida habla
+   * de las formaciones y dice «dejaste tus datos en mi web»: mandárselo a
+   * quien Sorela apunta de una feria sin que lo haya pedido sería publicidad
+   * no solicitada (art. 21.1 LSSI) y, además, falso. Sin la marca se guarda
+   * en la lista y nada más.
+   */
+  if (!pidioInformacion) return NextResponse.json({ ok: true, id, correo: false });
+
   const { correo: correoEnviado } = await mandarInformacion({
     nombre: datos.nombre ?? '',
     correo: datos.correo ?? '',

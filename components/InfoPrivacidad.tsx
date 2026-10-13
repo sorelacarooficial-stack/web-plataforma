@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CORREO_PRIVACIDAD, type PrimeraCapa } from '@/lib/privacidad';
+import { CORREO_PRIVACIDAD, DESTINATARIOS_GENERAL, type PrimeraCapa } from '@/lib/privacidad';
 import css from './InfoPrivacidad.module.css';
 
 /**
@@ -13,9 +13,11 @@ import css from './InfoPrivacidad.module.css';
  * Los textos salen de `lib/privacidad.ts`, igual que la política completa:
  * los dos dicen lo mismo porque leen lo mismo.
  *
- * `destinatarios` cambia la línea de a quién llegan los datos. Casi todos los
- * formularios no los ceden a nadie; la ficha del mapa los PUBLICA, y decir ahí
- * «no se ceden a nadie» sería falso justo donde más importa.
+ * `destinatarios` cambia la línea de a quién llegan los datos (también puede
+ * venir en la propia capa). Casi todos los formularios no los ceden a nadie;
+ * la ficha del mapa los PUBLICA y la lista de espera invita a un grupo de
+ * WhatsApp donde el número se ve: decir ahí «no se ceden a nadie» sería falso
+ * justo donde más importa.
  */
 export default function InfoPrivacidad({
   capa,
@@ -52,16 +54,14 @@ export default function InfoPrivacidad({
         </div>
         <div>
           <dt>Destinatarios</dt>
-          <dd>
-            {destinatarios ??
-              'No se ceden a nadie salvo obligación legal. Los guardan y envían por encargo de Sorela Google y Vercel.'}
-          </dd>
+          <dd>{destinatarios ?? capa.destinatarios ?? DESTINATARIOS_GENERAL}</dd>
         </div>
         <div>
           <dt>Derechos</dt>
           <dd>
-            Acceder, rectificar, suprimir, oponerte, limitar y portar tus datos escribiendo a{' '}
-            <a href={`mailto:${CORREO_PRIVACIDAD}`}>{CORREO_PRIVACIDAD}</a>.
+            Acceder, rectificar, suprimir, oponerte, limitar y portar tus datos, y retirar tu
+            consentimiento, escribiendo a <a href={`mailto:${CORREO_PRIVACIDAD}`}>{CORREO_PRIVACIDAD}</a>.
+            También puedes reclamar ante la Agencia Española de Protección de Datos.
           </dd>
         </div>
         <div>

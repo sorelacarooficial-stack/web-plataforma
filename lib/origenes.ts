@@ -54,7 +54,8 @@ export const COMO_LLEGO: Record<string, string> = {
   sobre: 'Página «Sobre Sorela»',
   contacto: 'Formulario de contacto',
   asistente: 'Conversación con el asistente de la web',
-  'avisar-ciudad': 'Pidió aviso cuando haya fecha en su ciudad',
+  'avisar-ciudad': 'Pidió aviso cuando haya terapeuta en su ciudad',
+  'avisar-ciudad-formacion': 'Pidió aviso cuando haya formación en su ciudad',
   terapeutas: 'Buscador de terapeutas',
   // Los que nacen de una conversación con el asistente. Se distinguen del
   // resto porque ahí ya ha preguntado algo concreto, y eso vale al llamarla:
@@ -123,7 +124,9 @@ export function tipoDeOrigen(origen: string | undefined | null): Tipo {
     return 'comunidad';
   }
 
-  // Quiere aprender.
+  // Quiere aprender. El aviso de convocatoria va antes que el de ciudad,
+  // que también empieza por «avisar-ciudad».
+  if (o.startsWith('avisar-ciudad-formacion')) return 'alumna';
   if (o.startsWith('formacion') || o.startsWith('curso') || o === 'metodo') {
     return 'alumna';
   }

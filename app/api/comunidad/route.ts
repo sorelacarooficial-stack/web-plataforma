@@ -5,7 +5,7 @@ import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebas
 import { accesosDe, sesionActual, type Sesion } from '@/lib/sesion-servidor';
 import { tieneMembresia } from '@/lib/accesos';
 import { COLECCION_ACTIVIDAD, Cuentas, cuentasDeSorela, esMes, mesDe, type CampoStats } from '@/lib/actividad';
-import { NIVELES, PUNTOS, SUMAN_AL_MES, nivelDe, type FuenteMes, type PorFuenteMes } from '@/lib/puntos-tipos';
+import { PUNTOS, SUMAN_AL_MES, nivelDe, puntosAlDia, type FuenteMes, type PorFuenteMes } from '@/lib/puntos-tipos';
 import {
   CATEGORIAS_COMUNIDAD,
   type Autora,
@@ -362,14 +362,15 @@ function porDe(v: unknown): PorFuenteMes {
   return por;
 }
 
-/** Su nivel según la foto fija que guarda lib/logros.ts (no se recalcula aquí). */
-function nivelBreve(u: FirebaseFirestore.DocumentData): { n: number; nombre: string } | null {
-  if (typeof u.puntosTotal === 'number') {
-    const e = nivelDe(u.puntosTotal);
-    return { n: e.n, nombre: e.nombre };
-  }
-  const x = NIVELES.find((l) => l.n === u.nivel);
-  return x ? { n: x.n, nombre: x.nombre } : null;
+/**
+ * Su nivel con sus puntos al día (lib/puntos-tipos.ts, puntosAlDia): la foto
+ * fija de lib/logros.ts más lo que ha ganado desde entonces. `delMes`: sus
+ * puntos de este mes, que nunca pueden ser más que el total. Siempre hay
+ * nivel: quien aún no tiene foto fija sale, como poco, en el primero.
+ */
+function nivelBreve(u: FirebaseFirestore.DocumentData, delMes = 0): { n: number; nombre: string } {
+  const e = nivelDe(Math.max(puntosAlDia(u), delMes));
+  return { n: e.n, nombre: e.nombre };
 }
 
 async function rankingDelMes(
@@ -398,7 +399,7 @@ async function rankingDelMes(
   const limpia = orden.filter((x) => !fuera.has(x.uid));
   const ranking = limpia.slice(0, 5).map((x) => {
     const u = datos.get(x.uid);
-    return { uid: x.uid, nombre: u ? nombreDe(u) : x.nombre || 'Terapeuta', foto: u ? fotoDe(u) : null, puntos: x.puntos, nivel: u ? nivelBreve(u) : null, por: x.por };
+    return { uid: x.uid, nombre: u ? nombreDe(u) : x.nombre || 'Terapeuta', foto: u ? fotoDe(u) : null, puntos: x.puntos, nivel: u ? nivelBreve(u, x.puntos) : null, por: x.por };
   });
   if (soySorela) return { ranking, mio: null };
   const i = limpia.findIndex((x) => x.uid === yo);

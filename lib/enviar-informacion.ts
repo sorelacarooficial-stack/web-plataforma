@@ -121,6 +121,14 @@ async function correoPorSmtp(datos: Contacto & { origen: string }): Promise<bool
 }
 
 /**
+ * Quien pide «avísame cuando haya terapeuta (o convocatoria) en mi ciudad»
+ * pidió UN aviso, no información ni publicidad: la casilla y la capa le dicen
+ * eso. El correo de bienvenida habla de la técnica y de la Comunidad, así que
+ * a esta persona no se le manda; Sorela recibe el aviso interno igual.
+ */
+export const soloAviso = (origen: string | undefined) => String(origen ?? '').startsWith('avisar-ciudad');
+
+/**
  * Manda la información y dice qué ha pasado.
  *
  * Sin correo no hay a dónde mandarla: se devuelve que no salió, que es la
@@ -128,6 +136,22 @@ async function correoPorSmtp(datos: Contacto & { origen: string }): Promise<bool
  */
 export async function mandarInformacion(datos: Contacto & { origen: string }): Promise<Envio> {
   if (!datos.correo) return NADA;
+
+  if (soloAviso(datos.origen)) {
+    // Sin bienvenida, pero Sorela tiene que enterarse de que hay alguien
+    // esperando en esa ciudad. Con Apps Script el script mandaría su propio
+    // correo, así que por esa vía no se llama.
+    const sorela = correoDeSorela();
+    if (hayResend() && sorela) {
+      const a = correoAvisoContacto(datos, datos.origen, false);
+      const texto = a.texto.replace(
+        'OJO: no ha salido su correo. Escríbele tú.',
+        'Ha pedido solo un aviso cuando haya algo en su ciudad: no se le manda la información ni entra en las campañas. Escríbele tú cuando toque.'
+      );
+      await mandarCorreo({ para: sorela, asunto: a.asunto, texto, responderA: datos.correo }, { tipo: 'aviso-interno' });
+    }
+    return NADA;
+  }
 
   /* Con Resend todo sale desde el dominio y con el diseño de la web, y el
      Apps Script no se llama: si se llamara, mandaría además su propio correo

@@ -43,7 +43,7 @@ export const VITRINAS: DefVitrina[] = [
   { id: 'inspiras', nombre: 'Inspiras', texto: '«Me gusta» que te dan las compañeras.', glifo: 'meGusta' },
   { id: 'constancia', nombre: 'Constancia', texto: 'Días seguidos entrando.', glifo: 'racha' },
   { id: 'escaparate', nombre: 'Tu escaparate', texto: 'Tu perfil y las fotos de tu trabajo.', glifo: 'foto' },
-  { id: 'podio', nombre: 'En el podio', texto: 'Entre las 3 más activas de un mes.', glifo: 'podio' },
+  { id: 'podio', nombre: 'En el podio', texto: 'Cierras un mes entre las 3 más activas.', glifo: 'podio' },
   { id: 'divine', nombre: 'Trofeo Divine', texto: 'El más especial: se gana juntando oros.', glifo: 'divine' },
 ];
 
@@ -64,6 +64,11 @@ const RESPUESTAS = ['respuesta', 'respuestas'] as const;
 const ME_GUSTA = ['«me gusta»', '«me gusta»'] as const;
 const DIAS = ['día seguido', 'días seguidos'] as const;
 const FOTOS = ['foto', 'fotos'] as const;
+
+/** El podio: cuántas compañeras tienen que haber puntuado ese mes para que cuente. */
+export const PODIO_MINIMO = 5;
+/** Cuántos meses cerrados hacia atrás se miran para el podio. */
+export const MESES_PODIO = 3;
 
 /** Cuántos oros hacen falta para el trofeo Divine. */
 export const OROS_PARA_DIVINE = 3;
@@ -94,7 +99,7 @@ export const LOGROS: DefLogro[] = [
   { id: 'fotos-5', vitrina: 'escaparate', escalon: 'plata', nombre: 'Tu trabajo, a la vista', texto: 'Subes 5 fotos de tu trabajo al perfil.', meta: 5, unidad: FOTOS },
   { id: 'fotos-10', vitrina: 'escaparate', escalon: 'oro', nombre: 'Portfolio completo', texto: 'Subes 10 fotos de tu trabajo al perfil.', meta: 10, unidad: FOTOS },
 
-  { id: 'podio', vitrina: 'podio', escalon: 'oro', nombre: 'En el podio', texto: 'Quedas entre las 3 más activas del mes.', meta: 1, unidad: null },
+  { id: 'podio', vitrina: 'podio', escalon: 'oro', nombre: 'En el podio', texto: 'Cierras un mes entre las 3 más activas de la comunidad.', meta: 1, unidad: null },
 
   { id: 'divine', vitrina: 'divine', escalon: 'divine', nombre: 'Alma Divine', texto: `Juntas ${OROS_PARA_DIVINE} trofeos de oro. El más especial de todos.`, meta: OROS_PARA_DIVINE, unidad: ['oro', 'oros'] },
 ];
@@ -151,7 +156,7 @@ export function textoFalta(l: EstadoLogro, ajena = false): string {
   if (l.conseguido) return 'Conseguido';
   if (l.falta === null || !l.unidad) {
     if (l.id === 'perfil-completo') return ajena ? 'Le falta completar el perfil' : 'Completa tu perfil';
-    if (l.id === 'podio') return ajena ? 'Aún no ha estado en el podio' : 'Entra en el top 3 de un mes';
+    if (l.id === 'podio') return ajena ? 'Aún no ha estado en el podio' : 'Cierra un mes en el top 3';
     return l.texto;
   }
   const n = Math.max(1, Math.ceil(l.falta));

@@ -114,6 +114,8 @@ type Borrador = {
   perfil: string;
   nota: string;
   busca: Tipo;
+  /** Solo al dar de alta: si esa persona le ha pedido la información. */
+  pidio: boolean;
 };
 
 const BORRADOR_VACIO: Borrador = {
@@ -127,6 +129,7 @@ const BORRADOR_VACIO: Borrador = {
      toca el selector, lo honrado es que quede el hueco y no una etiqueta que
      nadie ha elegido. Es la misma idea que explica lib/origenes.ts. */
   busca: 'otro',
+  pidio: false,
 };
 
 /** Qué está haciendo el panel: apuntar a alguien nuevo o corregir a alguien. */
@@ -186,6 +189,7 @@ function PanelContacto({
           // servidor lo guarda aparte. De dónde entró es un hecho que ya pasó;
           // lo que puede estar mal es la lectura que se hizo de ese hecho.
           busca: modo.contacto.tipo,
+          pidio: false,
         }
       : BORRADOR_VACIO
   );
@@ -282,7 +286,14 @@ function PanelContacto({
        */
       ...(editando
         ? { tipo: borrador.busca }
-        : { correo: borrador.correo, origen: ORIGEN_POR_TIPO[borrador.busca] }),
+        : {
+            correo: borrador.correo,
+            origen: ORIGEN_POR_TIPO[borrador.busca],
+            /* Sin esta marca no sale ningún correo ni entra en las campañas:
+               escribir con publicidad a quien no lo ha pedido está prohibido
+               (art. 21 LSSI). Lo explica el POST de app/api/contactos. */
+            pidioInformacion: borrador.pidio,
+          }),
     };
 
     const res = await onGuardar(cuerpo);
@@ -362,9 +373,9 @@ function PanelContacto({
                 un correo a una persona de verdad y no se puede deshacer. */}
             {!editando && (
               <p className={css.apunte}>
-                Al guardarlo le llega por correo la información de la Técnica Divine,
-                el mismo que reciben quienes la piden desde la web. Si lo apuntas solo con el
-                móvil, no se le manda nada.
+                Solo si marcas que te ha pedido la información le llega por correo, la misma que
+                reciben quienes la piden desde la web. Si no, se guarda en la lista sin escribirle
+                y sin meterla en las campañas.
               </p>
             )}
           </header>
@@ -523,13 +534,34 @@ function PanelContacto({
             {error('nota')}
           </label>
 
+          {/* La ley no deja mandar publicidad por correo a quien no la ha
+              pedido. Desmarcada de salida: solo Sorela sabe si se la pidió. */}
+          {!editando && borrador.correo.trim() && (
+            <label
+              className={css.parrafo}
+              style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}
+            >
+              <input
+                type="checkbox"
+                checked={borrador.pidio}
+                onChange={(e) => setBorrador((b) => ({ ...b, pidio: e.target.checked }))}
+                style={{ width: 18, height: 18, marginTop: 2, flex: 'none', accentColor: 'var(--arcilla, #8a6a32)' }}
+              />
+              <span>
+                Me ha pedido recibir la información de la Técnica Divine y novedades por correo.
+              </span>
+            </label>
+          )}
+
           <div className={css.acciones}>
             <button type="submit" className={css.btn} disabled={guardando}>
               {guardando
                 ? 'Guardando…'
                 : editando
                   ? 'Guardar los cambios'
-                  : 'Apuntar y mandarle la información'}
+                  : borrador.pidio && borrador.correo.trim()
+                    ? 'Apuntar y mandarle la información'
+                    : 'Apuntar'}
             </button>
             <button type="button" className={css.btnLinea} onClick={intentarCerrar}>
               Cancelar
@@ -708,7 +740,9 @@ export default function Contactos() {
           ? 'Ficha corregida.'
           : c.correo
             ? 'Apuntado, y le acaba de salir el correo con la información.'
-            : 'Apuntado. El correo con la información NO ha salido: escríbele tú.'
+            : cuerpo.pidioInformacion
+              ? 'Apuntado. El correo con la información NO ha salido: escríbele tú.'
+              : 'Apuntado. No se le ha mandado ningún correo.'
       );
       await cargar();
       return { ok: true };

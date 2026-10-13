@@ -169,3 +169,43 @@ export function calcularPuntos(e: EntradaPuntos): { total: number; desglose: Rec
 
 /** «1250», «12.500»: con el punto de los miles a la española. */
 export const formatoPuntos = (n: number): string => Math.round(Number(n) || 0).toLocaleString('es-ES');
+
+/**
+ * Los puntos que se pueden sacar de su ficha (`usuarios/{uid}`) sin leer nada
+ * más: lo de la comunidad (`stats`), los días y la racha (`actividad`) y el
+ * perfil. Lo demás (clases, trofeos, fotos) solo lo cuenta lib/logros.ts.
+ */
+export function puntosDeLaFicha(u: Record<string, unknown>): number {
+  const stats = (u.stats ?? {}) as { publicaciones?: number; respuestas?: number; meGustaRecibidos?: number };
+  const act = (u.actividad ?? {}) as { dias?: number; racha?: number; mejor?: number };
+  return calcularPuntos({
+    clases: 0,
+    cursoCompleto: false,
+    publicaciones: stats.publicaciones ?? 0,
+    respuestas: stats.respuestas ?? 0,
+    meGusta: stats.meGustaRecibidos ?? 0,
+    dias: typeof act.dias === 'number' ? act.dias : Math.max(act.racha ?? 0, act.mejor ?? 0),
+    mejorRacha: act.mejor ?? 0,
+    logros: 0,
+    perfilCompleto: Boolean((u.onboarding as { completado?: unknown } | undefined)?.completado),
+    fotos: 0,
+  }).total;
+}
+
+/**
+ * Sus puntos totales AL DÍA para enseñarlos en listas (ranking, perfil de
+ * otra, quién dio «me gusta») sin recalcularlo todo por persona.
+ *
+ * lib/logros.ts guarda una foto fija (`puntosTotal`) solo cuando ella abre la
+ * plataforma, y junto a ella lo que su ficha valía entonces (`puntosBase`).
+ * Si desde entonces le han dado «me gusta» o ha publicado, la diferencia se
+ * suma (o se resta si borró algo). Sin foto fija, lo que da la ficha: así
+ * nunca sale sin nivel.
+ */
+export function puntosAlDia(u: Record<string, unknown>): number {
+  const ahora = puntosDeLaFicha(u);
+  const total = u.puntosTotal;
+  if (typeof total !== 'number') return ahora;
+  if (typeof u.puntosBase === 'number') return Math.max(0, Math.round(total - u.puntosBase + ahora));
+  return Math.max(Math.round(total), ahora);
+}

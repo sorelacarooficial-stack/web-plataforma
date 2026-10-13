@@ -286,7 +286,7 @@ export default function Captacion({
           aria-invalid={errores.consentimiento ? true : undefined}
         />
         <span>
-          Acepto que Sorela trate mis datos para enviarme la información de la Técnica Divine y escribirme sobre sus formaciones y la membresía.{' '}
+          Tengo 14 años o más y acepto que Sorela Caro use mis datos para la lista de espera y para avisarme de la apertura y de las formaciones.{' '}
           <Link href="/legal/privacidad" target="_blank">
             Cómo se tratan
           </Link>

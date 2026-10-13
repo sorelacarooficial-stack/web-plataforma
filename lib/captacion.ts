@@ -20,6 +20,14 @@ export type Contacto = {
   /** Opcional: texto libre. Lo que quiere encontrar dentro de la comunidad. */
   nota?: string;
   consentimiento: boolean;
+  /**
+   * Opcional y aparte: si quiere enterarse por correo de las novedades y las
+   * formaciones. El consentimiento de arriba es para lo que pide (contestarle,
+   * la lista de espera, la información); la publicidad no puede ir atada a eso
+   * (art. 7.4 RGPD, art. 21 LSSI). Solo viaja desde los formularios que
+   * tienen la casilla; sin el campo, el contacto es anterior a ella.
+   */
+  comercial?: boolean;
   origen?: string;
   /** Señuelo antirrobots: si viene con algo, no lo ha rellenado una persona. */
   empresa?: string;
@@ -105,6 +113,7 @@ export function revisar(entrada: Partial<Contacto>): Revision {
       ...(ciudad ? { ciudad } : {}),
       ...(nota ? { nota } : {}),
       consentimiento: true,
+      ...(typeof entrada.comercial === 'boolean' ? { comercial: entrada.comercial } : {}),
       origen: recortar(entrada.origen, 40) || 'web',
     },
   };
