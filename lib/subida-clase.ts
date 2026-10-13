@@ -368,9 +368,11 @@ async function analizar(archivo: File): Promise<Analisis> {
      vídeo hasta que se le da al play: se le da (sin sonido, que eso sí lo
      deja) y se para. */
   if (v.readyState < 2) {
+    // Se escucha ANTES de darle al play: la imagen puede llegar mientras.
+    const cargada = esperarEvento(v, 'loadeddata', 'error', 12000);
     await v.play().catch(() => {});
     v.pause();
-    await esperarEvento(v, 'loadeddata', 'error', 12000);
+    if (v.readyState < 2) await cargada;
   }
   /* Con la imagen cargada y sin anchura, el navegador solo entiende el
      sonido: es lo que hace Chrome con el HEVC en un ordenador sin el códec. */

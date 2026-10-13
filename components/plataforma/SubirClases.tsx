@@ -529,7 +529,15 @@ function TarjetaVideo({ est }: { est: Estado }) {
     );
   else if (est.fase === 'reintentando') linea = `Se ha cortado la conexión. Vuelvo a intentarlo${est.reintentoEn ? ` en ${est.reintentoEn} s` : ''}…`;
   else if (est.fase === 'sin-red') linea = 'Sin conexión. Seguirá sola en cuanto vuelva.';
-  else if (est.fase === 'subida') linea = 'Vídeo subido entero. Falta guardar la clase.';
+  else if (est.fase === 'subida')
+    linea =
+      est.errores.video || est.error ? (
+        <span className={s.error} role="alert">
+          {est.errores.video || est.error}
+        </span>
+      ) : (
+        'Vídeo subido entero. Falta guardar la clase.'
+      );
   else if (est.fase === 'guardando') linea = 'Guardando la clase…';
 
   return (
@@ -791,8 +799,13 @@ function FilaClase({
           <span className={s.estado} data-visible={l.publicada || undefined}>
             {l.publicada ? 'Visible' : 'Borrador'}
           </span>
-          <button type="button" className={s.botonSecundario} onClick={() => cambiar(l, { publicada: !l.publicada })}>
-            {l.publicada ? 'Pasar a borrador' : 'Publicar'}
+          <button
+            type="button"
+            className={s.botonSecundario}
+            onClick={() => cambiar(l, { publicada: !l.publicada })}
+            title={l.publicada ? 'Pasarla a borrador: deja de verse en el aula' : 'Que la vea quien tenga acceso'}
+          >
+            {l.publicada ? 'Esconder' : 'Publicar'}
           </button>
           <button type="button" className={s.botonTexto} onClick={() => setEditando((v) => !v)} aria-expanded={editando}>
             Editar

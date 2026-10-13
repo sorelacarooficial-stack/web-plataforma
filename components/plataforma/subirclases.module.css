@@ -573,7 +573,7 @@ textarea.caja {
     border-color 0.18s;
 }
 
-.chip:hover:not(:disabled) {
+.chip:hover:not(:disabled):not([aria-checked='true']) {
   border-color: #141210;
   color: #141210;
 }
@@ -762,19 +762,6 @@ textarea.caja {
   align-items: center;
 }
 
-@media (max-width: 860px) {
-  .filaCuerpo {
-    grid-template-columns: 116px minmax(0, 1fr);
-    gap: 12px 14px;
-    align-items: start;
-  }
-
-  .filaAcciones {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-  }
-}
-
 .mini {
   position: relative;
   display: block;
@@ -912,6 +899,27 @@ textarea.caja {
 .papelera:hover {
   background: #fbeee9;
   color: #9a2f1a;
+}
+
+/* En pantalla estrecha, la miniatura y el título arriba y los botones en
+   una fila debajo, empezando por la izquierda (va después de las reglas de
+   escritorio para poder con ellas). */
+@media (max-width: 860px) {
+  .filaCuerpo {
+    grid-template-columns: 116px minmax(0, 1fr);
+    gap: 12px 14px;
+    align-items: start;
+  }
+
+  .filaAcciones {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .filaAcciones .papelera {
+    margin-left: auto;
+  }
 }
 
 .editar {

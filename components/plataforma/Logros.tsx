@@ -250,10 +250,10 @@ export function Vitrina({ logros, ajena = false }: { logros: EstadoLogro[]; ajen
         </ul>
       </header>
 
-      {divine && <TarjetaDivine v={divine} ajena={ajena} oros={logros.filter((x) => x.escalon === 'oro' && x.conseguido).length} />}
-
+      {/* El Divine y el podio, delante (en el ordenador comparten fila); después, las seis vitrinas. */}
       <div className={l.rejilla}>
-        {resto.map((v, i) => (
+        {divine && <TarjetaDivine v={divine} ajena={ajena} oros={logros.filter((x) => x.escalon === 'oro' && x.conseguido).length} />}
+        {[...resto.filter((v) => v.id === 'podio'), ...resto.filter((v) => v.id !== 'podio')].map((v, i) => (
           <TarjetaVitrina key={v.id} v={v} i={i} ajena={ajena} />
         ))}
       </div>
@@ -310,6 +310,7 @@ function TarjetaVitrina({ v, i, ajena }: { v: EstadoVitrina; i: number; ajena: b
   return (
     <motion.article
       className={l.copa}
+      data-vitrina={v.id}
       data-escalon={actual ? actual.escalon : 'ninguno'}
       initial={reducir ? false : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}

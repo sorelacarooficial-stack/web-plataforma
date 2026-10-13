@@ -7,7 +7,10 @@ import Cinta from '@/components/landing/Cinta';
 import FadeIn from '@/components/landing/FadeIn';
 import Magnet from '@/components/landing/Magnet';
 import TextoRevelado from '@/components/landing/TextoRevelado';
+import Video from '@/components/landing/Video';
+import VideoEscala from '@/components/landing/VideoEscala';
 import l from '@/components/landing/landing.module.css';
+import { VIDEO } from '@/lib/presentacion';
 import { CINTA_ALUMNAS } from '@/lib/precurso';
 import Acordeon from '@/components/Acordeon';
 import Contador from '@/components/Contador';
@@ -162,6 +165,22 @@ export default async function Home() {
           />
         </div>
       </section>
+
+      {/* El vídeo de la técnica, el mismo archivo que abre la presentación:
+          se pidió aquí, en la parte que cuenta qué es Divine. Va entero, igual
+          que allí. En su propia sección y no dentro de la de arriba: las fotos
+          de las esquinas se colocan por porcentajes de esa sección y, con el
+          vídeo dentro, asomaban por detrás de él. Solo pide los metadatos al
+          cargar; el vídeo se baja cuando alguien pulsa el play. */}
+      {VIDEO && (
+        <section className={css.metodoVideo} aria-label="Vídeo: la Técnica Divine">
+          <FadeIn y={40} className={css.metodoVideoCaja}>
+            <VideoEscala>
+              <Video src={VIDEO.src} cartel={VIDEO.cartel} />
+            </VideoEscala>
+          </FadeIn>
+        </section>
+      )}
 
       {/* Los tres pilares: es el orden con el que Sorela enseña el método, y
           cuenta mejor que cualquier lista de beneficios qué se aprende de

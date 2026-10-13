@@ -36,13 +36,19 @@ async function cuerpoDe(peticion: Request): Promise<Record<string, unknown> | nu
 export async function GET(peticion: Request) {
   const g = await exigirAdmin();
   if (g.error) return g.error;
-  const l = await coleccion().get();
-  const lector = await lectorDeAccesos(l.docs.map((d) => d.data()), origenDe(peticion));
-  // Las que vienen primero arriba; el orden de «pasadas» lo decide la pantalla.
-  const convocatorias = l.docs
-    .map((d) => aConvocatoria(d.id, d.data(), lector))
-    .sort((a, b) => a.inicio.localeCompare(b.inicio) || a.ciudad.localeCompare(b.ciudad, 'es'));
-  return NextResponse.json({ ok: true, convocatorias, hoy: hoyISO() });
+  try {
+    const l = await coleccion().get();
+    const lector = await lectorDeAccesos(l.docs.map((d) => d.data()), origenDe(peticion));
+    // Las que vienen primero arriba; el orden de «pasadas» lo decide la pantalla.
+    const convocatorias = l.docs
+      .map((d) => aConvocatoria(d.id, d.data(), lector))
+      .sort((a, b) => a.inicio.localeCompare(b.inicio) || a.ciudad.localeCompare(b.ciudad, 'es'));
+    return NextResponse.json({ ok: true, convocatorias, hoy: hoyISO() });
+  } catch (e) {
+    // Un fallo de Firestore contesta con palabras, no con una traza.
+    console.error('[convocatorias] no se han podido leer', e);
+    return NextResponse.json({ ok: false, motivo: 'error' }, { status: 500 });
+  }
 }
 
 export async function POST(peticion: Request) {

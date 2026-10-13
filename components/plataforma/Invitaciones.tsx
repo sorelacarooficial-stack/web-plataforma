@@ -28,19 +28,24 @@ type Invitacion = {
   usadaPor: { correo: string; nombre: string | null; en: string | null } | null;
 };
 
+/* Curso y membresía son dos compras distintas y se nombran siempre igual en
+   toda la plataforma: «Acceso al curso» (se paga una vez: clases y material
+   en el aula) y «Membresía · Comunidad Divine» (se paga cada mes). Antes la
+   membresía decía «comunidad y material» y la etiqueta corta era
+   «Formación»/«Comunidad», y no quedaba claro cuál abría el aula. */
 const OPCIONES: { id: QueDa; titulo: string; texto: string }[] = [
-  { id: 'curso', titulo: CURSO_DIVINE, texto: 'Ha pagado el curso: ve las clases y el material.' },
-  { id: 'membresia', titulo: 'Comunidad Divine', texto: 'La membresía: comunidad y material.' },
+  { id: 'curso', titulo: `Acceso al curso · ${CURSO_DIVINE}`, texto: 'Ha pagado el curso: ve sus clases y su material en el aula. No incluye la membresía.' },
+  { id: 'membresia', titulo: 'Membresía · Comunidad Divine', texto: 'La comunidad, que se paga cada mes. No incluye el curso.' },
 ];
 
-const ETIQUETA: Record<QueDa, string> = { curso: 'Formación', membresia: 'Comunidad' };
+const ETIQUETA: Record<QueDa, string> = { curso: 'Acceso al curso', membresia: 'Membresía Comunidad' };
 
 const fecha = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
 
 function mensajeWhatsapp(inv: Invitacion) {
   const pila = inv.nombre?.trim().split(/\s+/)[0];
-  const que = inv.que.map((q) => (q === 'curso' ? CURSO_DIVINE : 'la Comunidad Divine')).join(' y ');
+  const que = inv.que.map((q) => (q === 'curso' ? `el curso ${CURSO_DIVINE}` : 'la membresía de la Comunidad Divine')).join(' y ');
   return `${pila ? `Hola ${pila}! ` : 'Hola! '}Aquí tienes tu acceso a ${que}. Entra en este enlace, crea tu contraseña y ya estás dentro: ${inv.enlace}`;
 }
 
