@@ -1399,7 +1399,7 @@ export default function Comunidad() {
       const r = await fetch('/api/comunidad');
       const j = await r.json();
       if (j.ok) {
-        setDatos({ ...j, publicaciones: (j.publicaciones as Publicacion[]).filter((x) => !borrando.current.has(x.id)) });
+        setDatos({ ...j, publicaciones: (j.publicaciones as Pub[]).filter((x) => !borrando.current.has(x.id)) });
         setFallo(null);
       } else setFallo(j.motivo === 'sin-acceso' ? 'La comunidad es para quien tiene la Comunidad Divine o un curso.' : 'No he podido cargar la comunidad.');
     } catch {
@@ -1413,8 +1413,20 @@ export default function Comunidad() {
     return () => clearInterval(t);
   }, [cargar]);
 
+  /* Desde el perfil de alguien se llega con `?p=id`: esa publicación se abre
+     con sus respuestas y se baja hasta ella. Solo la primera vez. */
+  const destino = useRef(typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('p'));
+  useEffect(() => {
+    const id = destino.current;
+    if (!id || !datos) return;
+    destino.current = null;
+    if (!datos.publicaciones.some((x) => x.id === id)) return;
+    setAbierta(id);
+    window.setTimeout(() => document.getElementById(`pub-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
+  }, [datos]);
+
   const cambiar = useCallback(
-    (id: string, f: (p: Publicacion) => Publicacion) =>
+    (id: string, f: (p: Pub) => Pub) =>
       setDatos((d) => (d ? { ...d, publicaciones: d.publicaciones.map((x) => (x.id === id ? f(x) : x)) } : d)),
     []
   );
@@ -1422,7 +1434,7 @@ export default function Comunidad() {
   /* Borrar una publicación: sale de la lista al momento. Si el servidor dice
      que no, vuelve a su sitio y se avisa. Si ya no existía, se da por borrada. */
   const borrar = useCallback(
-    async (p: Publicacion) => {
+    async (p: Pub) => {
       const sitio = datos?.publicaciones.findIndex((x) => x.id === p.id) ?? -1;
       borrando.current.add(p.id);
       setDatos((d) => (d ? { ...d, publicaciones: d.publicaciones.filter((x) => x.id !== p.id) } : d));

@@ -297,11 +297,11 @@ export default function Captacion({
       <InfoPrivacidad capa={CAPA_INFORMACION} />
 
       <button type="submit" className={`btn ${css.enviar}`} disabled={enviando}>
-        {enviando ? 'Un momento…' : 'Enviarme la información'}
+        {enviando ? 'Un momento…' : 'Apuntarme'}
       </button>
 
       <p className={css.nota}>
-        Un correo con la información y nada más. Sin listas de cada semana. Si prefieres, escribe a{' '}
+        Al terminar verás el enlace al grupo de WhatsApp. Si prefieres, escribe a{' '}
         <a href={INSTAGRAM} target="_blank" rel="noopener noreferrer">
           {INSTAGRAM_USUARIO}
         </a>
