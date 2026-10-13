@@ -133,6 +133,16 @@ const LINEAS = {
       <path d="M14.6 10h3.6M14.6 13.2h2.4" />
     </>
   ),
+  /** El recorrido de bienvenida: la brújula, con la aguja hacia el norte de la marca. */
+  brujula: (
+    <>
+      <circle cx="11.2" cy="12.8" r="7.8" />
+      <path d="M14.5 9.5l-2.2 4.4-4.4 2.2 2.2-4.4z" />
+      <path d="M14.5 9.5l-2.2 4.4-2.2-2.2z" {...relleno} />
+      <path d="M11.2 5v1.3M11.2 19.3v1.3M3.4 12.8h1.3M17.7 12.8H19" />
+      <path d={destello(19.7, 4.3, 2.3)} {...relleno} />
+    </>
+  ),
   /** Fotos del perfil: la cámara. */
   fotos: (
     <>
@@ -185,6 +195,7 @@ export const ICONO_FUENTE: Record<FuentePuntos, NombreIcono> = {
   racha: 'racha',
   logros: 'logros',
   perfil: 'perfil',
+  recorrido: 'brujula',
   fotos: 'fotos',
 };
 
@@ -487,6 +498,7 @@ export function InsigniaNivel({
    ========================================================================== */
 
 const GLIFO_ICONO: Record<GlifoTrofeo, NombreIcono> = {
+  brujula: 'brujula',
   clase: 'clases',
   publicacion: 'publicaciones',
   respuesta: 'respuestas',

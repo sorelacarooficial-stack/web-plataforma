@@ -27,11 +27,7 @@ export type Documento = {
   portada: number;
   /** Lo puede ver quien tenga CUALQUIERA de estos accesos. */
   para: Acceso[];
-  /**
-   * El precurso: lo ve quien tenga el curso aunque solo haya dejado el abono.
-   * Es lo que se estudia ANTES de la presencial. El resto del material se
-   * abre con el curso completo.
-   */
+  /** El precurso: lo que se estudia ANTES de la presencial. Va el primero. */
   precurso?: true;
   /** Dónde empieza cada apartado, en páginas del archivo (la portada es la 1). */
   indice: { p: number; titulo: string }[];

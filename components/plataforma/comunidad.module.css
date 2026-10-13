@@ -1,4 +1,6 @@
-/* La comunidad: muro a la izquierda, clase en vivo y ranking a la derecha.
+/* La comunidad: arriba, dos pestañas (la conversación y el ranking del mes);
+   el muro a la izquierda y, a la derecha, la clase en vivo y el adelanto del
+   ranking.
 
    Letra: Cormorant solo para títulos (de publicación, de la clase, del vacío);
    Jost para todo lo demás, a 400 como mínimo en lo que se lee (la 300 se
@@ -824,8 +826,7 @@
 
 .menuBoton:focus-visible,
 .menu button:focus-visible,
-.borrarRespuesta:focus-visible,
-.rankingNombre:focus-visible {
+.borrarRespuesta:focus-visible {
   outline: 2px solid #8a6a32;
   outline-offset: 2px;
 }
@@ -1328,7 +1329,6 @@
 }
 
 .pendientes,
-.ranking,
 .normas {
   display: flex;
   flex-direction: column;
@@ -1366,276 +1366,6 @@
   font-size: 13px;
   font-weight: 400;
   color: var(--muted-2);
-}
-
-/* ---------- Ranking del mes ----------
-   Tarjeta blanca con titular en Cormorant: lo que más se ve del lateral.
-   Cada fila: medalla del podio (o el puesto), la foto con la insignia del
-   nivel en la esquina, nombre en tinta, los puntos en Cormorant grande, una
-   barra en proporción a la primera y el desglose con los iconos en vino.
-   Cifras con dígitos de igual ancho, para que no bailen al cambiar. */
-
-.rankingTarjeta {
-  gap: 14px;
-}
-
-.rankingCabecera {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.rankingSello {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--divine-tint);
-  color: var(--divine);
-}
-
-.rankingTitulo {
-  margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 23px;
-  font-weight: 600;
-  line-height: 1.1;
-  color: var(--ink);
-}
-
-.rankingMes {
-  display: block;
-  margin-top: 3px;
-  font-size: 12.5px;
-  font-weight: 400;
-  line-height: 1.3;
-  color: var(--muted-2);
-}
-
-.ranking {
-  gap: 0;
-  margin: 0 -8px;
-}
-
-.ranking > li {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 11px 8px;
-  border-top: 1px solid transparent;
-}
-
-/* Separadores finos y rectos entre filas; la tuya, redondeada con su fondo
-   (y sin raya encima ni debajo). */
-.ranking > li + li {
-  border-top-color: var(--line-2);
-}
-
-.ranking > li[data-yo] {
-  border-radius: 16px;
-  border-top-color: transparent;
-  background: var(--oro-tint);
-  box-shadow: inset 0 0 0 1px var(--oro-line);
-}
-
-.ranking > li[data-yo] + li {
-  border-top-color: transparent;
-}
-
-.rankingPuesto {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 40px;
-}
-
-.puesto {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  background: #ebe5db;
-  color: #3e3831;
-}
-
-.rankingFoto {
-  position: relative;
-  flex: none;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  cursor: pointer;
-}
-
-.rankingInsignia {
-  position: absolute;
-  right: -6px;
-  bottom: -5px;
-  filter: drop-shadow(0 1px 1.5px rgba(40, 30, 15, 0.35));
-}
-
-.rankingCuerpo {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  flex: 1;
-  min-width: 0;
-}
-
-.rankingLinea {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  min-width: 0;
-}
-
-.rankingNombre {
-  flex: 1;
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 500;
-  text-align: left;
-  color: var(--ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.rankingNombre:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.puntos {
-  flex: none;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1;
-  font-variant-numeric: lining-nums tabular-nums;
-  color: var(--ink);
-}
-
-.puntos small {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted-2);
-}
-
-.rankingNivel {
-  margin-top: -2px;
-  font-size: 12.5px;
-  font-weight: 400;
-  line-height: 1.25;
-  color: var(--muted-2);
-}
-
-.rankingPista {
-  display: block;
-  height: 5px;
-  margin-top: 2px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(20, 18, 16, 0.08);
-}
-
-.rankingRelleno {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #a89a87, #cfc4b4);
-}
-
-.rankingRelleno[data-p='0'] {
-  background: linear-gradient(90deg, #8a6a32, #d9b47c);
-  box-shadow: 0 0 10px -2px rgba(217, 180, 124, 0.7);
-}
-
-.rankingRelleno[data-p='1'] {
-  background: linear-gradient(90deg, #8f897f, #cfc9bf);
-}
-
-.rankingRelleno[data-p='2'] {
-  background: linear-gradient(90deg, #9a6440, #e0b48f);
-}
-
-.desgloseMes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  margin: 1px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.desgloseMes li {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.2;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-3);
-}
-
-.desgloseMes svg {
-  color: var(--divine);
-}
-
-/* Cómo vas tú: negro y crema; la pista de lo que falta, en el rosé (9,2:1). */
-.rankingYo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: #17140f;
-  color: #efe6d8;
-}
-
-.rankingYo p {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 8px;
-  margin: 0;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.4;
-  font-variant-numeric: tabular-nums;
-}
-
-.rankingYo b {
-  font-weight: 500;
-  color: #f7f0e4;
-}
-
-.rankingYo p > b:first-child {
-  color: #d9b47c;
-}
-
-.rankingYo p > span[aria-hidden] {
-  color: rgba(239, 230, 216, 0.72);
-}
-
-.rankingYo .rankingPistaTexto {
-  font-size: 13px;
-  color: var(--divine-claro);
 }
 
 /* La leyenda: cada forma de sumar al mes con su icono y sus puntos. */
@@ -2471,6 +2201,1440 @@
 
   .corazon:active,
   .avatarBoton:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   Conversación | Ranking del mes
+   ========================================================================== */
+
+/* Las dos pestañas de arriba: más grandes que los filtros del muro (que van
+   debajo, en pequeño), a lo ancho y con icono. Se ve que esto cambia de sitio
+   y lo otro solo filtra. Tostado con la elegida en blanco, como los filtros. */
+.pestanas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 18px;
+  background: #ebe5db;
+}
+
+.pestana {
+  position: relative;
+  min-width: 0;
+  padding: 11px 10px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.pestana[aria-selected='true'],
+.pestana:hover {
+  color: var(--ink);
+}
+
+.pestana:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+.pestanaActiva {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: #fffdf9;
+  box-shadow:
+    0 1px 2px rgba(60, 45, 25, 0.08),
+    0 6px 16px -8px rgba(60, 45, 25, 0.45);
+}
+
+.pestanaDentro {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.pestanaDentro > svg {
+  flex: none;
+}
+
+.pestana[aria-selected='true'] .pestanaDentro > svg {
+  color: var(--divine);
+}
+
+/* Tu puesto, en la pestaña: negro con el oro claro (12:1). */
+.pestanaChip {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #17140f;
+  color: #ecd2a2;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* En el móvil, «Ranking» a secas: con «del mes» no cabe junto a tu puesto. */
+@media (max-width: 480px) {
+  .pestanaResto {
+    display: none;
+  }
+}
+
+.vistaMuro,
+.vistaRanking {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.vistaMuro[hidden],
+.vistaRanking[hidden] {
+  display: none;
+}
+
+/* El ranking se ajusta a su propio ancho (con o sin el lateral al lado). */
+.vistaRanking {
+  container-type: inline-size;
+}
+
+.esqueleto[data-alto] {
+  height: 380px;
+}
+
+/* ---------- El ranking ---------- */
+
+.rk {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* El escenario: el negro de la clase en vivo, un velo de vino arriba y el
+   oro que sube desde el suelo del podio. Texto en crema (14:1) y el oro
+   claro para lo pequeño (9:1 sobre #141210). */
+.rkHero {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(20px, 3vw, 28px) clamp(16px, 3vw, 28px) 20px;
+  overflow: hidden;
+  border-radius: 26px;
+  background:
+    radial-gradient(60% 55% at 50% 100%, rgba(217, 180, 124, 0.2), transparent 72%),
+    radial-gradient(80% 70% at 100% 0%, rgba(126, 47, 64, 0.32), transparent 62%),
+    #141210;
+  color: #efe6d8;
+}
+
+.rkCabecera {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.rkRotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+.rkTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 4.4vw, 36px);
+  font-weight: 600;
+  line-height: 1.05;
+  color: #f7f0e4;
+}
+
+.rkDatos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 4px;
+}
+
+/* La cuenta atrás del reinicio: una píldora con su reloj, en el oro claro. */
+.rkReinicio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px 5px 9px;
+  border: 1px solid rgba(217, 180, 124, 0.42);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #ecd2a2;
+}
+
+.rkCuantas {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(239, 230, 216, 0.82);
+}
+
+.rkVacio {
+  margin: 0;
+  max-width: 440px;
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: rgba(239, 230, 216, 0.86);
+}
+
+.rkVacio b {
+  font-weight: 500;
+  color: #f7f0e4;
+}
+
+/* ---------- El podio ----------
+   Tres columnas sobre una línea de suelo dorada. Cada puesto lleva su metal
+   en `--metal` (oro, plata y bronce sobrios, nada chillón): el aro de la
+   foto, la cifra, el filo y el velo de la peana. */
+
+.podio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: clamp(6px, 2vw, 14px);
+  width: 100%;
+  max-width: 520px;
+  margin: 4px auto 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid rgba(217, 180, 124, 0.34);
+}
+
+.podioCol {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.podioCol[data-puesto='1'] {
+  order: 2;
+  --metal: #ecd09a;
+  --metal-velo: rgba(236, 208, 154, 0.26);
+}
+
+.podioCol[data-puesto='2'] {
+  order: 1;
+  --metal: #d8d4cd;
+  --metal-velo: rgba(216, 212, 205, 0.17);
+}
+
+.podioCol[data-puesto='3'] {
+  order: 3;
+  --metal: #d29a68;
+  --metal-velo: rgba(210, 154, 104, 0.22);
+}
+
+.podioPersona {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  padding-bottom: 10px;
+}
+
+.podioBoton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  padding: 8px 4px 6px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.podioBoton:hover,
+.podioBoton[data-on] {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.podioBoton:focus-visible {
+  outline: 2px solid #d9b47c;
+  outline-offset: 2px;
+}
+
+.podioFoto {
+  position: relative;
+  display: block;
+  border-radius: 999px;
+  transition: transform 0.25s;
+}
+
+/* El aro de metal, separado de la foto por un hilo del fondo. */
+.podioFoto .avatar {
+  box-shadow:
+    0 0 0 2px #141210,
+    0 0 0 3.5px var(--metal);
+}
+
+.podioBoton[data-on] .podioFoto {
+  transform: translateY(-3px);
+}
+
+.podioInsignia {
+  position: absolute;
+  right: -5px;
+  bottom: -4px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.podioNombre {
+  display: block;
+  max-width: 100%;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #f7f0e4;
+}
+
+.podioTu {
+  margin-left: 5px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(217, 180, 124, 0.2);
+  font-size: 11px;
+  font-weight: 500;
+  color: #ecd2a2;
+  vertical-align: 1px;
+}
+
+.podioPuntos {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--metal);
+}
+
+.podioCol[data-puesto='1'] .podioPuntos {
+  font-size: 30px;
+}
+
+.podioPuntos small {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(239, 230, 216, 0.78);
+}
+
+/* La corona fina, en el flujo (no pisa el título), con dos destellos. */
+.podioCorona {
+  position: relative;
+  display: block;
+  width: 28px;
+  height: 26px;
+  margin-bottom: -2px;
+  color: var(--metal);
+}
+
+.podioCorona > svg:first-child {
+  display: block;
+}
+
+.podioDestello {
+  position: absolute;
+  color: #f6e3bb;
+  animation: titilar 2.6s ease-in-out infinite;
+}
+
+.podioDestello[data-n='1'] {
+  top: -4px;
+  right: -11px;
+}
+
+.podioDestello[data-n='2'] {
+  top: 7px;
+  left: -11px;
+  animation-delay: 1.1s;
+}
+
+@keyframes titilar {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* El puesto que nadie ocupa todavía: el hueco con su metal, a la espera. */
+.podioLibre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(239, 230, 216, 0.72);
+}
+
+.podioHueco {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border: 1.5px dashed color-mix(in srgb, var(--metal) 55%, transparent);
+  border-radius: 999px;
+  color: var(--metal);
+}
+
+.podioCol[data-puesto='1'] .podioHueco {
+  width: 76px;
+  height: 76px;
+}
+
+/* La peana: velo del metal que se apaga hacia el suelo y un filo brillante
+   arriba. Crece desde abajo al entrar. */
+.podioPeana {
+  position: relative;
+  display: grid;
+  place-items: start center;
+  padding-top: 8px;
+  border: 1px solid color-mix(in srgb, var(--metal) 40%, transparent);
+  border-bottom: 0;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(180deg, var(--metal-velo), rgba(255, 255, 255, 0.01));
+  transform-origin: 50% 100%;
+}
+
+.podioPeana::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--metal), transparent);
+}
+
+.podioCol[data-puesto='1'] .podioPeana {
+  height: 92px;
+}
+
+.podioCol[data-puesto='2'] .podioPeana {
+  height: 66px;
+}
+
+.podioCol[data-puesto='3'] .podioPeana {
+  height: 50px;
+}
+
+.podioNumero {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: lining-nums;
+  color: var(--metal);
+}
+
+.podioCol[data-puesto='1'] .podioNumero {
+  font-size: 38px;
+}
+
+@container (min-width: 560px) {
+  .podioCol[data-puesto='1'] .podioPeana {
+    height: 112px;
+  }
+
+  .podioCol[data-puesto='2'] .podioPeana {
+    height: 80px;
+  }
+
+  .podioCol[data-puesto='3'] .podioPeana {
+    height: 60px;
+  }
+
+  .podioNombre {
+    font-size: 15px;
+  }
+}
+
+/* Lo que se despliega al tocar a una del podio, dentro del escenario. */
+.rkDetalle {
+  overflow: hidden;
+}
+
+.rkDetalleDentro {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(239, 230, 216, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rkDetalleQuien {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  margin: 0;
+}
+
+.rkDetalleQuien b {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #f7f0e4;
+}
+
+.rkDetalleQuien span {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(239, 230, 216, 0.82);
+}
+
+/* ---------- El detalle de cada una (podio y lista) ---------- */
+
+.detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detalleNivel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-2);
+}
+
+.detalle[data-oscuro] .detalleNivel {
+  color: rgba(239, 230, 216, 0.84);
+}
+
+.verPerfil {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid #8c8173;
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.verPerfil:hover {
+  border-color: #141210;
+}
+
+.verPerfil:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+.detalle[data-oscuro] .verPerfil {
+  border-color: rgba(239, 230, 216, 0.42);
+  background: transparent;
+  color: #f7f0e4;
+}
+
+.detalle[data-oscuro] .verPerfil:hover {
+  border-color: #d9b47c;
+  color: #ecd2a2;
+}
+
+.detalle[data-oscuro] .verPerfil:focus-visible {
+  outline-color: #d9b47c;
+}
+
+/* De dónde salen los puntos: icono en el vino de la gamificación, lo que es,
+   lo que suma y una barra con su parte. Un solo tono: lo distingue el texto. */
+.desglose {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.desglose li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 5px;
+}
+
+.desgloseIcono {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--divine-tint);
+  color: var(--divine);
+}
+
+.desgloseTexto {
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--ink-2);
+}
+
+.desglosePts {
+  font-size: 13.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--divine);
+}
+
+.desgloseBarra {
+  grid-column: 2 / 4;
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(20, 18, 16, 0.08);
+}
+
+.desgloseRelleno {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #bd5d71, #7e2f40);
+}
+
+.desglose[data-oscuro] .desgloseIcono {
+  background: rgba(230, 167, 178, 0.14);
+  color: #e6a7b2;
+}
+
+.desglose[data-oscuro] .desgloseTexto {
+  color: #efe6d8;
+}
+
+.desglose[data-oscuro] .desglosePts {
+  color: #e6a7b2;
+}
+
+.desglose[data-oscuro] .desgloseBarra {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.desglose[data-oscuro] .desgloseRelleno {
+  background: linear-gradient(90deg, #a98551, #ecd09a);
+}
+
+.desgloseVacio {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted-2);
+}
+
+.detalle[data-oscuro] .desgloseVacio {
+  color: rgba(239, 230, 216, 0.8);
+}
+
+/* ---------- Tu mes ---------- */
+
+.tu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: clamp(18px, 2.4vw, 24px);
+  border: 1px solid var(--oro-line);
+  border-radius: 24px;
+  background:
+    radial-gradient(90% 120% at 100% 0%, rgba(217, 180, 124, 0.16), transparent 60%),
+    #fffdf9;
+  box-shadow:
+    0 1px 2px rgba(60, 45, 25, 0.05),
+    0 18px 40px -30px rgba(60, 45, 25, 0.5);
+}
+
+.tuCabecera {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Con sitio, tu desglose en dos columnas: a todo lo ancho las barras se
+   estiraban sin decir nada más. */
+@container (min-width: 620px) {
+  .tu .desglose {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 28px;
+  }
+}
+
+.tuFoto {
+  position: relative;
+  flex: none;
+}
+
+.tuQuien {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tuRotulo {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: #6f5323;
+}
+
+.tuTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.tuPuntos {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 0.95;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--ink);
+}
+
+.tuPuntos small {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-2);
+}
+
+/* Has subido de puesto: una píldora en el vino de la gamificación (7,5:1
+   sobre su tinte), con la flecha que da un par de saltitos. */
+.tuSubida {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 6px 12px 6px 9px;
+  border: 1px solid var(--divine-line);
+  border-radius: 999px;
+  background: var(--divine-tint);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--divine);
+}
+
+.tuSubidaFlecha {
+  display: grid;
+  place-items: center;
+}
+
+.tuFrase {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.tuExtra {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--muted-2);
+}
+
+.tuMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tuMetaPista {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #ebe5db;
+}
+
+.tuMetaRelleno {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8a6a32, #d9b47c);
+}
+
+.tuMetaRelleno[data-llena] {
+  background: linear-gradient(90deg, #8a6a32, #ecd09a 60%, #d9b47c);
+}
+
+.tuMetaEtiquetas {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-2);
+}
+
+.tuSugerencia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-2);
+}
+
+.tuSugerencia p {
+  flex: 1 1 220px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+/* Negro y crema, como «Publicar» en el muro: es EL botón de la tarjeta. */
+.tuBoton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #141210;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #f7f0e4;
+  cursor: pointer;
+}
+
+.tuBoton:hover {
+  background: #2a2620;
+}
+
+.tuBoton:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+.tuBoton svg {
+  color: #ecd2a2;
+}
+
+.tuEmpezar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tuAcciones {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tuAccion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line-3);
+  border-radius: 16px;
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.tuAccion:hover {
+  border-color: var(--divine-borde);
+  transform: translateY(-1px);
+}
+
+.tuAccion:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+.tuAccionIcono {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 3px;
+  border-radius: 10px;
+  background: var(--divine-tint);
+  color: var(--divine);
+}
+
+.tuAccion b {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--divine);
+}
+
+.tuAccion > span:last-child {
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--ink-3);
+}
+
+/* ---------- Del 4 al 10 ---------- */
+
+.lista10 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 24px;
+  background: #fffdf9;
+  box-shadow:
+    0 1px 2px rgba(60, 45, 25, 0.05),
+    0 14px 34px -26px rgba(60, 45, 25, 0.45);
+}
+
+.filas {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fila {
+  border-radius: 16px;
+  transition: background-color 0.2s;
+}
+
+.fila[data-on] {
+  background: var(--surface-2);
+}
+
+/* La tuya, con su fondo dorado y su filo (y la barra en vino). */
+.fila[data-yo] {
+  background: var(--oro-tint);
+  box-shadow: inset 0 0 0 1px var(--oro-line);
+}
+
+.filaBoton {
+  display: grid;
+  grid-template-columns: 26px 40px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.fila:not([data-on]):not([data-yo]) .filaBoton:hover {
+  background: var(--surface-2);
+}
+
+.filaBoton:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: -2px;
+}
+
+.filaPuesto {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: #ebe5db;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #3e3831;
+}
+
+.filaFoto {
+  position: relative;
+  display: block;
+}
+
+.filaInsignia {
+  position: absolute;
+  right: -6px;
+  bottom: -5px;
+  filter: drop-shadow(0 1px 1.5px rgba(40, 30, 15, 0.35));
+}
+
+.filaCuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.filaLinea {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filaNombre {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.filaTu {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #17140f;
+  font-size: 11px;
+  font-weight: 500;
+  color: #ecd2a2;
+}
+
+.filaPuntos {
+  flex: none;
+  margin-left: auto;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--ink);
+}
+
+.filaPuntos small {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted-2);
+}
+
+.filaPista {
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(20, 18, 16, 0.08);
+}
+
+.filaRelleno {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #a98551, #d9b47c);
+}
+
+.fila[data-yo] .filaRelleno {
+  background: linear-gradient(90deg, #7e2f40, #bd5d71);
+}
+
+.filaFlecha {
+  display: grid;
+  place-items: center;
+  color: var(--muted-2);
+  transition: transform 0.25s;
+}
+
+.fila[data-on] .filaFlecha {
+  transform: rotate(90deg);
+}
+
+.filaPanel {
+  overflow: hidden;
+}
+
+/* El detalle, alineado con el nombre (debajo del puesto y la foto, no). */
+.filaPanel > .detalle {
+  padding: 2px 12px 14px 96px;
+}
+
+@container (max-width: 440px) {
+  .filaPanel > .detalle {
+    padding-left: 12px;
+  }
+}
+
+.filasNota {
+  margin: 2px 10px 6px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--muted-2);
+}
+
+/* ---------- El podio del mes pasado ---------- */
+
+.anterior {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--line-2);
+  border-radius: 24px;
+  background: #fffdf9;
+  box-shadow:
+    0 1px 2px rgba(60, 45, 25, 0.05),
+    0 14px 34px -26px rgba(60, 45, 25, 0.45);
+}
+
+.anteriorCabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+
+.anteriorTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.anteriorSub {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--muted-2);
+}
+
+.anteriorLista {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 8px;
+  max-width: 420px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.anteriorLista > li[data-puesto='1'],
+.resumenPodio > li[data-puesto='1'] {
+  order: 2;
+}
+
+.anteriorLista > li[data-puesto='2'],
+.resumenPodio > li[data-puesto='2'] {
+  order: 1;
+}
+
+.anteriorLista > li[data-puesto='3'],
+.resumenPodio > li[data-puesto='3'] {
+  order: 3;
+}
+
+.anteriorBoton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 4px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.anteriorBoton:hover {
+  background: var(--surface-2);
+}
+
+.anteriorBoton:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+.anteriorFoto,
+.resumenFoto {
+  position: relative;
+  display: block;
+  margin-bottom: 9px;
+}
+
+.anteriorMedalla,
+.resumenMedalla {
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 1px 1.5px rgba(40, 30, 15, 0.3));
+}
+
+.anteriorNombre,
+.resumenNombre {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.anteriorPuntos,
+.resumenPuntos {
+  font-size: 12.5px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-2);
+}
+
+/* La leyenda, en su tarjeta; con sitio, las cuatro en fila. */
+.rkLeyenda {
+  padding: 18px;
+  border: 1px solid var(--line-2);
+  border-radius: 24px;
+  background: #fffdf9;
+}
+
+.rkLeyenda .leyenda {
+  padding-top: 0;
+  border-top: 0;
+}
+
+@container (min-width: 620px) {
+  .rkLeyenda .leyenda ul {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ---------- El adelanto del lateral ---------- */
+
+.resumen {
+  gap: 14px;
+}
+
+.resumenCabecera {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resumenSello {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--divine-tint);
+  color: var(--divine);
+}
+
+.resumenTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.resumenSub {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--muted-2);
+}
+
+.resumenPodio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 0 0;
+  list-style: none;
+}
+
+.resumenPodio > li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Cómo vas tú: negro y crema, como en la tarjeta de antes. */
+.resumenYo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: #17140f;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  color: #efe6d8;
+}
+
+.resumenYo b {
+  font-weight: 500;
+  color: #f7f0e4;
+}
+
+.resumenYo > b:first-child {
+  color: #d9b47c;
+}
+
+.resumenYo > span[aria-hidden] {
+  color: rgba(239, 230, 216, 0.72);
+}
+
+.resumenBoton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 1px solid #8c8173;
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.resumenBoton:hover {
+  border-color: #141210;
+}
+
+.resumenBoton:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+/* En el móvil la pestaña está arriba: el adelanto sobra. */
+@media (max-width: 1100px) {
+  .resumen {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .podioDestello {
+    animation: none;
+    opacity: 0.85;
+  }
+
+  .podioBoton,
+  .podioFoto,
+  .fila,
+  .filaBoton,
+  .filaFlecha,
+  .tuAccion,
+  .anteriorBoton {
+    transition: none;
+  }
+
+  .tuAccion:hover,
+  .podioBoton[data-on] .podioFoto {
     transform: none;
   }
 }

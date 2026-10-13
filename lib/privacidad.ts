@@ -93,9 +93,9 @@ export const TRATAMIENTOS: Tratamiento[] = [
   {
     donde: 'Cuenta en la plataforma',
     datos:
-      'Nombre, correo electrónico, contraseña (la guarda cifrada Google Firebase; Sorela no la ve), qué buscas al darte de alta, la invitación con la que entraste si la hay, a qué formaciones tienes acceso y la fecha de tu último acceso. Si Sorela te invita, ella apunta tu nombre y tu correo para crear la invitación.',
+      'Nombre, correo electrónico, contraseña (la guarda cifrada Google Firebase; Sorela no la ve), qué buscas al darte de alta, la invitación con la que entraste si la hay, a qué formaciones tienes acceso, la fecha de tu último acceso y hasta dónde has llegado en el recorrido de bienvenida por la plataforma. Si Sorela te invita, ella apunta tu nombre y tu correo para crear la invitación.',
     finalidad:
-      'Crear y mantener tu cuenta, darte acceso a tu espacio y a lo que contrates, y enviarte los correos necesarios del servicio (acceso, avisos de tu cuenta). Tu cuenta también queda anotada en la lista de contactos de Sorela, que puede escribirte por correo sobre formaciones de la Técnica Divine parecidas a lo que ya tienes. Puedes negarte a esos correos al darte de alta, marcando la casilla «No quiero novedades por correo», y en cualquier momento con el enlace de baja de cada uno o escribiendo a ' +
+      'Crear y mantener tu cuenta, darte acceso a tu espacio y a lo que contrates (y enseñarte a moverte por él la primera vez que entras), y enviarte los correos necesarios del servicio (acceso, avisos de tu cuenta). Tu cuenta también queda anotada en la lista de contactos de Sorela, que puede escribirte por correo sobre formaciones de la Técnica Divine parecidas a lo que ya tienes. Puedes negarte a esos correos al darte de alta, marcando la casilla «No quiero novedades por correo», y en cualquier momento con el enlace de baja de cada uno o escribiendo a ' +
       CORREO_PRIVACIDAD +
       '.',
     base:

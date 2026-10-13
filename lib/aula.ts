@@ -51,6 +51,12 @@ export type Leccion = {
   portada?: string;
   /** Lo que pesa el vídeo propio, en bytes. Solo lo ve Sorela. */
   tamano?: number;
+  /**
+   * Solo para quien tiene el curso con el abono: la clase sale en su aula
+   * (título, portada, duración) pero sin vídeo. Se desbloquea al completar la
+   * parte práctica, cuando Sorela la marca «Pagado».
+   */
+  bloqueada?: boolean;
 };
 
 export type Capitulo = { t: number; titulo: string };

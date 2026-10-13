@@ -6,6 +6,7 @@ import { getStorage } from 'firebase-admin/storage';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { esRol, correoEsAdmin, normalizarRol, PLATAFORMA_ABIERTA, type Rol } from '@/lib/roles';
 import { revisarAccesos } from '@/lib/accesos';
+import { leerRecorrido } from '@/lib/recorrido-tipos';
 import { after } from 'next/server';
 import { alCambiarAccesos } from '@/lib/automatizar';
 import { sesionActual } from '@/lib/sesion-servidor';
@@ -172,6 +173,9 @@ export async function GET() {
       // La fecha se manda como texto ISO: un Timestamp de Firestore no
       // sobrevive a JSON.stringify de forma legible.
       ultimoAcceso: v.ultimoAcceso?.toDate?.().toISOString() ?? null,
+      /* Si ha hecho el recorrido de bienvenida por la plataforma (el chip de
+         la lista). Solo si lo ha TERMINADO alguna vez cuenta como hecho. */
+      recorrido: leerRecorrido(v.recorrido).hecho,
       // Quién no se deja borrar ni degradar, decidido con la MISMA regla que
       // aplican PATCH y DELETE más abajo. Va en la respuesta para que la
       // pantalla no enseñe un botón que el servidor va a rechazar.
@@ -206,6 +210,8 @@ export async function GET() {
       rol: normalizarRol((u.customClaims as { role?: unknown } | undefined)?.role),
       accesos: [],
       ultimoAcceso: u.metadata.lastSignInTime ? new Date(u.metadata.lastSignInTime).toISOString() : null,
+      // Sin ficha no hay dónde haberlo guardado.
+      recorrido: false,
       protegida: correoEsAdmin(u.email ?? null),
     }));
 

@@ -14,7 +14,7 @@ import {
 } from '@/lib/logros-tipos';
 import { PUNTOS, formatoPuntos, type ResumenPuntos } from '@/lib/puntos-tipos';
 import { irA } from '@/lib/navegar';
-import { BarraNivel, CaminoNiveles, ContadorPuntos, DesglosePuntos, useVisto } from './Puntos';
+import { BarraNivel, CaminoNiveles, ContadorPuntos, DesglosePuntos, abrirComoFunciona, useVisto } from './Puntos';
 import { DistintivoCreadora, Icono, InsigniaNivel, Trofeo } from './IconosDivine';
 import l from './logros.module.css';
 
@@ -117,6 +117,12 @@ export default function Logros({ uid, nombre }: { uid?: string; nombre?: string 
               <ContadorPuntos valor={p.total} desde={0} />
               <small>puntos</small>
             </p>
+            {/* Los propios, con la explicación a mano (la de otra persona no la necesita). */}
+            {d.esMio && (
+              <button type="button" className={l.comoFunciona} onClick={() => abrirComoFunciona()}>
+                ¿Cómo funciona?
+              </button>
+            )}
           </div>
           <span className={l.moneda}>
             <InsigniaNivel n={p.nivel.n} size={84} title={`Nivel ${p.nivel.n}: ${p.nivel.nombre}`} />

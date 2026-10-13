@@ -1,0 +1,850 @@
+/*
+ * «Cómo funciona» (ComoFunciona.tsx): puntos, niveles, trofeos y ranking
+ * explicados en pocos pasos, en una ventana negra con oro, como el panel de
+ * los puntos (puntos.module.css), que es desde donde más se abre.
+ *
+ * Contraste medido (WCAG) sobre #17140f: texto #f7f2ea 16,5:1, secundario
+ * #cfc6b8 10,9:1, oro #d9b47c 9,4:1, oro claro #e8d3ad 12:1 y rosé
+ * --divine-claro 9,2:1. La Jost solo está cargada hasta 500: aquí nunca pasa
+ * de ahí; lo que pide peso va en Cormorant.
+ *
+ * Capas: por encima de la barra de abajo (45), del cajón del móvil (60) y del
+ * panel de los puntos (1050); por debajo de la Celebración (1100), que puede
+ * salir encima, del recorrido (1120) y de la bienvenida (1150).
+ *
+ * En el móvil es una hoja que sube desde abajo; en el ordenador, una ventana
+ * centrada.
+ */
+
+.capa {
+  position: fixed;
+  inset: 0;
+  z-index: 1080;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(12, 10, 9, 0.58);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+}
+
+.ventana {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(580px, 100%);
+  max-height: min(760px, calc(100vh - 32px));
+  max-height: min(760px, calc(100dvh - 32px));
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(217, 180, 124, 0.25);
+  background:
+    radial-gradient(100% 45% at 100% 0%, rgba(217, 180, 124, 0.16), transparent 60%),
+    radial-gradient(80% 40% at 0% 100%, rgba(126, 47, 64, 0.22), transparent 70%),
+    #17140f;
+  color: #f7f2ea;
+  box-shadow: 0 50px 100px -30px rgba(0, 0, 0, 0.8);
+}
+
+@media (max-width: 639px) {
+  .capa {
+    place-items: end stretch;
+    padding: 0;
+  }
+  .ventana {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    border-radius: 26px 26px 0 0;
+    border-bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Cabecera ---------- */
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 10px 24px;
+}
+
+.rotulo {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+.cuenta {
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+  color: #cfc6b8;
+}
+
+.cerrar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  color: #f7f2ea;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cerrar:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* La barra fina de lo que queda de explicación. */
+.avance {
+  height: 2px;
+  margin: 0 24px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.avance span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8a6a32, #d9b47c);
+  transform-origin: left center;
+}
+
+/* ---------- Cuerpo ---------- */
+
+.cuerpo {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 24px 10px;
+}
+
+.paso {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.pasoRotulo {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--divine-claro);
+}
+
+.titulo {
+  margin: -6px 0 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 6vw, 34px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: #f7f2ea;
+  outline: none;
+}
+
+.texto {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #cfc6b8;
+}
+
+/* «Llevas 245 puntos»: lo suyo, arriba del todo. */
+.llevas {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 5px 14px 5px 5px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 180, 124, 0.3);
+  background: rgba(217, 180, 124, 0.1);
+  font-size: 13.5px;
+  line-height: 1.3;
+  color: #efe6d8;
+}
+
+.llevas svg {
+  flex: none;
+}
+
+.llevas b {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #f3e3c3;
+}
+
+/* ---------- 1 · Las formas de sumar ---------- */
+
+.formas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .formas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.formas li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px 9px 9px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Lo que ya le suma, con un filo de oro. */
+.formas li[data-ya] {
+  border-color: rgba(217, 180, 124, 0.3);
+  background: rgba(217, 180, 124, 0.07);
+}
+
+.formaIcono {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  border: 1px solid color-mix(in srgb, var(--divine-claro) 30%, transparent);
+  background: var(--divine-claro-tint);
+  color: var(--divine-claro);
+}
+
+.formaTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.ya {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 500;
+  color: #d9b47c;
+}
+
+.formaPuntos {
+  font-size: 15px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #f3e3c3;
+}
+
+/* Sin membresía: la Comunidad, en una línea y nada más. */
+.proximamente {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px dashed rgba(217, 180, 124, 0.35);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+.proximamente span {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #cfc6b8;
+}
+
+/* ---------- 2 · Los niveles ---------- */
+
+.niveles {
+  position: relative;
+  --alto: 54px;
+}
+
+.nivelesLinea {
+  position: absolute;
+  top: calc(var(--alto) / 2 - 1.5px);
+  left: calc(100% / 12);
+  right: calc(100% / 12);
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.nivelesLinea span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8a6a32, #d9b47c 70%, var(--divine-claro));
+  box-shadow: 0 0 10px -1px rgba(217, 180, 124, 0.5);
+  transform-origin: left center;
+}
+
+.nivelesFila {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.nivelBoton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 0 6px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.nivelInsignia {
+  display: grid;
+  place-items: center;
+  height: var(--alto);
+}
+
+.nivelInsignia svg {
+  display: block;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), filter 0.25s;
+}
+
+.nivelBoton:hover .nivelInsignia svg {
+  transform: scale(1.08);
+}
+
+.nivelBoton[aria-pressed='true'] .nivelInsignia svg {
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 12px rgba(243, 227, 195, 0.55));
+}
+
+.nivelDesde {
+  font-size: 12px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  color: #cfc6b8;
+}
+
+.nivelBoton[data-estado='actual'] .nivelDesde {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #d9b47c;
+  font-weight: 500;
+  color: #17140f;
+}
+
+.nivelBoton[aria-pressed='true'] .nivelDesde {
+  color: #f7f2ea;
+}
+
+.nivelBoton[data-estado='actual'][aria-pressed='true'] .nivelDesde {
+  color: #17140f;
+}
+
+/* La ficha de lo que se ha tocado: reserva su alto para que nada salte. */
+.fichaCaja {
+  min-height: 96px;
+}
+
+.nivelFicha {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(217, 180, 124, 0.22);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.nivelFicha > svg {
+  flex: none;
+  filter: drop-shadow(0 8px 16px rgba(217, 180, 124, 0.3));
+}
+
+.nivelNumero {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+.nivelNombre {
+  margin: 2px 0 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.05;
+  color: #f7f2ea;
+}
+
+.nivelTexto {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #cfc6b8;
+}
+
+.barra {
+  padding-top: 2px;
+}
+
+/* ---------- 3 · Los trofeos ---------- */
+
+.metales {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(18px, 6vw, 38px);
+  padding: 2px 0;
+}
+
+.metal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.metal svg {
+  filter: drop-shadow(0 6px 14px rgba(217, 180, 124, 0.25));
+}
+
+.metal em {
+  font-style: normal;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #cfc6b8;
+}
+
+.vitrinas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 8px;
+}
+
+.vitrina {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #efe6d8;
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.vitrina:hover {
+  border-color: rgba(217, 180, 124, 0.4);
+}
+
+.vitrina[aria-pressed='true'] {
+  border-color: rgba(217, 180, 124, 0.75);
+  background: rgba(217, 180, 124, 0.1);
+}
+
+.vitrina:not([data-hecho]) svg {
+  opacity: 0.72;
+}
+
+.vitrinaFicha {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(217, 180, 124, 0.22);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.vitrinaTexto {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #cfc6b8;
+}
+
+.vitrinaTexto strong {
+  font-weight: 500;
+  color: #f7f2ea;
+}
+
+.escalones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.escalones li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.escalones li:not([data-hecho]) > svg {
+  opacity: 0.78;
+}
+
+.escalonTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.escalonTexto strong {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.escalonTexto small {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cfc6b8;
+}
+
+.escalonTexto em {
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #cfc6b8;
+}
+
+.escalonEstado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  max-width: 132px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: right;
+  color: #e8d3ad;
+}
+
+.escalones li[data-hecho] .escalonEstado {
+  color: #d9b47c;
+}
+
+@media (max-width: 480px) {
+  .escalones li {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .escalonEstado {
+    grid-column: 2;
+    justify-content: flex-start;
+    max-width: none;
+    text-align: left;
+  }
+}
+
+/* El trofeo Divine, en su vino. */
+.divine {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--divine-claro-line);
+  background: linear-gradient(135deg, rgba(126, 47, 64, 0.38), rgba(74, 23, 34, 0.24));
+  font-size: 14px;
+  line-height: 1.45;
+  color: #efe6d8;
+}
+
+.divine svg {
+  flex: none;
+}
+
+.divine strong {
+  font-weight: 500;
+  color: #fbe9ec;
+}
+
+/* ---------- 4 · El ranking ---------- */
+
+.podio {
+  display: grid;
+  grid-template-columns: repeat(3, 76px);
+  justify-content: center;
+  align-items: end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.podioCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.peana {
+  display: block;
+  width: 100%;
+  border: 1px solid rgba(217, 180, 124, 0.35);
+  border-bottom: 0;
+  border-radius: 12px 12px 4px 4px;
+  background: linear-gradient(180deg, rgba(217, 180, 124, 0.3), rgba(217, 180, 124, 0.06));
+  transform-origin: bottom center;
+}
+
+.podioCol[data-puesto='1'] .peana {
+  height: 72px;
+  background: linear-gradient(180deg, rgba(217, 180, 124, 0.5), rgba(217, 180, 124, 0.1));
+}
+
+.podioCol[data-puesto='2'] .peana {
+  height: 52px;
+}
+
+.podioCol[data-puesto='3'] .peana {
+  height: 38px;
+}
+
+.subrotulo {
+  margin: 4px 0 -4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+.nota {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #cfc6b8;
+}
+
+.verRanking {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(217, 180, 124, 0.55);
+  border-radius: 999px;
+  background: transparent;
+  color: #ecd2a2;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.verRanking:hover {
+  border-color: rgba(217, 180, 124, 0.85);
+  background: rgba(217, 180, 124, 0.1);
+}
+
+/* ---------- Pie: los puntitos y los botones ---------- */
+
+.pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px 18px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.puntos {
+  display: flex;
+  align-items: center;
+}
+
+/* Cada puntito es un botón de 28 px (se toca bien) con su punto dibujado dentro. */
+.puntoPaso {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+}
+
+.puntoPaso::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: width 0.25s, margin 0.25s, background 0.25s;
+}
+
+.puntoPaso[aria-current='step']::before {
+  width: 20px;
+  margin-left: -10px;
+  background: #d9b47c;
+}
+
+.botones {
+  display: flex;
+  gap: 8px;
+}
+
+.atras,
+.siguiente {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.atras {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: transparent;
+  color: #f7f2ea;
+}
+
+.atras:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.siguiente {
+  border: 0;
+  background: linear-gradient(135deg, #f3e3c3, #d9b47c);
+  color: #17140f;
+}
+
+.siguiente:hover {
+  box-shadow: 0 8px 18px -8px rgba(217, 180, 124, 0.8);
+}
+
+/* El último, con su luz: es la meta. */
+.siguiente[data-oro] {
+  box-shadow: 0 10px 24px -10px rgba(217, 180, 124, 0.9);
+}
+
+.cerrar:focus-visible,
+.nivelBoton:focus-visible,
+.vitrina:focus-visible,
+.verRanking:focus-visible,
+.atras:focus-visible,
+.siguiente:focus-visible {
+  outline: 2px solid #d9b47c;
+  outline-offset: 3px;
+}
+
+.puntoPaso:focus-visible {
+  outline: 2px solid #d9b47c;
+  outline-offset: -2px;
+}
+
+/* Al pulsar, se hunde un poco. */
+.atras:active,
+.siguiente:active,
+.verRanking:active,
+.vitrina:active,
+.cerrar:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nivelInsignia svg,
+  .vitrina,
+  .verRanking,
+  .atras,
+  .siguiente,
+  .cerrar,
+  .puntoPaso::before {
+    transition: none;
+  }
+  .atras:active,
+  .siguiente:active,
+  .verRanking:active,
+  .vitrina:active,
+  .cerrar:active,
+  .nivelBoton:hover .nivelInsignia svg {
+    transform: none;
+  }
+}

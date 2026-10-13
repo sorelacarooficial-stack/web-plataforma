@@ -49,6 +49,8 @@ type Cuenta = {
   /** Cómo llegó a tener cuenta. */
   llego?: 'registro' | 'invitacion' | 'tu' | null;
   creado?: string | null;
+  /** Si ha terminado el recorrido de bienvenida por la plataforma. */
+  recorrido?: boolean;
 };
 
 /** «hace 3 h», «ayer», «12 oct». Una fecha completa no dice nada de un vistazo. */
@@ -560,6 +562,16 @@ export default function Cuentas() {
                         no se ha estrenado. Es un dato, no un hueco. */}
                     {c.ultimoAcceso ? `Entró ${cuando(c.ultimoAcceso)}` : 'No ha entrado todavía'}
                   </span>
+                  {/* Si ya sabe moverse por la plataforma: el recorrido de
+                      bienvenida. Sorela no lo tiene, y sin ficha no se sabe. */}
+                  {rolActual !== 'sorela' && !c.sinFicha && (
+                    <span
+                      className={`${css.estado} ${c.recorrido ? css.estadoOro : css.estadoNeutro}`}
+                      style={{ alignSelf: 'flex-start' }}
+                    >
+                      {c.recorrido ? 'Recorrido hecho' : 'Recorrido pendiente'}
+                    </span>
+                  )}
                 </span>
 
                 <span className={css.acciones}>
@@ -585,9 +597,9 @@ export default function Cuentas() {
                           Abrir curso completo
                         </button>
                       )}
-                      /* Sin el dorado de la membresía: dorado es la Comunidad.
-                         Con el mismo botón dorado, «Dar formación» y «Dar
-                         comunidad» parecían la misma cosa. */
+                      {/* Sin el dorado de la membresía: dorado es la Comunidad.
+                          Con el mismo botón dorado, «Dar formación» y «Dar
+                          comunidad» parecían la misma cosa. */}
                       <button
                         type="button"
                         className={css.btnLinea}

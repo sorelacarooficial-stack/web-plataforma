@@ -7,11 +7,13 @@ import { diaDe } from './metricas';
 import { COLECCION_ACTIVIDAD, cuentasDeSorela, mesDe } from './actividad';
 import { LOGROS, MESES_PODIO, OROS_PARA_DIVINE, PODIO_MINIMO, type EstadoLogro, type Resumen } from './logros-tipos';
 import { calcularPuntos, nivelDe, puntosDeLaFicha, type ResumenPuntos } from './puntos-tipos';
+import { recorridoHecho } from './recorrido-tipos';
 
 /**
  * Calcula los logros (los escalones de sus trofeos, lib/logros-tipos.ts) de
  * una persona con lo que ya está guardado: su progreso en las clases, sus
- * contadores de la comunidad, su racha de días, su perfil y sus fotos.
+ * contadores de la comunidad, su racha de días, su perfil, sus fotos y su
+ * recorrido de bienvenida.
  *
  * Los conseguidos se apuntan en `usuarios/{uid}/logros/{id}` la primera vez:
  * así se sabe cuáles son NUEVOS (para celebrarlos una sola vez) y cuándo se
@@ -93,7 +95,7 @@ const DE_LA_CREADORA: Resumen = {
   curso: { hechas: 0, total: 0, porcentaje: 0 },
   racha: { actual: 0, mejor: 0 },
   certificado: false,
-  puntos: { total: 0, desglose: calcularPuntos({ clases: 0, cursoCompleto: false, publicaciones: 0, respuestas: 0, meGusta: 0, dias: 0, mejorRacha: 0, logros: 0, perfilCompleto: false, fotos: 0 }).desglose, nivel: nivelDe(0), antes: null, subioNivel: false },
+  puntos: { total: 0, desglose: calcularPuntos({ clases: 0, cursoCompleto: false, publicaciones: 0, respuestas: 0, meGusta: 0, dias: 0, mejorRacha: 0, logros: 0, perfilCompleto: false, fotos: 0, recorrido: false }).desglose, nivel: nivelDe(0), antes: null, subioNivel: false },
 };
 
 /**
@@ -146,6 +148,8 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
   const mejor = Math.max(act.mejor ?? 0, rachaViva);
   const dias = typeof act.dias === 'number' ? act.dias : Math.max(act.racha ?? 0, act.mejor ?? 0);
   const perfilCompleto = Boolean((u.onboarding as { completado?: unknown } | undefined)?.completado);
+  // Terminado alguna vez (saltarlo no cuenta; repetirlo no lo quita): ver lib/recorrido-tipos.ts.
+  const recorrido = recorridoHecho(u);
 
   /* El podio: entre las 3 primeras de un mes YA CERRADO y con al menos
      PODIO_MINIMO compañeras puntuando ese mes. Con el mes en curso bastaba
@@ -168,6 +172,7 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
   const respuestas = Math.max(0, stats.respuestas ?? 0);
   const meGusta = Math.max(0, stats.meGustaRecibidos ?? 0);
   const valor: Record<string, number> = {
+    recorrido: recorrido ? 1 : 0,
     'primera-clase': hechas,
     'mitad-curso': total ? porcentaje : 0,
     'curso-completo': total ? porcentaje : 0,
@@ -225,6 +230,7 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
     logros: logros.filter((l) => l.conseguido).length,
     perfilCompleto,
     fotos,
+    recorrido,
   });
   const nivel = nivelDe(puntosTotal);
   let antes: number | null = null;

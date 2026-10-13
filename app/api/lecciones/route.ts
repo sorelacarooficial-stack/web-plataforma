@@ -3,7 +3,7 @@ import { FieldValue, type QueryDocumentSnapshot } from 'firebase-admin/firestore
 import sharp from 'sharp';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { accesosDe, sesionActual } from '@/lib/sesion-servidor';
-import { TOPE_VIDEO, carpetaDeClase, clave, esVideoPropio, puedeVerla, type Leccion } from '@/lib/aula';
+import { TOPE_VIDEO, carpetaDeClase, clave, esVideoPropio, puedeVerla, tieneElCurso, type Leccion } from '@/lib/aula';
 import { almacen, borrarArchivosDeClase, firmarPortada } from '@/lib/aula-almacen';
 import { revisarAccesos, type Acceso } from '@/lib/accesos';
 
@@ -132,19 +132,30 @@ export async function GET() {
   /* Y aquí el filtro de verdad. Dos condiciones, las dos necesarias:
      que esté publicada y que le toque por lo que tiene contratado. */
   const accesos = await accesosDe(sesion.uid);
+  /* Con el curso pero solo el abono, sus clases salen igualmente, marcadas
+     como bloqueadas y SIN vídeo: ve qué le espera y se desbloquean al
+     completar la parte práctica. El vídeo no se le da de ninguna forma
+     (ni aquí ni en /api/lecciones/video, que sigue mirando puedeVerla). */
+  const bloqueadas = new Set<string>();
   const suyas = lista.docs.filter((d) => {
     const l = aLeccion(d.id, d.data());
-    return l.publicada && puedeVerla(l.para, accesos);
+    if (!l.publicada) return false;
+    if (puedeVerla(l.para, accesos)) return true;
+    if (l.para.tipo === 'curso' && tieneElCurso(l.para.nombre, accesos)) {
+      bloqueadas.add(d.id);
+      return true;
+    }
+    return false;
   });
   /* El tamaño del archivo es cosa de Sorela, y la ruta del vídeo en el
      almacén no le sirve a la alumna para nada (el enlace lo pide por id a
      /api/lecciones/video): se queda solo la marca de «vídeo propio», para no
      enseñar cómo está organizado el almacén por dentro. */
-  const lecciones = (await conPortadas(suyas)).map((l) => ({
-    ...l,
-    tamano: undefined,
-    video: esVideoPropio(l.video) ? 'propio:' : l.video,
-  }));
+  const lecciones = (await conPortadas(suyas)).map((l) =>
+    bloqueadas.has(l.id)
+      ? { ...l, tamano: undefined, video: '', bloqueada: true }
+      : { ...l, tamano: undefined, video: esVideoPropio(l.video) ? 'propio:' : l.video }
+  );
 
   return NextResponse.json({ ok: true, lecciones, esSorela: false });
 }

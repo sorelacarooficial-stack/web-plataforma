@@ -15,8 +15,8 @@ import { DOCUMENTOS, rutaDePagina, type Documento } from '@/lib/material';
  * Las páginas no tienen dirección pública. Cada dirección que se da caduca a
  * los 15 minutos; el lector pide otras si se le pasan. Sorela lo ve todo.
  *
- * Con solo el abono del curso se ve el precurso; el resto sale en
- * `bloqueados` (solo el título) para que sepa lo que se le abrirá.
+ * Con el curso basta, aunque solo haya dejado el abono: el material se lee
+ * entero. Lo que espera a la parte práctica son los vídeos.
  */
 
 export const runtime = 'nodejs';
@@ -42,12 +42,12 @@ export async function GET(peticion: Request) {
   if (!sesion) return NextResponse.json({ ok: false, motivo: 'sin-sesion' }, { status: 401 });
 
   const accesos = sesion.rol === 'sorela' ? null : await accesosDe(sesion.uid);
-  // El precurso basta con tener el curso, aunque sea solo con el abono.
+  /* Todo el material del curso se ve con el curso, aunque solo haya dejado
+     el abono: los dossieres SÍ, lo que espera a la parte práctica son las
+     clases en vídeo (ver app/api/lecciones). */
   const abre = (p: Acceso, a: Acceso[]) =>
     p.tipo === 'curso' ? tieneElCurso(p.nombre, a) : puedeVerla(p, a);
-  const puede = (d: Documento) =>
-    accesos === null || d.para.some((p) => (d.precurso ? abre(p, accesos) : puedeVerla(p, accesos)));
-  const bloqueado = (d: Documento) => accesos !== null && !puede(d) && d.para.some((p) => abre(p, accesos));
+  const puede = (d: Documento) => accesos === null || d.para.some((p) => abre(p, accesos));
   const caduca = Date.now() + VIGENCIA_MS;
   const id = new URL(peticion.url).searchParams.get('id');
 
@@ -68,8 +68,7 @@ export async function GET(peticion: Request) {
         portadaUrl: await firmar(rutaDePagina(d.id, d.portada), caduca),
       }))
     );
-    const bloqueados = DOCUMENTOS.filter(bloqueado).map((d) => ({ id: d.id, titulo: d.titulo, subtitulo: d.subtitulo }));
-    return NextResponse.json({ ok: true, documentos, bloqueados }, { headers: SIN_CACHE });
+    return NextResponse.json({ ok: true, documentos }, { headers: SIN_CACHE });
   } catch (error) {
     console.error('[material] no se han podido firmar las páginas', error);
     return NextResponse.json({ ok: false, motivo: 'sin-almacen' }, { status: 503 });

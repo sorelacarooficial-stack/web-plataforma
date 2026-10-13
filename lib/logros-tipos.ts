@@ -2,9 +2,10 @@
  * Los trofeos de la plataforma, descritos en un sitio que leen el servidor
  * (para calcularlos) y la pantalla (para pintarlos). Sin nada de servidor dentro.
  *
- * Una VITRINA por cosa que se hace (formarse, compartir casos, ayudar a las
- * compañeras, inspirar, la constancia, el escaparate de su trabajo), y en cada
- * una tres escalones: bronce, plata y oro. Encima de todas, el trofeo Divine,
+ * Una VITRINA por cosa que se hace (llegar y conocer la plataforma, formarse,
+ * compartir casos, ayudar a las compañeras, inspirar, la constancia, el
+ * escaparate de su trabajo), y en cada una hasta tres escalones: bronce, plata
+ * y oro. Encima de todas, el trofeo Divine,
  * que se gana juntando oros. Lo que motiva no es el trofeo: es ver que el
  * siguiente está cerca («te faltan 3 respuestas para el oro»).
  *
@@ -12,7 +13,8 @@
  * `usuarios/{uid}/logros/{id}` apunta cuándo se ganó y que ya se celebró).
  * Los identificadores de antes se conservan: lo ya ganado y celebrado no se
  * vuelve a celebrar. Todo se DERIVA de contadores que ya existían (clases
- * terminadas, `usuarios.stats`, racha, perfil, fotos): no hay libro aparte.
+ * terminadas, `usuarios.stats`, racha, perfil, fotos, `usuarios.recorrido`):
+ * no hay libro aparte.
  */
 
 import type { ResumenPuntos } from './puntos-tipos';
@@ -23,10 +25,10 @@ export const ESCALONES: Record<Escalon, string> = { bronce: 'Bronce', plata: 'Pl
 /** De menos a más. */
 export const ORDEN_ESCALON: Escalon[] = ['bronce', 'plata', 'oro', 'divine'];
 
-export type IdVitrina = 'formacion' | 'casos' | 'companera' | 'inspiras' | 'constancia' | 'escaparate' | 'podio' | 'divine';
+export type IdVitrina = 'llegada' | 'formacion' | 'casos' | 'companera' | 'inspiras' | 'constancia' | 'escaparate' | 'podio' | 'divine';
 
 /** El dibujo que lleva grabado el trofeo (components/plataforma/IconosDivine.tsx). */
-export type GlifoTrofeo = 'clase' | 'publicacion' | 'respuesta' | 'meGusta' | 'racha' | 'foto' | 'podio' | 'divine';
+export type GlifoTrofeo = 'brujula' | 'clase' | 'publicacion' | 'respuesta' | 'meGusta' | 'racha' | 'foto' | 'podio' | 'divine';
 
 export type DefVitrina = {
   id: IdVitrina;
@@ -37,6 +39,10 @@ export type DefVitrina = {
 };
 
 export const VITRINAS: DefVitrina[] = [
+  /* La primera, porque es el primer trofeo que se gana: el del recorrido de
+     bienvenida (lib/recorrido-tipos.ts). Un solo escalón, de bronce, a
+     propósito: no es un oro y no acerca el trofeo Divine, que tiene que costar. */
+  { id: 'llegada', nombre: 'Tu llegada', texto: 'El recorrido de bienvenida por la plataforma.', glifo: 'brujula' },
   { id: 'formacion', nombre: 'Tu formación', texto: 'Clases terminadas del curso.', glifo: 'clase' },
   { id: 'casos', nombre: 'Compartes casos', texto: 'Lo que publicas en la comunidad.', glifo: 'publicacion' },
   { id: 'companera', nombre: 'Echas una mano', texto: 'Respuestas a las dudas de otras.', glifo: 'respuesta' },
@@ -74,6 +80,9 @@ export const MESES_PODIO = 3;
 export const OROS_PARA_DIVINE = 3;
 
 export const LOGROS: DefLogro[] = [
+  // Se gana al TERMINAR el recorrido (saltarlo no cuenta) y una sola vez.
+  { id: 'recorrido', vitrina: 'llegada', escalon: 'bronce', nombre: 'Exploradora Divine', texto: 'Haces el recorrido de bienvenida por la plataforma.', meta: 1, unidad: null },
+
   // Los del curso cuentan en porcentaje (la meta), pero lo que falta se dice en clases.
   { id: 'primera-clase', vitrina: 'formacion', escalon: 'bronce', nombre: 'Primer paso', texto: 'Terminas tu primera clase.', meta: 1, unidad: CLASES },
   { id: 'mitad-curso', vitrina: 'formacion', escalon: 'plata', nombre: 'A mitad de camino', texto: 'Llevas la mitad de la formación.', meta: 50, unidad: CLASES },
@@ -156,6 +165,7 @@ export function textoFalta(l: EstadoLogro, ajena = false): string {
   if (l.conseguido) return 'Conseguido';
   if (l.falta === null || !l.unidad) {
     if (l.id === 'perfil-completo') return ajena ? 'Le falta completar el perfil' : 'Completa tu perfil';
+    if (l.id === 'recorrido') return ajena ? 'Aún no ha hecho el recorrido' : 'Haz el recorrido de bienvenida';
     if (l.id === 'podio') return ajena ? 'Aún no ha estado en el podio' : 'Cierra un mes en el top 3';
     return l.texto;
   }

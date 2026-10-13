@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as TeclaReact, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, LayoutGroup, MotionConfig, animate, motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion';
 import {
   CATEGORIAS_COMUNIDAD,
   SOBRE_CATEGORIA,
@@ -12,13 +12,13 @@ import {
   type Publicacion,
   type Respuesta,
 } from '@/lib/comunidad-tipos';
-import { FORMAS_DE_SUMAR, PUNTOS, SUMAN_AL_MES, UNIDAD_MES, formatoPuntos, type PorFuenteMes } from '@/lib/puntos-tipos';
+import { FORMAS_DE_SUMAR, PUNTOS, SUMAN_AL_MES, UNIDAD_MES, formatoPuntos, type FuenteMes, type PorFuenteMes } from '@/lib/puntos-tipos';
 import Bienvenida, { SelloFijada } from './Bienvenida';
 import { COLORES, DistintivoCreadora, ICONO_FUENTE, Icono, InsigniaNivel, Medalla, destello } from './IconosDivine';
 import { useAviso, useConfirmar, type OpcionesConfirmar } from './Confirmar';
 import css from './plataforma.module.css';
 import c from './comunidad.module.css';
-import { verPerfil } from '@/lib/navegar';
+import { irA, verPerfil } from '@/lib/navegar';
 import { leerRespuesta, prepararImagen } from '@/lib/imagen-cliente';
 
 /**
@@ -32,6 +32,9 @@ import { leerRespuesta, prepararImagen } from '@/lib/imagen-cliente';
  * Cada nombre y cada foto abre el perfil de esa persona (publicaciones,
  * respuestas, ranking y la lista de quién ha dado «me gusta»). `?p=id` en la
  * dirección abre esa publicación (viene del perfil).
+ *
+ * Arriba, dos pestañas: la conversación y el ranking del mes (`?ver=ranking`
+ * en la dirección abre directamente el ranking).
  */
 
 /* Lo que trae el servidor además de lo de siempre: las caras de quien ha dado
@@ -54,11 +57,26 @@ type Datos = {
   puedeEscribir: boolean;
   modera: boolean;
   /* Quién eres y cómo vas este mes en el ranking. Sorela no puntúa: le llega
-     `puntua: false` y no se le enseña la fila «Tú». */
-  yo: { uid: string; nombre: string; foto: string | null; puntua?: boolean; puesto?: number | null; puntos?: number; por?: PorFuenteMes };
+     `puntua: false` y no se le enseña la tarjeta «Tú». `arriba`: la que va
+     justo delante, aunque estés fuera de las diez. */
+  yo: {
+    uid: string;
+    nombre: string;
+    foto: string | null;
+    puntua?: boolean;
+    puesto?: number | null;
+    puntos?: number;
+    por?: PorFuenteMes;
+    arriba?: { puesto: number; puntos: number } | null;
+  };
   publicaciones: Pub[];
   personas?: Personas;
+  /** Las diez primeras del mes, con su desglose. */
   ranking: FilaRanking[];
+  /** El mes del ranking (`2026-10`, UTC) y cuántas puntúan. */
+  rankingMes?: { mes: string; participantes: number };
+  /** Las tres primeras del mes pasado (vacío si nadie puntuó). */
+  podioAnterior?: { mes: string; filas: FilaRanking[] } | null;
   proximaClase: ProximaClase;
   sorela: { nombre: string; foto: string | null };
 };
@@ -542,8 +560,24 @@ const ATAJO: Record<CategoriaComunidad, string> = {
   Anuncio: 'Un anuncio',
 };
 
-function Escribir({ yo, modera, alPublicar, confirmar }: { yo: Datos['yo']; modera: boolean; alPublicar: () => void; confirmar: Confirmar }) {
+function Escribir({
+  yo,
+  modera,
+  alPublicar,
+  confirmar,
+  abrirSenal = 0,
+}: {
+  yo: Datos['yo'];
+  modera: boolean;
+  alPublicar: () => void;
+  confirmar: Confirmar;
+  /** Cada vez que sube, se abre el borrador (el «Publicar ahora» del ranking). */
+  abrirSenal?: number;
+}) {
   const [abierto, setAbierto] = useState(false);
+  useEffect(() => {
+    if (abrirSenal) setAbierto(true);
+  }, [abrirSenal]);
   const [categoria, setCategoria] = useState<CategoriaComunidad>('Caso');
   const [titulo, setTitulo] = useState('');
   const [texto, setTexto] = useState('');
@@ -1230,155 +1264,841 @@ function Clase({ clase, modera, puedeEntrar, guardado }: { clase: ProximaClase; 
   );
 }
 
-/* ---------- Más activas este mes ---------- */
+/* ==========================================================================
+   El ranking del mes
+   ========================================================================== */
+
+/* Lo que más se ve de la Comunidad: una pestaña propia, «Ranking del mes»,
+   junto a la conversación (en el móvil, arriba y a un toque, sin bajar por
+   todo el muro) y, en el ordenador, un adelanto en el lateral.
+
+   Dentro: el podio de las tres primeras sobre negro (orden 2-1-3, peanas de
+   oro, plata y bronce sobrios, corona fina sobre la primera, cifras que
+   cuentan hacia arriba), tu tarjeta con lo que te falta para subir, el resto
+   hasta diez con su barra, el podio del mes pasado y cómo se suma. Tocar a
+   cualquiera despliega de dónde salen sus puntos y lleva a su perfil.
+
+   Sorela no compite: no sale (lo filtra el servidor) ni tiene tarjeta «Tú».
+   Con movimiento reducido, todo aparece ya en su sitio y sin contar. */
 
 const MES = new Intl.DateTimeFormat('es-ES', { month: 'long', timeZone: 'UTC' });
 const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
-/** «Octubre · se reinicia el día 1»: el ranking es del mes (en UTC, como lib/actividad). */
-const rotuloDelMes = (ahora = new Date()) => `${mayuscula(MES.format(ahora))} · se reinicia el día 1`;
+/** Cuántas salen en el ranking (las mismas que manda app/api/comunidad). */
+const TOP_MES = 10;
 
-const cuantasDe = (f: keyof typeof UNIDAD_MES, n: number) => `${formatoPuntos(n)} ${n === 1 ? UNIDAD_MES[f][0] : UNIDAD_MES[f][1]}`;
+/** «octubre», del mes `2026-10` (o del de ahora). En UTC, como lib/actividad. */
+const nombreMes = (mes?: string) => MES.format(mes && /^\d{4}-\d{2}$/.test(mes) ? new Date(`${mes}-15T12:00:00Z`) : new Date());
+
+/** «Se reinicia en 18 días»: el ranking vuelve a cero el día 1 a las 00:00 UTC. */
+function textoReinicio(ahora = Date.now()): string {
+  const d = new Date(ahora);
+  const falta = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1) - ahora;
+  const horas = Math.ceil(falta / 3_600_000);
+  if (horas <= 1) return 'Se reinicia en menos de una hora';
+  if (horas < 24) return `Se reinicia en ${horas} horas`;
+  // Redondeado: con 18 días y 2 horas por delante, «18 días», no 19.
+  const dias = Math.max(1, Math.round(falta / 86_400_000));
+  return dias === 1 ? 'Se reinicia en un día' : `Se reinicia en ${dias} días`;
+}
+
+const cuantasDe = (f: FuenteMes, n: number) => `${formatoPuntos(n)} ${n === 1 ? UNIDAD_MES[f][0] : UNIDAD_MES[f][1]}`;
+
+/** Lo que vale cada forma de sumar al mes, sacado de PUNTOS (nunca a mano). */
+const VALOR_MES = Object.fromEntries(SUMAN_AL_MES.map((f) => [f, FORMAS_DE_SUMAR.find((x) => x.fuente === f)?.puntos ?? 0])) as Record<FuenteMes, number>;
+
+const EASE_SALIDA = [0.22, 1, 0.36, 1] as const;
+
+const FLECHA = (
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 6l6 6-6 6" />
+  </svg>
+);
 
 /**
- * De dónde salen los puntos del mes de alguien, con los iconos de cada forma
- * de sumar: «✎ 2 · ↩ 5 · ♥ 9 · ▶ 1». El lector de pantalla oye la frase
- * entera («2 publicaciones, 5 respuestas…»). Lo que no tiene, no sale.
+ * Una cifra que cuenta hacia arriba al aparecer y, cuando cambia (la recarga
+ * de cada minuto), cuenta desde la que había. El lector oye solo la final;
+ * con movimiento reducido, sale ya puesta.
  */
-function DesgloseMes({ por }: { por?: PorFuenteMes }) {
-  const fuentes = SUMAN_AL_MES.filter((f) => (por?.[f] ?? 0) > 0);
-  if (!por || !fuentes.length) return null;
+function Cuenta({ valor, retraso = 0 }: { valor: number; retraso?: number }) {
+  const reducir = useReducedMotion();
+  const mv = useMotionValue(reducir ? valor : 0);
+  const texto = useTransform(mv, (v) => formatoPuntos(Math.round(v)));
+
+  useEffect(() => {
+    const origen = mv.get();
+    if (reducir || origen === valor) {
+      mv.set(valor);
+      return;
+    }
+    const ctrl = animate(mv, valor, { duration: Math.min(1.6, 0.7 + Math.abs(valor - origen) / 600), delay: retraso, ease: [0.16, 1, 0.3, 1] });
+    return () => ctrl.stop();
+  }, [valor, retraso, reducir, mv]);
+
   return (
-    <ul className={c.desgloseMes} aria-label="De dónde salen sus puntos">
-      {fuentes.map((f) => (
-        <li key={f} title={cuantasDe(f, por[f]!)}>
-          <Icono nombre={ICONO_FUENTE[f]} size={15} grosor={1.8} />
-          <span aria-hidden="true">{formatoPuntos(por[f]!)}</span>
-          <span className={c.soloLector}>{cuantasDe(f, por[f]!)}</span>
+    <>
+      <motion.span aria-hidden="true">{texto}</motion.span>
+      <span className={c.soloLector}>{formatoPuntos(valor)}</span>
+    </>
+  );
+}
+
+/**
+ * De dónde salen los puntos del mes de alguien: cuántas de cada cosa, lo que
+ * vale y una barra con su parte del total. Lo de antes de apuntar la fuente
+ * (no tiene desglose) va junto en «Otra actividad del mes», para que la
+ * suma cuadre siempre con sus puntos.
+ */
+function Desglose({ por, puntos, oscuro, retraso = 0 }: { por?: PorFuenteMes; puntos: number; oscuro?: boolean; retraso?: number }) {
+  const reducir = useReducedMotion();
+  const partes = SUMAN_AL_MES.filter((f) => (por?.[f] ?? 0) > 0).map((f) => ({ f, n: por![f]!, pts: por![f]! * VALOR_MES[f] }));
+  const otras = Math.max(0, puntos - partes.reduce((s, x) => s + x.pts, 0));
+  const total = Math.max(1, partes.reduce((s, x) => s + x.pts, 0) + otras);
+  const filas = [
+    ...partes.map((x) => ({ clave: x.f, icono: <Icono nombre={ICONO_FUENTE[x.f]} size={16} grosor={1.8} />, texto: cuantasDe(x.f, x.n), pts: x.pts })),
+    ...(otras > 0
+      ? [
+          {
+            clave: 'otras',
+            icono: (
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path d={destello(12, 12, 7.5, 0.2)} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+              </svg>
+            ),
+            texto: 'Otra actividad del mes',
+            pts: otras,
+          },
+        ]
+      : []),
+  ];
+  if (!filas.length) return <p className={c.desgloseVacio}>Todavía sin puntos este mes.</p>;
+  return (
+    <ul className={c.desglose} data-oscuro={oscuro ? '' : undefined} aria-label="De dónde salen los puntos">
+      {filas.map((x, i) => (
+        <li key={x.clave}>
+          <span className={c.desgloseIcono} aria-hidden="true">
+            {x.icono}
+          </span>
+          <span className={c.desgloseTexto}>{x.texto}</span>
+          <b className={c.desglosePts}>+{formatoPuntos(x.pts)}</b>
+          <span className={c.desgloseBarra} aria-hidden="true">
+            <motion.span
+              className={c.desgloseRelleno}
+              initial={reducir ? false : { width: '0%' }}
+              animate={{ width: `${Math.max(3, (x.pts / total) * 100)}%` }}
+              transition={reducir ? { duration: 0 } : { duration: 0.7, delay: retraso + i * 0.07, ease: EASE_SALIDA }}
+            />
+          </span>
         </li>
       ))}
     </ul>
   );
 }
 
+/** Lo que se puede hacer para sumar, desde el ranking: publicar, responder o ir a una clase. */
+type Sumar = 'publicar' | 'responder' | 'clase';
+
+const SUMAR: Record<Sumar, { texto: string; boton: string; puntos: number; icono: FuenteMes }> = {
+  publicar: { texto: 'Publicar', boton: 'Publicar ahora', puntos: PUNTOS.publicacion, icono: 'publicaciones' },
+  responder: { texto: 'Responder a una compañera', boton: 'Responder una duda', puntos: PUNTOS.respuesta, icono: 'respuestas' },
+  clase: { texto: 'Terminar una clase', boton: 'Ir al aula', puntos: PUNTOS.clase, icono: 'clases' },
+};
+
+/** Lo más pequeño que basta para cubrir `falta` puntos, dicho en cristiano. */
+function sugerencia(falta: number): { texto: string; accion: Sumar } {
+  if (falta <= PUNTOS.respuesta) return { texto: `Con una respuesta a una compañera (+${PUNTOS.respuesta}) lo tienes.`, accion: 'responder' };
+  if (falta <= PUNTOS.publicacion) return { texto: `Con una publicación (+${PUNTOS.publicacion}) lo tienes.`, accion: 'publicar' };
+  if (falta <= PUNTOS.publicacion + PUNTOS.respuesta) return { texto: 'Con una publicación y una respuesta lo tienes.', accion: 'publicar' };
+  if (falta <= PUNTOS.clase) return { texto: `Con una clase terminada (+${PUNTOS.clase}) lo tienes.`, accion: 'clase' };
+  return { texto: `Paso a paso: cada publicación suma +${PUNTOS.publicacion} y cada clase terminada, +${PUNTOS.clase}.`, accion: 'publicar' };
+}
+
+type Meta = {
+  titulo: string;
+  frase: string;
+  extra?: string;
+  /** La barra hacia el siguiente puesto: de 0 a 1 y a qué puesto lleva. */
+  barra?: { valor: number; hasta: string };
+  sugerencia?: { texto: string; accion: Sumar };
+  /** Aún sin puntos: se enseña cómo empezar. */
+  empezar?: boolean;
+};
+
 /**
- * Lo que le falta a quien mira para subir un puesto (o para entrar): es lo
- * que engancha. Solo con lo que ya trae el ranking: nada de pedir más.
+ * Cómo vas y qué te falta, en concreto y sin apretar: el puesto que tienes
+ * delante (con su nombre si está en las diez), cuántos puntos y con qué se
+ * consiguen; y, si quedan lejos, cuánto para el podio o para entrar en las
+ * diez. Solo con lo que trae el ranking y `yo.arriba`: nada de pedir más.
  */
-function pistaDelPuesto(filas: FilaRanking[], mio: { puesto: number | null; puntos: number }): string {
-  if (mio.puesto === 1) return filas.length > 1 ? `Vas la primera, ${formatoPuntos(mio.puntos - filas[1].puntos)} pts por delante.` : 'Vas la primera.';
-  if (mio.puesto && mio.puesto <= filas.length) {
-    const arriba = filas[mio.puesto - 2];
-    const falta = arriba.puntos - mio.puntos;
-    return falta <= 0 ? `Empatada con ${arriba.nombre}.` : `A ${formatoPuntos(falta)} pts de ${arriba.nombre}, puesto ${mio.puesto - 1}.`;
+function metaDelPuesto(filas: FilaRanking[], yo: Datos['yo'], participantes: number): Meta {
+  const puntos = Math.max(0, yo.puntos ?? 0);
+  const puesto = yo.puesto ?? null;
+  const pts = (n: number) => `${formatoPuntos(n)} pts`;
+
+  if (!puesto || puntos <= 0) {
+    const llena = filas.length >= TOP_MES;
+    const falta = llena ? filas[TOP_MES - 1].puntos + 1 : 1;
+    return {
+      titulo: 'Aún sin puntos este mes',
+      frase: llena ? `Para entrar en las diez te hacen falta ${pts(falta)}.` : 'Con lo primero que sumes ya entras en el ranking.',
+      empezar: true,
+    };
   }
-  if (filas.length >= 5) return `Te faltan ${formatoPuntos(filas[4].puntos - mio.puntos + 1)} pts para entrar en las cinco.`;
-  return 'Con lo próximo que sumes ya entras en la lista.';
+
+  if (puesto === 1) {
+    const segunda = filas[1];
+    return {
+      titulo: 'Vas la primera',
+      frase: !segunda
+        ? 'Eres la única que suma de momento.'
+        : puntos > segunda.puntos
+          ? `Le sacas ${pts(puntos - segunda.puntos)} a ${primerNombre(segunda.nombre)}.`
+          : `Empatada con ${primerNombre(segunda.nombre)}: lo próximo que sumes te deja sola arriba.`,
+      extra: 'El podio se cierra el día 1. Sigue compartiendo.',
+      barra: { valor: 1, hasta: 'Primera' },
+      sugerencia: { texto: `Cada publicación suma +${PUNTOS.publicacion} y cada respuesta a una compañera, +${PUNTOS.respuesta}.`, accion: 'publicar' },
+    };
+  }
+
+  // La de delante: en la lista si estás en las diez; si no, la que manda el servidor.
+  const enLista = puesto <= filas.length;
+  const delante = enLista
+    ? { puesto: puesto - 1, puntos: filas[puesto - 2].puntos, nombre: primerNombre(filas[puesto - 2].nombre) }
+    : yo.arriba
+      ? { ...yo.arriba, nombre: '' }
+      : null;
+  const titulo = puesto <= 3 ? `En el podio: puesto ${puesto}` : `Puesto ${puesto} de ${formatoPuntos(Math.max(participantes, puesto))}`;
+  if (!delante) return { titulo, frase: '' };
+
+  const falta = Math.max(1, delante.puntos - puntos + 1);
+  const quien = delante.nombre ? ` (${delante.nombre})` : '';
+  const frase =
+    delante.puntos === puntos
+      ? `Empatada con el puesto ${delante.puesto}${quien}: lo próximo que sumes te pone delante.`
+      : `Te faltan ${pts(falta)} para el puesto ${delante.puesto}${quien}.`;
+  let extra: string | undefined;
+  if (puesto > 3 && enLista && filas[2]) extra = `Para el podio, ${pts(Math.max(1, filas[2].puntos - puntos + 1))}.`;
+  if (!enLista && filas.length >= TOP_MES) extra = `Para entrar en las diez, ${pts(Math.max(1, filas[TOP_MES - 1].puntos - puntos + 1))}.`;
+  return {
+    titulo,
+    frase,
+    extra,
+    barra: { valor: Math.min(1, puntos / (delante.puntos + 1)), hasta: `Puesto ${delante.puesto}` },
+    sugerencia: sugerencia(falta),
+  };
+}
+
+/* ---------- El podio ---------- */
+
+/** Cuándo entra cada puesto: de abajo arriba, bronce, plata y por último el oro. */
+const RETRASO_PODIO: Record<1 | 2 | 3, number> = { 1: 0.36, 2: 0.18, 3: 0.04 };
+
+/** La corona fina sobre la primera, con dos destellos que titilan (quietos con movimiento reducido). */
+function Corona({ retraso }: { retraso: number }) {
+  return (
+    <motion.span
+      className={c.podioCorona}
+      aria-hidden="true"
+      initial={{ opacity: 0, scale: 0.4, y: 8 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ delay: retraso, type: 'spring', stiffness: 420, damping: 15 }}
+    >
+      <Icono nombre="corona" size={28} grosor={1.4} />
+      <svg className={c.podioDestello} data-n="1" viewBox="0 0 10 10" width="9" height="9">
+        <path d={destello(5, 5, 5)} fill="currentColor" />
+      </svg>
+      <svg className={c.podioDestello} data-n="2" viewBox="0 0 10 10" width="6" height="6">
+        <path d={destello(5, 5, 5)} fill="currentColor" />
+      </svg>
+    </motion.span>
+  );
 }
 
 /**
- * El ranking del mes. Cada fila: la medalla del podio (o el puesto), la foto
- * con la insignia de su nivel, sus puntos del mes en grande, una barra en
- * proporción a la primera y, con iconos, de dónde salen. Debajo, cómo vas tú
- * y la leyenda de cómo se suma (los valores salen de PUNTOS, no escritos a
- * mano). Sorela no aparece: no compite (lo filtra el servidor).
+ * Las tres primeras, en orden 2-1-3 a la vista (en el código y para el
+ * lector, 1-2-3). Cada una es un botón que despliega su desglose debajo del
+ * podio. El hueco que falta («Libre») invita a ocuparlo.
  */
-function Ranking({ filas, yo }: { filas: FilaRanking[]; yo: Datos['yo'] | null }) {
+function Podio({ filas, yo, elegida, elegir, idDetalle }: { filas: FilaRanking[]; yo: string | null; elegida: string | null; elegir: (uid: string) => void; idDetalle: string }) {
   const reducir = useReducedMotion();
-  const max = Math.max(1, filas[0]?.puntos ?? 0);
-  const mio = yo?.puntua ? { puesto: yo.puesto ?? null, puntos: Math.max(0, yo.puntos ?? 0) } : null;
-  const leyenda = SUMAN_AL_MES.map((f) => FORMAS_DE_SUMAR.find((x) => x.fuente === f)!).filter(Boolean);
+  return (
+    <ol className={c.podio} aria-label="Podio del mes">
+      {([1, 2, 3] as const).map((puesto) => {
+        const r = filas[puesto - 1];
+        const retraso = RETRASO_PODIO[puesto];
+        const abierta = Boolean(r && elegida === r.uid);
+        const soy = Boolean(r && yo === r.uid);
+        return (
+          <li key={puesto} className={c.podioCol} data-puesto={puesto}>
+            <motion.div
+              className={c.podioPersona}
+              initial={reducir ? false : { opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={reducir ? { duration: 0 } : { delay: retraso + 0.22, type: 'spring', stiffness: 260, damping: 22 }}
+            >
+              {r ? (
+                <button
+                  type="button"
+                  className={c.podioBoton}
+                  onClick={() => elegir(r.uid)}
+                  aria-expanded={abierta}
+                  aria-controls={abierta ? idDetalle : undefined}
+                  aria-label={`Puesto ${puesto}: ${r.nombre}${soy ? ' (tú)' : ''}, ${formatoPuntos(r.puntos)} puntos. Ver de dónde salen`}
+                  data-on={abierta ? '' : undefined}
+                >
+                  {puesto === 1 && <Corona retraso={reducir ? 0 : retraso + 0.75} />}
+                  <span className={c.podioFoto}>
+                    <Avatar a={{ nombre: r.nombre, foto: r.foto ?? null, esSorela: false }} tam={puesto === 1 ? 76 : 60} />
+                    {r.nivel && <InsigniaNivel n={r.nivel.n} size={puesto === 1 ? 26 : 22} className={c.podioInsignia} />}
+                  </span>
+                  <span className={c.podioNombre}>
+                    {primerNombre(r.nombre)}
+                    {soy && <span className={c.podioTu}>Tú</span>}
+                  </span>
+                  <span className={c.podioPuntos}>
+                    <Cuenta valor={r.puntos} retraso={retraso + 0.4} />
+                    <small> pts</small>
+                  </span>
+                </button>
+              ) : (
+                <span className={c.podioLibre}>
+                  <span className={c.podioHueco} aria-hidden="true">
+                    <Icono nombre={puesto === 1 ? 'corona' : 'medalla'} size={22} grosor={1.5} />
+                  </span>
+                  <span>Libre</span>
+                </span>
+              )}
+            </motion.div>
+            <motion.span
+              className={c.podioPeana}
+              aria-hidden="true"
+              initial={reducir ? false : { scaleY: 0, opacity: 0 }}
+              animate={{ scaleY: 1, opacity: 1 }}
+              transition={reducir ? { duration: 0 } : { delay: retraso, duration: 0.6, ease: EASE_SALIDA }}
+            >
+              <span className={c.podioNumero}>{puesto}</span>
+            </motion.span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/** Lo que se despliega al tocar a alguien: su nivel, de dónde salen sus puntos y su perfil. */
+function Detalle({ r, oscuro }: { r: FilaRanking; oscuro?: boolean }) {
+  return (
+    <div className={c.detalle} data-oscuro={oscuro ? '' : undefined}>
+      {r.nivel && (
+        <p className={c.detalleNivel}>
+          <InsigniaNivel n={r.nivel.n} size={20} />
+          Nivel {r.nivel.n} · {r.nivel.nombre}
+        </p>
+      )}
+      <Desglose por={r.por} puntos={r.puntos} oscuro={oscuro} retraso={0.1} />
+      <button type="button" className={c.verPerfil} onClick={() => verPerfil(r.uid)}>
+        Ver el perfil de {primerNombre(r.nombre)}
+        {FLECHA}
+      </button>
+    </div>
+  );
+}
+
+/* ---------- Del 4 al 10 ---------- */
+
+function FilaPuesto({ r, puesto, max, soy, abierta, alternar, id, orden }: { r: FilaRanking; puesto: number; max: number; soy: boolean; abierta: boolean; alternar: () => void; id: string; orden: number }) {
+  const reducir = useReducedMotion();
+  const retraso = 0.5 + orden * 0.06;
+  return (
+    <motion.li
+      className={c.fila}
+      data-yo={soy ? '' : undefined}
+      data-on={abierta ? '' : undefined}
+      initial={reducir ? false : { opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={reducir ? { duration: 0 } : { delay: retraso, duration: 0.35, ease: EASE_SALIDA }}
+    >
+      <button type="button" className={c.filaBoton} onClick={alternar} aria-expanded={abierta} aria-controls={abierta ? id : undefined}>
+        <span className={c.filaPuesto}>
+          <span className={c.soloLector}>Puesto </span>
+          {puesto}
+          <span className={c.soloLector}>:</span>
+        </span>
+        <span className={c.filaFoto} aria-hidden="true">
+          <Avatar a={{ nombre: r.nombre, foto: r.foto ?? null, esSorela: false }} tam={40} />
+          {r.nivel && <InsigniaNivel n={r.nivel.n} size={18} className={c.filaInsignia} />}
+        </span>
+        <span className={c.filaCuerpo}>
+          <span className={c.filaLinea}>
+            <span className={c.filaNombre}>{r.nombre}</span>
+            {soy && <span className={c.filaTu}>Tú</span>}
+            <span className={c.filaPuntos}>
+              <Cuenta valor={r.puntos} retraso={retraso} />
+              <small> pts</small>
+            </span>
+          </span>
+          <span className={c.filaPista} aria-hidden="true">
+            <motion.span
+              className={c.filaRelleno}
+              initial={reducir ? false : { width: '0%' }}
+              animate={{ width: `${Math.max(4, (r.puntos / max) * 100)}%` }}
+              transition={reducir ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 17, delay: retraso + 0.1 }}
+            />
+          </span>
+        </span>
+        <span className={c.filaFlecha} aria-hidden="true">
+          {FLECHA}
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {abierta && (
+          <motion.div
+            key="detalle"
+            id={id}
+            className={c.filaPanel}
+            initial={reducir ? { opacity: 0 } : { height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={reducir ? { opacity: 0 } : { height: 0, opacity: 0 }}
+            transition={{ duration: reducir ? 0 : 0.3, ease: EASE_SALIDA }}
+          >
+            <Detalle r={r} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.li>
+  );
+}
+
+/* ---------- Tú ---------- */
+
+/**
+ * Tu mes, siempre a la vista bajo el podio: tu puesto, tus puntos contando,
+ * la barra hasta el puesto de delante, lo que te falta dicho en cosas que se
+ * pueden hacer, y de dónde salen tus puntos. Si aún no sumas, cómo empezar,
+ * con los valores de PUNTOS y un toque para hacerlo.
+ */
+function TarjetaTu({ yo, filas, participantes, mes, sumar }: { yo: Datos['yo']; filas: FilaRanking[]; participantes: number; mes: string; sumar: (a: Sumar) => void }) {
+  const reducir = useReducedMotion();
+  const meta = metaDelPuesto(filas, yo, participantes);
+  const puntos = Math.max(0, yo.puntos ?? 0);
+  const mia = filas.find((r) => r.uid === yo.uid);
+  const puesto = yo.puesto ?? null;
+
+  /* «Has subido 2 puestos desde tu última visita»: el puesto que viste la
+     última vez se apunta en este navegador. Es solo una comodidad de la
+     vista (el puesto de verdad lo da el servidor): sin almacenamiento, no
+     sale y ya está. Cuenta dentro del mismo mes; el día 1 empieza de cero. */
+  const [subida, setSubida] = useState(0);
+  // El de la última visita se lee una vez: con él se compara mientras se mira.
+  const visto = useRef<{ mes: string; puesto: number } | null | undefined>(undefined);
+  useEffect(() => {
+    if (!puesto || !mes) return;
+    const clave = `divine:ranking-puesto:${yo.uid}`;
+    try {
+      if (visto.current === undefined) {
+        const antes = JSON.parse(window.localStorage.getItem(clave) ?? 'null') as { mes?: unknown; puesto?: unknown } | null;
+        visto.current = antes?.mes === mes && typeof antes.puesto === 'number' ? { mes, puesto: antes.puesto } : null;
+      }
+      const base = visto.current;
+      setSubida(base && base.mes === mes && base.puesto > puesto ? base.puesto - puesto : 0);
+      window.localStorage.setItem(clave, JSON.stringify({ mes, puesto }));
+    } catch {
+      /* navegador sin almacenamiento: sin aviso de subida */
+    }
+  }, [mes, puesto, yo.uid]);
 
   return (
-    <section className={`${c.ladoTarjeta} ${c.rankingTarjeta}`} aria-labelledby="ranking-titulo">
-      <header className={c.rankingCabecera}>
-        <span className={c.rankingSello} aria-hidden="true">
-          <Icono nombre="medalla" size={20} grosor={1.6} />
+    <motion.section
+      className={c.tu}
+      aria-labelledby="ranking-tu"
+      initial={reducir ? false : { opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={reducir ? { duration: 0 } : { delay: 0.3, duration: 0.45, ease: EASE_SALIDA }}
+    >
+      <header className={c.tuCabecera}>
+        <span className={c.tuFoto} aria-hidden="true">
+          <Avatar a={{ nombre: yo.nombre || 'Tú', foto: yo.foto, esSorela: false }} tam={48} />
+          {mia?.nivel && <InsigniaNivel n={mia.nivel.n} size={20} className={c.filaInsignia} />}
         </span>
-        <span>
-          <h2 id="ranking-titulo" className={c.rankingTitulo}>
-            Más activas este mes
-          </h2>
-          <span className={c.rankingMes}>{rotuloDelMes()}</span>
+        <span className={c.tuQuien}>
+          <span className={c.tuRotulo}>Tu mes</span>
+          <h3 id="ranking-tu" className={c.tuTitulo}>
+            {meta.titulo}
+          </h3>
+        </span>
+        <span className={c.tuPuntos}>
+          <Cuenta valor={puntos} retraso={0.45} />
+          <small>pts</small>
         </span>
       </header>
 
-      {filas.length === 0 ? (
-        <p className={c.ladoTexto}>Todavía no ha sumado nadie este mes. La primera que publique, responda o termine una clase se lleva el oro.</p>
-      ) : (
-        <ol className={c.ranking}>
-          {filas.map((r, i) => (
-            <li key={r.uid} data-yo={yo && r.uid === yo.uid ? '' : undefined} data-p={i}>
-              {/* El puesto ya lo dice la lista ordenada al lector de pantalla. */}
-              <span className={c.rankingPuesto} aria-hidden="true">
-                {i < 3 ? <Medalla puesto={(i + 1) as 1 | 2 | 3} size={30} /> : <span className={c.puesto}>{i + 1}</span>}
-              </span>
-              {/* La foto también abre el perfil; para el teclado y el lector ya está el nombre. */}
-              <button type="button" className={c.rankingFoto} onClick={() => verPerfil(r.uid)} tabIndex={-1} aria-hidden="true">
-                <Avatar a={{ nombre: r.nombre, foto: r.foto ?? null, esSorela: false }} tam={40} />
-                {r.nivel && <InsigniaNivel n={r.nivel.n} size={20} className={c.rankingInsignia} />}
-              </button>
-              <div className={c.rankingCuerpo}>
-                <div className={c.rankingLinea}>
-                  <button type="button" className={c.rankingNombre} onClick={() => verPerfil(r.uid)} title={`Ver el perfil de ${r.nombre}`}>
-                    {r.nombre}
-                  </button>
-                  <span className={c.puntos}>
-                    {formatoPuntos(r.puntos)}
-                    <small> pts</small>
-                  </span>
-                </div>
-                {r.nivel && (
-                  <span className={c.rankingNivel}>
-                    Nivel {r.nivel.n} · {r.nivel.nombre}
-                  </span>
-                )}
-                <span className={c.rankingPista} aria-hidden="true">
-                  <motion.span
-                    className={c.rankingRelleno}
-                    data-p={i}
-                    initial={reducir ? false : { width: '0%' }}
-                    animate={{ width: `${Math.max(4, (r.puntos / max) * 100)}%` }}
-                    transition={reducir ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 17, delay: 0.15 + i * 0.09 }}
-                  />
-                </span>
-                <DesgloseMes por={r.por} />
-              </div>
-            </li>
-          ))}
-        </ol>
-      )}
+      <AnimatePresence initial={false}>
+        {subida > 0 && (
+          <motion.p
+            key="subida"
+            className={c.tuSubida}
+            role="status"
+            initial={reducir ? { opacity: 0 } : { opacity: 0, y: 6, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={reducir ? { duration: 0 } : { delay: 0.7, type: 'spring', stiffness: 380, damping: 22 }}
+          >
+            <motion.span
+              className={c.tuSubidaFlecha}
+              aria-hidden="true"
+              initial={reducir ? false : { y: 4 }}
+              animate={{ y: 0 }}
+              transition={reducir ? { duration: 0 } : { delay: 0.9, repeat: 2, repeatType: 'reverse', duration: 0.35 }}
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 19V5M6 11l6-6 6 6" />
+              </svg>
+            </motion.span>
+            {subida === 1 ? 'Subes un puesto desde tu última visita' : `Subes ${subida} puestos desde tu última visita`}
+          </motion.p>
+        )}
+      </AnimatePresence>
 
-      {mio && (
-        <div className={c.rankingYo}>
-          <p>
-            <b>Tú</b>
-            <span aria-hidden="true">·</span>
-            {mio.puesto ? `puesto ${mio.puesto}` : 'aún sin puesto'}
-            <span aria-hidden="true">·</span>
-            <span>
-              <b>{formatoPuntos(mio.puntos)} pts</b> este mes
-            </span>
-          </p>
-          <p className={c.rankingPistaTexto}>{pistaDelPuesto(filas, mio)}</p>
+      {meta.frase && <p className={c.tuFrase}>{meta.frase}</p>}
+
+      {meta.barra && (
+        <div className={c.tuMeta}>
+          <span className={c.tuMetaPista} aria-hidden="true">
+            <motion.span
+              className={c.tuMetaRelleno}
+              data-llena={meta.barra.valor >= 1 ? '' : undefined}
+              initial={reducir ? false : { width: '0%' }}
+              animate={{ width: `${Math.max(4, meta.barra.valor * 100)}%` }}
+              transition={reducir ? { duration: 0 } : { type: 'spring', stiffness: 70, damping: 16, delay: 0.55 }}
+            />
+          </span>
+          <span className={c.tuMetaEtiquetas} aria-hidden="true">
+            <span>Tú</span>
+            <span>{meta.barra.hasta}</span>
+          </span>
         </div>
       )}
 
-      <div className={c.leyenda}>
-        <p className={c.leyendaTitulo}>Cómo se suma este mes</p>
-        <ul>
-          {leyenda.map((x) => (
-            <li key={x.fuente}>
-              <span className={c.leyendaIcono} aria-hidden="true">
-                <Icono nombre={ICONO_FUENTE[x.fuente]} size={17} grosor={1.7} />
+      {meta.extra && <p className={c.tuExtra}>{meta.extra}</p>}
+
+      {meta.empezar ? (
+        <div className={c.tuEmpezar}>
+          <p className={c.tuRotulo}>Cómo empezar</p>
+          <div className={c.tuAcciones}>
+            {(['publicar', 'responder', 'clase'] as const).map((a) => (
+              <button key={a} type="button" className={c.tuAccion} onClick={() => sumar(a)}>
+                <span className={c.tuAccionIcono} aria-hidden="true">
+                  <Icono nombre={ICONO_FUENTE[SUMAR[a].icono]} size={18} grosor={1.7} />
+                </span>
+                <b>+{formatoPuntos(SUMAR[a].puntos)}</b>
+                <span>{SUMAR[a].texto}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <>
+          <Desglose por={yo.por} puntos={puntos} retraso={0.6} />
+          {meta.sugerencia && (
+            <div className={c.tuSugerencia}>
+              <p>{meta.sugerencia.texto}</p>
+              <button type="button" className={c.tuBoton} onClick={() => sumar(meta.sugerencia!.accion)}>
+                <Icono nombre={ICONO_FUENTE[SUMAR[meta.sugerencia.accion].icono]} size={16} grosor={1.8} />
+                {SUMAR[meta.sugerencia.accion].boton}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </motion.section>
+  );
+}
+
+/* ---------- El mes pasado ---------- */
+
+function PodioAnterior({ mes, filas }: { mes: string; filas: FilaRanking[] }) {
+  if (!filas.length) return null;
+  const nombre = nombreMes(mes);
+  return (
+    <section className={c.anterior} aria-labelledby="ranking-anterior">
+      <header className={c.anteriorCabecera}>
+        <h3 id="ranking-anterior" className={c.anteriorTitulo}>
+          El podio de {nombre}
+        </h3>
+        <span className={c.anteriorSub}>Así cerró el mes pasado</span>
+      </header>
+      <ol className={c.anteriorLista}>
+        {filas.map((r, i) => (
+          <li key={r.uid} data-puesto={i + 1}>
+            <button type="button" className={c.anteriorBoton} onClick={() => verPerfil(r.uid)} aria-label={`Puesto ${i + 1} en ${nombre}: ${r.nombre}, ${formatoPuntos(r.puntos)} puntos. Ver su perfil`}>
+              <span className={c.anteriorFoto}>
+                <Avatar a={{ nombre: r.nombre, foto: r.foto ?? null, esSorela: false }} tam={i === 0 ? 48 : 40} />
+                <Medalla puesto={(i + 1) as 1 | 2 | 3} size={22} className={c.anteriorMedalla} />
               </span>
-              <span className={c.leyendaTexto}>{x.corto}</span>
-              <b className={c.leyendaPuntos}>+{formatoPuntos(x.puntos)}</b>
+              <span className={c.anteriorNombre}>{primerNombre(r.nombre)}</span>
+              <span className={c.anteriorPuntos}>{formatoPuntos(r.puntos)} pts</span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+/* ---------- Cómo se suma ---------- */
+
+function Leyenda() {
+  const leyenda = SUMAN_AL_MES.map((f) => FORMAS_DE_SUMAR.find((x) => x.fuente === f)!).filter(Boolean);
+  return (
+    <div className={c.leyenda}>
+      <p className={c.leyendaTitulo}>Cómo se suma este mes</p>
+      <ul>
+        {leyenda.map((x) => (
+          <li key={x.fuente}>
+            <span className={c.leyendaIcono} aria-hidden="true">
+              <Icono nombre={ICONO_FUENTE[x.fuente]} size={17} grosor={1.7} />
+            </span>
+            <span className={c.leyendaTexto}>{x.corto}</span>
+            <b className={c.leyendaPuntos}>+{formatoPuntos(x.puntos)}</b>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ---------- La pestaña entera ---------- */
+
+function RankingMes({ datos, sumar }: { datos: Datos; sumar: (a: Sumar) => void }) {
+  const reducir = useReducedMotion();
+  const filas = datos.ranking ?? [];
+  const yo = datos.yo.puntua ? datos.yo : null;
+  const [elegida, setElegida] = useState<string | null>(null);
+  const base = useId();
+  const idDetalle = `${base}-podio`;
+  const max = Math.max(1, filas[0]?.puntos ?? 0);
+  const participantes = datos.rankingMes?.participantes ?? filas.length;
+  const mes = nombreMes(datos.rankingMes?.mes);
+  const enPodio = filas.slice(0, 3).find((r) => r.uid === elegida) ?? null;
+  const elegir = (uid: string) => setElegida((x) => (x === uid ? null : uid));
+
+  return (
+    <div className={c.rk}>
+      <section className={c.rkHero} aria-labelledby="ranking-titulo">
+        <header className={c.rkCabecera}>
+          <span className={c.rkRotulo}>
+            <Icono nombre="medalla" size={15} grosor={1.7} />
+            Ranking del mes
+          </span>
+          <h2 id="ranking-titulo" className={c.rkTitulo}>
+            Las más activas de {mes}
+          </h2>
+          <span className={c.rkDatos}>
+            <span className={c.rkReinicio}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                <circle cx="12" cy="12.5" r="8" />
+                <path d="M12 8.5v4l2.6 1.6M9.5 2.8h5" />
+              </svg>
+              {textoReinicio()}
+            </span>
+            {participantes > 0 && (
+              <span className={c.rkCuantas}>
+                {formatoPuntos(participantes)} {participantes === 1 ? 'compañera sumando' : 'compañeras sumando'}
+              </span>
+            )}
+          </span>
+        </header>
+
+        {filas.length === 0 && (
+          <p className={c.rkVacio}>
+            <b>El oro de {mes} está libre.</b> La primera que publique, responda o termine una clase lo estrena.
+          </p>
+        )}
+
+        <Podio filas={filas} yo={yo?.uid ?? null} elegida={enPodio?.uid ?? null} elegir={elegir} idDetalle={idDetalle} />
+
+        <AnimatePresence initial={false}>
+          {enPodio && (
+            <motion.div
+              key="detalle"
+              id={idDetalle}
+              className={c.rkDetalle}
+              initial={reducir ? { opacity: 0 } : { height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={reducir ? { opacity: 0 } : { height: 0, opacity: 0 }}
+              transition={{ duration: reducir ? 0 : 0.32, ease: EASE_SALIDA }}
+            >
+              <div className={c.rkDetalleDentro}>
+                <p className={c.rkDetalleQuien}>
+                  <b>{enPodio.nombre}</b>
+                  <span>
+                    {formatoPuntos(enPodio.puntos)} pts en {mes}
+                  </span>
+                </p>
+                <Detalle r={enPodio} oscuro />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
+
+      {yo && <TarjetaTu yo={yo} filas={filas} participantes={participantes} mes={datos.rankingMes?.mes ?? ''} sumar={sumar} />}
+
+      {filas.length > 3 && (
+        <section className={c.lista10} aria-label={`Del puesto 4 al ${filas.length}`}>
+          <ol className={c.filas} start={4}>
+            {filas.slice(3).map((r, k) => (
+              <FilaPuesto
+                key={r.uid}
+                r={r}
+                puesto={k + 4}
+                max={max}
+                soy={Boolean(yo && yo.uid === r.uid)}
+                abierta={elegida === r.uid}
+                alternar={() => elegir(r.uid)}
+                id={`${base}-${r.uid}`}
+                orden={k}
+              />
+            ))}
+          </ol>
+          <p className={c.filasNota}>Toca a cualquiera para ver de dónde salen sus puntos.</p>
+        </section>
+      )}
+
+      <PodioAnterior mes={datos.podioAnterior?.mes ?? ''} filas={datos.podioAnterior?.filas ?? []} />
+
+      <section className={c.rkLeyenda}>
+        <Leyenda />
+      </section>
+    </div>
+  );
+}
+
+/* ---------- El adelanto del lateral (ordenador) ---------- */
+
+/**
+ * En el ordenador, mientras se mira el muro, el lateral enseña el podio en
+ * pequeño y cómo vas tú, con un botón a la pestaña del ranking. En el móvil
+ * no sale: allí la pestaña está arriba, a un toque.
+ */
+function RankingResumen({ datos, abrir }: { datos: Datos; abrir: () => void }) {
+  const filas = (datos.ranking ?? []).slice(0, 3);
+  const yo = datos.yo.puntua ? datos.yo : null;
+  return (
+    <section className={`${c.ladoTarjeta} ${c.resumen}`} aria-labelledby="ranking-resumen">
+      <header className={c.resumenCabecera}>
+        <span className={c.resumenSello} aria-hidden="true">
+          <Icono nombre="medalla" size={20} grosor={1.6} />
+        </span>
+        <span>
+          <h2 id="ranking-resumen" className={c.resumenTitulo}>
+            Ranking de {nombreMes(datos.rankingMes?.mes)}
+          </h2>
+          <span className={c.resumenSub}>{textoReinicio()}</span>
+        </span>
+      </header>
+      {filas.length ? (
+        <ol className={c.resumenPodio}>
+          {filas.map((r, i) => (
+            <li key={r.uid} data-puesto={i + 1}>
+              <span className={c.resumenFoto}>
+                <Avatar a={{ nombre: r.nombre, foto: r.foto ?? null, esSorela: false }} tam={i === 0 ? 52 : 42} />
+                <Medalla puesto={(i + 1) as 1 | 2 | 3} size={20} className={c.resumenMedalla} />
+              </span>
+              <span className={c.resumenNombre}>{primerNombre(r.nombre)}</span>
+              <span className={c.resumenPuntos}>{formatoPuntos(r.puntos)} pts</span>
             </li>
           ))}
-        </ul>
-      </div>
+        </ol>
+      ) : (
+        <p className={c.ladoTexto}>Nadie ha sumado todavía este mes: el oro está libre.</p>
+      )}
+      {yo && (
+        <p className={c.resumenYo}>
+          <b>Tú</b>
+          <span aria-hidden="true">·</span>
+          {yo.puesto ? `puesto ${yo.puesto}` : 'aún sin puesto'}
+          <span aria-hidden="true">·</span>
+          <b>{formatoPuntos(Math.max(0, yo.puntos ?? 0))} pts</b>
+        </p>
+      )}
+      <button type="button" className={c.resumenBoton} onClick={abrir}>
+        Ver el ranking completo
+        {FLECHA}
+      </button>
     </section>
+  );
+}
+
+/* ---------- Conversación | Ranking ---------- */
+
+type VistaComunidad = 'muro' | 'ranking';
+
+/**
+ * Las dos pestañas de arriba. Pestañas de verdad: flechas, Inicio y Fin para
+ * moverse, y solo la elegida en el orden del tabulador. En la del ranking,
+ * tu puesto, para que se vea de un vistazo cómo vas.
+ */
+function Pestanas({ ver, cambiar, puesto, ids }: { ver: VistaComunidad; cambiar: (v: VistaComunidad) => void; puesto: number | null; ids: Record<VistaComunidad, { tab: string; panel: string }> }) {
+  const botones = useRef<(HTMLButtonElement | null)[]>([]);
+  const lista: VistaComunidad[] = ['muro', 'ranking'];
+
+  function tecla(e: TeclaReact<HTMLDivElement>) {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    e.preventDefault();
+    const i = lista.indexOf(ver);
+    const j = e.key === 'Home' ? 0 : e.key === 'End' ? lista.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : -1) + lista.length) % lista.length;
+    cambiar(lista[j]);
+    botones.current[j]?.focus();
+  }
+
+  return (
+    <LayoutGroup id="vista-comunidad">
+      <div className={c.pestanas} role="tablist" aria-label="Comunidad" onKeyDown={tecla}>
+        {lista.map((v, k) => {
+          const on = ver === v;
+          return (
+            <button
+              key={v}
+              ref={(el) => {
+                botones.current[k] = el;
+              }}
+              type="button"
+              role="tab"
+              id={ids[v].tab}
+              aria-selected={on}
+              aria-controls={ids[v].panel}
+              tabIndex={on ? 0 : -1}
+              className={c.pestana}
+              onClick={() => cambiar(v)}
+              data-guia={v === 'ranking' ? 'comunidad-ranking' : 'comunidad-muro'}
+            >
+              {on && <motion.span layoutId="pestana-activa" className={c.pestanaActiva} transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
+              <span className={c.pestanaDentro}>
+                {v === 'muro' ? (
+                  <>
+                    <Icono nombre="respuestas" size={18} grosor={1.7} />
+                    Conversación
+                  </>
+                ) : (
+                  <>
+                    <Icono nombre="medalla" size={18} grosor={1.7} />
+                    <span>
+                      Ranking<span className={c.pestanaResto}> del mes</span>
+                    </span>
+                    {puesto ? (
+                      <span className={c.pestanaChip}>
+                        <span aria-hidden="true">{puesto}.º</span>
+                        <span className={c.soloLector}>, vas en el puesto {puesto}</span>
+                      </span>
+                    ) : null}
+                  </>
+                )}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </LayoutGroup>
   );
 }
 
@@ -1393,6 +2113,68 @@ export default function Comunidad() {
   /* Lo que se está borrando no vuelve a salir aunque la recarga de cada
      minuto llegue antes que la respuesta del servidor. */
   const borrando = useRef(new Set<string>());
+  const reducir = useReducedMotion();
+
+  /* Conversación o ranking. Se lee de la dirección después de montar (en el
+     servidor no la hay) y se apunta en ella sin crear historial: recargar
+     deja donde estabas. Con `?p=id` (abrir una publicación), el muro. El muro
+     no se desmonta al mirar el ranking: un borrador a medias, con sus fotos,
+     sigue ahí al volver. */
+  const [ver, setVer] = useState<VistaComunidad>('muro');
+  const [abrirEscribir, setAbrirEscribir] = useState(0);
+  const base = useId();
+  const ids: Record<VistaComunidad, { tab: string; panel: string }> = {
+    muro: { tab: `${base}-tab-muro`, panel: `${base}-panel-muro` },
+    ranking: { tab: `${base}-tab-ranking`, panel: `${base}-panel-ranking` },
+  };
+
+  useEffect(() => {
+    const leer = () => {
+      const q = new URLSearchParams(window.location.search);
+      setVer(q.get('ver') === 'ranking' && !q.get('p') ? 'ranking' : 'muro');
+    };
+    leer();
+    window.addEventListener('popstate', leer);
+    return () => window.removeEventListener('popstate', leer);
+  }, []);
+
+  const subir = useCallback(() => {
+    try {
+      window.scrollTo({ top: 0, behavior: reducir ? 'auto' : 'smooth' });
+    } catch {
+      /* da igual */
+    }
+  }, [reducir]);
+
+  const cambiarVista = useCallback((v: VistaComunidad) => {
+    setVer(v);
+    try {
+      const q = new URLSearchParams(window.location.search);
+      if (v === 'ranking') q.set('ver', 'ranking');
+      else q.delete('ver');
+      window.history.replaceState(window.history.state, '', `${window.location.pathname}?${q}`);
+    } catch {
+      /* sin historial: la pestaña cambia igual */
+    }
+  }, []);
+
+  /* Desde el ranking: «Publicar ahora» abre el borrador, «Responder una
+     duda» lleva a las dudas y «Ir al aula», al aula. */
+  const sumar = useCallback(
+    (a: Sumar) => {
+      if (a === 'clase') return irA('aula');
+      cambiarVista('muro');
+      setFiltro(a === 'responder' ? 'Duda' : 'Todo');
+      if (a === 'publicar') setAbrirEscribir((n) => n + 1);
+      subir();
+    },
+    [cambiarVista, subir]
+  );
+
+  const verRanking = useCallback(() => {
+    cambiarVista('ranking');
+    subir();
+  }, [cambiarVista, subir]);
 
   const cargar = useCallback(async () => {
     try {
@@ -1488,125 +2270,144 @@ export default function Comunidad() {
   const filtros: Filtro[] = ['Todo', ...CATEGORIAS_COMUNIDAD, ...(datos?.modera ? (['Sin responder'] as Filtro[]) : [])];
 
   return (
-    <div className={c.comunidad}>
-      <div className={c.centro}>
-        {datos?.puedeEscribir && <Escribir yo={datos.yo} modera={datos.modera} alPublicar={cargar} confirmar={confirmar} />}
-        {datos && !datos.puedeEscribir && (
-          <section className={c.visita}>
-            <strong>Estás de visita.</strong> Puedes leerlo todo y dar «me gusta». Para publicar y responder hace falta la Comunidad
-            Divine: entras al terminar la formación.
-          </section>
-        )}
+    <MotionConfig reducedMotion="user">
+      <div className={c.comunidad}>
+        <div className={c.centro}>
+          <Pestanas ver={ver} cambiar={cambiarVista} puesto={datos?.yo.puntua ? (datos.yo.puesto ?? null) : null} ids={ids} />
 
-        <LayoutGroup id="filtros">
-          <div className={c.filtros} role="tablist">
-            {filtros.map((f) => (
-              <button key={f} type="button" role="tab" aria-selected={filtro === f} onClick={() => setFiltro(f)}>
-                {filtro === f && <motion.span layoutId="filtro-activo" className={c.filtroActivo} transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
-                <span>
-                  {f === 'Todo' ? 'Todo' : f === 'Sin responder' ? `Sin responder${sinResponder.length ? ` · ${sinResponder.length}` : ''}` : SOBRE_CATEGORIA[f].plural}
-                </span>
-              </button>
-            ))}
+          <div role="tabpanel" id={ids.ranking.panel} aria-labelledby={ids.ranking.tab} hidden={ver !== 'ranking'} className={c.vistaRanking}>
+            {ver === 'ranking' && (datos ? <RankingMes datos={datos} sumar={sumar} /> : <div className={c.esqueleto} data-alto="" />)}
           </div>
-        </LayoutGroup>
 
-        {!datos && (
-          <>
-            <div className={c.esqueleto} />
-            <div className={c.esqueleto} />
-          </>
-        )}
-
-        {/* La bienvenida, fija arriba para todas. Abierta mientras la
-            comunidad está vacía; recogida cuando ya hay conversación. */}
-        {datos && (filtro === 'Todo' || filtro === 'Anuncio') && (
-          <Bienvenida sorela={datos.sorela} puedeEscribir={datos.puedeEscribir} abiertaAlEmpezar={datos.publicaciones.length === 0} />
-        )}
-
-        <motion.div layout className={c.lista}>
-          <AnimatePresence initial={false} mode="popLayout">
-            {lista.map((p) => (
-              <Tarjeta
-                key={p.id}
-                p={p}
-                datos={datos!}
-                abierta={abierta === p.id}
-                alternar={() => setAbierta((x) => (x === p.id ? null : p.id))}
-                refrescar={cargar}
-                verFotos={(fotos, i) => setVisor({ fotos, i })}
-                confirmar={confirmar}
-                avisar={avisar}
-                borrar={borrar}
-                cambiar={cambiar}
-              />
-            ))}
-          </AnimatePresence>
-        </motion.div>
-
-        {datos && lista.length === 0 && (
-          datos.publicaciones.length === 0 ? (
-            <Vacio icono={ICONO_CHARLA} titulo="Todavía no hay conversación">
-              <p>{datos.puedeEscribir ? 'Preséntate y abre tú la conversación: quién eres, dónde trabajas, qué te trae aquí.' : 'Cuando alguien publique, lo verás aquí.'}</p>
-            </Vacio>
-          ) : filtro === 'Sin responder' ? (
-            <Vacio
-              icono={
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12.5l4.5 4.5L19 7.5" />
-                </svg>
-              }
-              titulo="Todo respondido"
-            >
-              <p>No queda nadie esperando tu respuesta.</p>
-            </Vacio>
-          ) : (
-            <Vacio icono={ICONO_CHARLA} titulo="Nada en esta sección todavía">
-              <p>{datos.puedeEscribir ? 'Puedes ser la primera en publicar aquí, o mirar en «Todo».' : 'Mira en «Todo» para ver lo último.'}</p>
-            </Vacio>
-          )
-        )}
-      </div>
-
-      <aside className={c.lado}>
-        {datos && <Clase key={datos.proximaClase?.cuando ?? 'nada'} clase={datos.proximaClase} modera={datos.modera} puedeEntrar={datos.puedeEscribir} guardado={cargar} />}
-
-        {datos?.modera && (
-          <section className={c.ladoTarjeta}>
-            <p className={c.ladoRotulo}>Esperando tu respuesta</p>
-            {sinResponder.length === 0 ? (
-              <p className={c.ladoTexto}>Nada sin responder. Cuando alguien publique y no le hayas contestado, te sale aquí.</p>
-            ) : (
-              <ul className={c.pendientes}>
-                {sinResponder.slice(0, 6).map((p) => (
-                  <li key={p.id}>
-                    <button type="button" onClick={() => { setFiltro('Todo'); setAbierta(p.id); document.getElementById(`pub-${p.id}`)?.scrollIntoView({ behavior: 'smooth' }); }}>
-                      <strong>{p.titulo}</strong>
-                      <span>{p.autora.nombre} · {hace(p.creado)}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+          <div role="tabpanel" id={ids.muro.panel} aria-labelledby={ids.muro.tab} hidden={ver !== 'muro'} className={c.vistaMuro}>
+            {datos?.puedeEscribir && <Escribir yo={datos.yo} modera={datos.modera} alPublicar={cargar} confirmar={confirmar} abrirSenal={abrirEscribir} />}
+            {datos && !datos.puedeEscribir && (
+              <section className={c.visita}>
+                <strong>Estás de visita.</strong> Puedes leerlo todo y dar «me gusta». Para publicar y responder hace falta la Comunidad
+                Divine: entras al terminar la formación.
+              </section>
             )}
+
+            <LayoutGroup id="filtros">
+              <div className={c.filtros} role="tablist">
+                {filtros.map((f) => (
+                  <button key={f} type="button" role="tab" aria-selected={filtro === f} onClick={() => setFiltro(f)}>
+                    {filtro === f && <motion.span layoutId="filtro-activo" className={c.filtroActivo} transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
+                    <span>
+                      {f === 'Todo' ? 'Todo' : f === 'Sin responder' ? `Sin responder${sinResponder.length ? ` · ${sinResponder.length}` : ''}` : SOBRE_CATEGORIA[f].plural}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </LayoutGroup>
+
+            {!datos && (
+              <>
+                <div className={c.esqueleto} />
+                <div className={c.esqueleto} />
+              </>
+            )}
+
+            {/* La bienvenida, fija arriba para todas. Abierta mientras la
+                comunidad está vacía; recogida cuando ya hay conversación. */}
+            {datos && (filtro === 'Todo' || filtro === 'Anuncio') && (
+              <Bienvenida sorela={datos.sorela} puedeEscribir={datos.puedeEscribir} abiertaAlEmpezar={datos.publicaciones.length === 0} />
+            )}
+
+            <motion.div layout className={c.lista}>
+              <AnimatePresence initial={false} mode="popLayout">
+                {lista.map((p) => (
+                  <Tarjeta
+                    key={p.id}
+                    p={p}
+                    datos={datos!}
+                    abierta={abierta === p.id}
+                    alternar={() => setAbierta((x) => (x === p.id ? null : p.id))}
+                    refrescar={cargar}
+                    verFotos={(fotos, i) => setVisor({ fotos, i })}
+                    confirmar={confirmar}
+                    avisar={avisar}
+                    borrar={borrar}
+                    cambiar={cambiar}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+
+            {datos && lista.length === 0 && (
+              datos.publicaciones.length === 0 ? (
+                <Vacio icono={ICONO_CHARLA} titulo="Todavía no hay conversación">
+                  <p>{datos.puedeEscribir ? 'Preséntate y abre tú la conversación: quién eres, dónde trabajas, qué te trae aquí.' : 'Cuando alguien publique, lo verás aquí.'}</p>
+                </Vacio>
+              ) : filtro === 'Sin responder' ? (
+                <Vacio
+                  icono={
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                  }
+                  titulo="Todo respondido"
+                >
+                  <p>No queda nadie esperando tu respuesta.</p>
+                </Vacio>
+              ) : (
+                <Vacio icono={ICONO_CHARLA} titulo="Nada en esta sección todavía">
+                  <p>{datos.puedeEscribir ? 'Puedes ser la primera en publicar aquí, o mirar en «Todo».' : 'Mira en «Todo» para ver lo último.'}</p>
+                </Vacio>
+              )
+            )}
+          </div>
+        </div>
+
+        <aside className={c.lado}>
+          {datos && <Clase key={datos.proximaClase?.cuando ?? 'nada'} clase={datos.proximaClase} modera={datos.modera} puedeEntrar={datos.puedeEscribir} guardado={cargar} />}
+
+          {datos?.modera && (
+            <section className={c.ladoTarjeta}>
+              <p className={c.ladoRotulo}>Esperando tu respuesta</p>
+              {sinResponder.length === 0 ? (
+                <p className={c.ladoTexto}>Nada sin responder. Cuando alguien publique y no le hayas contestado, te sale aquí.</p>
+              ) : (
+                <ul className={c.pendientes}>
+                  {sinResponder.slice(0, 6).map((p) => (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // Si estaba mirando el ranking, primero vuelve al muro (y se baja cuando ya se ve).
+                          cambiarVista('muro');
+                          setFiltro('Todo');
+                          setAbierta(p.id);
+                          window.setTimeout(() => document.getElementById(`pub-${p.id}`)?.scrollIntoView({ behavior: reducir ? 'auto' : 'smooth' }), 60);
+                        }}
+                      >
+                        <strong>{p.titulo}</strong>
+                        <span>{p.autora.nombre} · {hace(p.creado)}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+
+          {datos && ver === 'muro' && <RankingResumen datos={datos} abrir={verRanking} />}
+
+          <section className={c.ladoTarjeta}>
+            <p className={c.ladoRotulo}>Cómo funciona</p>
+            <ul className={c.normas}>
+              <li>Casos reales, sin caras ni nombres de clientas sin su permiso.</li>
+              <li>Lo que se comparte aquí es de la comunidad: no se saca fuera.</li>
+              <li>Se pregunta sin miedo y se responde con cariño.</li>
+              <li>Sorela lee todo y responde las dudas técnicas.</li>
+            </ul>
           </section>
-        )}
+        </aside>
 
-        <Ranking filas={datos?.ranking ?? []} yo={datos?.yo ?? null} />
-
-        <section className={c.ladoTarjeta}>
-          <p className={c.ladoRotulo}>Cómo funciona</p>
-          <ul className={c.normas}>
-            <li>Casos reales, sin caras ni nombres de clientas sin su permiso.</li>
-            <li>Lo que se comparte aquí es de la comunidad: no se saca fuera.</li>
-            <li>Se pregunta sin miedo y se responde con cariño.</li>
-            <li>Sorela lee todo y responde las dudas técnicas.</li>
-          </ul>
-        </section>
-      </aside>
-
-      <AnimatePresence>{visor && <Visor fotos={visor.fotos} inicio={visor.i} cerrar={() => setVisor(null)} />}</AnimatePresence>
-      {dialogo}
-      {aviso}
-    </div>
+        <AnimatePresence>{visor && <Visor fotos={visor.fotos} inicio={visor.i} cerrar={() => setVisor(null)} />}</AnimatePresence>
+        {dialogo}
+        {aviso}
+      </div>
+    </MotionConfig>
   );
 }

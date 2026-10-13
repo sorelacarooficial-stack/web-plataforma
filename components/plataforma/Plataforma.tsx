@@ -37,6 +37,12 @@ import IconoNav from './IconoNav';
 import Perfil from './Perfil';
 import Celebracion from './Celebracion';
 import Onboarding from './Onboarding';
+import Recorrido from './Recorrido';
+import ComoFunciona from './ComoFunciona';
+import { Icono } from './IconosDivine';
+import { PUNTOS } from '@/lib/puntos-tipos';
+import type { Recorrido as EstadoRecorrido } from '@/lib/recorrido-tipos';
+import rc from './recorrido.module.css';
 import FichasMapa from './FichasMapa';
 import { MarcadorPuntos } from './Puntos';
 import PanelAlumna from './PanelAlumna';
@@ -74,6 +80,7 @@ export default function Plataforma({
   sesion,
   accesos,
   bienvenidaPendiente = false,
+  recorrido = null,
   vistaInicial = null,
 }: {
   sesion: Sesion;
@@ -81,6 +88,8 @@ export default function Plataforma({
   accesos: Acceso[];
   /** Si la bienvenida (perfil y ficha del mapa) tiene que abrirse sola al entrar. */
   bienvenidaPendiente?: boolean;
+  /** Cómo dejó el recorrido de bienvenida (lo lee el servidor). null: Sorela, o no se sabe. */
+  recorrido?: EstadoRecorrido | null;
   /** La pantalla que pedía la dirección (?v=…). Se comprueba contra el menú. */
   vistaInicial?: string | null;
 }) {
@@ -99,6 +108,8 @@ export default function Plataforma({
      montar con cada pantalla y, si lo guardara ella, al cambiar de pantalla
      volvería la foto que leyó el servidor al entrar. */
   const [foto, setFoto] = useState(sesion.foto);
+  // Si ya terminó el recorrido: mientras no, «Ver el recorrido» dice lo que trae.
+  const [recorridoHecho, setRecorridoHecho] = useState(Boolean(recorrido?.hecho));
 
   // La bienvenida también sube el avatar y avisa con `divine:foto`.
   useEffect(() => {
@@ -241,6 +252,27 @@ export default function Plataforma({
       {!puedeVerComo && (
         <Onboarding inicial={bienvenidaPendiente} nombre={sesion.nombre ?? ''} esMiembro={tieneMembresia(accesos)} />
       )}
+      {/* El recorrido de bienvenida: la primera vez, después de la bienvenida
+          (nunca a la vez), señala cada sitio del menú. Se repite con «Ver el
+          recorrido». Nunca para Sorela, tampoco en «Ver como». */}
+      {!puedeVerComo && (
+        <Recorrido
+          inicial={recorrido}
+          esperarBienvenida={bienvenidaPendiente}
+          grupos={grupos.map((g) => g.id)}
+          miembro={tieneMembresia(accesos)}
+          bloqueadas={accesos.some((a) => a.tipo === 'curso' && a.completo === false)}
+          conAcceso={accesos.length > 0}
+          nombre={usuario}
+          alAbrir={() => setMenuAbierto(false)}
+          alTerminar={() => setRecorridoHecho(true)}
+        />
+      )}
+      {/* «Cómo funciona»: puntos, niveles, trofeos y (con la membresía) el
+          ranking, explicados en pasos. Se abre desde el inicio y desde el
+          marcador de puntos (evento `divine:como-funciona`). También en «Ver
+          como», con la alumna de muestra: solo explica, nada de Sorela. */}
+      <ComoFunciona miembro={tieneMembresia(accesosVistos)} />
       {/* Los avisos flotantes, solo para Sorela. Pulsar uno la devuelve a su
           vista de administradora aunque esté mirando «Ver como». */}
       {puedeVerComo && (
@@ -259,7 +291,7 @@ export default function Plataforma({
         </span>
         {/* Sus puntos, siempre a la vista: en el móvil van aquí, junto al menú. */}
         {!puedeVerComo && (
-          <span className={css.marcadorMovil}>
+          <span className={css.marcadorMovil} data-recorrido="puntos">
             <MarcadorPuntos compacto puedePublicar={tieneMembresia(accesos)} />
           </span>
         )}
@@ -317,6 +349,7 @@ export default function Plataforma({
                   onClick={() => irGrupo(g.id)}
                   aria-current={activo ? 'page' : undefined}
                   className={`${css.navBoton} ${activo ? css.navActivo : ''}`}
+                  data-recorrido={`nav-${g.id}`}
                 >
                   {/* La píldora del grupo activo se desliza de uno a otro. */}
                   {activo && (
@@ -360,9 +393,25 @@ export default function Plataforma({
             </p>
             {/* En escritorio, sus puntos bajo su nombre (en el móvil van arriba). */}
             {!puedeVerComo && (
-              <div className={css.marcadorLateral}>
+              <div className={css.marcadorLateral} data-recorrido="puntos">
                 <MarcadorPuntos puedePublicar={tieneMembresia(accesos)} />
               </div>
+            )}
+            {/* El recorrido de bienvenida, otra vez, cuando quiera. Mientras no
+                lo ha terminado, dice lo que trae. */}
+            {!puedeVerComo && (
+              <button
+                type="button"
+                className={rc.verRecorrido}
+                onClick={() => {
+                  setMenuAbierto(false);
+                  window.dispatchEvent(new Event('divine:recorrido'));
+                }}
+              >
+                <Icono nombre="brujula" size={18} />
+                Ver el recorrido
+                {!recorridoHecho && <span className={rc.verRecorridoPremio}>+{PUNTOS.recorrido + PUNTOS.logro} pts</span>}
+              </button>
             )}
             <button type="button" className={css.salir} onClick={salir} disabled={saliendo}>
               {saliendo ? 'Saliendo…' : 'Salir'}
@@ -394,7 +443,10 @@ export default function Plataforma({
               )}
               {tituloDe(actual, rol) && <h1 className={css.titulo}>{tituloDe(actual, rol)}</h1>}
             </div>
-            <FotoPerfil foto={foto} iniciales={iniciales} nombre={usuario} verPerfil={() => ir('perfil')} alCambiar={setFoto} />
+            {/* La envoltura solo lleva la marca del recorrido (su foto lleva al perfil). */}
+            <div data-recorrido="avatar">
+              <FotoPerfil foto={foto} iniciales={iniciales} nombre={usuario} verPerfil={() => ir('perfil')} alCambiar={setFoto} />
+            </div>
           </header>
 
           {/* Las pestañas del grupo: lo que antes eran apartados sueltos del menú. */}
@@ -466,7 +518,7 @@ export default function Plataforma({
           {grupos.map((g) => {
             const activo = grupoActual?.id === g.id;
             return (
-              <button key={g.id} type="button" onClick={() => irGrupo(g.id)} aria-current={activo ? 'page' : undefined}>
+              <button key={g.id} type="button" onClick={() => irGrupo(g.id)} aria-current={activo ? 'page' : undefined} data-recorrido={`nav-${g.id}`}>
                 {activo && <motion.span layoutId="barra-activa" className={css.barraActiva} transition={{ type: 'spring', stiffness: 480, damping: 36 }} />}
                 <IconoNav icono={g.icono} size={22} />
                 <span>{g.label}</span>

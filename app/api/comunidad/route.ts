@@ -17,8 +17,10 @@ import {
 /**
  * La comunidad de terapeutas.
  *
- *   GET                       → publicaciones, ranking del mes (con su nivel),
- *                               tu puesto y tus puntos del mes, próxima clase
+ *   GET                       → publicaciones, ranking del mes (las diez
+ *                               primeras con su nivel y su desglose), tu
+ *                               puesto y tus puntos del mes, el podio del mes
+ *                               pasado, próxima clase
  *   GET ?id=…                 → una publicación con sus respuestas
  *   GET ?id=…&gustan=1[&rid=] → quién ha dado «me gusta» a una publicación (o
  *                               a una de sus respuestas), con foto y nivel
@@ -102,25 +104,35 @@ async function firmar(rutas: string[]): Promise<string[]> {
   ).then((l) => l.filter(Boolean));
 }
 
-/** Nombre y foto de cada autora, leídos de su ficha: así siempre están al día. */
-async function autorasDe(uids: string[]): Promise<Map<string, Autora>> {
-  const unicos = [...new Set(uids)].filter((u) => ID.test(u));
-  const mapa = new Map<string, Autora>();
+/**
+ * Las fichas de estas personas, de UNA lectura (las que no existen, no
+ * están). El muro la comparte con el ranking: autoras, caras de los «me
+ * gusta», las diez del mes y el podio del mes pasado salen del mismo getAll,
+ * y quien está en varias listas se lee una sola vez.
+ */
+async function leerFichas(uids: string[]): Promise<Map<string, FirebaseFirestore.DocumentData>> {
+  const db = baseDeDatos();
+  const unicos = [...new Set(uids)].filter((u) => typeof u === 'string' && ID.test(u));
+  const mapa = new Map<string, FirebaseFirestore.DocumentData>();
   if (!unicos.length) return mapa;
-  const docs = await baseDeDatos().getAll(...unicos.map((u) => baseDeDatos().collection(COLECCIONES.usuarios).doc(u)));
-  for (const d of docs) {
-    const v = d.data() ?? {};
-    mapa.set(d.id, {
-      uid: d.id,
-      nombre: nombreDe(v),
-      foto: fotoDe(v),
-      esSorela: v.rol === 'sorela',
-    });
-  }
+  const docs = await db.getAll(...unicos.map((u) => db.collection(COLECCIONES.usuarios).doc(u)));
+  for (const d of docs) if (d.exists) mapa.set(d.id, d.data() ?? {});
   return mapa;
 }
 
 const anonima = (uid: string): Autora => ({ uid, nombre: 'Terapeuta', foto: null, esSorela: false });
+
+/** Nombre y foto de cada una, sacados de las fichas ya leídas. Sin ficha, «Terapeuta». */
+function autorasDesde(fichas: Map<string, FirebaseFirestore.DocumentData>): Map<string, Autora> {
+  const mapa = new Map<string, Autora>();
+  for (const [uid, v] of fichas) mapa.set(uid, { uid, nombre: nombreDe(v), foto: fotoDe(v), esSorela: v.rol === 'sorela' });
+  return mapa;
+}
+
+/** Nombre y foto de cada autora, leídos de su ficha: así siempre están al día. */
+async function autorasDe(uids: string[]): Promise<Map<string, Autora>> {
+  return autorasDesde(await leerFichas(uids));
+}
 
 /** Cuántas caras se adelantan bajo cada publicación (las mini fotos apiladas). */
 const AVANCE_GUSTAN = 3;
@@ -376,39 +388,83 @@ function nivelBreve(u: FirebaseFirestore.DocumentData, delMes = 0): { n: number;
   return { n: e.n, nombre: e.nombre };
 }
 
-async function rankingDelMes(
-  actividad: FirebaseFirestore.DocumentSnapshot,
-  yo: string,
-  soySorela: boolean
-): Promise<{ ranking: FilaRanking[]; mio: { puesto: number | null; puntos: number; por: PorFuenteMes } | null }> {
-  const db = baseDeDatos();
+/** Cuántas salen en el ranking del mes, y cuántas en el podio del mes pasado. */
+const TOP_MES = 10;
+const TOP_ANTERIOR = 3;
+/* Se leen unas pocas fichas de más: alguna puede tener ya la cuenta borrada
+   (o ser Sorela), y esas no salen. */
+const MARGEN_FICHAS = 3;
+
+type EnOrden = { uid: string; nombre: string; puntos: number; por: PorFuenteMes };
+
+/** El mes anterior a `mes` (`2026-01` → `2025-12`), en UTC como lib/actividad. */
+function mesAnterior(mes: string): string {
+  const [a, m] = mes.split('-').map(Number);
+  return mesDe(new Date(Date.UTC(a, m - 2, 1)));
+}
+
+/**
+ * Las que tienen puntos en un documento del ranking, de más a menos. Sorela
+ * no compite: fuera antes de contar puestos, aunque quedara algo suyo de antes.
+ */
+function ordenDelMes(actividad: FirebaseFirestore.DocumentSnapshot, sorela: Set<string>): EnOrden[] {
   const mapa = (actividad.data() ?? {}) as Record<string, { nombre?: unknown; puntos?: unknown; por?: unknown }>;
-  // Sorela no compite: fuera antes de contar puestos, aunque quedara algo suyo de antes.
-  const sorela = await cuentasDeSorela();
-  const orden = Object.entries(mapa)
+  return Object.entries(mapa)
     .map(([uid, v]) => ({ uid, nombre: String(v?.nombre ?? ''), puntos: Math.round(Number(v?.puntos) || 0), por: porDe(v?.por) }))
     .filter((x) => x.puntos > 0 && ID.test(x.uid) && !sorela.has(x.uid))
     .sort((a, b) => b.puntos - a.puntos);
-  /* Se miran unas pocas más de cinco: alguna puede tener ya la cuenta borrada
-     (o ser Sorela), y esas no salen. De las que salen, nombre y nivel al día. */
-  const candidatas = orden.slice(0, 8);
-  const fichas = candidatas.length ? await db.getAll(...candidatas.map((x) => db.collection(COLECCIONES.usuarios).doc(x.uid))) : [];
-  const fuera = new Set<string>();
-  const datos = new Map<string, FirebaseFirestore.DocumentData>();
-  for (const d of fichas) {
-    if (!d.exists || d.get('rol') === 'sorela') fuera.add(d.id);
-    else datos.set(d.id, d.data() ?? {});
-  }
+}
+
+/** Las que se miran de un orden: las `n` primeras y un margen por si alguna ya no está. */
+const candidatasDe = (orden: EnOrden[], n: number) => orden.slice(0, n + MARGEN_FICHAS).map((x) => x.uid);
+
+/**
+ * Las `n` primeras de un orden, con su nombre, foto y nivel al día. Las fichas
+ * ya vienen leídas (`leerFichas`); entre las candidatas, la que no tiene ficha
+ * (cuenta borrada) o es Sorela queda fuera, y deja de contar para los puestos.
+ */
+function filasDe(orden: EnOrden[], n: number, fichas: Map<string, FirebaseFirestore.DocumentData>): { filas: FilaRanking[]; limpia: EnOrden[] } {
+  const fuera = new Set(candidatasDe(orden, n).filter((uid) => !fichas.has(uid) || fichas.get(uid)?.rol === 'sorela'));
   const limpia = orden.filter((x) => !fuera.has(x.uid));
-  const ranking = limpia.slice(0, 5).map((x) => {
-    const u = datos.get(x.uid);
+  const filas = limpia.slice(0, n).map((x) => {
+    const u = fichas.get(x.uid);
     return { uid: x.uid, nombre: u ? nombreDe(u) : x.nombre || 'Terapeuta', foto: u ? fotoDe(u) : null, puntos: x.puntos, nivel: u ? nivelBreve(u, x.puntos) : null, por: x.por };
   });
-  if (soySorela) return { ranking, mio: null };
+  return { filas, limpia };
+}
+
+type Mio = {
+  puesto: number | null;
+  puntos: number;
+  por: PorFuenteMes;
+  /** La que va justo delante (puesto y puntos), para decir cuánto falta. Null si vas la primera o aún no puntúas. */
+  arriba: { puesto: number; puntos: number } | null;
+};
+
+/**
+ * El ranking del mes: las diez primeras con su desglose, cuántas puntúan y
+ * cómo vas tú (puesto, puntos, desglose y quién va delante, aunque estés
+ * fuera de las diez). Sorela no tiene «tú»: no compite.
+ */
+function rankingDelMes(
+  orden: EnOrden[],
+  fichas: Map<string, FirebaseFirestore.DocumentData>,
+  yo: string,
+  soySorela: boolean
+): { ranking: FilaRanking[]; participantes: number; mio: Mio | null } {
+  const { filas, limpia } = filasDe(orden, TOP_MES, fichas);
+  if (soySorela) return { ranking: filas, participantes: limpia.length, mio: null };
   const i = limpia.findIndex((x) => x.uid === yo);
+  const propia = orden.find((x) => x.uid === yo);
   return {
-    ranking,
-    mio: { puesto: i >= 0 ? i + 1 : null, puntos: Math.max(0, Math.round(Number(mapa[yo]?.puntos) || 0)), por: porDe(mapa[yo]?.por) },
+    ranking: filas,
+    participantes: limpia.length,
+    mio: {
+      puesto: i >= 0 ? i + 1 : null,
+      puntos: Math.max(0, propia?.puntos ?? 0),
+      por: propia?.por ?? {},
+      arriba: i > 0 ? { puesto: i, puntos: limpia[i - 1].puntos } : null,
+    },
   };
 }
 
@@ -466,11 +522,14 @@ export async function GET(peticion: Request) {
     return NextResponse.json({ ok: true, publicacion: await aPublicacion(d, autoras, yo), respuestas, personas: personasDe(avances.flat(), autoras) });
   }
 
-  const [lista, actividad, ajustes, admins] = await Promise.all([
+  const mes = mesDe();
+  const [lista, actividad, anterior, ajustes, admins, cuentasSorela] = await Promise.all([
     db.collection(POSTS).orderBy('ultimaActividad', 'desc').limit(60).get(),
-    db.collection(COLECCION_ACTIVIDAD).doc(mesDe()).get(),
+    db.collection(COLECCION_ACTIVIDAD).doc(mes).get(),
+    db.collection(COLECCION_ACTIVIDAD).doc(mesAnterior(mes)).get(),
     db.collection(COLECCIONES.ajustes).doc('comunidad').get(),
     db.collection(COLECCIONES.usuarios).where('rol', '==', 'sorela').limit(5).get(),
+    cuentasDeSorela(),
   ]);
   /* Quién firma la bienvenida: la cuenta de Sorela, con su foto si la tiene. */
   const ficha = admins.docs.map((d) => d.data()).sort((a, b) => Number(Boolean(b.foto)) - Number(Boolean(a.foto)))[0];
@@ -478,12 +537,20 @@ export async function GET(peticion: Request) {
     nombre: String(ficha?.nombre || 'Sorela Caro'),
     foto: fotoDe(ficha),
   };
-  // Las autoras y las caras de los «me gusta», en la misma lectura.
+  /* Las autoras, las caras de los «me gusta», las diez del mes y las tres del
+     mes pasado: todas sus fichas en UNA lectura, sin consultas por fila. */
   const avances = lista.docs.flatMap((d) => avanceGustan(d.data(), yo));
-  const [autoras, { ranking, mio }] = await Promise.all([
-    autorasDe([...lista.docs.map((d) => d.data().autor), ...avances]),
-    rankingDelMes(actividad, yo, p.modera),
+  const orden = ordenDelMes(actividad, cuentasSorela);
+  const ordenAnterior = ordenDelMes(anterior, cuentasSorela);
+  const fichas = await leerFichas([
+    ...lista.docs.map((d) => d.data().autor),
+    ...avances,
+    ...candidatasDe(orden, TOP_MES),
+    ...candidatasDe(ordenAnterior, TOP_ANTERIOR),
   ]);
+  const autoras = autorasDesde(fichas);
+  const { ranking, participantes, mio } = rankingDelMes(orden, fichas, yo, p.modera);
+  const podio = filasDe(ordenAnterior, TOP_ANTERIOR, fichas).filas;
   const publicaciones = await Promise.all(lista.docs.map((d) => aPublicacion(d, autoras, yo)));
   // Las fijadas, arriba; el resto por última actividad.
   publicaciones.sort((a, b) => Number(b.fijada) - Number(a.fijada));
@@ -499,7 +566,9 @@ export async function GET(peticion: Request) {
     puedeEscribir: p.escribir,
     modera: p.modera,
     /* Quién eres (para escribir) y cómo vas este mes. Sorela no puntúa: a
-       ella le llega `puesto: null, puntos: 0` y `puntua: false`. */
+       ella le llega `puesto: null, puntos: 0` y `puntua: false`. `arriba`:
+       la que va justo delante, para decirte cuánto te falta aunque estés
+       fuera de las diez. */
     yo: {
       uid: yo,
       nombre: p.sesion.nombre ?? '',
@@ -508,10 +577,15 @@ export async function GET(peticion: Request) {
       puesto: mio?.puesto ?? null,
       puntos: mio?.puntos ?? 0,
       por: mio?.por ?? {},
+      arriba: mio?.arriba ?? null,
     },
     publicaciones,
     personas: personasDe(avances, autoras),
+    /* Las diez del mes con su desglose, el mes (UTC, como lib/actividad) y
+       cuántas puntúan, y el podio del mes pasado (vacío si nadie puntuó). */
     ranking,
+    rankingMes: { mes, participantes },
+    podioAnterior: { mes: mesAnterior(mes), filas: podio },
     proximaClase,
     sorela,
   });

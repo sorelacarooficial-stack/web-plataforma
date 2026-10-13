@@ -12,6 +12,7 @@ import {
   type Rol,
 } from './roles';
 import { revisarAccesos, type Acceso } from './accesos';
+import { leerRecorrido, type Recorrido } from './recorrido-tipos';
 
 /** Se lanza cuando alguien con cuenta válida intenta entrar y no le toca. */
 export class PlataformaCerrada extends Error {
@@ -82,17 +83,20 @@ export async function accesosDe(uid: string): Promise<Acceso[]> {
  *   · onboarding: si ya terminó o saltó la bienvenida (no se vuelve a abrir sola).
  *   · actividad: su racha tal como está, para que `registrarActividad` no
  *     tenga que leer la ficha otra vez.
+ *   · recorrido: cómo va su recorrido de bienvenida (lib/recorrido-tipos.ts),
+ *     para que se abra solo —o no— sin esperar a una petición del navegador.
  *
  * Si Firestore no contesta, se entra igual con lo mínimo: sin accesos y sin
- * abrir la bienvenida, que es lo prudente cuando no se sabe.
+ * abrir la bienvenida ni el recorrido, que es lo prudente cuando no se sabe.
  */
 export async function entradaDe(uid: string): Promise<{
   accesos: Acceso[];
   foto: string | null;
   onboarding: { completado: boolean; saltado: boolean } | null;
   actividad: Record<string, unknown> | null;
+  recorrido: Recorrido | null;
 }> {
-  if (!hayFirebase()) return { accesos: [], foto: null, onboarding: null, actividad: null };
+  if (!hayFirebase()) return { accesos: [], foto: null, onboarding: null, actividad: null, recorrido: null };
   try {
     const v = (await baseDeDatos().collection(COLECCIONES.usuarios).doc(uid).get()).data() ?? {};
     const foto = v.foto;
@@ -102,10 +106,11 @@ export async function entradaDe(uid: string): Promise<{
       foto: typeof foto === 'string' && foto.startsWith('data:image/') ? foto : null,
       onboarding: { completado: Boolean(ob.completado), saltado: Boolean(ob.saltado) },
       actividad: v.actividad && typeof v.actividad === 'object' ? (v.actividad as Record<string, unknown>) : {},
+      recorrido: leerRecorrido(v.recorrido),
     };
   } catch (e) {
     console.error('[sesion] No se ha podido leer la ficha al entrar:', e);
-    return { accesos: [], foto: null, onboarding: null, actividad: null };
+    return { accesos: [], foto: null, onboarding: null, actividad: null, recorrido: null };
   }
 }
 
