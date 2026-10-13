@@ -843,3 +843,59 @@
     background-position: -200% 0;
   }
 }
+
+/* Lo que se abre después de la presencial (solo con el abono). */
+.cerrado {
+  margin-top: 14px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: #1f1a16;
+  color: #f4ece2;
+}
+
+.cerradoRotulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e9c9a8;
+}
+
+.cerradoLista {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cerradoLista li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: rgba(244, 236, 226, 0.55);
+}
+
+.cerradoLista li > svg {
+  flex: none;
+  margin-top: 3px;
+}
+
+.cerradoLista li > span {
+  display: grid;
+  gap: 2px;
+}
+
+.cerradoLista strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f4ece2;
+}
+
+.cerradoLista li > span > span {
+  font-size: 13.5px;
+}

@@ -219,6 +219,18 @@ export default function Cuentas() {
     await guardarAccesos(c, dar ? [...otros, { tipo: 'curso' as const, nombre: CURSO_DIVINE }] : otros);
   }
 
+  /** Tenía solo el precurso (abono) y ha pagado el resto: se le abre todo. */
+  async function abrirCompleto(c: Cuenta) {
+    await guardarAccesos(
+      c,
+      c.accesos.map((a) => {
+        if (a.tipo !== 'curso' || clave(a.nombre) !== clave(CURSO_DIVINE)) return a;
+        const { completo: _c, ...resto } = a;
+        return resto;
+      })
+    );
+  }
+
   async function guardarAccesos(c: Cuenta, nuevos: Acceso[]) {
     /* Se guarda SOLO lo de esta persona, no la lista entera.
        Guardando la lista entera y restaurándola al fallar, un error aquí
@@ -535,6 +547,7 @@ export default function Cuentas() {
                       {cursosDe(c.accesos).map((a) => (
                         <span key={a.nombre} className={css.selloCurso}>
                           Curso · {a.nombre}
+                          {a.completo === false ? ' · solo precurso' : ''}
                         </span>
                       ))}
                     </span>
@@ -563,8 +576,15 @@ export default function Cuentas() {
                     </button>
                   )}
                   {!c.protegida && (() => {
-                    const conFormacion = cursosDe(c.accesos).some((a) => clave(a.nombre) === clave(CURSO_DIVINE));
+                    const formacion = cursosDe(c.accesos).find((a) => clave(a.nombre) === clave(CURSO_DIVINE));
+                    const conFormacion = Boolean(formacion);
                     return (
+                      <>
+                      {formacion?.completo === false && (
+                        <button type="button" className={css.btn} onClick={() => abrirCompleto(c)}>
+                          Abrir curso completo
+                        </button>
+                      )}
                       /* Sin el dorado de la membresía: dorado es la Comunidad.
                          Con el mismo botón dorado, «Dar formación» y «Dar
                          comunidad» parecían la misma cosa. */
@@ -575,6 +595,7 @@ export default function Cuentas() {
                       >
                         {conFormacion ? 'Quitar curso' : 'Dar acceso al curso'}
                       </button>
+                      </>
                     );
                   })()}
                   {/* El rol se enseña, no se elige. Ver quitarAdmin(). */}

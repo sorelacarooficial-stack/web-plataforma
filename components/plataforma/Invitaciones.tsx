@@ -1,18 +1,21 @@
 'use client';
 
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CURSO_DIVINE } from '@/lib/accesos';
 import css from './plataforma.module.css';
 import i from './invitaciones.module.css';
 
 /**
- * Los enlaces de invitación, en Cuentas.
+ * Los enlaces de invitación, en Cuentas: el ÚNICO sitio donde se crean.
  *
- * Sorela cobra, elige qué le da —la formación, la Comunidad Divine o las
- * dos— y le manda el enlace por WhatsApp. Quien lo abre se crea la cuenta y
- * entra ya con su acceso. Cada enlace sirve una sola vez y caduca a los 30
- * días. Ver lib/invitaciones.ts.
+ * Sorela cobra, elige qué le da —el curso, la membresía o las dos— y le manda
+ * el enlace por WhatsApp. Quien lo abre se crea la cuenta y entra ya con su
+ * acceso. Cada enlace sirve una sola vez y caduca a los 30 días.
+ *
+ * El del curso lleva además sus fechas (la convocatoria: le salen en la
+ * agenda), a quién de las inscritas va y el nivel: solo el precurso si ha
+ * dejado el abono, o todo si ha pagado. Ver lib/invitaciones.ts.
  */
 
 type QueDa = 'curso' | 'membresia';
@@ -26,6 +29,25 @@ type Invitacion = {
   caduca: string;
   estado: 'pendiente' | 'usada' | 'caducada' | 'anulada';
   usadaPor: { correo: string; nombre: string | null; en: string | null } | null;
+  convocatoria: string | null;
+  completo: boolean;
+};
+
+type Nivel = 'precurso' | 'completo';
+type InscritaOpcion = { id: string; nombre: string; correo: string; estado: 'pagado' | 'senal' | 'pendiente'; acceso: string };
+type ConvOpcion = { id: string; ciudad: string; inicio: string; fin: string; inscritas: InscritaOpcion[] };
+
+const NIVELES: { id: Nivel; titulo: string; texto: string }[] = [
+  { id: 'precurso', titulo: 'Solo el precurso', texto: 'Ha dejado el abono. Ve el precurso y sus fechas; las clases en vídeo, no.' },
+  { id: 'completo', titulo: 'Curso completo', texto: 'Ha pagado todo. Ve el precurso, las clases y los dossieres.' },
+];
+
+const PAGO: Record<InscritaOpcion['estado'], string> = { pagado: 'Pagado', senal: 'Abono', pendiente: 'Sin pagar' };
+
+const dias = (c: ConvOpcion) => {
+  const f = (iso: string, o: Intl.DateTimeFormatOptions) => new Date(`${iso}T12:00:00Z`).toLocaleDateString('es-ES', o);
+  const fin = f(c.fin, { day: 'numeric', month: 'long' });
+  return c.inicio === c.fin ? fin : `${f(c.inicio, { day: 'numeric' })}–${fin}`;
 };
 
 /* Curso y membresía son dos compras distintas y se nombran siempre igual en
@@ -34,24 +56,36 @@ type Invitacion = {
    membresía decía «comunidad y material» y la etiqueta corta era
    «Formación»/«Comunidad», y no quedaba claro cuál abría el aula. */
 const OPCIONES: { id: QueDa; titulo: string; texto: string }[] = [
-  { id: 'curso', titulo: `Acceso al curso · ${CURSO_DIVINE}`, texto: 'Ha pagado el curso: ve sus clases y su material en el aula. No incluye la membresía.' },
+  { id: 'curso', titulo: `Acceso al curso · ${CURSO_DIVINE}`, texto: 'Ha dejado el abono o ha pagado el curso. Abajo eliges sus fechas y qué parte ve. No incluye la membresía.' },
   { id: 'membresia', titulo: 'Membresía · Comunidad Divine', texto: 'La comunidad, que se paga cada mes. No incluye el curso.' },
 ];
 
 const ETIQUETA: Record<QueDa, string> = { curso: 'Acceso al curso', membresia: 'Membresía Comunidad' };
+
+/** Lo que da, con el nivel del curso: «Curso · solo precurso + Membresía». */
+const queDa = (inv: Invitacion) =>
+  inv.que.map((q) => (q === 'curso' ? (inv.completo ? 'Curso completo' : 'Curso · solo precurso') : ETIQUETA[q])).join(' + ');
 
 const fecha = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
 
 function mensajeWhatsapp(inv: Invitacion) {
   const pila = inv.nombre?.trim().split(/\s+/)[0];
-  const que = inv.que.map((q) => (q === 'curso' ? `el curso ${CURSO_DIVINE}` : 'la membresía de la Comunidad Divine')).join(' y ');
+  const que = inv.que
+    .map((q) => (q === 'curso' ? (inv.completo ? `el curso ${CURSO_DIVINE}` : `el precurso de la ${CURSO_DIVINE}`) : 'la membresía de la Comunidad Divine'))
+    .join(' y ');
   return `${pila ? `Hola ${pila}! ` : 'Hola! '}Aquí tienes tu acceso a ${que}. Entra en este enlace, crea tu contraseña y ya estás dentro: ${inv.enlace}`;
 }
 
 export default function Invitaciones() {
   const [lista, setLista] = useState<Invitacion[] | null>(null);
+  const [convs, setConvs] = useState<ConvOpcion[]>([]);
   const [que, setQue] = useState<QueDa[]>(['curso']);
+  /* '' = sin fecha. Se pone sola la primera convocatoria que haya. */
+  const [conv, setConv] = useState<string>('');
+  /* '' = otra persona (se escribe a mano). */
+  const [inscrita, setInscrita] = useState<string>('');
+  const [nivel, setNivel] = useState<Nivel>('precurso');
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [errores, setErrores] = useState<Record<string, string>>({});
@@ -65,8 +99,12 @@ export default function Invitaciones() {
   const cargar = useCallback(async () => {
     try {
       const j = await (await fetch('/api/invitaciones')).json();
-      if (j.ok) setLista(j.invitaciones);
-      else setFallo('No he podido cargar los enlaces.');
+      if (j.ok) {
+        setLista(j.invitaciones);
+        const cs: ConvOpcion[] = j.convocatorias ?? [];
+        setConvs(cs);
+        setConv((c) => (c && cs.some((x) => x.id === c) ? c : cs[0]?.id ?? ''));
+      } else setFallo('No he podido cargar los enlaces.');
     } catch {
       setFallo('No hay conexión con el servidor.');
     }
@@ -76,8 +114,43 @@ export default function Invitaciones() {
     cargar();
   }, [cargar]);
 
+  /* Desde Formaciones, «Crear acceso al curso» llega aquí con la convocatoria
+     y la inscrita en la dirección: se dejan elegidas, una sola vez. */
+  const seccion = useRef<HTMLElement>(null);
+  const desdeFormaciones = useRef(false);
+  useEffect(() => {
+    if (desdeFormaciones.current || convs.length === 0) return;
+    const q = new URLSearchParams(window.location.search);
+    const c = convs.find((x) => x.id === q.get('conv'));
+    if (!c) return;
+    desdeFormaciones.current = true;
+    const x = c.inscritas.find((y) => y.id === q.get('inscrita'));
+    setQue((a) => (a.includes('curso') ? a : [...a, 'curso']));
+    setConv(c.id);
+    setInscrita(x?.id ?? '');
+    setNombre(x?.nombre ?? '');
+    setCorreo(x?.correo ?? '');
+    setNivel(x?.estado === 'pagado' ? 'completo' : 'precurso');
+    window.history.replaceState(null, '', `${window.location.pathname}?v=cuentas`);
+    seccion.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [convs]);
+
   const alternar = (q: QueDa) =>
     setQue((a) => (a.includes(q) ? a.filter((x) => x !== q) : [...a, q]));
+
+  const conCurso = que.includes('curso');
+  const convActual = convs.find((c) => c.id === conv) ?? null;
+  const inscritaActual = convActual?.inscritas.find((x) => x.id === inscrita) ?? null;
+
+  /* Al elegir a una inscrita: su nombre y su correo, y el nivel que toca por
+     lo que ha pagado (solo «Pagado» abre todo). */
+  const elegirInscrita = (id: string) => {
+    setInscrita(id);
+    const x = convActual?.inscritas.find((y) => y.id === id);
+    setNombre(x?.nombre ?? '');
+    setCorreo(x?.correo ?? '');
+    setNivel(x?.estado === 'pagado' ? 'completo' : 'precurso');
+  };
 
   async function crear(e: FormEvent) {
     e.preventDefault();
@@ -88,7 +161,12 @@ export default function Invitaciones() {
       const r = await fetch('/api/invitaciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ que, nombre, correo }),
+        body: JSON.stringify({
+          que,
+          nombre,
+          correo,
+          ...(conCurso ? { convocatoria: conv || null, inscrita: conv ? inscrita || null : null, nivel } : {}),
+        }),
       });
       const j = await r.json();
       if (!j.ok) {
@@ -99,6 +177,10 @@ export default function Invitaciones() {
         setLista((l) => [j.invitacion, ...(l ?? [])]);
         setNombre('');
         setCorreo('');
+        setInscrita('');
+        setNivel('precurso');
+        // La fila de la inscrita ya dice «Enlace sin usar».
+        cargar();
       }
     } catch {
       setErrores({ general: 'No hay conexión con el servidor.' });
@@ -148,14 +230,14 @@ export default function Invitaciones() {
   );
 
   return (
-    <section className={i.seccion}>
+    <section className={i.seccion} ref={seccion}>
       <div className={i.cabecera}>
         <div>
           <p className={css.rotuloSeccion}>Enlaces de invitación</p>
           <p className={css.apunte} style={{ margin: '6px 0 0', maxWidth: 560 }}>
-            Para dar acceso a quien ha pagado: crea su enlace y mándaselo. Se crea la cuenta con su
-            contraseña y entra ya con lo que le das. Cada enlace sirve para una sola persona y caduca
-            a los 30 días.
+            El único sitio para dar acceso, al curso o a la membresía: crea su enlace y mándaselo. Se
+            crea la cuenta con su contraseña (o entra con la suya, si ya tiene) y le aparece lo que le
+            das. Cada enlace sirve para una sola persona y caduca a los 30 días.
           </p>
         </div>
       </div>
@@ -187,6 +269,76 @@ export default function Invitaciones() {
           })}
         </div>
         {errores.que && <p className={css.errorCampo}>{errores.que}</p>}
+
+        {conCurso && (
+          <div className={i.curso}>
+            <div className={i.cursoFila}>
+              <label className={css.etiquetaCampo}>
+                Fechas del curso
+                <select
+                  className={css.campoCaja}
+                  value={conv}
+                  onChange={(e) => {
+                    setConv(e.target.value);
+                    setInscrita('');
+                  }}
+                >
+                  {convs.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.ciudad} · {dias(c)}
+                    </option>
+                  ))}
+                  <option value="">Sin fechas</option>
+                </select>
+                {errores.convocatoria && <span className={css.errorCampo}>{errores.convocatoria}</span>}
+              </label>
+              {convActual && (
+                <label className={css.etiquetaCampo}>
+                  Persona apuntada
+                  <select className={css.campoCaja} value={inscrita} onChange={(e) => elegirInscrita(e.target.value)}>
+                    <option value="">Otra persona (escribo sus datos)</option>
+                    {convActual.inscritas.map((x) => (
+                      <option key={x.id} value={x.id}>
+                        {x.nombre} · {PAGO[x.estado]}
+                        {x.acceso === 'ya-tiene-cuenta' ? ' · ya tiene cuenta' : x.acceso === 'enlace-sin-usar' ? ' · enlace sin usar' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {errores.inscrita && <span className={css.errorCampo}>{errores.inscrita}</span>}
+                </label>
+              )}
+            </div>
+            <p className={i.cursoNota}>
+              {convActual
+                ? 'Sus días de la presencial le salen solos en la agenda.'
+                : 'Sin fechas no le sale nada en la agenda. Elige la convocatoria si ya sabe cuándo viene.'}
+              {inscritaActual?.acceso === 'enlace-sin-usar' && ' Ya tenía un enlace sin usar: al crear este, el anterior deja de valer.'}
+            </p>
+            <div className={i.niveles} role="radiogroup" aria-label="Qué parte del curso">
+              {NIVELES.map((n) => (
+                <button
+                  key={n.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={nivel === n.id}
+                  className={i.nivel}
+                  data-on={nivel === n.id ? '' : undefined}
+                  onClick={() => setNivel(n.id)}
+                >
+                  <strong>{n.titulo}</strong>
+                  <span>{n.texto}</span>
+                </button>
+              ))}
+            </div>
+            {nivel === 'precurso' && (
+              <p className={i.cursoNota}>
+                {convActual
+                  ? 'Cuando la marques «Pagado» en Formaciones, se le abre el curso completo sola y le llega un correo.'
+                  : 'Para abrirle luego el curso completo, márcala «Pagado» en Formaciones (si está apuntada) o cámbialo en su cuenta.'}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className={i.campos}>
           <label className={css.etiquetaCampo}>
@@ -221,7 +373,7 @@ export default function Invitaciones() {
             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
           >
             <p className={i.nuevaRotulo}>
-              Enlace listo{nueva.nombre ? ` para ${nueva.nombre}` : ''} · {nueva.que.map((q) => ETIQUETA[q]).join(' + ')}
+              Enlace listo{nueva.nombre ? ` para ${nueva.nombre}` : ''} · {queDa(nueva)}
             </p>
             {/* Frases enteras, en minúscula y en los verdes y tejas claros que
                 se leen sobre el negro: los de la plataforma, pensados para el
@@ -256,9 +408,16 @@ export default function Invitaciones() {
             {visibles.map((inv) => (
               <li key={inv.codigo} className={i.fila} data-estado={inv.estado}>
                 <span className={i.filaQuien}>
-                  <strong>{inv.nombre || inv.correo || inv.que.map((q) => ETIQUETA[q]).join(' + ')}</strong>
+                  <strong>{inv.nombre || inv.correo || queDa(inv)}</strong>
                   <span>
-                    {inv.que.map((q) => ETIQUETA[q]).join(' + ')} · caduca el {fecha(inv.caduca)}
+                    {queDa(inv)}
+                    {inv.convocatoria && convs.find((c) => c.id === inv.convocatoria)
+                      ? ` · ${(() => {
+                          const c = convs.find((x) => x.id === inv.convocatoria)!;
+                          return `${c.ciudad} ${dias(c)}`;
+                        })()}`
+                      : ''}{' '}
+                    · caduca el {fecha(inv.caduca)}
                   </span>
                 </span>
                 <span className={i.filaAcciones}>

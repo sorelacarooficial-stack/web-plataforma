@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { exigirAdmin } from '@/lib/permisos';
-import { ID, accesoGuardado, coleccion, refrescarFormaciones, revisarInscrita } from '@/lib/convocatorias';
-import { anularEnlaces, convocatoriaConAccesos } from '@/lib/convocatorias-acceso';
+import { ID, accesoGuardado, coleccion, refrescarFormaciones, revisarInscrita, type AccesoGuardado } from '@/lib/convocatorias';
+import { abrirCursoCompleto, anularEnlaces, convocatoriaConAccesos } from '@/lib/convocatorias-acceso';
 
 /**
  * Las inscritas de una convocatoria.
@@ -111,13 +111,17 @@ export async function PATCH(peticion: Request) {
 
   const ref = coleccion().doc(idConv);
   let anular: string | null = null;
+  let completar: AccesoGuardado | null = null;
   try {
     const problema = await ref.firestore.runTransaction(async (t): Promise<Fallo | null> => {
       anular = null;
+      completar = null;
       const d = await t.get(ref);
       const antes = d.exists ? (d.get(`inscritas.${id}`) as FirebaseFirestore.DocumentData | undefined) : undefined;
       // Si se acaba de quitar en otra pestaña, no se resucita a medias.
       if (!antes) return NO_EXISTE;
+      // Pasa a «Pagado»: después de guardar, se le abre el curso completo.
+      if (r.datos.estado === 'pagado' && antes.estado !== 'pagado') completar = accesoGuardado(antes.acceso);
 
       /* Campo a campo y no la inscrita entera: así no se pisa su `acceso` (el
          enlace o la cuenta que ya se le dio) ni su fecha de alta. */
@@ -144,6 +148,7 @@ export async function PATCH(peticion: Request) {
   // TypeScript no ve que la transacción lo cambia: se lee de nuevo con su tipo.
   const codigo = anular as string | null;
   if (codigo) await anularEnlaces([codigo]);
+  else if (completar) await abrirCursoCompleto(completar, idConv);
   return contestar(peticion, idConv, codigo ? { aviso: 'enlace-anulado' } : {});
 }
 

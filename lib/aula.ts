@@ -164,7 +164,14 @@ export function clave(nombre: string | undefined): string {
 /** Si una clase dirigida a `para` la tiene que ver quien tiene `accesos`. */
 export function puedeVerla(para: Acceso, accesos: Acceso[]): boolean {
   if (para.tipo === 'membresia') return accesos.some((a) => a.tipo === 'membresia');
-  return accesos.some((a) => a.tipo === 'curso' && clave(a.nombre) === clave(para.nombre));
+  /* Con solo el abono (completo: false) el curso está, pero sus clases no:
+     se abren cuando paga el resto, después de la presencial. */
+  return accesos.some((a) => a.tipo === 'curso' && a.completo !== false && clave(a.nombre) === clave(para.nombre));
+}
+
+/** Si tiene ese curso, aunque sea solo con el abono (precurso). */
+export function tieneElCurso(nombre: string | undefined, accesos: Acceso[]): boolean {
+  return accesos.some((a) => a.tipo === 'curso' && clave(a.nombre) === clave(nombre));
 }
 
 /** Cómo se llama el bloque al que pertenece una clase. */

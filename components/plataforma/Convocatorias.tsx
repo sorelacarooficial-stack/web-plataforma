@@ -53,8 +53,10 @@ import s from './convocatorias.module.css';
  * en mayúsculas):
  *
  *   1. La formación presencial que se paga → la convocatoria: plazas y pagos.
- *   2. El acceso al curso en el aula (clases y material) → el botón «Crear
- *      acceso al curso» de cada inscrita. Apuntar a alguien NO se lo da.
+ *   2. El acceso al curso en el aula (precurso, clases y material) → se crea
+ *      en UN solo sitio, Cuentas › Enlaces de invitación. El botón de cada
+ *      inscrita lleva allí con ella ya elegida. Apuntar a alguien NO lo da.
+ *      Marcarla «Pagado» le abre el curso completo si solo tenía el precurso.
  *   3. La membresía de la Comunidad Divine → NO se da desde aquí, nunca.
  *
  * Cada una tiene su color y su icono en toda la pantalla: bronce para lo que
@@ -442,7 +444,7 @@ function TresCosas({ curso }: { curso: string }) {
         </span>
         <span>
           <b>Acceso al curso · {curso}</b>
-          <span>Las clases y el material en el aula. Se da con el botón de cada inscrita: apuntarla no se lo da.</span>
+          <span>Con el abono, el precurso; al marcarla «Pagado», todo. Su enlace se crea en Cuentas (el botón de cada inscrita te lleva).</span>
         </span>
       </li>
       <li data-que="membresia">
@@ -933,7 +935,7 @@ function FormInscrita({
 
         <p className={s.notaAcceso} data-ancho="entero">
           <Icono d={I.aula} size={15} />
-          Apuntarla no le da acceso a nada en la plataforma. El acceso al curso se crea después, con su botón.
+          Apuntarla no le da acceso a nada en la plataforma. Su enlace al curso se crea después, en Cuentas (su botón te lleva). Al marcarla «Pagado» se le abre el curso completo.
         </p>
 
         {errores.general && (
@@ -949,10 +951,8 @@ function FormInscrita({
 /* ==========================================================================
    Acceso al curso: el enlace y la confirmación de cuenta
    ========================================================================== */
-type CuentaEncontrada = { nombre: string | null; correo: string; yaTieneCurso: boolean; tieneMembresia: boolean; bloqueada: boolean };
 type HojaAcceso =
-  | { tipo: 'enlace'; conv: Convocatoria; inscrita: Inscrita; enlace: string; nuevo: boolean; correo: string | null }
-  | { tipo: 'cuenta'; conv: Convocatoria; inscrita: Inscrita; cuenta: CuentaEncontrada };
+  | { tipo: 'enlace'; conv: Convocatoria; inscrita: Inscrita; enlace: string; nuevo: boolean; correo: string | null };
 
 /** El mensaje de WhatsApp: el curso con su nombre, que es lo único que abre. */
 function mensajeWhatsapp(nombre: string, curso: string, enlace: string, caduca: string | null) {
@@ -1034,66 +1034,6 @@ function HojaEnlace({ h, alCerrar, avisar }: { h: Extract<HojaAcceso, { tipo: 'e
   );
 }
 
-function HojaCuenta({ h, alCerrar, alConfirmar }: { h: Extract<HojaAcceso, { tipo: 'cuenta' }>; alCerrar: () => void; alConfirmar: () => Promise<void> }) {
-  const [dando, setDando] = useState(false);
-  const curso = cursoDe(h.conv.curso);
-  const c = h.cuenta;
-  return (
-    <Hoja
-      estrecha
-      titulo="Ya tiene cuenta"
-      subtitulo={`Con el correo ${c.correo}`}
-      alCerrar={alCerrar}
-      pie={
-        <>
-          <button type="button" className={s.botonSecundario} onClick={alCerrar}>
-            Cancelar
-          </button>
-          <button
-            type="button"
-            className={s.botonPrimario}
-            disabled={dando}
-            data-enfocar
-            onClick={async () => {
-              setDando(true);
-              await alConfirmar();
-              setDando(false);
-            }}
-          >
-            {dando ? 'Dándoselo…' : 'Dar el acceso al curso'}
-          </button>
-        </>
-      }
-    >
-      <div className={s.acceso}>
-        <p className={s.cuentaQuien}>
-          <span className={s.avatar} aria-hidden="true">
-            {iniciales(c.nombre || c.correo)}
-          </span>
-          <span>
-            <b>{c.nombre || 'Sin nombre'}</b>
-            <span>{c.correo}</span>
-          </span>
-        </p>
-        <p className={s.textoHoja}>
-          ¿Le añado a esa cuenta el <b>acceso al curso {curso.nombre}</b>? Verá sus clases y su material la próxima vez que entre. Lo que ya tenga se queda como está.
-        </p>
-        <p className={s.sinMembresia}>
-          <Icono d={I.membresia} size={15} />
-          {c.tieneMembresia ? 'Ya tiene la membresía de la Comunidad Divine: no se toca.' : 'No le da la membresía de la Comunidad Divine.'}
-        </p>
-        {c.yaTieneCurso && <p className={s.notaSuave}>Ya tiene este curso: solo se apunta aquí que lo tiene.</p>}
-        {c.bloqueada && <p className={s.notaAviso}>Su cuenta está bloqueada: no podrá entrar hasta que la desbloquees en Cuentas.</p>}
-      </div>
-    </Hoja>
-  );
-}
-
-/* ==========================================================================
-   Una convocatoria
-   ========================================================================== */
-
-/** La barra de plazas: pagadas, con señal, pendientes y libres, cada una con su tramo. */
 function BarraPlazas({ c }: { c: Convocatoria }) {
   const r = resumen(c);
   const reducir = useReducedMotion();
@@ -1120,6 +1060,16 @@ function BarraPlazas({ c }: { c: Convocatoria }) {
       )}
     </div>
   );
+}
+
+/**
+ * Lleva a Cuentas › Enlaces de invitación con esta inscrita ya elegida: es el
+ * único sitio donde se crean los accesos (curso y membresía).
+ */
+function irACrearEnlace(conv: string, inscrita: string) {
+  const q = new URLSearchParams({ v: 'cuentas', conv, inscrita });
+  window.history.pushState(null, '', `${window.location.pathname}?${q}`);
+  window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
 /** El acceso al curso de una inscrita: dónde está y el botón que toca. */
@@ -1406,7 +1356,6 @@ export default function Convocatorias() {
   const [formConv, setFormConv] = useState<{ borrador: BorradorConvocatoria; ocupadas: number } | null>(null);
   const [formIns, setFormIns] = useState<{ conv: string; borrador: BorradorInscrita } | null>(null);
   const [hojaAcceso, setHojaAcceso] = useState<HojaAcceso | null>(null);
-  const [creandoAcceso, setCreandoAcceso] = useState<string | null>(null);
   const [contactos, setContactos] = useState<Contactos>(null);
   const contactosPedidos = useRef(false);
   const [confirmar, dialogo] = useConfirmar();
@@ -1508,30 +1457,8 @@ export default function Convocatorias() {
     return false;
   };
 
-  /** «Crear acceso al curso»: enlace nuevo, o pregunta si ya tiene cuenta. */
-  const crearAcceso = async (c: Convocatoria, i: Inscrita, darACuenta = false) => {
-    setCreandoAcceso(i.id);
-    const r = await pedir('/api/convocatorias/acceso', { method: 'POST', body: JSON.stringify({ convocatoria: c.id, inscrita: i.id, darACuenta }) });
-    setCreandoAcceso(null);
-    if (!r.ok) {
-      avisar(explicar(r, 'crear el acceso'));
-      if (r.datos.motivo === 'no-existe') cargar();
-      return;
-    }
-    const conv = (r.datos.convocatoria as Convocatoria | null) ?? c;
-    poner(conv);
-    const nueva = conv.inscritas.find((x) => x.id === i.id) ?? i;
-    const res = r.datos.resultado as
-      | { paso: 'hay-cuenta'; cuenta: CuentaEncontrada }
-      | { paso: 'cuenta'; yaLoTenia: boolean; bloqueada: boolean }
-      | { paso: 'enlace'; enlace: string; nuevo: boolean; correo: string | null };
-    if (res.paso === 'hay-cuenta') setHojaAcceso({ tipo: 'cuenta', conv, inscrita: nueva, cuenta: res.cuenta });
-    else if (res.paso === 'enlace') setHojaAcceso({ tipo: 'enlace', conv, inscrita: nueva, enlace: res.enlace, nuevo: res.nuevo, correo: res.correo });
-    else {
-      setHojaAcceso(null);
-      avisar(res.yaLoTenia ? `${i.nombre} ya tenía el acceso al curso.` : `Hecho: ${i.nombre} ya ve el curso en su aula.${res.bloqueada ? ' Su cuenta sigue bloqueada.' : ''}`, 'hecho');
-    }
-  };
+  /** «Crear acceso al curso»: a Cuentas, con ella ya elegida (el único sitio donde se crea). */
+  const crearAcceso = (c: Convocatoria, i: Inscrita) => irACrearEnlace(c.id, i.id);
 
   const verEnlace = (c: Convocatoria, i: Inscrita) => {
     if (i.acceso.enlace) setHojaAcceso({ tipo: 'enlace', conv: c, inscrita: i, enlace: i.acceso.enlace, nuevo: false, correo: i.correo || null });
@@ -1638,7 +1565,7 @@ export default function Convocatorias() {
                     c={c}
                     hoy={hoy}
                     abierta={estaAbierta(c.id)}
-                    ocupada={creandoAcceso}
+                    ocupada={null}
                     alAbrir={() => setAbiertas((a) => ({ ...a, [c.id]: !estaAbierta(c.id) }))}
                     alEditar={() => setFormConv({ borrador: aBorrador(c), ocupadas: c.inscritas.length })}
                     alBorrar={() => borrarConvocatoria(c)}
@@ -1692,7 +1619,7 @@ export default function Convocatorias() {
                 avisoServidor === 'enlace-anulado'
                   ? 'Guardado. Como ha cambiado su correo, su enlace de acceso anterior ya no vale: crea otro.'
                   : esNueva
-                    ? `${nombre} apuntada. Para que vea el curso, pulsa «Crear acceso al curso».`
+                    ? `${nombre} apuntada. Para que vea el precurso, pulsa «Crear acceso al curso».`
                     : 'Guardado.',
                 'hecho'
               );
@@ -1708,9 +1635,6 @@ export default function Convocatorias() {
           />
         )}
         {hojaAcceso?.tipo === 'enlace' && <HojaEnlace key="enlace" h={hojaAcceso} alCerrar={() => setHojaAcceso(null)} avisar={avisar} />}
-        {hojaAcceso?.tipo === 'cuenta' && (
-          <HojaCuenta key="cuenta" h={hojaAcceso} alCerrar={() => setHojaAcceso(null)} alConfirmar={() => crearAcceso(hojaAcceso.conv, hojaAcceso.inscrita, true)} />
-        )}
       </AnimatePresence>
 
       {dialogo}

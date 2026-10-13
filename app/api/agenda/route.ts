@@ -3,7 +3,7 @@ import { accesoGuardado, aConvocatoria, coleccion as coleccionConvocatorias } fr
 import { diasEntre } from '@/lib/convocatorias-tipos';
 import { FieldValue, Timestamp, type Query } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
-import { sesionActual } from '@/lib/sesion-servidor';
+import { accesosDe, sesionActual } from '@/lib/sesion-servidor';
 
 /**
  * La agenda de cada persona: todo lo que tiene apuntado, en un solo sitio.
@@ -339,13 +339,18 @@ function enMadrid(dia: string, hora: string): Date {
 
 async function fechasDeFormacion(uid: string, correo: string, corte: Date) {
   const mio = correo.trim().toLowerCase();
+  /* La convocatoria que trae su acceso al curso (el enlace la lleva puesta):
+     es la forma directa. Lo de las inscritas cubre los accesos de antes. */
+  const compradas = new Set(
+    (await accesosDe(uid)).flatMap((a) => (a.tipo === 'curso' && a.convocatoria ? [a.convocatoria] : []))
+  );
   const snap = await coleccionConvocatorias().get();
   const salida: Array<Record<string, unknown>> = [];
   for (const d of snap.docs) {
     const v = d.data();
     const c = aConvocatoria(d.id, v);
     const crudas = (v.inscritas ?? {}) as Record<string, { acceso?: unknown; correo?: unknown }>;
-    const suya = Object.values(crudas).some((x) => {
+    const suya = compradas.has(d.id) || Object.values(crudas).some((x) => {
       const a = accesoGuardado(x?.acceso);
       if (!a) return false; // sin acceso creado, todavía no es suya
       return (a.tipo === 'cuenta' && a.uid === uid) || (!!mio && String(x?.correo ?? '').trim().toLowerCase() === mio);

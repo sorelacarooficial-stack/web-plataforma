@@ -36,7 +36,22 @@ export type Acceso = {
   nombre?: string;
   /** Desde cuándo lo tiene, en ISO. Sirve para ordenar y para la ficha. */
   desde?: string;
+  /**
+   * Solo cursos. La convocatoria (fechas presenciales) que ha comprado: con
+   * ella, sus días salen en su agenda.
+   */
+  convocatoria?: string;
+  /**
+   * Solo cursos. `false` = ha dejado el abono: ve el precurso y sus fechas,
+   * pero no las clases ni los dossieres de cada día. Se abre todo cuando paga
+   * el resto, después de la presencial. Sin el campo cuenta como completo:
+   * así siguen igual los accesos que ya estaban dados antes de existir esto.
+   */
+  completo?: boolean;
 };
+
+/** Si un acceso de curso abre ya las clases y el material, o solo el precurso. */
+export const esCompleto = (a: Acceso) => a.tipo !== 'curso' || a.completo !== false;
 
 /**
  * El curso que se vende hoy. Las clases y el material van dirigidos a este
@@ -96,10 +111,24 @@ export function revisarAccesos(crudo: unknown): Acceso[] {
     // Un curso sin nombre no se puede distinguir de otro ni enseñar en una
     // ficha: se descarta en vez de guardar una etiqueta vacía.
     if (!nombre) continue;
+    const crudoConv = (item as { convocatoria?: unknown }).convocatoria;
+    const convocatoria = typeof crudoConv === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(crudoConv) ? crudoConv : undefined;
+    const completo = (item as { completo?: unknown }).completo === false ? false : undefined;
     const clave = nombre.toLowerCase();
-    if (cursosVistos.has(clave)) continue;
+    if (cursosVistos.has(clave)) {
+      /* El mismo curso dos veces (p. ej. el abono y luego el pago completo):
+         se queda uno, con lo mejor de los dos. Completo gana a solo precurso,
+         y la convocatoria que haya se conserva. */
+      const ya = salida.find((a) => a.tipo === 'curso' && a.nombre?.toLowerCase() === clave)!;
+      if (completo === undefined) delete ya.completo;
+      if (!ya.convocatoria && convocatoria) ya.convocatoria = convocatoria;
+      continue;
+    }
     cursosVistos.add(clave);
-    salida.push({ tipo: 'curso', nombre, desde: fecha((item as { desde?: unknown }).desde) });
+    const acceso: Acceso = { tipo: 'curso', nombre, desde: fecha((item as { desde?: unknown }).desde) };
+    if (convocatoria) acceso.convocatoria = convocatoria;
+    if (completo === false) acceso.completo = false;
+    salida.push(acceso);
   }
 
   return salida;

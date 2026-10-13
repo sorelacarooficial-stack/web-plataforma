@@ -27,6 +27,12 @@ export type Documento = {
   portada: number;
   /** Lo puede ver quien tenga CUALQUIERA de estos accesos. */
   para: Acceso[];
+  /**
+   * El precurso: lo ve quien tenga el curso aunque solo haya dejado el abono.
+   * Es lo que se estudia ANTES de la presencial. El resto del material se
+   * abre con el curso completo.
+   */
+  precurso?: true;
   /** Dónde empieza cada apartado, en páginas del archivo (la portada es la 1). */
   indice: { p: number; titulo: string }[];
 };
@@ -34,6 +40,29 @@ export type Documento = {
 const FORMACION: Acceso[] = [{ tipo: 'curso', nombre: CURSO_DIVINE }, { tipo: 'membresia' }];
 
 export const DOCUMENTOS: Documento[] = [
+  {
+    id: 'precurso',
+    titulo: 'Precurso oficial',
+    subtitulo: 'Para leer antes de la formación presencial',
+    modulo: 'Precurso',
+    paginas: 35,
+    portada: 3,
+    para: FORMACION,
+    precurso: true,
+    indice: [
+      { p: 2, titulo: 'Índice' },
+      { p: 3, titulo: 'La Técnica Divine' },
+      { p: 6, titulo: 'Cómo se imparte la formación' },
+      { p: 9, titulo: 'El sistema linfático' },
+      { p: 14, titulo: 'Los ganglios linfáticos' },
+      { p: 18, titulo: 'Vasos y capilares linfáticos' },
+      { p: 21, titulo: 'Los órganos linfáticos' },
+      { p: 25, titulo: 'El drenaje linfático manual' },
+      { p: 28, titulo: 'La Técnica Divine en el cuerpo' },
+      { p: 32, titulo: 'Resultados y masaje drenante' },
+      { p: 34, titulo: 'Prepárate para el éxito' },
+    ],
+  },
   {
     id: 'dia-1-desbloqueo',
     titulo: 'Día 1 · Desbloqueo',

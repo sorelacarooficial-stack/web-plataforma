@@ -142,6 +142,8 @@ export default function PanelAlumna({
   const minutosVistos = Math.round(Object.values(progreso).reduce((s, x) => s + (x.visto || 0), 0) / 60);
   const proximos = (eventos ?? []).filter((e) => e.estado !== 'Cancelado' && e.cuando && new Date(e.cuando).getTime() > Date.now() - 3600_000).slice(0, 3);
   const miembro = tieneMembresia(accesos);
+  // Solo con el abono del curso: el precurso ya, las clases después de la presencial.
+  const soloPrecurso = accesos.some((a) => a.tipo === 'curso' && a.completo === false);
   const pila = (nombre || '').trim().split(/\s+/)[0];
 
   return (
@@ -157,7 +159,9 @@ export default function PanelAlumna({
           <span className={p.fecha}>{ahora ? mayus(HOY.format(ahora)) : '\u00a0'}</span>
           <h2 className={p.saludo}>{`${ahora ? saludo(ahora) : 'Hola'}${pila ? `, ${pila}` : ''}`}</h2>
           <p className={p.frase}>
-            {ordenadas.length === 0
+            {ordenadas.length === 0 && soloPrecurso
+              ? 'Tu formación empieza con el precurso: léelo antes de la presencial. Las clases en vídeo se abren después, al completar el pago.'
+              : ordenadas.length === 0
               ? 'Tu espacio está abierto. En cuanto Sorela publique tus clases, aparecen aquí.'
               : hechas === 0
                 ? 'Tu formación te está esperando. Empieza por la primera clase, a tu ritmo.'
@@ -259,7 +263,9 @@ export default function PanelAlumna({
           {lecciones === null ? (
             <div className={p.esqueleto} />
           ) : ordenadas.length === 0 ? (
-            <p className={p.vacio}>Todavía no hay clases publicadas.</p>
+            <p className={p.vacio}>
+              {soloPrecurso ? 'Se abren después de la clase presencial, al completar el pago.' : 'Todavía no hay clases publicadas.'}
+            </p>
           ) : (
             <ul className={p.clases}>
               {ordenadas.slice(0, 4).map((l) => {

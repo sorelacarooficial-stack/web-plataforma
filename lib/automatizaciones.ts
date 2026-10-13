@@ -21,7 +21,7 @@ export const AUTOMATIZACIONES = [
   {
     id: 'acceso-formacion',
     nombre: 'Ya tienes la formación',
-    cuando: 'Le das la Formación Técnica Divine en Cuentas, o entra con un enlace que la incluye.',
+    cuando: 'Entra con su enlace del curso (con solo el abono le dice que tiene el precurso), y otra vez cuando se le abre el curso completo al marcarla «Pagado».',
     quien: 'La alumna',
     porDefecto: true,
   },

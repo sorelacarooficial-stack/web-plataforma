@@ -24,7 +24,7 @@ import {
  */
 
 const clave = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-const tieneCurso = (a: Acceso[]) => a.some((x) => x.tipo === 'curso' && clave(x.nombre ?? '') === clave(CURSO_DIVINE));
+const cursoDivine = (a: Acceso[]) => a.find((x) => x.tipo === 'curso' && clave(x.nombre ?? '') === clave(CURSO_DIVINE));
 const tieneComunidad = (a: Acceso[]) => a.some((x) => x.tipo === 'membresia');
 
 /**
@@ -58,10 +58,21 @@ export async function alCambiarAccesos(
     if (!persona.correo) return;
     const a = revisarAccesos(antes);
     const d = revisarAccesos(despues);
-    if (!tieneCurso(a) && tieneCurso(d) && (await estaActiva('acceso-formacion'))) {
-      await mandarCorreo({ para: persona.correo, ...correoAccesoFormacion(persona.nombre, persona.enlaceClave) }, {
+    const cursoAntes = cursoDivine(a);
+    const cursoDespues = cursoDivine(d);
+    if (!cursoAntes && cursoDespues && (await estaActiva('acceso-formacion'))) {
+      const modo = cursoDespues.completo === false ? 'precurso' : 'completo';
+      await mandarCorreo({ para: persona.correo, ...correoAccesoFormacion(persona.nombre, persona.enlaceClave, modo) }, {
         tipo: 'acceso-formacion',
         clave: `acceso-formacion:${persona.uid}`,
+        uid: persona.uid,
+      });
+    }
+    // Tenía solo el precurso y ya ha pagado el resto: se le abre todo.
+    if (cursoAntes?.completo === false && cursoDespues && cursoDespues.completo !== false && (await estaActiva('acceso-formacion'))) {
+      await mandarCorreo({ para: persona.correo, ...correoAccesoFormacion(persona.nombre, null, 'desbloqueo') }, {
+        tipo: 'acceso-formacion',
+        clave: `acceso-formacion-completo:${persona.uid}`,
         uid: persona.uid,
       });
     }

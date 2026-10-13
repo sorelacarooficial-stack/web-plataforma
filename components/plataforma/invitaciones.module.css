@@ -291,3 +291,84 @@
   text-transform: uppercase;
   color: var(--oro-letra, #6f5323);
 }
+
+/* Los datos del curso: fechas, para quién y qué parte. */
+.curso {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(217, 180, 124, 0.1);
+  border: 1px solid var(--oro-line);
+}
+
+.cursoFila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 760px) {
+  .cursoFila {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cursoNota {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--muted-2, #5e564c);
+}
+
+.niveles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 560px) {
+  .niveles {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nivel {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line-4, rgba(20, 18, 16, 0.17));
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.nivel strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.nivel span {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted-2, #5e564c);
+}
+
+.nivel[data-on] {
+  background: #1f1a16;
+  border-color: #1f1a16;
+}
+
+.nivel[data-on] strong {
+  color: #f4ece2;
+}
+
+.nivel[data-on] span {
+  color: rgba(244, 236, 226, 0.72);
+}

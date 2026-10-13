@@ -44,29 +44,69 @@ const primeraVez = (enlaceClave?: string | null) =>
       }
     : null;
 
-export function correoAccesoFormacion(nombre: string | null, enlaceClave?: string | null): Plantilla {
+/**
+ * El correo del acceso al curso, según lo que se abre:
+ *   · 'precurso'  → ha dejado el abono: el precurso y sus fechas.
+ *   · 'completo'  → el curso entero de una vez.
+ *   · 'desbloqueo'→ tenía el precurso y ya ha pagado el resto.
+ * El curso NO incluye la Comunidad Divine (es la membresía, aparte): aquí no
+ * se promete.
+ */
+export function correoAccesoFormacion(
+  nombre: string | null,
+  enlaceClave?: string | null,
+  modo: 'precurso' | 'completo' | 'desbloqueo' = 'completo'
+): Plantilla {
   const pv = primeraVez(enlaceClave);
+  const t =
+    modo === 'precurso'
+      ? {
+          asunto: 'Tu precurso de la Formación Técnica Divine',
+          abre: 'Ya tienes en mi plataforma el <strong>precurso</strong> de la Formación Técnica Divine y las fechas de tu clase presencial en tu agenda.',
+          sigue: 'Léelo con calma antes de venir: es la base de lo que haremos con las manos. Las clases en vídeo y los dossiers de cada día se abren después de la presencial, cuando completes el pago.',
+          boton: 'Leer mi precurso',
+          titulo: 'Tu precurso está listo',
+          previa: 'Ya puedes leer tu precurso.',
+        }
+      : modo === 'desbloqueo'
+        ? {
+            asunto: 'Ya tienes la formación completa',
+            abre: 'Ya tienes abierta la <strong>Formación Técnica Divine completa</strong>: las clases en vídeo y los dossiers de cada día, para repasar a tu ritmo lo que hicimos en la presencial.',
+            sigue: 'Te recomiendo ir en orden, clase a clase, y practicar cada protocolo antes de pasar al siguiente. Cualquier duda, respóndeme a este correo.',
+            boton: 'Entrar a mis clases',
+            titulo: 'Tu formación ya está completa',
+            previa: 'Ya puedes ver todas tus clases.',
+          }
+        : {
+            asunto: 'Ya tienes acceso a la Formación Técnica Divine',
+            abre: 'Ya tienes abierta la <strong>Formación Técnica Divine</strong> en mi plataforma: el precurso, las clases en vídeo y los dossiers de cada día.',
+            sigue: 'Te recomiendo ir en orden, clase a clase, y practicar cada protocolo antes de pasar al siguiente. Cualquier duda, respóndeme a este correo.',
+            boton: 'Entrar a mis clases',
+            titulo: 'Tu formación ya está abierta',
+            previa: 'Ya puedes entrar a tus clases.',
+          };
+  const plana = (h: string) => h.replace(/<[^>]+>/g, '');
   return {
-    asunto: 'Ya tienes acceso a la Formación Técnica Divine',
+    asunto: t.asunto,
     texto: plano([
       hola(nombre),
       '',
-      'Ya tienes abierta la Formación Técnica Divine en mi plataforma: las clases en vídeo, los dossiers de cada día y la comunidad para preguntarme.',
+      plana(t.abre),
       '',
       pv ? pv.linea : 'Entra con tu correo y tu contraseña aquí:',
       pv ? pv.enlace : PLATAFORMA,
       '',
-      'Te recomiendo ir en orden, clase a clase, y practicar cada protocolo antes de pasar al siguiente. Cualquier duda, me la dejas en la comunidad o me respondes a este correo.',
+      t.sigue,
     ]),
     html: envoltorio(
       escapar(hola(nombre)),
-      `${p('Ya tienes abierta la <strong>Formación Técnica Divine</strong> en mi plataforma: las clases en vídeo, los dossiers de cada día y la comunidad para preguntarme.')}
+      `${p(t.abre)}
        ${pv ? p(escapar(pv.linea), ';font-size:14px;color:#6c645a') : ''}
-       ${boton(pv ? pv.enlace : PLATAFORMA, pv ? pv.boton : 'Entrar a mis clases')}
-       ${p('Te recomiendo ir en orden, clase a clase, y practicar cada protocolo antes de pasar al siguiente. Cualquier duda, me la dejas en la comunidad o me respondes a este correo.')}`,
+       ${boton(pv ? pv.enlace : PLATAFORMA, pv ? pv.boton : t.boton)}
+       ${p(escapar(t.sigue))}`,
       undefined,
       '',
-      { titulo: 'Tu formación ya está abierta', etiqueta: 'Formación Técnica Divine', imagen: 'equipo', previa: 'Ya puedes entrar a tus clases.' }
+      { titulo: t.titulo, etiqueta: 'Formación Técnica Divine', imagen: 'equipo', previa: t.previa }
     ),
   };
 }
@@ -151,20 +191,22 @@ export function correoAccesoComunidad(nombre: string | null, enlaceClave?: strin
 
 export function correoInvitacion(o: { nombre: string | null; enlace: string; que: string[]; caduca: string }): Plantilla {
   const que = o.que.join(' y ');
+  // «a el precurso…» → «al precurso…»
+  const aQue = que.startsWith('el ') ? `al ${que.slice(3)}` : `a ${que}`;
   const hasta = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' }).format(new Date(o.caduca));
   return {
-    asunto: `Tu acceso a ${que}`,
+    asunto: `Tu acceso ${aQue}`,
     texto: plano([
       hola(o.nombre),
       '',
-      `Te he preparado el acceso a ${que}. Con este enlace te creas la cuenta y entras directamente:`,
+      `Te he preparado el acceso ${aQue}. Con este enlace te creas la cuenta y entras directamente:`,
       o.enlace,
       '',
       `El enlace es solo para ti, sirve una vez y caduca el ${hasta}.`,
     ]),
     html: envoltorio(
       escapar(hola(o.nombre)),
-      `${p(`Te he preparado el acceso a <strong>${escapar(que)}</strong>. Con este enlace te creas la cuenta y entras directamente.`)}
+      `${p(`Te he preparado el acceso ${aQue.startsWith('al ') ? 'al' : 'a'} <strong>${escapar(aQue.replace(/^al? /, ''))}</strong>. Con este enlace te creas la cuenta y entras directamente.`)}
        ${boton(o.enlace, 'Crear mi cuenta')}
        ${p(`El enlace es solo para ti, sirve una vez y caduca el ${escapar(hasta)}.`, ';font-size:14px;color:#6c645a')}`,
       undefined,

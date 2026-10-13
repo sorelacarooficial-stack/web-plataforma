@@ -5,6 +5,7 @@ import { CURSO_DIVINE, revisarAccesos, type Acceso } from './accesos';
 import { ROL_POR_DEFECTO } from './roles';
 import { after } from 'next/server';
 import { alCambiarAccesos } from './automatizar';
+import { COLECCION_CONVOCATORIAS } from './convocatorias';
 
 /**
  * Los enlaces de invitación.
@@ -51,6 +52,15 @@ export type Invitacion = {
   caduca: string;
   estado: EstadoInvitacion;
   usadaPor: { correo: string; nombre: string | null; en: string | null } | null;
+  /** Solo con curso: la convocatoria (fechas) que ha comprado. */
+  convocatoria: string | null;
+  /** La inscrita de esa convocatoria a la que corresponde, si se eligió. */
+  inscrita: string | null;
+  /**
+   * Solo con curso: `false` = solo el precurso (ha dejado el abono). Los
+   * enlaces de antes no lo llevan y dan el curso completo, como daban.
+   */
+  completo: boolean;
 };
 
 type Datos = FirebaseFirestore.DocumentData;
@@ -79,15 +89,22 @@ export function aInvitacion(codigo: string, v: Datos): Invitacion {
           en: v.usada.en?.toDate?.().toISOString() ?? null,
         }
       : null,
+    convocatoria: typeof v.convocatoria === 'string' ? v.convocatoria : null,
+    inscrita: typeof v.inscrita === 'string' ? v.inscrita : null,
+    completo: v.nivel !== 'precurso',
   };
 }
 
 /** Lo que da un enlace, como accesos de la ficha. */
-export function accesosDe(que: QueDa[]): Acceso[] {
+export function accesosDe(que: QueDa[], curso: { convocatoria?: string | null; completo?: boolean } = {}): Acceso[] {
   const hoy = new Date().toISOString();
-  return que.map((q) =>
-    q === 'membresia' ? { tipo: 'membresia' as const, desde: hoy } : { tipo: 'curso' as const, nombre: CURSO_DIVINE, desde: hoy }
-  );
+  return que.map((q) => {
+    if (q === 'membresia') return { tipo: 'membresia' as const, desde: hoy };
+    const a: Acceso = { tipo: 'curso', nombre: CURSO_DIVINE, desde: hoy };
+    if (curso.convocatoria) a.convocatoria = curso.convocatoria;
+    if (curso.completo === false) a.completo = false;
+    return a;
+  });
 }
 
 export const docInvitacion = (codigo: string) => baseDeDatos().collection(COLECCIONES.invitaciones).doc(codigo);
@@ -145,9 +162,24 @@ export async function canjear(
     if (estado !== 'pendiente') return { ok: false as const, motivo: estado };
     if (v.correo && v.correo !== persona.correo) return { ok: false as const, motivo: 'otro-correo' };
 
-    const que = aInvitacion(codigo, v).que;
+    const inv2 = aInvitacion(codigo, v);
+    const que = inv2.que;
+    /* Si el enlace es de una inscrita, su fila de la convocatoria pasa a
+       apuntar a esta cuenta: así Sorela ve «Ya tiene cuenta» y, al marcarla
+       «Pagado», se le abre el curso completo a ella. Todas las lecturas antes
+       de escribir, que es lo que exige una transacción. */
+    const refConv = inv2.convocatoria && inv2.inscrita ? db.collection(COLECCION_CONVOCATORIAS).doc(inv2.convocatoria) : null;
+    const conv = refConv ? await t.get(refConv) : null;
     const antes = usuario.exists ? revisarAccesos(usuario.data()?.accesos) : [];
-    const accesos = revisarAccesos([...antes, ...accesosDe(que)]);
+    const accesos = revisarAccesos([
+      ...antes,
+      ...accesosDe(que, { convocatoria: inv2.convocatoria, completo: inv2.completo }),
+    ]);
+    if (refConv && conv?.exists && conv.get(`inscritas.${inv2.inscrita}`)) {
+      t.update(refConv, {
+        [`inscritas.${inv2.inscrita}.acceso`]: { tipo: 'cuenta', uid: persona.uid, en: new Date().toISOString() },
+      });
+    }
 
     if (usuario.exists && !nueva) {
       t.update(refUsuario, { accesos });

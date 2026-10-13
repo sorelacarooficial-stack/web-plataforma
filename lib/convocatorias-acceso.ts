@@ -1,38 +1,25 @@
 import 'server-only';
-import { randomBytes } from 'node:crypto';
 import { after } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
 import { FieldValue } from 'firebase-admin/firestore';
-import { aplicacion, baseDeDatos, COLECCIONES } from './firebase-servidor';
-import { CURSO_DIVINE, revisarAccesos, tieneMembresia, type Acceso } from './accesos';
+import { baseDeDatos, COLECCIONES } from './firebase-servidor';
+import { CURSO_DIVINE, revisarAccesos } from './accesos';
 import { clave } from './aula';
-import { alCambiarAccesos, alCrearInvitacion } from './automatizar';
-import { ETIQUETA_QUE_DA, aInvitacion, caducaDentroDe, docInvitacion, estadoDe } from './invitaciones';
-import { accesoGuardado, aConvocatoria, coleccion, type AccesoGuardado } from './convocatorias';
-import { cursoDe, type AccesoInscrita, type Convocatoria } from './convocatorias-tipos';
+import { alCambiarAccesos } from './automatizar';
+import { aInvitacion, docInvitacion, estadoDe } from './invitaciones';
+import { accesoGuardado, aConvocatoria, type AccesoGuardado } from './convocatorias';
+import type { AccesoInscrita, Convocatoria } from './convocatorias-tipos';
 
 /**
- * «Crear acceso al curso» desde una inscrita de una convocatoria.
+ * El acceso al curso de las inscritas de una convocatoria: leerlo y anularlo.
  *
- * Una inscrita ha pagado (o va a pagar) la formación presencial. Lo que este
- * botón le abre es OTRA cosa: el curso en el aula, con sus clases y su
- * material. Y NUNCA la membresía de la Comunidad Divine, que se paga aparte
- * cada mes: aquí no hay ningún camino que la dé. El enlace se crea siempre
- * con `que: ['curso']` y a una cuenta solo se le añade un acceso de tipo
- * «curso»; lo que ya tuviera se queda como estaba.
+ * Los enlaces se CREAN en un solo sitio, Cuentas › Enlaces de invitación
+ * (app/api/invitaciones), eligiendo la convocatoria y la inscrita. Allí se
+ * guarda en la inscrita (`acceso`) el enlace, y al usarlo pasa a apuntar a su
+ * cuenta (lib/invitaciones.ts › canjear). Con eso su fila dice «Enlace sin
+ * usar» o «Ya tiene cuenta» sin tener que buscarlo, y marcarla «Pagado» sabe
+ * a qué cuenta abrirle el curso completo.
  *
- * Dos caminos, según tenga cuenta o no:
- *
- *   · Ya tiene cuenta con ese correo → se le añade el curso a su cuenta, pero
- *     solo después de que Sorela lo confirme (la pantalla le enseña de quién
- *     es esa cuenta antes de tocarla).
- *   · No la tiene → un enlace de invitación de UN SOLO USO, el mismo sistema
- *     de Cuentas (lib/invitaciones.ts): caduca a los 30 días y, si la inscrita
- *     tiene correo, solo vale para ese correo (y se intenta mandar también por
- *     correo, sin prometerlo en pantalla).
- *
- * Lo que se ha hecho se guarda en la inscrita (`acceso`) para que su fila
- * diga «Enlace sin usar» o «Ya tiene cuenta» sin tener que buscarlo.
+ * Nunca da la membresía de la Comunidad Divine: se paga aparte.
  */
 
 /** El enlace entero, igual que lo construye app/api/invitaciones. */
@@ -114,166 +101,55 @@ export function codigosDe(inscritas: Record<string, FirebaseFirestore.DocumentDa
     .map((a) => a.codigo);
 }
 
-/** Lo que se le enseña a Sorela antes de tocar una cuenta que ya existe. */
-export type CuentaEncontrada = {
-  nombre: string | null;
-  correo: string;
-  yaTieneCurso: boolean;
-  tieneMembresia: boolean;
-  bloqueada: boolean;
-};
-
-export type ResultadoAcceso =
-  | { ok: true; paso: 'hay-cuenta'; cuenta: CuentaEncontrada }
-  | { ok: true; paso: 'cuenta'; yaLoTenia: boolean; bloqueada: boolean }
-  | { ok: true; paso: 'enlace'; enlace: string; nuevo: boolean; correo: string | null }
-  | { ok: false; motivo: 'no-existe' | 'curso-sin-enlace' };
-
-const tieneElCurso = (accesos: Acceso[], nombre: string) =>
-  accesos.some((a) => a.tipo === 'curso' && clave(a.nombre) === clave(nombre));
-
 /**
- * Crea (o devuelve, si ya lo tiene) el acceso al curso de una inscrita.
+ * La inscrita ha pagado el resto («Pagado»): se le abre el curso completo.
  *
- * `darACuenta` es la confirmación de Sorela: sin ella, si hay una cuenta con
- * ese correo no se toca nada y se devuelve de quién es, para preguntar.
+ *   · Ya entró con su enlace → a su cuenta se le quita el «solo precurso» y
+ *     le llega el correo de que ya tiene todo.
+ *   · Su enlace aún está sin usar → el enlace pasa a dar el curso completo.
+ *
+ * Solo abre: no quita nada si luego se cambia el pago a otro estado (eso se
+ * hace a mano en su cuenta, para no cerrarle el curso por un dedazo).
  */
-export async function crearAccesoCurso(o: {
-  convocatoria: string;
-  inscrita: string;
-  darACuenta: boolean;
-  origen: string;
-  creadoPor: string;
-}): Promise<ResultadoAcceso> {
+export async function abrirCursoCompleto(acceso: AccesoGuardado | null, convocatoria: string) {
+  if (!acceso) return;
   const db = baseDeDatos();
-  const ref = coleccion().doc(o.convocatoria);
-  const doc = await ref.get();
-  const inscrita = doc.exists ? (doc.get(`inscritas.${o.inscrita}`) as FirebaseFirestore.DocumentData | undefined) : undefined;
-  if (!doc.exists || !inscrita) return { ok: false, motivo: 'no-existe' };
-
-  const curso = cursoDe(doc.get('curso'));
-  const previo = accesoGuardado(inscrita.acceso);
-
-  /* Lo que ya está hecho no se repite. Un enlace sin usar se devuelve tal cual
-     en vez de crear otro: dos enlaces vivos para la misma persona son dos
-     puertas abiertas, y el segundo podría acabar en manos de otra. */
-  if (previo?.tipo === 'cuenta') return { ok: true, paso: 'cuenta', yaLoTenia: true, bloqueada: false };
-  if (previo?.tipo === 'enlace') {
-    const inv = await docInvitacion(previo.codigo).get();
-    if (inv.exists && estadoDe(inv.data() ?? {}) === 'pendiente') {
-      return { ok: true, paso: 'enlace', enlace: enlaceInvitacion(o.origen, previo.codigo), nuevo: false, correo: inv.get('correo') ?? null };
-    }
-    if (inv.exists && estadoDe(inv.data() ?? {}) === 'usada') {
-      return { ok: true, paso: 'cuenta', yaLoTenia: true, bloqueada: false };
-    }
-  }
-
-  const correo = typeof inscrita.correo === 'string' ? inscrita.correo.trim().toLowerCase() : '';
-  const nombre = typeof inscrita.nombre === 'string' ? inscrita.nombre.trim() : null;
-
-  /* ---------- ¿Ya tiene cuenta con ese correo? ---------- */
-  const usuario = correo ? await getAuth(aplicacion()).getUserByEmail(correo).catch(() => null) : null;
-  if (usuario) {
-    const refUsuario = db.collection(COLECCIONES.usuarios).doc(usuario.uid);
-    const ficha = await refUsuario.get();
-    const antes = revisarAccesos(ficha.get('accesos'));
-    const bloqueada = Boolean(ficha.get('bloqueada')) || usuario.disabled;
-    if (!o.darACuenta) {
-      return {
-        ok: true,
-        paso: 'hay-cuenta',
-        cuenta: {
-          nombre: (ficha.get('nombre') as string | undefined) ?? usuario.displayName ?? null,
-          correo,
-          yaTieneCurso: tieneElCurso(antes, curso.accesoAula),
-          tieneMembresia: tieneMembresia(antes),
-          bloqueada,
-        },
-      };
-    }
-
-    const r = await db.runTransaction(async (t) => {
-      const [f, c] = await Promise.all([t.get(refUsuario), t.get(ref)]);
-      if (!c.exists || !c.get(`inscritas.${o.inscrita}`)) return null;
-      const previos = revisarAccesos(f.get('accesos'));
-      const yaLoTenia = tieneElCurso(previos, curso.accesoAula);
-      // Solo se AÑADE el curso. La membresía, si la tenía, sigue; si no, no aparece.
-      const accesos = yaLoTenia
-        ? previos
-        : revisarAccesos([...previos, { tipo: 'curso', nombre: curso.accesoAula, desde: new Date().toISOString() }]);
-      if (!yaLoTenia) {
-        const cambios: Record<string, unknown> = {
-          correo: usuario.email ?? correo,
-          accesos,
-          accesosCambiados: FieldValue.serverTimestamp(),
-        };
-        // Una cuenta sin ficha (de antes de las fichas) necesita este campo para salir en Cuentas.
-        if (!f.exists) cambios.ultimoAcceso = null;
-        t.set(refUsuario, cambios, { merge: true });
-      }
-      t.update(ref, {
-        [`inscritas.${o.inscrita}.acceso`]: { tipo: 'cuenta', uid: usuario.uid, en: new Date().toISOString() },
-        actualizada: FieldValue.serverTimestamp(),
+  let uid = acceso.tipo === 'cuenta' ? acceso.uid : null;
+  if (acceso.tipo === 'enlace') {
+    uid = await db
+      .runTransaction(async (t) => {
+        const d = await t.get(docInvitacion(acceso.codigo));
+        if (!d.exists) return null;
+        // Un enlace ya usado (de antes de enlazar la cuenta en la inscrita): su cuenta.
+        if (estadoDe(d.data() ?? {}) === 'usada') return (d.get('usada.uid') as string | undefined) ?? null;
+        if (estadoDe(d.data() ?? {}) === 'pendiente' && d.get('nivel') === 'precurso') t.update(d.ref, { nivel: 'completo' });
+        return null;
+      })
+      .catch((e) => {
+        console.error('[convocatorias] no se ha podido completar el enlace', e);
+        return null;
       });
-      return { yaLoTenia, previos, accesos };
+  }
+  if (!uid) return;
+  const cuenta = uid;
+  const ref = db.collection(COLECCIONES.usuarios).doc(cuenta);
+  try {
+    const r = await db.runTransaction(async (t) => {
+      const f = await t.get(ref);
+      if (!f.exists) return null;
+      const antes = revisarAccesos(f.get('accesos'));
+      const curso = antes.find((a) => a.tipo === 'curso' && clave(a.nombre) === clave(CURSO_DIVINE));
+      if (!curso || curso.completo !== false) return null;
+      const despues = antes.map((a) => {
+        if (a !== curso) return a;
+        const { completo: _c, ...resto } = a;
+        return { ...resto, convocatoria: a.convocatoria ?? convocatoria };
+      });
+      t.update(ref, { accesos: despues, accesosCambiados: FieldValue.serverTimestamp() });
+      return { antes, despues, correo: (f.get('correo') as string | undefined) ?? null, nombre: (f.get('nombre') as string | undefined) ?? null };
     });
-    if (!r) return { ok: false, motivo: 'no-existe' };
-    /* Su correo de bienvenida al curso, el mismo que sale desde Cuentas. Solo
-       si lo gana ahora (lib/automatizar no escribe por lo que ya tenía), y
-       después de contestar: Sorela no espera a Gmail para ver la fila cambiada. */
-    if (!r.yaLoTenia) {
-      const nombreCuenta = (ficha.get('nombre') as string | undefined) ?? usuario.displayName ?? nombre;
-      after(() => alCambiarAccesos({ uid: usuario.uid, correo: usuario.email ?? correo, nombre: nombreCuenta }, r.previos, r.accesos));
-    }
-    return { ok: true, paso: 'cuenta', yaLoTenia: r.yaLoTenia, bloqueada };
+    if (r) after(() => alCambiarAccesos({ uid: cuenta, correo: r.correo, nombre: r.nombre }, r.antes, r.despues));
+  } catch (e) {
+    console.error('[convocatorias] no se ha podido abrir el curso completo', e);
   }
-
-  /* ---------- Sin cuenta: un enlace de un solo uso ---------- */
-
-  /* Los enlaces de invitación saben dar un solo curso: CURSO_DIVINE (ver
-     accesosDe en lib/invitaciones.ts). Si algún día se convoca otro curso,
-     hay que enseñárselo a las invitaciones antes; mientras tanto se dice, en
-     vez de crear un enlace que abriría un curso distinto del pagado. */
-  if (clave(curso.accesoAula) !== clave(CURSO_DIVINE)) return { ok: false, motivo: 'curso-sin-enlace' };
-
-  const codigo = randomBytes(24).toString('base64url');
-  const caduca = caducaDentroDe();
-  await docInvitacion(codigo).set({
-    // SOLO el curso. Nunca 'membresia'.
-    que: ['curso'],
-    nombre,
-    correo: correo || null,
-    creadoPor: o.creadoPor,
-    creado: FieldValue.serverTimestamp(),
-    caduca,
-    usada: null,
-    anulada: false,
-    // De dónde salió, por si hay que buscarlo desde Cuentas.
-    convocatoria: o.convocatoria,
-    inscrita: o.inscrita,
-  });
-  const guardado = await db.runTransaction(async (t) => {
-    const c = await t.get(ref);
-    if (!c.exists || !c.get(`inscritas.${o.inscrita}`)) return false;
-    t.update(ref, {
-      [`inscritas.${o.inscrita}.acceso`]: { tipo: 'enlace', codigo, creado: new Date().toISOString(), caduca: caduca.toDate().toISOString() },
-      actualizada: FieldValue.serverTimestamp(),
-    });
-    return true;
-  });
-  if (!guardado) {
-    // La borraron mientras tanto: el enlace no puede quedarse vivo y suelto.
-    await anularEnlaces([codigo]);
-    return { ok: false, motivo: 'no-existe' };
-  }
-  const enlace = enlaceInvitacion(o.origen, codigo);
-  /* Con correo, le llega también por correo, como desde Cuentas. Después de
-     contestar: el enlace ya está en pantalla para copiarlo o mandarlo por
-     WhatsApp, y eso no tiene por qué esperar al correo. */
-  if (correo) {
-    after(() =>
-      alCrearInvitacion({ codigo, correo, nombre, que: [ETIQUETA_QUE_DA.curso], caduca: caduca.toDate().toISOString(), enlace })
-    );
-  }
-  return { ok: true, paso: 'enlace', enlace, nuevo: true, correo: correo || null };
 }

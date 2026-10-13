@@ -82,6 +82,15 @@ function BarraProgreso({ valor, className }: { valor: number; className: string 
   );
 }
 
+function IconoCandado() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
+      <path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7" />
+    </svg>
+  );
+}
+
 export default function Aula({ correo }: { correo?: string | null }) {
   const [lecciones, setLecciones] = useState<Leccion[] | null>(null);
   const [progreso, setProgreso] = useState<Mapa>({});
@@ -93,6 +102,8 @@ export default function Aula({ correo }: { correo?: string | null }) {
   const [falloVideo, setFalloVideo] = useState(false);
   const [inicioYoutube, setInicioYoutube] = useState(0);
   const [documentos, setDocumentos] = useState<DocumentoVisible[]>([]);
+  /* Lo que se abre cuando pague el resto (solo con el abono): solo títulos. */
+  const [bloqueados, setBloqueados] = useState<{ id: string; titulo: string; subtitulo: string }[]>([]);
   const [leyendo, setLeyendo] = useState<{ id: string; desde: number } | null>(null);
   const video = useRef<HTMLVideoElement>(null);
   const ultimoGuardado = useRef(0);
@@ -115,6 +126,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
       const cp = await rp.json().catch(() => ({ ok: false }));
       const cm = rm ? await rm.json().catch(() => ({ ok: false })) : { ok: false };
       setDocumentos(cm.ok ? cm.documentos ?? [] : []);
+      setBloqueados(cm.ok ? cm.bloqueados ?? [] : []);
       if (!cl.ok) {
         setFallo(cl.motivo === 'sin-configurar' ? 'Falta la configuración del servidor.' : 'No he podido cargar tus clases.');
         setLecciones([]);
@@ -257,10 +269,37 @@ export default function Aula({ correo }: { correo?: string | null }) {
   const lector = docLeyendo && leyendo && (
     <Lector doc={docLeyendo} correo={correo} desde={leyendo.desde} cerrar={() => setLeyendo(null)} />
   );
-  const seccionMaterial = documentos.length > 0 && (
+  /* Con solo el abono: tiene el curso, pero de momento solo el precurso. */
+  const soloPrecurso = bloqueados.length > 0;
+  const seccionMaterial = (documentos.length > 0 || soloPrecurso) && (
     <section className={a.bloque} id="aula-material">
-      <h3 className={a.rotulo}>Material del curso</h3>
-      <TarjetasMaterial documentos={documentos} abrir={abrirMaterial} />
+      <h3 className={a.rotulo}>{soloPrecurso && documentos.every((d) => d.id === 'precurso') ? 'Tu precurso' : 'Material del curso'}</h3>
+      {documentos.length > 0 && <TarjetasMaterial documentos={documentos} abrir={abrirMaterial} />}
+      {soloPrecurso && (
+        <div className={a.cerrado}>
+          <p className={a.cerradoRotulo}>
+            <IconoCandado /> Se abre después de la presencial
+          </p>
+          <ul className={a.cerradoLista}>
+            {bloqueados.map((d) => (
+              <li key={d.id}>
+                <IconoCandado />
+                <span>
+                  <strong>{d.titulo}</strong>
+                  <span>{d.subtitulo}</span>
+                </span>
+              </li>
+            ))}
+            <li>
+              <IconoCandado />
+              <span>
+                <strong>Las clases en vídeo</strong>
+                <span>Cada maniobra grabada, para repasar a tu ritmo</span>
+              </span>
+            </li>
+          </ul>
+        </div>
+      )}
     </section>
   );
 
@@ -297,10 +336,28 @@ export default function Aula({ correo }: { correo?: string | null }) {
               <path d="M10.5 9.2v4.6l4-2.3z" />
             </svg>
           </span>
-          <h3 className={a.vacioTitulo}>Aún no hay clases</h3>
-          <p className={a.vacioTexto}>
-            En cuanto Sorela suba la primera, la verás aquí sin tener que hacer nada.
-          </p>
+          {soloPrecurso ? (
+            <>
+              <h3 className={a.vacioTitulo}>Tu formación empieza con el precurso</h3>
+              <p className={a.vacioTexto}>
+                Léelo con calma antes de la clase presencial: tienes las fechas en tu agenda. Las clases en
+                vídeo y los dossieres de cada día se abren aquí cuando completes el pago, después de la
+                presencial.
+              </p>
+              {documentos.some((d) => d.id === 'precurso') && (
+                <button type="button" className={css.btn} style={{ marginTop: 10 }} onClick={() => abrirMaterial('precurso')}>
+                  Leer el precurso
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <h3 className={a.vacioTitulo}>Aún no hay clases</h3>
+              <p className={a.vacioTexto}>
+                En cuanto Sorela suba la primera, la verás aquí sin tener que hacer nada.
+              </p>
+            </>
+          )}
         </section>
         {seccionMaterial}
         {lector}
