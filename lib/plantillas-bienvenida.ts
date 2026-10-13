@@ -130,6 +130,11 @@ const ICONO = {
   directo: 'https://firebasestorage.googleapis.com/v0/b/sorela-12c46.firebasestorage.app/o/correo%2Ficonos%2Fdirecto.png?alt=media&token=65de5226-a7f6-4ed5-b5f8-84f21e1c26f4',
 };
 
+/** El nombre de la masterclass, con sus partículas doradas animadas (GIF en Storage: se mueve en Gmail, Apple Mail y el móvil; Outlook de escritorio enseña el primer fotograma). */
+const TITULO_MASTERCLASS = 'La nueva era de las manos';
+const IMAGEN_TITULO =
+  'https://firebasestorage.googleapis.com/v0/b/sorela-12c46.firebasestorage.app/o/correo%2Fmasterclass-titulo.gif?alt=media&token=3c07b7c9-9651-4935-9a15-48e1e0a57c68';
+
 /** De qué va la masterclass, en una línea. Las horas van solo en la tarjeta. */
 const TEMA = 'Cómo está cambiando la terapia y qué puede hacer la inteligencia artificial por ti.';
 
@@ -152,10 +157,11 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
         <span style="display:block;margin-top:3px;font-family:${sans};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#a89c8b">${escapar(h.lugar)}</span>
       </td>`
   ).join('');
-  const entrada = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 30px;border-radius:16px;background:#17140f;border-top:2px solid #d9b47c">
-    <tr><td style="padding:24px 24px 0">
-      <span style="display:block;font-family:${sans};font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#d9b47c">Masterclass en directo · Zoom</span>
-      <span style="display:block;margin-top:10px;font-family:${serif};font-size:30px;font-weight:600;line-height:1.1;color:#f3e3c3">${escapar(`${semana.charAt(0).toUpperCase()}${semana.slice(1)} ${dia} de ${mes}`)}</span>
+  const entrada = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 30px;border-radius:16px;overflow:hidden;background:#17140f">
+    <tr><td style="padding:0;line-height:0"><img src="${IMAGEN_TITULO}" width="520" alt="${escapar(`Masterclass en directo: ${TITULO_MASTERCLASS}`)}" style="display:block;width:100%;max-width:520px;height:auto;border:0;margin:0 auto"></td></tr>
+    <tr><td style="padding:22px 24px 0;border-top:1px solid rgba(217,180,124,.35)">
+      <span style="display:block;font-family:${serif};font-size:28px;font-weight:600;line-height:1.1;color:#f3e3c3">${escapar(`${semana.charAt(0).toUpperCase()}${semana.slice(1)} ${dia} de ${mes}`)}</span>
+      <span style="display:block;margin-top:4px;font-family:${sans};font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#d9b47c">En directo por Zoom</span>
       <span style="display:block;margin-top:8px;font-family:${sans};font-size:14px;line-height:1.5;color:#cfc4b3">${escapar(TEMA)}</span>
     </td></tr>
     <tr><td style="padding:18px 16px 20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid rgba(243,227,195,.12)"><tr>${horas}</tr></table></td></tr>
@@ -196,7 +202,7 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
     '',
     saludo,
     '',
-    `Masterclass en directo por Zoom: ${semana} ${dia} de ${mes}. ${APERTURA_POR_PAISES}.`,
+    `${TITULO_MASTERCLASS}. Masterclass en directo por Zoom: ${semana} ${dia} de ${mes}. ${APERTURA_POR_PAISES}.`,
     TEMA,
     '',
     'Ahora, entra en el grupo de WhatsApp de la lista de espera. Ahí aviso de todo lo de la masterclass:',

@@ -37,7 +37,7 @@ const SEMILLAS: Semilla[] = [
     fecha: '2026-10-16',
     etiqueta: 'Camino a la Comunidad Divine · 1',
     asunto: 'Tus manos son tu herramienta más cara, {nombre}',
-    cuerpo: `Te escribo cada semana hasta el **${DIA_APERTURA}**, el día que abro la Comunidad Divine con una **masterclass en directo**, y la última semana, un correo cada día. Ninguno va a ser para venderte nada: quiero que cada uno te deje algo que puedas usar mañana en cabina.
+    cuerpo: `El **${DIA_APERTURA}** abro la Comunidad Divine con una **masterclass en directo**.
 
 Apúntate ya la fecha: a las ${HORA_ESPANA} en España (${APERTURA_POR_PAISES.split(' · ').filter((t) => !t.includes('España')).join(', ')}).
 
@@ -51,7 +51,7 @@ Tres cosas que hago yo y que te recomiendo:
 
 Esta semana, fíjate solo en una cosa: dónde te duele al acabar el día. Eso te dice qué parte de tu postura está trabajando de más.
 
-Te escribo el viernes que viene. Un favor pequeño: añade **hola@sorelacarodivine.com** a tus contactos, así mis correos no se pierden en Promociones ni en spam (y el enlace de la masterclass te llega seguro).`,
+Un favor pequeño: añade **hola@sorelacarodivine.com** a tus contactos, así mis correos no se pierden en Promociones ni en spam (y el enlace de la masterclass te llega seguro).`,
     boton: null,
   },
   {
@@ -90,9 +90,7 @@ Lo que sí te adelanto es de qué te voy a hablar:
 - **La Técnica Divine**: cómo trabajo y por qué la enseño como la enseño.
 - **El alto impacto de lo digital en las terapeutas**: lo que ya está cambiando en nuestro oficio y cómo aprovecharlo en lugar de sufrirlo.
 
-Apúntatelo ya en el calendario. Si solo haces una cosa con este correo, que sea esa.
-
-Desde hoy y hasta el día 6 te escribo **cada mañana** con una idea concreta para tu trabajo. Siete correos cortos. Si alguno no te sirve, bórralo sin culpa; si alguno te sirve, me encantaría que me lo dijeras.`,
+Apúntatelo ya en el calendario. Si solo haces una cosa con este correo, que sea esa.`,
     boton: null,
   },
   {
@@ -184,7 +182,7 @@ La técnica sigue siendo la base: sin buenas manos no hay nada que contar. Pero 
 
 Si quieres ver cómo fue, lo conté con fotos en el blog.
 
-Pasado mañana a las ${HORA_ESPANA} (hora de España) nos vemos en la masterclass. Mañana te escribo con todo lo que necesitas tener listo.`,
+Pasado mañana a las ${HORA_ESPANA} (hora de España) nos vemos en la masterclass.`,
     boton: { texto: 'Leer: Técnica Divine en Termatalia', enlace: `${WEB}/blog/tecnica-divine-termatalia-2026` },
   },
   {
