@@ -206,18 +206,52 @@
 
 /* La línea de debajo del botón, legible: 400 y no 300 a este tamaño. */
 .caja :global(.nota) {
+  margin-top: 6px;
   font-size: 13px;
   font-weight: 400;
   color: #4f4840;
   text-align: center;
+  text-wrap: balance;
+}
+
+/* Aire bajo el botón de enviar. El asistente flota abajo a la derecha (60 px
+   en el móvil), y al bajar hasta el final del formulario tapaba la esquina
+   del botón. Con este margen, cuando el final de la tarjeta toca el borde de
+   la pantalla, el botón queda por encima de la burbuja. */
+@media (max-width: 959px) {
+  .caja {
+    padding-bottom: 36px;
+  }
 }
 
 /* Dos columnas a partir de 960 px: el texto a la izquierda y alineado a la
    izquierda, la tarjeta a la derecha. Por debajo de eso, la cuenta atrás y la
    tarjeta no caben juntas sin apretarse. */
 @media (min-width: 960px) {
+  /* Menos aire arriba que en el móvil: en un portátil (1440×900) la tarjeta
+     entera, con su botón, tiene que caber en la primera pantalla y por
+     encima de la burbuja del asistente, que en escritorio es una pastilla
+     ancha abajo a la derecha, justo debajo de esta columna. */
+  .portada {
+    padding-top: clamp(36px, 3.2vw, 64px);
+  }
+
   .portadaRejilla {
     grid-template-columns: minmax(0, 1fr) minmax(380px, 460px);
+  }
+
+  .caja {
+    padding: 32px 36px 34px;
+  }
+
+  .caja :global(.campo) {
+    min-height: 48px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .caja textarea:global(.campo) {
+    height: 84px;
   }
 
   .portadaTexto {
@@ -235,15 +269,20 @@
   }
 }
 
-@media (max-width: 480px) {
-  /* En el móvil la frase no cabe en una línea: se aprieta un poco el
-     espaciado para que cada trozo quepa entero y se queden en dos líneas
-     limpias, no en tres. */
+/* En el móvil la frase no cabe en una línea: va en dos, una por trozo, y en
+   bloque para que la pastilla abrace la línea más larga en vez de estirarse
+   de lado a lado. El espaciado se aprieta un poco para que cada trozo quepa
+   entero. */
+@media (max-width: 560px) {
   .fecha {
-    padding: 8px 16px;
+    padding: 9px 20px;
     border-radius: 22px;
     font-size: 10.5px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
+  }
+
+  .fecha > span {
+    display: block;
   }
 }
 
@@ -259,7 +298,7 @@
    Papel, después de la banda negra. Las tarjetas ya no son relieve crema
    sobre crema: blancas, con un filo que se ve y texto oscuro (11,6 a 1). */
 .piezasSeccion {
-  padding: clamp(72px, 10vw, 130px) 0 clamp(64px, 8vw, 110px);
+  padding: clamp(64px, 8vw, 110px) 0 clamp(52px, 7vw, 90px);
 }
 
 .antetitulo {
@@ -358,7 +397,7 @@
   content: '';
   display: block;
   height: 1px;
-  margin-bottom: clamp(56px, 8vw, 100px);
+  margin-bottom: clamp(48px, 7vw, 84px);
   background: rgba(20, 18, 16, 0.14);
 }
 

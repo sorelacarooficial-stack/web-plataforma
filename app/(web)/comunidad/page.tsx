@@ -87,8 +87,11 @@ export default function Comunidad() {
       {/* Aquí iba el precio. Se retira: hasta que abra, solo se habla de la
           lista de espera, y el precio se anuncia con la apertura. */}
 
+      {/* Mismo ancho que la portada y la masterclass: con el contenedor de
+          1000 px las preguntas arrancaban 120 px más adentro que todo lo de
+          arriba y la página se veía torcida. */}
       <section className={css.preguntas}>
-        <div className="wrap wrap-1000">
+        <div className="wrap">
           <h2 className="titulo-sm" style={{ marginBottom: 'clamp(26px,3vw,44px)', fontSize: 'clamp(26px,3.4vw,42px)' }}>
             Preguntas de la lista
           </h2>
