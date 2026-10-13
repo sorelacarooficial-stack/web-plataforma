@@ -93,3 +93,9 @@ export const APERTURA_LARGA = `${DIA_APERTURA}, ${HORA_ESPANA} (hora de España)
 export const APERTURA_POR_PAISES = HORAS_APERTURA.map(
   ({ lugar, hora }) => `${hora} en ${lugar}`
 ).join(' · ');
+
+/**
+ * El grupo de WhatsApp de la lista de espera. Es el siguiente paso que se le
+ * da a quien se apunta: en el correo de confirmación y en el aviso de la web.
+ */
+export const GRUPO_WHATSAPP = 'https://chat.whatsapp.com/LsbllKQ0P1gDD2Wb4jrHr7?mode=gi_t';
