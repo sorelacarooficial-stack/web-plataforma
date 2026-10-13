@@ -14,9 +14,12 @@ import { AUTOMATIZACIONES, type IdAutomatizacion } from './automatizaciones';
  *     salió. Es lo que enseña el historial de la pantalla Correos y la ficha
  *     de cada contacto. Antes no se sabía si a alguien le había llegado algo.
  *  2. Nadie recibe el mismo correo dos veces. Cada envío automático lleva una
- *     `clave` (p. ej. `acceso-formacion:uid`) que es el id del documento: si
- *     ya está como enviado, no se repite, aunque el cron corra dos veces o se
- *     quite y se vuelva a dar el acceso.
+ *     `clave` (p. ej. `acceso-formacion:uid`): si ya salió, no se repite,
+ *     aunque el cron corra dos veces o se quite y se vuelva a dar el acceso.
+ *     Esa marca de «ya enviado» vive APARTE del historial, en
+ *     `correos_enviados`, porque el historial se borra (a los 30 días, o a
+ *     mano desde la pantalla) y la marca no puede irse con él: si se fuera,
+ *     vaciar el historial volvería a mandar las bienvenidas y las campañas.
  *  3. La vía de salida se elige en un solo sitio, y cambiarla es poner una
  *     variable en Vercel:
  *        RESEND_API_KEY   → Resend, desde el dominio (lo recomendable)
@@ -26,6 +29,38 @@ import { AUTOMATIZACIONES, type IdAutomatizacion } from './automatizaciones';
 
 export const COLECCION_CORREOS = 'correos';
 
+/**
+ * Las marcas de «ya enviado», una por clave (el id del documento es la clave).
+ * Solo guardan la clave, el tipo y cuándo: nada del correo en sí. No se ven en
+ * ninguna pantalla y no se vacían con el historial.
+ */
+const COLECCION_MARCAS = 'correos_enviados';
+
+/** Lo que dura una línea en «Lo que ha salido». Después se borra sola. */
+export const DIAS_HISTORIAL = 30;
+const MS_HISTORIAL = DIAS_HISTORIAL * 86_400_000;
+
+/* Las claves que terminan en un día (`bienvenida:…:2026-10-13`,
+   `resumen-sorela:2026-10-13`) ya no pueden repetirse pasado ese día: su marca
+   lleva fecha de caducidad y se borra con la purga. Así tampoco se queda
+   guardado para siempre el correo de quien pidió información, que va dentro
+   de la clave. Las demás (accesos, registro, invitaciones, campañas) no
+   caducan nunca. */
+const CLAVE_CON_DIA = /:\d{4}-\d{2}-\d{2}$/;
+
+function marca(clave: string, tipo: unknown, cuando: Date) {
+  return {
+    tipo: typeof tipo === 'string' ? tipo : 'manual',
+    cuando,
+    ...(CLAVE_CON_DIA.test(clave) ? { caduca: new Date(cuando.getTime() + MS_HISTORIAL) } : {}),
+  };
+}
+
+/* Cuántos correos enviados se han ido del historial (purga, borrar una línea,
+   vaciar). Sin esto, la cifra de «correos enviados desde el inicio» de
+   Métricas bajaría cada vez que se limpia el historial, y lo enviado, enviado
+   está. Va en su propio documento para no mezclarse con los interruptores. */
+const CONTADOR = { coleccion: 'ajustes', doc: 'historial-correos' } as const;
 export type Via = 'resend' | 'smtp' | 'apps-script';
 export type EstadoCorreo = 'enviado' | 'fallido' | 'omitido';
 
@@ -63,18 +98,29 @@ export function correoDeSorela(): string | null {
   return c || null;
 }
 
-/** Deja constancia de un correo. Nunca falla: un historial roto no puede tumbar un envío. */
+/**
+ * Deja constancia de un correo. Nunca falla: un historial roto no puede tumbar un envío.
+ *
+ * Si lleva clave y ha salido, en el mismo lote se escribe su marca de «ya
+ * enviado»: o quedan las dos, o ninguna.
+ */
 export async function apuntarCorreo(r: RegistroCorreo, clave?: string) {
   if (!hayFirebase()) return;
   try {
-    const col = baseDeDatos().collection(COLECCION_CORREOS);
+    const db = baseDeDatos();
+    const col = db.collection(COLECCION_CORREOS);
     const ref = clave ? col.doc(clave) : col.doc();
-    await ref.set({
+    const lote = db.batch();
+    lote.set(ref, {
       ...r,
       para: r.para.toLowerCase(),
       cuando: FieldValue.serverTimestamp(),
       ...(clave ? { clave } : {}),
     });
+    if (clave && r.estado === 'enviado') {
+      lote.set(db.collection(COLECCION_MARCAS).doc(clave), marca(clave, r.tipo, new Date()));
+    }
+    await lote.commit();
   } catch (e) {
     console.error('[correos] No se pudo apuntar el envío:', e);
   }
@@ -184,11 +230,120 @@ export type Opciones = {
 
 export type Resultado = { estado: EstadoCorreo; detalle?: string; via: Via | null };
 
-/** Si ya salió un correo con esta clave. */
+/**
+ * Si ya salió un correo con esta clave.
+ *
+ * Mira la marca y, además, la línea del historial: los envíos de antes de que
+ * existieran las marcas solo están ahí. Las dos lecturas van en una sola
+ * llamada. Nada se pierde al limpiar: antes de borrar una línea con clave se
+ * copia su marca (ver `quitarDelHistorial`).
+ */
 export async function yaEnviado(clave: string): Promise<boolean> {
   if (!hayFirebase()) return false;
-  const d = await baseDeDatos().collection(COLECCION_CORREOS).doc(clave).get();
-  return d.exists && d.get('estado') === 'enviado';
+  const db = baseDeDatos();
+  const [marca, linea] = await db.getAll(db.collection(COLECCION_MARCAS).doc(clave), db.collection(COLECCION_CORREOS).doc(clave));
+  return marca.exists || (linea.exists && linea.get('estado') === 'enviado');
+}
+
+/* ------------------------------------------------------------ historial */
+
+/* Un lote de Firestore admite 500 escrituras y cada línea puede necesitar dos
+   (copiar la marca y borrar). */
+const POR_LOTE = 200;
+
+/**
+ * Quita líneas del historial SIN olvidar lo enviado.
+ *
+ * Es la única puerta para borrar de `correos`: la usan la purga de los 30
+ * días, el botón de borrar una línea y «Vaciar historial». Antes de borrar una
+ * línea enviada con clave, copia su marca a `correos_enviados` (si ya estaba,
+ * no cambia nada); y suma las enviadas al contador de Métricas.
+ */
+export async function quitarDelHistorial(docs: FirebaseFirestore.DocumentSnapshot[]): Promise<number> {
+  const db = baseDeDatos();
+  const vivos = docs.filter((d) => d.exists);
+  let quitados = 0;
+  for (let i = 0; i < vivos.length; i += POR_LOTE) {
+    const tanda = vivos.slice(i, i + POR_LOTE);
+    const lote = db.batch();
+    let enviados = 0;
+    for (const d of tanda) {
+      const v = d.data() ?? {};
+      if (v.estado === 'enviado') {
+        enviados++;
+        const clave = typeof v.clave === 'string' && v.clave ? v.clave : null;
+        if (clave) {
+          const cuando: Date = v.cuando?.toDate?.() ?? new Date();
+          lote.set(db.collection(COLECCION_MARCAS).doc(clave), marca(clave, v.tipo, cuando), { merge: true });
+        }
+      }
+      lote.delete(d.ref);
+    }
+    if (enviados) {
+      lote.set(db.collection(CONTADOR.coleccion).doc(CONTADOR.doc), { enviadosBorrados: FieldValue.increment(enviados) }, { merge: true });
+    }
+    await lote.commit();
+    quitados += tanda.length;
+  }
+  return quitados;
+}
+
+/**
+ * Borra lo que tenga más de 30 días: líneas del historial y las marcas que ya
+ * no sirven (las de un día concreto). La llaman el cron de cada mañana y, de
+ * respaldo, la pantalla Correos al cargar. Si no hay nada viejo, es una sola
+ * consulta vacía.
+ */
+export async function purgarHistorial(ahora = new Date()): Promise<{ lineas: number; marcas: number }> {
+  if (!hayFirebase()) return { lineas: 0, marcas: 0 };
+  const db = baseDeDatos();
+  const limite = new Date(ahora.getTime() - DIAS_HISTORIAL * 86_400_000);
+  let lineas = 0;
+  let marcas = 0;
+  // Por tandas y con tope de vueltas: una purga atascada no puede colgar el cron.
+  for (let vuelta = 0; vuelta < 25; vuelta++) {
+    const viejos = await db.collection(COLECCION_CORREOS).where('cuando', '<', limite).limit(POR_LOTE).get();
+    if (viejos.empty) break;
+    lineas += await quitarDelHistorial(viejos.docs);
+    if (viejos.size < POR_LOTE) break;
+  }
+  for (let vuelta = 0; vuelta < 25; vuelta++) {
+    const viejas = await db.collection(COLECCION_MARCAS).where('cuando', '<', limite).limit(400).get();
+    const deUnDia = viejas.docs.filter((d) => CLAVE_CON_DIA.test(d.id));
+    if (deUnDia.length) {
+      const lote = db.batch();
+      for (const d of deUnDia) lote.delete(d.ref);
+      await lote.commit();
+      marcas += deUnDia.length;
+    }
+    if (viejas.size < 400) break;
+  }
+  return { lineas, marcas };
+}
+
+/** «Vaciar historial»: todas las líneas, con las mismas garantías que la purga. */
+export async function vaciarHistorial(): Promise<number> {
+  if (!hayFirebase()) return 0;
+  const db = baseDeDatos();
+  let total = 0;
+  for (let vuelta = 0; vuelta < 100; vuelta++) {
+    const tanda = await db.collection(COLECCION_CORREOS).limit(POR_LOTE).get();
+    if (tanda.empty) break;
+    total += await quitarDelHistorial(tanda.docs);
+    if (tanda.size < POR_LOTE) break;
+  }
+  return total;
+}
+
+/** Correos enviados desde siempre: los del historial más los que ya se borraron de él. */
+export async function correosEnviadosTotal(): Promise<number> {
+  if (!hayFirebase()) return 0;
+  const db = baseDeDatos();
+  const [enHistorial, contador] = await Promise.all([
+    db.collection(COLECCION_CORREOS).where('estado', '==', 'enviado').count().get(),
+    db.collection(CONTADOR.coleccion).doc(CONTADOR.doc).get(),
+  ]);
+  return enHistorial.data().count + Number(contador.get('enviadosBorrados') ?? 0);
 }
 
 /** Manda un correo y lo apunta. No lanza: devuelve qué ha pasado. */
