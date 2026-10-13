@@ -184,11 +184,10 @@ export default async function Formaciones() {
                 <p className="antetitulo" style={{ color: 'var(--oro)' }}>
                   Próximas convocatorias
                 </p>
-                <h2 className={css.fechasTitulo}>Sudamérica, próximamente.</h2>
+                <h2 className={css.fechasTitulo}>Nuevas fechas, pronto.</h2>
                 <p className="texto max-520">
-                  Las ciudades y las fechas están a punto de confirmarse. Todavía no te voy a dar
-                  una fecha que pueda moverse. Apúntate y, al terminar, entra en el grupo de
-                  WhatsApp de la Técnica Divine.
+                  Ahora mismo no hay ninguna fecha abierta. Apúntate y te escribo en cuanto abra
+                  la próxima.
                 </p>
               </div>
               <div className={css.fechasAcciones}>
@@ -202,7 +201,7 @@ export default async function Formaciones() {
                   Apuntarme
                 </BotonCaptacion>
                 <BotonAsistente
-                  pregunta="Quiero consultar las próximas fechas en Sudamérica y que me guardes sitio."
+                  pregunta="Quiero saber cuándo es la próxima formación presencial."
                   className="enlace-subrayado"
                 >
                   Preguntar por el asistente

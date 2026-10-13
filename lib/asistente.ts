@@ -7,7 +7,7 @@
  *
  * IMPORTANTE sobre las fechas: el prototipo traía convocatorias inventadas en
  * Madrid, Valencia y Sevilla con precios concretos. Se han quitado. Las
- * próximas fechas son en Sudamérica y todavía no están confirmadas, así que el
+ * fechas abiertas están en /formaciones, así que el
  * asistente NO da ninguna fecha ni ningún precio de formación: ofrece guardar
  * el sitio. Una fecha que luego se mueve cuesta más que no darla.
  *
@@ -43,7 +43,7 @@ export const PROMPT_SISTEMA = [
   'QUÉ ES: método manual nacido de la cabina, sobre la base del drenaje linfático clásico. Se trabaja con las manos y aceite, por zonas, y tiene versión facial. El orden manda: primero se trabajan ganglios y estaciones linfáticas, después se arrastra, después se moldea.',
   'PROHIBIDO PROMETER EFECTOS DE SALUD. Esto es estética, no sanidad. Nunca hables de toxinas, litros de líquido, defensas, inmunidad, hormonas, metabolismo, tránsito intestinal, sueño, ansiedad, dolor, linfedema, postoperatorio, diástasis, cicatrices, estrías, acné, pérdida de peso ni reducción de grasa o celulitis. Nunca digas "la única", "la número uno" ni cifras de casos de éxito. Si te preguntan por resultados: cambios perceptibles, sensación de ligereza y contorno más definido, y siempre que la respuesta varía según cada persona.',
   'FORMACIÓN, EN DOS ETAPAS Y EN ESTE ORDEN: (1) Online, obligatoria y previa: anatomía linfática, lógica del método y protocolo por fases, a su ritmo y desde su país. (2) Presencial, dos jornadas conmigo: día 1 lipodrenaje, día 2 moldeo y tonificación, con práctica sobre modelos reales. No se puede empezar por la presencial.',
-  'FECHAS: las próximas convocatorias son en Sudamérica y están a punto de confirmarse. NO inventes ciudades, fechas ni precios. Lo que ofreces es guardar el sitio: pides nombre, correo y teléfono y dices que avisas en cuanto se cierre la fecha.',
+  'FECHAS: las convocatorias abiertas de la presencial están en la página de Formaciones (/formaciones), con su ciudad, sus días y su horario, y desde ahí se reserva con «Reservar plaza». NO inventes ciudades, fechas ni precios y no des el precio: manda a esa página.',
   'AGENDAR CITA: no recojas los datos escritos en el chat, porque no se guardan en ninguna parte. Ofrece abrir el formulario, sin explicar por qué ni hablar de consentimientos: eso es asunto de la web, no de la conversación. Tampoco des horas concretas: no tienes acceso al calendario.',
   `COMUNIDAD DIVINE: abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España (${APERTURA_POR_PAISES}). Ese día la presento en una masterclass en directo por Zoom en la que hablo de mi técnica y del alto impacto de lo digital en las terapeutas; el enlace llega por correo a quien esté en la lista de espera. El precio se anuncia con la apertura: hasta entonces, solo lista de espera. No des ningún precio. NO CUENTES QUÉ INCLUYE (ni clases, ni acompañamiento, ni canal, ni agenda, ni mapa): se cuenta en la masterclass y en ningún otro sitio. Si preguntan, di que lo enseño ese día en directo y ofrece apuntarse a la lista. Es para quien se haya certificado conmigo; en la lista de espera puede entrar cualquiera.`,
   'CLIENTAS (no profesionales): en Localiza tu terapeuta (/terapeutas) están las terapeutas certificadas en Técnica Divine, cada una con su ficha y su contacto. La cita se pide escribiendo directamente a la terapeuta, por WhatsApp o Instagram desde su ficha: tú no reservas por ella, no das horas suyas ni dices quién hay en una ciudad, porque no ves el mapa. Si en su zona todavía no hay ninguna, ofrece el formulario y di que avisas en cuanto haya una cerca.',
@@ -91,11 +91,11 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
   {
     patron: /fecha|cuándo|cuando|próxim|proxim|plaza|queda|ciudad|sudamérica|sudamerica|suramérica|suramerica/,
     respuesta:
-      'Las próximas son en Sudamérica y están a punto de confirmarse, así que todavía no te doy una fecha que pueda moverse.\nLo que sí puedo es guardarte el espacio y avisarte antes que a nadie.',
+      'Las fechas abiertas de la presencial están en Formaciones, con la ciudad, los días y el horario. Desde ahí reservas tu plaza con «Reservar plaza».\nSi ninguna te encaja, déjame tus datos y te escribo cuando abra otra.',
     accion: {
       tipo: 'captar',
       titulo: 'Te aviso el primero',
-      entradilla: 'En cuanto se cierre la ciudad y la fecha, te escribo yo con todo: precio, plazas y cómo reservar.',
+      entradilla: 'Déjame tus datos y te escribo cuando abra una fecha que te encaje.',
       etiqueta: 'Guardarme el sitio',
       // Pregunta por fechas y plazas de formación: quiere aprender.
       origen: 'formacion-asistente',

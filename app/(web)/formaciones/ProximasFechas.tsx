@@ -69,10 +69,10 @@ export default function ProximasFechas({ fechas }: { fechas: ConvocatoriaPublica
                   entradilla={
                     sinPlaza
                       ? `${f.modalidad} en ${f.ciudad}, ${fechasTexto}. Déjame tus datos para quedar en la lista por si se libera una plaza. Al terminar, entra en el grupo de WhatsApp de la Técnica Divine.`
-                      : `${f.modalidad} en ${f.ciudad}, ${fechasTexto}. Déjame tus datos para pedir tu plaza. Al terminar, entra en el grupo de WhatsApp de la Técnica Divine.`
+                      : `${f.modalidad} en ${f.ciudad}, ${fechasTexto}. Déjame tus datos y tu plaza queda solicitada: te llega un correo de confirmación y te escribo para cerrar el pago.`
                   }
                   etiquetaVentana={`${f.modalidad} en ${f.ciudad}`}
-                  origen="formacion"
+                  origen={`formacion-conv-${f.id}`}
                 >
                   {sinPlaza ? 'Apuntarme a la lista' : 'Reservar plaza'}
                 </BotonCaptacion>

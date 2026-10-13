@@ -3,6 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { revisar, type Contacto, type Fallo } from '@/lib/captacion';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { hayAppsScript, mandarInformacion, soloAviso } from '@/lib/enviar-informacion';
+import { convocatoriaDeOrigen, reservarPlaza, type Reserva } from '@/lib/reserva-convocatoria';
 import { procedenciaDe } from '@/lib/llegada-servidor';
 import { apuntarCorreo } from '@/lib/correos';
 import { REVISADA } from '@/lib/privacidad';
@@ -147,7 +148,22 @@ export async function POST(peticion: Request) {
   /* ---------- 2. Correos por Apps Script ---------- */
   // Se llama aunque Firestore haya fallado: además de mandar los correos deja
   // su fila en la hoja, así que sirve de red de seguridad para el dato.
-  const google = await mandarInformacion(datos);
+  /* «Reservar plaza» de una convocatoria: entra sola como inscrita (pago
+     pendiente) y el correo es la confirmación de esa fecha. */
+  let reserva: Reserva | null = null;
+  const idConv = convocatoriaDeOrigen(datos.origen);
+  if (idConv && hayFirebase()) {
+    reserva = await reservarPlaza(idConv, {
+      nombre: datos.nombre,
+      correo: datos.correo,
+      telefono: datos.whatsapp ?? '',
+      contacto: datos.correo.replace(/\//g, '_'),
+    }).catch((e) => {
+      console.error('[captar] no se ha podido reservar la plaza', e);
+      return null;
+    });
+  }
+  const google = await mandarInformacion({ ...datos, reserva });
 
   const correoEnviado = google.correo;
 

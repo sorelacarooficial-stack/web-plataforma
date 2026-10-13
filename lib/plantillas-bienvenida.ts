@@ -203,6 +203,64 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
   return { asunto: `${asunto}${n ? `, ${n}` : ''}`, texto, html };
 }
 
+/**
+ * La confirmación de «Reservar plaza» en una convocatoria de /formaciones.
+ * Dice qué ha pasado de verdad (apuntada, ya lo estaba o completa) y el
+ * siguiente paso: Sorela le escribe para confirmar la plaza y el pago.
+ */
+export function correoReservaPlaza(
+  nombre: string | null,
+  r: { estado: 'inscrita' | 'ya-estaba' | 'completa' | 'no-disponible'; ciudad: string; fechas: string; horario: string[] }
+) {
+  const n = pila(nombre);
+  const serif = "'Cormorant Garamond',Georgia,'Times New Roman',serif";
+  const sans = "'Helvetica Neue',Helvetica,Arial,sans-serif";
+  const titulo =
+    r.estado === 'completa' ? 'Esta fecha está completa' : r.estado === 'no-disponible' ? 'He recibido tu interés' : 'Tu plaza, solicitada';
+  const principal =
+    r.estado === 'inscrita'
+      ? `He apuntado tu solicitud para la formación presencial en ${r.ciudad}. La plaza queda confirmada con el pago: te escribo yo en las próximas 48 horas con los detalles.`
+      : r.estado === 'ya-estaba'
+        ? `Ya tenías tu solicitud para la formación presencial en ${r.ciudad}. No hace falta que hagas nada más: te escribo yo con los detalles.`
+        : r.estado === 'completa'
+          ? `La formación presencial en ${r.ciudad} se ha llenado. Te he guardado tus datos: si se libera una plaza o abro otra fecha, eres de las primeras en saberlo.`
+          : `Esa fecha ya no admite reservas. Te he guardado tus datos y te escribo yo.`;
+  const entrada = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 26px;border-radius:18px;overflow:hidden;background:#17140f">
+    <tr><td style="padding:24px 26px">
+      <span style="display:block;font-family:${sans};font-size:10.5px;font-weight:700;letter-spacing:.22em;color:#d9b47c">FORMACIÓN PRESENCIAL</span>
+      <span style="display:block;margin-top:6px;font-family:${serif};font-size:30px;font-weight:600;line-height:1.1;color:#f3e3c3">${escapar(r.ciudad)}</span>
+      <span style="display:block;margin-top:6px;font-family:${sans};font-size:14px;color:#e2d8c8">${escapar(r.fechas)}</span>
+      ${r.horario.map((h) => `<span style="display:block;margin-top:4px;font-family:${sans};font-size:13px;color:#bfb3a2">${escapar(h)}</span>`).join('')}
+    </td></tr>
+  </table>`;
+  const html = envoltorio(
+    escapar(n ? `Hola ${n},` : 'Hola,'),
+    `${entrada}
+     <p style="margin:0 0 18px">${escapar(principal)}</p>
+     <p style="margin:0 0 18px">Recuerda que para la presencial hace falta tener hecha la formación online. Si tienes cualquier duda, respóndeme a este correo o escríbeme por WhatsApp.</p>
+     ${botonCorreo(WHATSAPP, 'Escríbeme por WhatsApp')}`,
+    undefined,
+    '',
+    { titulo, etiqueta: 'Técnica Divine', previa: principal.slice(0, 90) }
+  );
+  const texto = [
+    n ? `Hola ${n},` : 'Hola,',
+    '',
+    `Formación presencial en ${r.ciudad}: ${r.fechas}.`,
+    ...r.horario,
+    '',
+    principal,
+    '',
+    'Para la presencial hace falta tener hecha la formación online. Cualquier duda, respóndeme a este correo.',
+    `WhatsApp: ${WHATSAPP}`,
+    '',
+    'Sorela Caro',
+    'Creadora de la Técnica Divine',
+    WEB,
+  ].join('\n');
+  return { asunto: `${titulo}${n ? `, ${n}` : ''} · ${r.ciudad}`, texto, html };
+}
+
 /** El aviso interno: alguien ha dejado sus datos. Para que Sorela escriba el mismo día. */
 export function correoAvisoContacto(
   d: { nombre: string; correo: string; whatsapp?: string; ciudad?: string; perfil?: string; nota?: string },

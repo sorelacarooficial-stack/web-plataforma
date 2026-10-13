@@ -417,6 +417,8 @@ export function nodosConvocatorias(lista: ConvocatoriaPublica[], cursos: Record<
 export function refrescarFormaciones() {
   try {
     revalidatePath('/formaciones');
+    // La portada también enseña las próximas fechas.
+    revalidatePath('/');
   } catch (e) {
     console.error('[convocatorias] no se ha podido refrescar /formaciones', e);
   }

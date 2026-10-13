@@ -3,7 +3,8 @@ import { APERTURA_POR_PAISES, DIA_APERTURA, HORA_ESPANA } from './apertura';
 import type { Contacto } from './captacion';
 import { enviar, hayCorreo } from './correo';
 import { correoAviso, correoBienvenida } from './plantillas-correo';
-import { correoAvisoContacto, correoBienvenidaPorOrigen } from './plantillas-bienvenida';
+import { correoAvisoContacto, correoBienvenidaPorOrigen, correoReservaPlaza } from './plantillas-bienvenida';
+import type { Reserva } from './reserva-convocatoria';
 import { correoDeSorela, hayResend, mandarCorreo } from './correos';
 import { diaDe } from './metricas';
 
@@ -134,7 +135,7 @@ export const soloAviso = (origen: string | undefined) => String(origen ?? '').st
  * Sin correo no hay a dónde mandarla: se devuelve que no salió, que es la
  * verdad, en vez de dar por bueno un envío que no ha ocurrido.
  */
-export async function mandarInformacion(datos: Contacto & { origen: string }): Promise<Envio> {
+export async function mandarInformacion(datos: Contacto & { origen: string; reserva?: Reserva | null }): Promise<Envio> {
   if (!datos.correo) return NADA;
 
   if (soloAviso(datos.origen)) {
@@ -160,7 +161,7 @@ export async function mandarInformacion(datos: Contacto & { origen: string }): P
   if (hayResend()) {
     const contactoId = datos.correo.replace(/\//g, '_');
     const r = await mandarCorreo(
-      { para: datos.correo, ...correoBienvenidaPorOrigen(datos.nombre, datos.origen) },
+      { para: datos.correo, ...(datos.reserva ? correoReservaPlaza(datos.nombre, datos.reserva) : correoBienvenidaPorOrigen(datos.nombre, datos.origen)) },
       // Una vez al día como mucho: quien escanea el QR dos veces no recibe dos.
       { tipo: 'bienvenida', clave: `bienvenida:${contactoId.slice(0, 80)}:${diaDe()}`, contactoId }
     );
@@ -168,7 +169,12 @@ export async function mandarInformacion(datos: Contacto & { origen: string }): P
     const sorela = correoDeSorela();
     if (sorela) {
       const a = correoAvisoContacto(datos, datos.origen, salio);
-      await mandarCorreo({ para: sorela, asunto: a.asunto, texto: a.texto, responderA: datos.correo }, { tipo: 'aviso-interno' });
+      const r = datos.reserva;
+      const asunto = r ? `Reserva de plaza · ${r.ciudad}: ${datos.nombre}` : a.asunto;
+      const texto = r
+        ? `${r.estado === 'inscrita' ? `Ya está en la convocatoria de ${r.ciudad} (${r.fechas}) con el pago «Pendiente». Escríbele para confirmar la plaza y el pago.` : r.estado === 'ya-estaba' ? `Ya estaba inscrita en ${r.ciudad}: no se ha duplicado.` : r.estado === 'completa' ? `La convocatoria de ${r.ciudad} está completa: NO se ha inscrito. Está en Clientes.` : `La convocatoria de ${r.ciudad} no admite reservas: NO se ha inscrito. Está en Clientes.`}\n\n${a.texto}`
+        : a.texto;
+      await mandarCorreo({ para: sorela, asunto, texto, responderA: datos.correo }, { tipo: 'aviso-interno' });
     }
     return { correo: salio, guardado: false, via: 'resend' };
   }

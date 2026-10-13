@@ -21,6 +21,8 @@ import BotonCaptacion from '@/components/BotonCaptacion';
 import DatosEstructurados from '@/components/DatosEstructurados';
 import BlogCarrusel from '@/components/BlogCarrusel';
 import { articulosPublicados } from '@/lib/blog';
+import { proximasPublicas } from '@/lib/convocatorias';
+import ProximasFechas from './formaciones/ProximasFechas';
 import {
   FAQS,
   INSTAGRAM,
@@ -52,6 +54,7 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function Home() {
+  const fechas = await proximasPublicas().catch(() => []);
   const articulos = (await articulosPublicados(8)).map((a) => ({
     slug: a.slug,
     titulo: a.titulo,
@@ -280,23 +283,23 @@ export default async function Home() {
             />
           </div>
 
-          {/* Fechas: hoy no hay ninguna cerrada, y eso se dice. Poner una fecha
-              que luego se mueve cuesta más que no ponerla. */}
-          <div className={css.fechas}>
-            <div>
-              <p className="antetitulo" style={{ color: 'var(--oro)' }}>
-                Próximas fechas
-              </p>
-              <h3 className={css.fechasTitulo}>Sudamérica, próximamente.</h3>
-              <p className="texto max-520">
-                Las fechas y las ciudades están a punto de confirmarse. Si quieres que te guarde
-                sitio antes de que se publiquen, dímelo y te reservo el espacio.
-              </p>
+          {/* Fechas: las convocatorias que Sorela ha publicado (las mismas de
+              /formaciones, con su «Reservar plaza»). Sin ninguna, se dice sin
+              prometer ciudades. */}
+          {fechas.length > 0 ? (
+            <ProximasFechas fechas={fechas} />
+          ) : (
+            <div className={css.fechas}>
+              <div>
+                <p className="antetitulo" style={{ color: 'var(--oro)' }}>
+                  Próximas fechas
+                </p>
+                <h3 className={css.fechasTitulo}>Nuevas fechas, pronto.</h3>
+                <p className="texto max-520">Ahora mismo no hay ninguna fecha abierta para la presencial.</p>
+              </div>
+              <BotonAsistente pregunta="Quiero saber cuándo es la próxima formación presencial.">Preguntar</BotonAsistente>
             </div>
-            <BotonAsistente pregunta="Quiero consultar las próximas fechas en Sudamérica y que me guardes sitio.">
-              Consultar fechas
-            </BotonAsistente>
-          </div>
+          )}
         </div>
       </section>
 
