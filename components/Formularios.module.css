@@ -21,7 +21,8 @@
   border: none;
   border-bottom: 1px solid var(--line-5);
   font-size: 13.5px;
-  font-weight: 300;
+  /* El mismo motivo que el consentimiento: a este tamaño, 300 no se lee. */
+  font-weight: 400;
   color: var(--muted);
   cursor: pointer;
 }
@@ -86,7 +87,9 @@
   gap: 10px;
   margin-top: 4px;
   font-size: 13.5px;
-  font-weight: 300;
+  /* 400 y no 300: a 13,5 px, el trazo fino de Jost se deshacía en el móvil, y
+     esto es lo que se acepta al apuntarse; tiene que poder leerse. */
+  font-weight: 400;
   line-height: 1.5;
   color: var(--ink-3);
   cursor: pointer;
