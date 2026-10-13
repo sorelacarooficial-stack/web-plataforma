@@ -58,6 +58,135 @@
   box-shadow: 0 4px 12px -6px rgba(60, 45, 25, 0.5);
 }
 
+/* ---------- Descargar informe (PDF) ----------
+   Botón plano en tinta, a la derecha de los periodos: es la acción de la
+   pantalla y no compite con nada más. Debajo de la etiqueta, el periodo que
+   va a salir, para que no haya dudas de qué se descarga. La crema suave sobre
+   la tinta da 11:1 y el oro del icono 9:1. */
+.informeCaja {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.informe {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 20px 8px 9px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--ink, #141210);
+  color: #fbf9f6;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 8px 18px -12px rgba(20, 18, 16, 0.6);
+  transition: background 0.2s;
+}
+
+.informe:hover {
+  background: #2a2620;
+}
+
+.informe:focus-visible {
+  outline: 2px solid var(--oro, #8a6a32);
+  outline-offset: 3px;
+}
+
+.informe[aria-busy='true'] {
+  cursor: progress;
+}
+
+.informeIcono {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: rgba(217, 180, 124, 0.16);
+  color: #d9b47c;
+}
+
+.informeIcono[data-estado='hecho'] {
+  background: rgba(150, 190, 130, 0.18);
+  color: #b9d7a8;
+}
+
+.informeTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.informeTexto strong {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.informeTexto > span {
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: #cfc5b5;
+}
+
+.girando {
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  border: 1.8px solid rgba(217, 180, 124, 0.3);
+  border-top-color: #d9b47c;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.informeFallo {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--peligro-letra, #8f3f26);
+  text-align: right;
+}
+
+.informeFallo:empty {
+  display: none;
+}
+
+/* En el móvil, a lo ancho y debajo de los periodos: se pulsa con el pulgar. */
+@media (max-width: 560px) {
+  .informeCaja {
+    width: 100%;
+    margin-left: 0;
+    align-items: stretch;
+  }
+
+  .informeFallo {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .girando {
+    animation: none;
+    border-color: #d9b47c;
+    border-right-color: transparent;
+  }
+}
+
 .prueba {
   padding: 5px 12px;
   border-radius: 999px;

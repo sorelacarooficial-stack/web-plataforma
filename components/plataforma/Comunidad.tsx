@@ -12,8 +12,9 @@ import {
   type Publicacion,
   type Respuesta,
 } from '@/lib/comunidad-tipos';
-import { PUNTOS, formatoPuntos } from '@/lib/puntos-tipos';
-import Bienvenida from './Bienvenida';
+import { FORMAS_DE_SUMAR, PUNTOS, SUMAN_AL_MES, UNIDAD_MES, formatoPuntos, type PorFuenteMes } from '@/lib/puntos-tipos';
+import Bienvenida, { SelloFijada } from './Bienvenida';
+import { COLORES, DistintivoCreadora, ICONO_FUENTE, Icono, InsigniaNivel, Medalla, destello } from './IconosDivine';
 import { useAviso, useConfirmar, type OpcionesConfirmar } from './Confirmar';
 import css from './plataforma.module.css';
 import c from './comunidad.module.css';
@@ -27,17 +28,36 @@ import { leerRespuesta, prepararImagen } from '@/lib/imagen-cliente';
  * Quien tiene la Comunidad Divine publica y responde. Quien tiene solo un
  * curso entra de visita: lee y puede dar «me gusta», que es como se engancha
  * antes de dar el paso. Ver app/api/comunidad.
+ *
+ * Cada nombre y cada foto abre el perfil de esa persona (publicaciones,
+ * respuestas, ranking y la lista de quién ha dado «me gusta»). `?p=id` en la
+ * dirección abre esa publicación (viene del perfil).
  */
 
-type FilaRanking = { uid: string; nombre: string; puntos: number; nivel?: { n: number; nombre: string } | null };
+/* Lo que trae el servidor además de lo de siempre: las caras de quien ha dado
+   «me gusta» (sus nombres y fotos van una vez en `personas`). */
+type Pub = Publicacion & { gustan?: string[] };
+type Resp = Respuesta & { gustan?: string[] };
+type Personas = Record<string, Autora>;
+
+type FilaRanking = {
+  uid: string;
+  nombre: string;
+  foto?: string | null;
+  puntos: number;
+  nivel?: { n: number; nombre: string } | null;
+  /** Cuántas publicaciones, respuestas, «me gusta» y clases lleva en el mes. */
+  por?: PorFuenteMes;
+};
 
 type Datos = {
   puedeEscribir: boolean;
   modera: boolean;
   /* Quién eres y cómo vas este mes en el ranking. Sorela no puntúa: le llega
      `puntua: false` y no se le enseña la fila «Tú». */
-  yo: { uid: string; nombre: string; foto: string | null; puntua?: boolean; puesto?: number | null; puntos?: number };
-  publicaciones: Publicacion[];
+  yo: { uid: string; nombre: string; foto: string | null; puntua?: boolean; puesto?: number | null; puntos?: number; por?: PorFuenteMes };
+  publicaciones: Pub[];
+  personas?: Personas;
   ranking: FilaRanking[];
   proximaClase: ProximaClase;
   sorela: { nombre: string; foto: string | null };
@@ -109,29 +129,374 @@ function Avatar({ a, tam = 40 }: { a: Pick<Autora, 'nombre' | 'foto' | 'esSorela
 }
 
 function Nombre({ a }: { a: Autora }) {
-  // Tocar el nombre abre su perfil, como en Instagram.
+  // Tocar el nombre abre su perfil, como en Instagram. Sorela no compite: en
+  // lugar de nivel o puntos lleva su distintivo de creadora.
   return (
-    <button type="button" className={c.nombre} onClick={() => verPerfil(a.uid)} title={`Ver el perfil de ${a.nombre}`}>
-      {a.nombre}
-      {a.esSorela && <span className={c.selloSorela}>✦ Sorela</span>}
+    <span className={c.nombreFila}>
+      <button type="button" className={c.nombre} onClick={() => verPerfil(a.uid)} title={`Ver el perfil de ${a.nombre}`}>
+        {a.nombre}
+      </button>
+      {a.esSorela && <DistintivoCreadora className={c.distintivo} />}
+    </span>
+  );
+}
+
+/** La foto, que también abre el perfil. Para el teclado y el lector ya está el nombre al lado. */
+function AvatarPerfil({ a, tam }: { a: Autora; tam?: number }) {
+  return (
+    <button type="button" className={c.avatarBoton} onClick={() => verPerfil(a.uid)} tabIndex={-1} aria-hidden="true">
+      <Avatar a={a} tam={tam} />
     </button>
   );
 }
 
-function Corazon({ dado, cuenta, alPulsar }: { dado: boolean; cuenta: number; alPulsar: () => void }) {
+/* ---------- «Me gusta» ---------- */
+
+const CORAZON = 'M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.7 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z';
+
+/* Las chispas del estallido: el vino y el rosé del acento, con un toque de oro. */
+const CHISPAS = [COLORES.divine.vino, COLORES.divine.rose, COLORES.metales.divine[1], COLORES.metales.oro[2]];
+
+/**
+ * El estallido al dar «me gusta»: un anillo que se abre y diez chispas (la
+ * estrella de la marca y puntos) que salen en círculo y se apagan. Solo
+ * decora: el lector no lo oye y con movimiento reducido no sale.
+ */
+function Estallido({ radio }: { radio: number }) {
   return (
-    <button type="button" className={c.accion} data-on={dado ? '' : undefined} onClick={alPulsar} aria-pressed={dado} aria-label="Me gusta">
-      <motion.svg key={String(dado)} viewBox="0 0 24 24" width="17" height="17" initial={{ scale: dado ? 0.6 : 1 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 14 }}>
-        <path
-          d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.7 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"
-          fill={dado ? 'currentColor' : 'none'}
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinejoin="round"
-        />
-      </motion.svg>
-      {cuenta > 0 && <span>{cuenta}</span>}
+    <span className={c.estallido} aria-hidden="true">
+      <motion.span
+        className={c.estallidoAnillo}
+        initial={{ scale: 0.2, opacity: 0.9 }}
+        animate={{ scale: 1, opacity: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        style={{ width: radio * 2, height: radio * 2, marginLeft: -radio, marginTop: -radio }}
+      />
+      {Array.from({ length: 10 }, (_, i) => {
+        const angulo = (i / 10) * Math.PI * 2 - Math.PI / 2 + (i % 2 ? 0.18 : 0);
+        const lejos = radio * (i % 2 ? 0.78 : 1);
+        const estrella = i % 2 === 0;
+        const t = estrella ? 11 : 6;
+        return (
+          <motion.span
+            key={i}
+            className={c.chispa}
+            style={{ width: t, height: t, marginLeft: -t / 2, marginTop: -t / 2, color: CHISPAS[i % CHISPAS.length] }}
+            initial={{ x: 0, y: 0, scale: 0, opacity: 1, rotate: 0 }}
+            animate={{ x: Math.cos(angulo) * lejos, y: Math.sin(angulo) * lejos, scale: [0, 1.15, 0], opacity: [1, 1, 0], rotate: estrella ? 90 : 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.04 }}
+          >
+            {estrella ? (
+              <svg viewBox="0 0 10 10" width={t} height={t}>
+                <path d={destello(5, 5, 5)} fill="currentColor" />
+              </svg>
+            ) : (
+              <span className={c.chispaPunto} />
+            )}
+          </motion.span>
+        );
+      })}
+    </span>
+  );
+}
+
+/**
+ * Un número que rueda al cambiar: el nuevo entra por abajo al subir y por
+ * arriba al bajar, como un cuentakilómetros. Con movimiento reducido, cambia
+ * sin más.
+ */
+function Rueda({ n }: { n: number }) {
+  const reducir = useReducedMotion();
+  const antes = useRef(n);
+  const dir = n >= antes.current ? 1 : -1;
+  useEffect(() => {
+    antes.current = n;
+  }, [n]);
+  return (
+    <span className={c.rueda} data-vacia={n === 0 ? '' : undefined}>
+      <AnimatePresence initial={false} mode="popLayout" custom={dir}>
+        <motion.span
+          key={n}
+          custom={dir}
+          variants={{
+            entra: (d: number) => (reducir ? { opacity: 0 } : { y: d * 14, opacity: 0 }),
+            quieta: { y: 0, opacity: 1 },
+            sale: (d: number) => (reducir ? { opacity: 0 } : { y: d * -14, opacity: 0 }),
+          }}
+          initial="entra"
+          animate="quieta"
+          exit="sale"
+          transition={reducir ? { duration: 0 } : { type: 'spring', stiffness: 520, damping: 32 }}
+        >
+          {n > 0 ? formatoPuntos(n) : ''}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
+
+/**
+ * El botón de «me gusta». Dado se ve claramente distinto: corazón lleno en
+ * el vino del acento sobre su tinte. Al darlo, el corazón rebota con muelle,
+ * estalla en chispas y el número rueda. Es un botón de verdad (teclado,
+ * `aria-pressed`) y con movimiento reducido solo cambia de color.
+ */
+function Corazon({ dado, cuenta, alPulsar, pequeno }: { dado: boolean; cuenta: number; alPulsar: () => void; pequeno?: boolean }) {
+  const reducir = useReducedMotion();
+  const [estallidos, setEstallidos] = useState<number[]>([]);
+  const pulsado = useRef(false);
+  const tam = pequeno ? 16 : 19;
+
+  function pulsar() {
+    pulsado.current = true;
+    if (!dado && !reducir) {
+      const k = Date.now();
+      setEstallidos((l) => [...l.slice(-2), k]);
+      window.setTimeout(() => setEstallidos((l) => l.filter((x) => x !== k)), 1000);
+    }
+    alPulsar();
+  }
+
+  return (
+    <button
+      type="button"
+      className={c.corazon}
+      data-on={dado ? '' : undefined}
+      data-pequeno={pequeno ? '' : undefined}
+      onClick={pulsar}
+      aria-pressed={dado}
+      aria-label={`Me gusta${cuenta ? `, ${cuenta}` : ''}`}
+    >
+      <span className={c.corazonIcono}>
+        {estallidos.map((k) => (
+          <Estallido key={k} radio={pequeno ? 20 : 27} />
+        ))}
+        <motion.svg
+          key={dado ? 'si' : 'no'}
+          viewBox="0 0 24 24"
+          width={tam}
+          height={tam}
+          aria-hidden="true"
+          initial={pulsado.current && !reducir ? { scale: dado ? 0.35 : 0.75 } : false}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 560, damping: dado ? 11 : 20 }}
+        >
+          <path d={CORAZON} fill={dado ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+          {dado && <path d={destello(18.6, 6.6, 1.9)} fill="#fff" opacity="0.9" />}
+        </motion.svg>
+      </span>
+      <Rueda n={cuenta} />
     </button>
+  );
+}
+
+const primerNombre = (n: string) => n.split(/\s+/)[0] || n;
+
+/**
+ * «Le gusta a Lucía, Ana y 3 más», con sus mini fotos apiladas. Si se lo
+ * has dado tú: «A ti y a Lucía os gusta». Pulsarlo abre la lista entera.
+ * En las respuestas va en pequeño: solo las caras.
+ */
+function Gustan({ uids, total, dado, personas, yo, abrir, compacto }: { uids: string[]; total: number; dado: boolean; personas: Personas; yo: string; abrir: () => void; compacto?: boolean }) {
+  const reducir = useReducedMotion();
+  if (total <= 0) return null;
+  const caras = uids.map((u) => personas[u]).filter(Boolean).slice(0, 3);
+  const otras = uids.filter((u) => u !== yo && personas[u]).map((u) => primerNombre(personas[u].nombre));
+  const nombres = otras.slice(0, dado ? 1 : 2);
+  const resto = Math.max(0, total - (dado ? 1 : 0) - nombres.length);
+  const masN = (n: number) => `${formatoPuntos(n)} más`;
+
+  let frase: ReactNode;
+  if (dado) {
+    if (total === 1) frase = <>Te gusta a <b>ti</b></>;
+    else if (nombres.length && !resto) frase = <>A <b>ti</b> y a <b>{nombres[0]}</b> os gusta</>;
+    else if (nombres.length) frase = <>A <b>ti</b>, a <b>{nombres[0]}</b> y a <b>{masN(resto)}</b> os gusta</>;
+    else frase = <>A <b>ti</b> y a <b>{masN(resto)}</b> os gusta</>;
+  } else if (!nombres.length) frase = <>Le gusta a <b>{formatoPuntos(total)} {total === 1 ? 'persona' : 'personas'}</b></>;
+  else if (nombres.length === 1 && !resto) frase = <>Le gusta a <b>{nombres[0]}</b></>;
+  else if (!resto) frase = <>Le gusta a <b>{nombres[0]}</b> y <b>{nombres[1]}</b></>;
+  else frase = <>Le gusta a <b>{nombres.join(', ')}</b> y <b>{masN(resto)}</b></>;
+
+  return (
+    <motion.button
+      type="button"
+      className={c.gustan}
+      data-compacto={compacto ? '' : undefined}
+      onClick={abrir}
+      aria-label={compacto ? `Ver a quién le gusta (${total})` : undefined}
+      aria-haspopup="dialog"
+      initial={reducir ? false : { opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+    >
+      {caras.length > 0 && (
+        <span className={c.gustanCaras} aria-hidden="true">
+          <AnimatePresence initial={false} mode="popLayout">
+            {caras.map((a) => (
+              <motion.span key={a.uid} layout={reducir ? false : 'position'} initial={reducir ? false : { scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={reducir ? { opacity: 0 } : { scale: 0.4, opacity: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 26 }}>
+                <Avatar a={a} tam={compacto ? 20 : 24} />
+              </motion.span>
+            ))}
+          </AnimatePresence>
+        </span>
+      )}
+      {!compacto && <span className={c.gustanTexto}>{frase}</span>}
+    </motion.button>
+  );
+}
+
+type PersonaGusta = Autora & { nivel: { n: number; nombre: string } | null; soyYo: boolean };
+
+/**
+ * La hoja con quién ha dado «me gusta»: sube desde abajo en el móvil y sale
+ * en el centro en el ordenador. Cada fila abre su perfil. Escape cierra y el
+ * foco vuelve a donde estaba. Una sola llamada barata (?gustan=1).
+ */
+function HojaGustan({ id, rid, total, cerrar }: { id: string; rid?: string; total: number; cerrar: () => void }) {
+  const reducir = useReducedMotion();
+  const [lista, setLista] = useState<PersonaGusta[] | null>(null);
+  const [fallo, setFallo] = useState(false);
+  const caja = useRef<HTMLDivElement>(null);
+  const alCerrar = useRef(cerrar);
+  const tituloId = useId();
+
+  useEffect(() => {
+    alCerrar.current = cerrar;
+  }, [cerrar]);
+
+  useEffect(() => {
+    let vivo = true;
+    const q = new URLSearchParams({ id, gustan: '1', ...(rid ? { rid } : {}) });
+    fetch(`/api/comunidad?${q}`)
+      .then((r) => r.json())
+      .then((j) => vivo && (j.ok ? setLista(j.personas) : setFallo(true)))
+      .catch(() => vivo && setFallo(true));
+    return () => {
+      vivo = false;
+    };
+  }, [id, rid]);
+
+  useEffect(() => {
+    const previo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    caja.current?.focus({ preventScroll: true });
+    const tecla = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') alCerrar.current();
+      // El foco no se escapa de la hoja con el tabulador.
+      if (e.key === 'Tab' && caja.current) {
+        const f = [...caja.current.querySelectorAll<HTMLElement>('button')];
+        if (!f.length) return;
+        const i = f.indexOf(document.activeElement as HTMLElement);
+        if (e.shiftKey && i <= 0) {
+          e.preventDefault();
+          f[f.length - 1].focus();
+        } else if (!e.shiftKey && i === f.length - 1) {
+          e.preventDefault();
+          f[0].focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', tecla);
+    return () => {
+      window.removeEventListener('keydown', tecla);
+      if (previo?.isConnected) previo.focus({ preventScroll: true });
+    };
+  }, []);
+
+  const n = lista?.length ?? total;
+  return createPortal(
+    <motion.div className={c.hojaVelo} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={cerrar}>
+      <motion.div
+        ref={caja}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={tituloId}
+        className={c.hoja}
+        onClick={(e) => e.stopPropagation()}
+        initial={reducir ? { opacity: 0 } : { y: 60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={reducir ? { opacity: 0 } : { y: 40, opacity: 0 }}
+        transition={reducir ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 34 }}
+      >
+        <span className={c.hojaAsa} aria-hidden="true" />
+        <header className={c.hojaCabecera}>
+          <span className={c.hojaSello} aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path d={CORAZON} fill="currentColor" />
+            </svg>
+          </span>
+          <span>
+            <h2 id={tituloId} className={c.hojaTitulo}>
+              Me gusta
+            </h2>
+            <span className={c.hojaSub}>
+              {formatoPuntos(n)} {n === 1 ? 'persona' : 'personas'}
+            </span>
+          </span>
+          <button type="button" className={c.hojaCerrar} onClick={cerrar} aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </header>
+        {fallo ? (
+          <p className={c.hojaVacia}>No se ha podido cargar la lista. Revisa la conexión e inténtalo otra vez.</p>
+        ) : !lista ? (
+          <ul className={c.hojaLista} aria-busy="true">
+            {Array.from({ length: Math.min(Math.max(total, 1), 4) }, (_, i) => (
+              <li key={i} className={c.hojaFantasma} />
+            ))}
+          </ul>
+        ) : lista.length === 0 ? (
+          <p className={c.hojaVacia}>Todavía no le ha dado nadie.</p>
+        ) : (
+          <ul className={c.hojaLista}>
+            {lista.map((x, i) => (
+              <motion.li key={x.uid} initial={reducir ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: reducir ? 0 : Math.min(i, 8) * 0.035 }}>
+                <button
+                  type="button"
+                  className={c.hojaFila}
+                  onClick={() => {
+                    cerrar();
+                    verPerfil(x.uid);
+                  }}
+                >
+                  <span className={c.hojaFoto}>
+                    <Avatar a={x} tam={44} />
+                    {x.nivel && <InsigniaNivel n={x.nivel.n} size={20} className={c.hojaInsignia} />}
+                    <span className={c.hojaCorazon} aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="10" height="10">
+                        <path d={CORAZON} fill="currentColor" />
+                      </svg>
+                    </span>
+                  </span>
+                  <span className={c.hojaQuien}>
+                    <span className={c.hojaNombre}>
+                      {x.nombre}
+                      {x.soyYo && <span className={c.hojaTu}>Tú</span>}
+                    </span>
+                    {x.esSorela ? (
+                      <DistintivoCreadora className={c.distintivo} />
+                    ) : x.nivel ? (
+                      <span className={c.hojaNivel}>
+                        Nivel {x.nivel.n} · {x.nivel.nombre}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className={c.hojaVer}>
+                    Ver perfil
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M9 6l6 6-6 6" />
+                    </svg>
+                  </span>
+                </button>
+              </motion.li>
+            ))}
+          </ul>
+        )}
+      </motion.div>
+    </motion.div>,
+    document.body
   );
 }
 
@@ -167,6 +532,15 @@ function Visor({ fotos, inicio, cerrar }: { fotos: string[]; inicio: number; cer
 }
 
 /* ---------- Escribir ---------- */
+
+/* Los atajos de debajo de la caja: abren el borrador con su tipo ya elegido. */
+const ATAJO: Record<CategoriaComunidad, string> = {
+  Caso: 'Un caso',
+  Duda: 'Una duda',
+  Resultado: 'Un resultado',
+  Recurso: 'Un recurso',
+  Anuncio: 'Un anuncio',
+};
 
 function Escribir({ yo, modera, alPublicar, confirmar }: { yo: Datos['yo']; modera: boolean; alPublicar: () => void; confirmar: Confirmar }) {
   const [abierto, setAbierto] = useState(false);
@@ -207,6 +581,13 @@ function Escribir({ yo, modera, alPublicar, confirmar }: { yo: Datos['yo']; mode
   }, []);
 
   const categorias = CATEGORIAS_COMUNIDAD.filter((x) => modera || x !== 'Anuncio');
+
+  /* Abrir el borrador; desde un atajo («Un caso», «Una duda»…), ya con su
+     tipo elegido. */
+  function abrir(cat?: CategoriaComunidad) {
+    if (cat) setCategoria(cat);
+    setAbierto(true);
+  }
 
   async function subir(lista: FileList | null) {
     if (!lista) return;
@@ -286,13 +667,41 @@ function Escribir({ yo, modera, alPublicar, confirmar }: { yo: Datos['yo']; mode
   }
 
   return (
-    <motion.section layout className={c.escribir} data-abierto={abierto ? '' : undefined}>
+    <motion.section layout className={c.escribir} data-abierto={abierto ? '' : undefined} aria-label="Escribir en la comunidad">
       {!abierto ? (
-        <button type="button" className={c.escribirCerrado} onClick={() => setAbierto(true)}>
-          <Avatar a={{ nombre: yo.nombre || 'Tú', foto: yo.foto, esSorela: modera }} />
-          <span>{modera ? 'Escribe a la comunidad: un anuncio, un consejo, una respuesta…' : 'Comparte un caso, una duda o un resultado…'}</span>
-          <span className={c.escribirBoton}>Publicar</span>
-        </button>
+        /* Cerrada se ve a la primera que aquí se escribe: un campo blanco con
+           borde de verdad (3,8:1), la invitación en tinta legible y un botón
+           negro que dice lo que hace. Debajo, atajos por tipo y lo que suma. */
+        <div className={c.escribirCerrado}>
+          <div className={c.escribirFila}>
+            <Avatar a={{ nombre: yo.nombre || 'Tú', foto: yo.foto, esSorela: modera }} tam={44} />
+            <button type="button" className={c.escribirCampo} onClick={() => abrir()}>
+              {/* En el móvil, la invitación corta: la larga se cortaba a media frase. */}
+              <span className={c.campoLargo}>{modera ? 'Escribe a la comunidad: un anuncio, un consejo…' : 'Comparte un caso, una duda o un resultado…'}</span>
+              <span className={c.campoCorto}>{modera ? 'Escribe a la comunidad…' : '¿Qué quieres compartir?'}</span>
+            </button>
+            <button type="button" className={c.escribirBoton} onClick={() => abrir()} aria-label="Publicar: escribir una publicación nueva">
+              <Icono nombre="publicaciones" size={18} grosor={1.7} />
+              <span>Publicar</span>
+            </button>
+          </div>
+          <div className={c.escribirDebajo}>
+            <div className={c.escribirAtajos}>
+              {categorias.map((x) => (
+                <button key={x} type="button" className={c.atajo} onClick={() => abrir(x)}>
+                  {ATAJO[x]}
+                </button>
+              ))}
+            </div>
+            {/* Sorela no compite: a ella no se le dice lo que suma. */}
+            {!modera && (
+              <span className={c.escribirPuntos}>
+                <Icono nombre="publicaciones" size={15} grosor={1.8} />
+                Publicar suma <b>+{PUNTOS.publicacion}</b>
+              </span>
+            )}
+          </div>
+        </div>
       ) : (
         <motion.div className={c.escribirAbierto} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <LayoutGroup id="cat">
@@ -482,7 +891,7 @@ function Tarjeta({
   borrar,
   cambiar,
 }: {
-  p: Publicacion;
+  p: Pub;
   datos: Datos;
   abierta: boolean;
   alternar: () => void;
@@ -491,22 +900,40 @@ function Tarjeta({
   confirmar: Confirmar;
   avisar: Avisar;
   /** Borra la publicación (de la lista al momento; vuelve si falla). */
-  borrar: (p: Publicacion) => void;
+  borrar: (p: Pub) => void;
   /** Cambia la publicación en la lista sin esperar a recargar. */
-  cambiar: (id: string, f: (p: Publicacion) => Publicacion) => void;
+  cambiar: (id: string, f: (p: Pub) => Pub) => void;
 }) {
   const reducir = useReducedMotion();
   const [larga, setLarga] = useState(false);
-  const [mg, setMg] = useState({ dado: p.loHeDado, n: p.meGusta });
-  const [respuestas, setRespuestas] = useState<Respuesta[] | null>(null);
+  const [mg, setMg] = useState({ dado: p.loHeDado, n: p.meGusta, gustan: p.gustan ?? [] });
+  const [respuestas, setRespuestas] = useState<Resp[] | null>(null);
+  const [personasHilo, setPersonasHilo] = useState<Personas>({});
+  const [hoja, setHoja] = useState<{ rid?: string; total: number } | null>(null);
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
+  /* Mientras va un «me gusta» al servidor, otro toque no sale: el servidor
+     alterna, y dos toques rápidos dejarían la pantalla al revés. */
+  const enCurso = useRef(new Set<string>());
 
-  useEffect(() => setMg({ dado: p.loHeDado, n: p.meGusta }), [p.loHeDado, p.meGusta]);
+  const gustanClave = (p.gustan ?? []).join(',');
+  useEffect(() => setMg({ dado: p.loHeDado, n: p.meGusta, gustan: gustanClave ? gustanClave.split(',') : [] }), [p.loHeDado, p.meGusta, gustanClave]);
+
+  /* Quién es quién en las caras: las de la lista, las del hilo y tú (tu cara
+     sale al momento al dar «me gusta», sin esperar al servidor). */
+  const yo = datos.yo;
+  const personas = useMemo<Personas>(
+    () => ({ ...datos.personas, ...personasHilo, [yo.uid]: { uid: yo.uid, nombre: yo.nombre || 'Tú', foto: yo.foto, esSorela: datos.modera } }),
+    [datos.personas, personasHilo, yo.uid, yo.nombre, yo.foto, datos.modera]
+  );
+  const conmigo = (l: string[], dar: boolean) => (dar ? [yo.uid, ...l.filter((u) => u !== yo.uid)] : l.filter((u) => u !== yo.uid));
 
   const cargarHilo = useCallback(async () => {
     const j = await (await fetch(`/api/comunidad?id=${encodeURIComponent(p.id)}`)).json().catch(() => ({ ok: false }));
-    if (j.ok) setRespuestas(j.respuestas);
+    if (j.ok) {
+      setRespuestas(j.respuestas);
+      setPersonasHilo(j.personas ?? {});
+    }
   }, [p.id]);
 
   useEffect(() => {
@@ -516,10 +943,28 @@ function Tarjeta({
   const accion = async (cuerpo: Record<string, unknown>) =>
     (await fetch('/api/comunidad', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: p.id, ...cuerpo }) })).json().catch(() => ({ ok: false }));
 
+  /* «Me gusta» al momento en pantalla (corazón, número y tu cara) y, si el
+     servidor dice que no, vuelve como estaba. Lo de verdad lo dice él. */
   async function meGusta() {
-    setMg((x) => ({ dado: !x.dado, n: x.n + (x.dado ? -1 : 1) }));
+    if (enCurso.current.has('')) return;
+    enCurso.current.add('');
+    const antes = mg;
+    setMg({ dado: !antes.dado, n: Math.max(0, antes.n + (antes.dado ? -1 : 1)), gustan: conmigo(antes.gustan, !antes.dado) });
     const j = await accion({ accion: 'meGusta' });
-    if (!j.ok) setMg({ dado: p.loHeDado, n: p.meGusta });
+    enCurso.current.delete('');
+    if (!j.ok) setMg(antes);
+    // Si en otra pestaña ya se había cambiado, manda lo que dice el servidor.
+    else if (j.loHeDado !== !antes.dado) setMg({ ...antes, gustan: conmigo(antes.gustan, antes.dado) });
+  }
+
+  async function meGustaRespuesta(r: Resp) {
+    if (enCurso.current.has(r.id)) return;
+    enCurso.current.add(r.id);
+    const cambiarR = (f: (x: Resp) => Resp) => setRespuestas((l) => l?.map((x) => (x.id === r.id ? f(x) : x)) ?? l);
+    cambiarR((x) => ({ ...x, loHeDado: !r.loHeDado, meGusta: Math.max(0, r.meGusta + (r.loHeDado ? -1 : 1)), gustan: conmigo(x.gustan ?? [], !r.loHeDado) }));
+    const j = await accion({ accion: 'meGusta', rid: r.id });
+    enCurso.current.delete(r.id);
+    if (!j.ok) cambiarR((x) => ({ ...x, loHeDado: r.loHeDado, meGusta: r.meGusta, gustan: r.gustan }));
   }
 
   async function responder() {
@@ -552,7 +997,7 @@ function Tarjeta({
 
   /* Borrar una respuesta: sale del hilo al momento y, si el servidor dice que
      no, vuelve a su sitio con un aviso. Si ya no existía, se da por borrada. */
-  async function borrarRespuesta(r: Respuesta) {
+  async function borrarRespuesta(r: Resp) {
     const si = await confirmar({
       titulo: '¿Borrar esta respuesta?',
       texto: r.esMia ? 'Se restan los puntos que te dio.' : `Es de ${r.autora.nombre}. Se le restan los puntos que le dio.`,
@@ -583,7 +1028,7 @@ function Tarjeta({
   return (
     <motion.article id={`pub-${p.id}`} layout="position" className={c.tarjeta} data-fijada={p.fijada ? '' : undefined} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
       <header className={c.cabecera}>
-        <Avatar a={p.autora} />
+        <AvatarPerfil a={p.autora} />
         <span className={c.quien}>
           <Nombre a={p.autora} />
           <span className={c.cuando}>
@@ -591,8 +1036,15 @@ function Tarjeta({
           </span>
         </span>
         <span className={c.sellos}>
-          {p.fijada && <span className={c.selloFijada}>📌 Fijada</span>}
-          {p.resuelta && <span className={c.selloResuelta}>✓ Resuelta</span>}
+          {p.fijada && <SelloFijada />}
+          {p.resuelta && (
+            <span className={c.selloResuelta} title="Resuelta">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
+                <path d="M5 12.5l4.5 4.5L19 7.5" />
+              </svg>
+              <span className={c.selloTexto}>Resuelta</span>
+            </span>
+          )}
         </span>
         {(datos.modera || p.esMia) && <MenuPublicacion p={p} modera={datos.modera} puedeEscribir={datos.puedeEscribir} elegir={moderar} />}
       </header>
@@ -620,6 +1072,14 @@ function Tarjeta({
         </div>
       )}
 
+      <AnimatePresence initial={false}>
+        {mg.n > 0 && (
+          <motion.div key="gustan" className={c.gustanFila} initial={reducir ? false : { opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={reducir ? { opacity: 0 } : { opacity: 0, height: 0 }} transition={{ duration: reducir ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}>
+            <Gustan uids={mg.gustan} total={mg.n} dado={mg.dado} personas={personas} yo={yo.uid} abrir={() => setHoja({ total: mg.n })} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <footer className={c.pie}>
         <Corazon dado={mg.dado} cuenta={mg.n} alPulsar={meGusta} />
         <button type="button" className={c.accion} data-on={abierta ? '' : undefined} onClick={alternar}>
@@ -645,7 +1105,7 @@ function Tarjeta({
                     exit={reducir ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
                     transition={{ duration: reducir ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <Avatar a={r.autora} tam={32} />
+                    <AvatarPerfil a={r.autora} tam={32} />
                     <div className={c.respuestaCuerpo}>
                       <div className={c.respuestaCabecera}>
                         <Nombre a={r.autora} />
@@ -653,14 +1113,8 @@ function Tarjeta({
                       </div>
                       <p>{r.texto}</p>
                       <div className={c.respuestaPie}>
-                        <Corazon
-                          dado={r.loHeDado}
-                          cuenta={r.meGusta}
-                          alPulsar={async () => {
-                            setRespuestas((l) => l?.map((x) => (x.id === r.id ? { ...x, loHeDado: !x.loHeDado, meGusta: x.meGusta + (x.loHeDado ? -1 : 1) } : x)) ?? l);
-                            await accion({ accion: 'meGusta', rid: r.id });
-                          }}
-                        />
+                        <Corazon pequeno dado={r.loHeDado} cuenta={r.meGusta} alPulsar={() => meGustaRespuesta(r)} />
+                        <Gustan compacto uids={r.gustan ?? []} total={r.meGusta} dado={r.loHeDado} personas={personas} yo={yo.uid} abrir={() => setHoja({ rid: r.id, total: r.meGusta })} />
                         {(r.esMia || datos.modera) && (
                           <button type="button" className={c.borrarRespuesta} onClick={() => borrarRespuesta(r)}>
                             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
@@ -698,6 +1152,7 @@ function Tarjeta({
           </motion.div>
         )}
       </AnimatePresence>
+      <AnimatePresence>{hoja && <HojaGustan key="hoja" id={p.id} rid={hoja.rid} total={hoja.total} cerrar={() => setHoja(null)} />}</AnimatePresence>
     </motion.article>
   );
 }
@@ -777,41 +1232,107 @@ function Clase({ clase, modera, puedeEntrar, guardado }: { clase: ProximaClase; 
 
 /* ---------- Más activas este mes ---------- */
 
+const MES = new Intl.DateTimeFormat('es-ES', { month: 'long', timeZone: 'UTC' });
+const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+/** «Octubre · se reinicia el día 1»: el ranking es del mes (en UTC, como lib/actividad). */
+const rotuloDelMes = (ahora = new Date()) => `${mayuscula(MES.format(ahora))} · se reinicia el día 1`;
+
+const cuantasDe = (f: keyof typeof UNIDAD_MES, n: number) => `${formatoPuntos(n)} ${n === 1 ? UNIDAD_MES[f][0] : UNIDAD_MES[f][1]}`;
+
 /**
- * El ranking del mes: barras que crecen en proporción a la primera, oro,
- * plata y bronce para el podio, el nivel de cada una y, debajo, cómo vas tú.
- * Así se entiende de un vistazo quién lleva cuánto y qué hace falta para
- * entrar.
+ * De dónde salen los puntos del mes de alguien, con los iconos de cada forma
+ * de sumar: «✎ 2 · ↩ 5 · ♥ 9 · ▶ 1». El lector de pantalla oye la frase
+ * entera («2 publicaciones, 5 respuestas…»). Lo que no tiene, no sale.
+ */
+function DesgloseMes({ por }: { por?: PorFuenteMes }) {
+  const fuentes = SUMAN_AL_MES.filter((f) => (por?.[f] ?? 0) > 0);
+  if (!por || !fuentes.length) return null;
+  return (
+    <ul className={c.desgloseMes} aria-label="De dónde salen sus puntos">
+      {fuentes.map((f) => (
+        <li key={f} title={cuantasDe(f, por[f]!)}>
+          <Icono nombre={ICONO_FUENTE[f]} size={15} grosor={1.8} />
+          <span aria-hidden="true">{formatoPuntos(por[f]!)}</span>
+          <span className={c.soloLector}>{cuantasDe(f, por[f]!)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * Lo que le falta a quien mira para subir un puesto (o para entrar): es lo
+ * que engancha. Solo con lo que ya trae el ranking: nada de pedir más.
+ */
+function pistaDelPuesto(filas: FilaRanking[], mio: { puesto: number | null; puntos: number }): string {
+  if (mio.puesto === 1) return filas.length > 1 ? `Vas la primera, ${formatoPuntos(mio.puntos - filas[1].puntos)} pts por delante.` : 'Vas la primera.';
+  if (mio.puesto && mio.puesto <= filas.length) {
+    const arriba = filas[mio.puesto - 2];
+    const falta = arriba.puntos - mio.puntos;
+    return falta <= 0 ? `Empatada con ${arriba.nombre}.` : `A ${formatoPuntos(falta)} pts de ${arriba.nombre}, puesto ${mio.puesto - 1}.`;
+  }
+  if (filas.length >= 5) return `Te faltan ${formatoPuntos(filas[4].puntos - mio.puntos + 1)} pts para entrar en las cinco.`;
+  return 'Con lo próximo que sumes ya entras en la lista.';
+}
+
+/**
+ * El ranking del mes. Cada fila: la medalla del podio (o el puesto), la foto
+ * con la insignia de su nivel, sus puntos del mes en grande, una barra en
+ * proporción a la primera y, con iconos, de dónde salen. Debajo, cómo vas tú
+ * y la leyenda de cómo se suma (los valores salen de PUNTOS, no escritos a
+ * mano). Sorela no aparece: no compite (lo filtra el servidor).
  */
 function Ranking({ filas, yo }: { filas: FilaRanking[]; yo: Datos['yo'] | null }) {
   const reducir = useReducedMotion();
   const max = Math.max(1, filas[0]?.puntos ?? 0);
   const mio = yo?.puntua ? { puesto: yo.puesto ?? null, puntos: Math.max(0, yo.puntos ?? 0) } : null;
+  const leyenda = SUMAN_AL_MES.map((f) => FORMAS_DE_SUMAR.find((x) => x.fuente === f)!).filter(Boolean);
 
   return (
-    <section className={c.ladoTarjeta} aria-labelledby="ranking-titulo">
-      <h2 id="ranking-titulo" className={c.ladoRotulo}>
-        Más activas este mes
-      </h2>
+    <section className={`${c.ladoTarjeta} ${c.rankingTarjeta}`} aria-labelledby="ranking-titulo">
+      <header className={c.rankingCabecera}>
+        <span className={c.rankingSello} aria-hidden="true">
+          <Icono nombre="medalla" size={20} grosor={1.6} />
+        </span>
+        <span>
+          <h2 id="ranking-titulo" className={c.rankingTitulo}>
+            Más activas este mes
+          </h2>
+          <span className={c.rankingMes}>{rotuloDelMes()}</span>
+        </span>
+      </header>
+
       {filas.length === 0 ? (
-        <p className={c.ladoTexto}>Suma quien publica casos, responde a las demás y termina clases. Todavía no hay nadie: la primera se lleva el oro.</p>
+        <p className={c.ladoTexto}>Todavía no ha sumado nadie este mes. La primera que publique, responda o termine una clase se lleva el oro.</p>
       ) : (
         <ol className={c.ranking}>
           {filas.map((r, i) => (
-            <li key={r.uid} data-yo={yo && r.uid === yo.uid ? '' : undefined}>
+            <li key={r.uid} data-yo={yo && r.uid === yo.uid ? '' : undefined} data-p={i}>
               {/* El puesto ya lo dice la lista ordenada al lector de pantalla. */}
-              <span className={c.puesto} data-p={i} aria-hidden="true">
-                {i + 1}
+              <span className={c.rankingPuesto} aria-hidden="true">
+                {i < 3 ? <Medalla puesto={(i + 1) as 1 | 2 | 3} size={30} /> : <span className={c.puesto}>{i + 1}</span>}
               </span>
+              {/* La foto también abre el perfil; para el teclado y el lector ya está el nombre. */}
+              <button type="button" className={c.rankingFoto} onClick={() => verPerfil(r.uid)} tabIndex={-1} aria-hidden="true">
+                <Avatar a={{ nombre: r.nombre, foto: r.foto ?? null, esSorela: false }} tam={40} />
+                {r.nivel && <InsigniaNivel n={r.nivel.n} size={20} className={c.rankingInsignia} />}
+              </button>
               <div className={c.rankingCuerpo}>
                 <div className={c.rankingLinea}>
                   <button type="button" className={c.rankingNombre} onClick={() => verPerfil(r.uid)} title={`Ver el perfil de ${r.nombre}`}>
                     {r.nombre}
                   </button>
                   <span className={c.puntos}>
-                    {formatoPuntos(r.puntos)} <small>pts</small>
+                    {formatoPuntos(r.puntos)}
+                    <small> pts</small>
                   </span>
                 </div>
+                {r.nivel && (
+                  <span className={c.rankingNivel}>
+                    Nivel {r.nivel.n} · {r.nivel.nombre}
+                  </span>
+                )}
                 <span className={c.rankingPista} aria-hidden="true">
                   <motion.span
                     className={c.rankingRelleno}
@@ -821,35 +1342,42 @@ function Ranking({ filas, yo }: { filas: FilaRanking[]; yo: Datos['yo'] | null }
                     transition={reducir ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 17, delay: 0.15 + i * 0.09 }}
                   />
                 </span>
-                {r.nivel && (
-                  <span className={c.chipNivel}>
-                    <span className={c.chipNumero} aria-hidden="true">
-                      {r.nivel.n}
-                    </span>
-                    <span className={c.soloLector}>Nivel {r.nivel.n}: </span>
-                    {r.nivel.nombre}
-                  </span>
-                )}
+                <DesgloseMes por={r.por} />
               </div>
             </li>
           ))}
         </ol>
       )}
-      {mio && (filas.length > 0 || mio.puntos > 0) && (
-        <p className={c.rankingYo}>
-          <b>Tú</b>
-          <span aria-hidden="true">·</span>
-          {mio.puesto ? `puesto ${mio.puesto}` : 'aún sin puesto'}
-          <span aria-hidden="true">·</span>
-          <span>
-            <b>{formatoPuntos(mio.puntos)} pts</b> este mes
-          </span>
-        </p>
+
+      {mio && (
+        <div className={c.rankingYo}>
+          <p>
+            <b>Tú</b>
+            <span aria-hidden="true">·</span>
+            {mio.puesto ? `puesto ${mio.puesto}` : 'aún sin puesto'}
+            <span aria-hidden="true">·</span>
+            <span>
+              <b>{formatoPuntos(mio.puntos)} pts</b> este mes
+            </span>
+          </p>
+          <p className={c.rankingPistaTexto}>{pistaDelPuesto(filas, mio)}</p>
+        </div>
       )}
-      <p className={c.rankingComo}>
-        Publicar <b>+{PUNTOS.publicacion}</b> · Responder a otra <b>+{PUNTOS.respuesta}</b> · Cada «me gusta» que recibes{' '}
-        <b>+{PUNTOS.meGusta}</b> · Terminar una clase <b>+{PUNTOS.clase}</b>
-      </p>
+
+      <div className={c.leyenda}>
+        <p className={c.leyendaTitulo}>Cómo se suma este mes</p>
+        <ul>
+          {leyenda.map((x) => (
+            <li key={x.fuente}>
+              <span className={c.leyendaIcono} aria-hidden="true">
+                <Icono nombre={ICONO_FUENTE[x.fuente]} size={17} grosor={1.7} />
+              </span>
+              <span className={c.leyendaTexto}>{x.corto}</span>
+              <b className={c.leyendaPuntos}>+{formatoPuntos(x.puntos)}</b>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }
@@ -871,7 +1399,7 @@ export default function Comunidad() {
       const r = await fetch('/api/comunidad');
       const j = await r.json();
       if (j.ok) {
-        setDatos({ ...j, publicaciones: (j.publicaciones as Publicacion[]).filter((x) => !borrando.current.has(x.id)) });
+        setDatos({ ...j, publicaciones: (j.publicaciones as Pub[]).filter((x) => !borrando.current.has(x.id)) });
         setFallo(null);
       } else setFallo(j.motivo === 'sin-acceso' ? 'La comunidad es para quien tiene la Comunidad Divine o un curso.' : 'No he podido cargar la comunidad.');
     } catch {
@@ -885,8 +1413,20 @@ export default function Comunidad() {
     return () => clearInterval(t);
   }, [cargar]);
 
+  /* Desde el perfil de alguien se llega con `?p=id`: esa publicación se abre
+     con sus respuestas y se baja hasta ella. Solo la primera vez. */
+  const destino = useRef(typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('p'));
+  useEffect(() => {
+    const id = destino.current;
+    if (!id || !datos) return;
+    destino.current = null;
+    if (!datos.publicaciones.some((x) => x.id === id)) return;
+    setAbierta(id);
+    window.setTimeout(() => document.getElementById(`pub-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
+  }, [datos]);
+
   const cambiar = useCallback(
-    (id: string, f: (p: Publicacion) => Publicacion) =>
+    (id: string, f: (p: Pub) => Pub) =>
       setDatos((d) => (d ? { ...d, publicaciones: d.publicaciones.map((x) => (x.id === id ? f(x) : x)) } : d)),
     []
   );
@@ -894,7 +1434,7 @@ export default function Comunidad() {
   /* Borrar una publicación: sale de la lista al momento. Si el servidor dice
      que no, vuelve a su sitio y se avisa. Si ya no existía, se da por borrada. */
   const borrar = useCallback(
-    async (p: Publicacion) => {
+    async (p: Pub) => {
       const sitio = datos?.publicaciones.findIndex((x) => x.id === p.id) ?? -1;
       borrando.current.add(p.id);
       setDatos((d) => (d ? { ...d, publicaciones: d.publicaciones.filter((x) => x.id !== p.id) } : d));

@@ -5,15 +5,22 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import Logros from './Logros';
 import { BarraNivel, ContadorPuntos, useResumenPuntos } from './Puntos';
+import { DistintivoCreadora, Icono, InsigniaNivel } from './IconosDivine';
+import { irA } from '@/lib/navegar';
 import { useAviso, useConfirmar } from './Confirmar';
 import { formatoPuntos, nivelDe, type EstadoNivel } from '@/lib/puntos-tipos';
 import { leerRespuesta, prepararImagen } from '@/lib/imagen-cliente';
 import p from './perfil.module.css';
 
 /**
- * El perfil, tipo Instagram: portada, foto, quién es, su nivel y sus fotos.
- * Se ve solo dentro de la plataforma. `?u=uid` abre el de otra persona; sin
- * nada, el propio. Lo cuenta `app/api/perfiles`.
+ * El perfil, tipo Instagram: portada, foto, quién es, su nivel (con su
+ * insignia), los «me gusta» que ha recibido, sus fotos, sus publicaciones de
+ * la comunidad y su vitrina de trofeos. Se ve solo dentro de la plataforma.
+ * `?u=uid` abre el de otra persona; sin nada, el propio; `?t=trofeos` (o
+ * `?t=publicaciones`) abre esa pestaña. Lo cuenta `app/api/perfiles`.
+ *
+ * El de Sorela no tiene puntos, nivel ni trofeos: es la creadora y no
+ * compite. Lleva su distintivo «Creadora de la Técnica Divine».
  *
  * Los puntos del propio llegan al día con el evento `divine:puntos` (los
  * reparte la Celebración); los de otra persona, con la foto fija que guarda
@@ -38,8 +45,14 @@ type Datos = {
   };
   fotos: { id: string; url: string; pie: string }[];
   publicaciones: number;
+  /** Sus últimas publicaciones de la comunidad (cada una abre la comunidad en ella). */
+  ultimas?: Ultima[];
   puntos?: { total: number; nivel: EstadoNivel };
+  /** Los «me gusta» que le han dado las demás. Sorela no lo lleva: no compite. */
+  meGustaRecibidos?: number;
 };
+
+type Ultima = { id: string; titulo: string; categoria: string; creado: string | null; meGusta: number; respuestas: number; foto: string | null };
 
 /** Lo que cuenta /api/ficha de la propia. Si no responde, no se sabe (null). */
 type MiFicha = { esMiembro: boolean; completado: boolean; estado: 'borrador' | 'publicada' | 'oculta' | null };
@@ -48,6 +61,13 @@ const CAMPOS = ['bio', 'especialidad', 'ciudad', 'instagram'] as const;
 type Campo = (typeof CAMPOS)[number];
 
 const uidDeLaDireccion = () => (typeof window === 'undefined' ? '' : new URLSearchParams(window.location.search).get('u') || '');
+type Pestana = 'fotos' | 'publicaciones' | 'trofeos';
+const pestanaPedida = (): Pestana | null => {
+  const t = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('t');
+  return t === 'trofeos' || t === 'publicaciones' || t === 'fotos' ? t : null;
+};
+const pestanaDeLaDireccion = (): Pestana => pestanaPedida() ?? 'fotos';
+const FECHA_CORTA = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' });
 const abrirOnboarding = () => window.dispatchEvent(new Event('divine:onboarding'));
 const avisarLogros = () => window.dispatchEvent(new Event('divine:logros'));
 
@@ -89,7 +109,7 @@ export default function Perfil() {
   const [uid, setUid] = useState(uidDeLaDireccion);
   const [datos, setDatos] = useState<Datos | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
-  const [pestana, setPestana] = useState<'fotos' | 'logros'>('fotos');
+  const [pestana, setPestana] = useState<Pestana>(pestanaDeLaDireccion);
   const [editando, setEditando] = useState(false);
   const [abierta, setAbierta] = useState<number | null>(null);
   const [subiendo, setSubiendo] = useState<string | null>(null);
@@ -103,7 +123,10 @@ export default function Perfil() {
 
   useEffect(() => {
     setMontado(true);
-    const leer = () => setUid(uidDeLaDireccion());
+    const leer = () => {
+      setUid(uidDeLaDireccion());
+      setPestana(pestanaDeLaDireccion());
+    };
     window.addEventListener('popstate', leer);
     return () => window.removeEventListener('popstate', leer);
   }, []);
@@ -114,6 +137,9 @@ export default function Perfil() {
       const j = await (await fetch(`/api/perfiles${uid ? `?uid=${encodeURIComponent(uid)}` : ''}`)).json();
       if (!j.ok) throw new Error(j.motivo === 'sin-acceso' ? 'Los perfiles se ven cuando tienes acceso a la formación o a la comunidad.' : 'No he podido abrir este perfil.');
       setDatos(j);
+      /* El perfil de otra sin fotos pero con publicaciones abre en sus
+         publicaciones: así no se llega a una pestaña vacía. */
+      if (!pestanaPedida() && !j.esMio && !j.fotos?.length && j.ultimas?.length) setPestana('publicaciones');
     } catch (e) {
       setFallo((e as Error).message || 'No hay conexión.');
     }
@@ -121,7 +147,7 @@ export default function Perfil() {
 
   useEffect(() => {
     setDatos(null);
-    setPestana('fotos');
+    setPestana(pestanaDeLaDireccion());
     cargar();
   }, [cargar]);
 
@@ -263,6 +289,10 @@ export default function Perfil() {
   const ini = perfil.nombre.split(/\s+/).slice(0, 2).map((x) => x[0] ?? '').join('').toUpperCase();
   const puedeBorrar = esMio || datos.puedeModerar;
   const conPuntos = !perfil.esSorela;
+  // Sorela no tiene vitrina, aunque la dirección la pida.
+  const pestanaVista: Pestana = conPuntos || pestana !== 'trofeos' ? pestana : 'fotos';
+  const ultimas = datos.ultimas ?? [];
+  const meGusta = datos.meGustaRecibidos ?? 0;
   const total = esMio && resumen ? resumen.total : (datos.puntos?.total ?? 0);
   const nivel = nivelDe(total);
   const vacio = !perfil.bio && !perfil.especialidad && !perfil.ciudad && fotos.length === 0;
@@ -302,7 +332,7 @@ export default function Perfil() {
           <div className={p.nombreBloque}>
             <h2>
               {perfil.nombre}
-              {perfil.esSorela && <span className={p.sello}>✦ Creadora de la Técnica Divine</span>}
+              {perfil.esSorela && <DistintivoCreadora />}
             </h2>
             {(perfil.especialidad || perfil.ciudad) && <p className={p.sub}>{[perfil.especialidad, perfil.ciudad].filter(Boolean).join(' · ')}</p>}
           </div>
@@ -328,24 +358,27 @@ export default function Perfil() {
 
         {conPuntos && (
           <div className={p.nivel}>
-            <BarraNivel total={total} tamano="compacta" conTexto={false} />
-            <p className={p.nivelTexto}>
-              {nivel.siguiente ? (
-                esMio ? (
-                  <>
-                    Te faltan <b>{formatoPuntos(nivel.falta)} pts</b> para <b>{nivel.siguiente.nombre}</b>
-                  </>
+            <InsigniaNivel n={nivel.n} size={46} className={p.nivelInsignia} title={`Nivel ${nivel.n}: ${nivel.nombre}`} />
+            <div className={p.nivelBarra}>
+              <BarraNivel total={total} tamano="compacta" conTexto={false} />
+              <p className={p.nivelTexto}>
+                {nivel.siguiente ? (
+                  esMio ? (
+                    <>
+                      Te faltan <b>{formatoPuntos(nivel.falta)} pts</b> para <b>{nivel.siguiente.nombre}</b>
+                    </>
+                  ) : (
+                    <>
+                      A <b>{formatoPuntos(nivel.falta)} pts</b> de <b>{nivel.siguiente.nombre}</b>
+                    </>
+                  )
+                ) : esMio ? (
+                  'Has llegado al nivel más alto.'
                 ) : (
-                  <>
-                    A <b>{formatoPuntos(nivel.falta)} pts</b> de <b>{nivel.siguiente.nombre}</b>
-                  </>
-                )
-              ) : esMio ? (
-                'Has llegado al nivel más alto.'
-              ) : (
-                'Está en el nivel más alto.'
-              )}
-            </p>
+                  'Está en el nivel más alto.'
+                )}
+              </p>
+            </div>
           </div>
         )}
 
@@ -358,6 +391,10 @@ export default function Perfil() {
           </span>
           {conPuntos && (
             <>
+              <span className={p.cifraGusta} title={esMio ? 'Los «me gusta» que te han dado' : 'Los «me gusta» que le han dado'}>
+                <Icono nombre="meGusta" size={18} grosor={1.7} />
+                <b>{formatoPuntos(meGusta)}</b> «me gusta»
+              </span>
               <span>
                 <b>
                   <ContadorPuntos valor={total} desde={0} />
@@ -365,9 +402,7 @@ export default function Perfil() {
                 puntos
               </span>
               <span className={p.chipNivel}>
-                <span className={p.chipNumero} aria-hidden="true">
-                  {nivel.n}
-                </span>
+                <InsigniaNivel n={nivel.n} size={24} />
                 <span className={p.soloLector}>Nivel {nivel.n}: </span>
                 {nivel.nombre}
               </span>
@@ -401,22 +436,26 @@ export default function Perfil() {
         )}
       </section>
 
-      {/* ---------- Pestañas ---------- */}
+      {/* El sitio de los puntos y la vitrina, en el de Sorela: su distintivo. */}
+      {perfil.esSorela && <DistintivoCreadora variante="bloque" ajena={!esMio} nombre={perfil.nombre} />}
+
+      {/* ---------- Pestañas (Sorela no tiene trofeos: fotos y publicaciones) ---------- */}
       <nav className={p.pestanas} aria-label="Contenido del perfil">
         {(
           [
             ['fotos', 'Fotos'],
-            ['logros', 'Logros'],
+            ['publicaciones', 'Publicaciones'],
+            ...(conPuntos ? ([['trofeos', 'Trofeos']] as const) : []),
           ] as const
         ).map(([id, nombre]) => (
-          <button key={id} type="button" aria-current={pestana === id ? 'page' : undefined} onClick={() => setPestana(id)}>
+          <button key={id} type="button" aria-current={pestanaVista === id ? 'page' : undefined} onClick={() => setPestana(id)}>
             {nombre}
-            {pestana === id && <motion.span layoutId="perfil-pestana" className={p.subrayado} />}
+            {pestanaVista === id && <motion.span layoutId="perfil-pestana" className={p.subrayado} />}
           </button>
         ))}
       </nav>
 
-      {pestana === 'fotos' &&
+      {pestanaVista === 'fotos' &&
         (!esMio && fotos.length === 0 ? (
           <Vacio titulo="Todavía no hay fotos">Cuando suba fotos de su trabajo, las verás aquí.</Vacio>
         ) : (
@@ -451,7 +490,60 @@ export default function Perfil() {
           </div>
         ))}
 
-      {pestana === 'logros' && <Logros uid={esMio ? undefined : perfil.uid} />}
+      {pestanaVista === 'publicaciones' &&
+        (ultimas.length === 0 ? (
+          <Vacio titulo="Todavía no ha publicado">
+            {esMio ? 'Lo que publiques en la comunidad sale aquí, con sus «me gusta».' : 'Cuando publique en la comunidad, lo verás aquí.'}
+          </Vacio>
+        ) : (
+          <ul className={p.ultimas}>
+            {ultimas.map((u, i) => (
+              <motion.li key={u.id} initial={reducir ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: reducir ? 0 : Math.min(i, 8) * 0.04 }}>
+                <button type="button" className={p.ultima} onClick={() => irA('comunidad', { p: u.id })}>
+                  {u.foto ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img className={p.ultimaFoto} src={u.foto} alt="" loading="lazy" />
+                  ) : (
+                    <span className={p.ultimaFoto} data-vacia="" aria-hidden="true">
+                      <Icono nombre="publicaciones" size={22} />
+                    </span>
+                  )}
+                  <span className={p.ultimaCuerpo}>
+                    <span className={p.ultimaMeta}>
+                      <b>{u.categoria}</b>
+                      {u.creado && <> · {FECHA_CORTA.format(new Date(u.creado))}</>}
+                    </span>
+                    <span className={p.ultimaTitulo}>{u.titulo}</span>
+                    <span className={p.ultimaCifras}>
+                      <span data-gusta={u.meGusta ? '' : undefined}>
+                        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                          <path
+                            d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.7 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"
+                            fill={u.meGusta ? 'currentColor' : 'none'}
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                          />
+                        </svg>
+                        {formatoPuntos(u.meGusta)} <span className={p.soloLector}>«me gusta»</span>
+                      </span>
+                      <span>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M4 5.5h16v10H9l-5 4z" />
+                        </svg>
+                        {formatoPuntos(u.respuestas)} <span className={p.soloLector}>{u.respuestas === 1 ? 'respuesta' : 'respuestas'}</span>
+                      </span>
+                    </span>
+                  </span>
+                  <svg className={p.ultimaFlecha} viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
+                </button>
+              </motion.li>
+            ))}
+          </ul>
+        ))}
+
+      {pestanaVista === 'trofeos' && <Logros uid={esMio ? undefined : perfil.uid} nombre={perfil.nombre} />}
 
       <input ref={entradaFoto} type="file" accept="image/*" hidden onChange={(e) => { subir('foto', e.target.files?.[0]); e.target.value = ''; }} />
       <input ref={entradaPortada} type="file" accept="image/*" hidden onChange={(e) => { subir('portada', e.target.files?.[0]); e.target.value = ''; }} />

@@ -78,9 +78,48 @@ export const ETIQUETA_FUENTE: Record<FuentePuntos, string> = {
   meGusta: '«Me gusta» recibidos',
   dias: 'Días que has entrado',
   racha: 'Rachas',
-  logros: 'Logros',
+  logros: 'Trofeos',
   perfil: 'Perfil completo',
   fotos: 'Fotos del perfil',
+};
+
+/**
+ * Cómo se suma, en frases cortas y con los valores de PUNTOS (nunca copiados a
+ * mano): lo leen «Cómo sumar», la leyenda del ranking, la bienvenida del muro
+ * y su correo. El icono de cada una está en IconosDivine (ICONO_FUENTE).
+ * `corto`: el nombre en dos palabras, para la leyenda del ranking, donde no
+ * cabe la frase entera.
+ */
+export const FORMAS_DE_SUMAR: { fuente: FuentePuntos; texto: string; corto: string; puntos: number }[] = [
+  { fuente: 'clases', texto: 'Terminar una clase', corto: 'Clase terminada', puntos: PUNTOS.clase },
+  { fuente: 'curso', texto: 'Completar la formación', corto: 'Formación completa', puntos: PUNTOS.curso },
+  { fuente: 'publicaciones', texto: 'Publicar en la comunidad', corto: 'Publicar', puntos: PUNTOS.publicacion },
+  { fuente: 'respuestas', texto: 'Responder a una compañera', corto: 'Responder', puntos: PUNTOS.respuesta },
+  { fuente: 'meGusta', texto: 'Cada «me gusta» que recibes', corto: '«Me gusta» recibido', puntos: PUNTOS.meGusta },
+  { fuente: 'dias', texto: 'Cada día que entras', corto: 'Cada día', puntos: PUNTOS.dia },
+  { fuente: 'racha', texto: `7 días seguidos (y +${PUNTOS.racha30} a los 30)`, corto: 'Racha de 7 días', puntos: PUNTOS.racha7 },
+  { fuente: 'logros', texto: 'Cada trofeo que ganas', corto: 'Trofeo', puntos: PUNTOS.logro },
+  { fuente: 'perfil', texto: 'Completar tu perfil', corto: 'Perfil completo', puntos: PUNTOS.perfil },
+  { fuente: 'fotos', texto: `Cada foto de tu trabajo (hasta ${PUNTOS.fotosMax})`, corto: 'Foto', puntos: PUNTOS.foto },
+];
+
+/**
+ * Lo que suma al ranking del mes («Más activas este mes»): lo que se hace en
+ * la comunidad y el aula. Cada fila del ranking guarda cuántas de cada una
+ * lleva en el mes (lib/actividad.ts), y así se enseña de dónde salen sus puntos.
+ */
+export const SUMAN_AL_MES = ['publicaciones', 'respuestas', 'meGusta', 'clases'] as const satisfies readonly FuentePuntos[];
+export type FuenteMes = (typeof SUMAN_AL_MES)[number];
+
+/** Cuántas de cada cosa lleva alguien en el mes (las que no tiene, no están). */
+export type PorFuenteMes = Partial<Record<FuenteMes, number>>;
+
+/** Cómo se cuenta cada una: «1 publicación», «3 publicaciones». */
+export const UNIDAD_MES: Record<FuenteMes, readonly [string, string]> = {
+  publicaciones: ['publicación', 'publicaciones'],
+  respuestas: ['respuesta', 'respuestas'],
+  meGusta: ['«me gusta» recibido', '«me gusta» recibidos'],
+  clases: ['clase terminada', 'clases terminadas'],
 };
 
 /** Lo que hace falta saber de una persona para contar sus puntos. */
@@ -130,3 +169,43 @@ export function calcularPuntos(e: EntradaPuntos): { total: number; desglose: Rec
 
 /** «1250», «12.500»: con el punto de los miles a la española. */
 export const formatoPuntos = (n: number): string => Math.round(Number(n) || 0).toLocaleString('es-ES');
+
+/**
+ * Los puntos que se pueden sacar de su ficha (`usuarios/{uid}`) sin leer nada
+ * más: lo de la comunidad (`stats`), los días y la racha (`actividad`) y el
+ * perfil. Lo demás (clases, trofeos, fotos) solo lo cuenta lib/logros.ts.
+ */
+export function puntosDeLaFicha(u: Record<string, unknown>): number {
+  const stats = (u.stats ?? {}) as { publicaciones?: number; respuestas?: number; meGustaRecibidos?: number };
+  const act = (u.actividad ?? {}) as { dias?: number; racha?: number; mejor?: number };
+  return calcularPuntos({
+    clases: 0,
+    cursoCompleto: false,
+    publicaciones: stats.publicaciones ?? 0,
+    respuestas: stats.respuestas ?? 0,
+    meGusta: stats.meGustaRecibidos ?? 0,
+    dias: typeof act.dias === 'number' ? act.dias : Math.max(act.racha ?? 0, act.mejor ?? 0),
+    mejorRacha: act.mejor ?? 0,
+    logros: 0,
+    perfilCompleto: Boolean((u.onboarding as { completado?: unknown } | undefined)?.completado),
+    fotos: 0,
+  }).total;
+}
+
+/**
+ * Sus puntos totales AL DÍA para enseñarlos en listas (ranking, perfil de
+ * otra, quién dio «me gusta») sin recalcularlo todo por persona.
+ *
+ * lib/logros.ts guarda una foto fija (`puntosTotal`) solo cuando ella abre la
+ * plataforma, y junto a ella lo que su ficha valía entonces (`puntosBase`).
+ * Si desde entonces le han dado «me gusta» o ha publicado, la diferencia se
+ * suma (o se resta si borró algo). Sin foto fija, lo que da la ficha: así
+ * nunca sale sin nivel.
+ */
+export function puntosAlDia(u: Record<string, unknown>): number {
+  const ahora = puntosDeLaFicha(u);
+  const total = u.puntosTotal;
+  if (typeof total !== 'number') return ahora;
+  if (typeof u.puntosBase === 'number') return Math.max(0, Math.round(total - u.puntosBase + ahora));
+  return Math.max(Math.round(total), ahora);
+}

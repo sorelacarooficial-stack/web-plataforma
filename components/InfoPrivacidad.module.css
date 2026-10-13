@@ -15,6 +15,7 @@
   --pv-suave: var(--muted);
   --pv-linea: var(--line-2);
   --pv-oro: var(--arcilla-ink);
+  --pv-texto: var(--ink-3);
 
   margin: 6px 0 2px;
   border: 1px solid var(--pv-linea);
@@ -32,6 +33,7 @@
   --pv-suave: #5f574e;
   --pv-linea: rgba(20, 18, 16, 0.14);
   --pv-oro: #6e5327;
+  --pv-texto: #3a342e;
 }
 
 .resumen {
@@ -100,6 +102,10 @@
 
 .lista dd {
   margin: 0;
+  /* Abierta es lo que la ley quiere que se lea antes de enviar: a 12,5 px y
+     en gris se saltaba. Los títulos se quedan pequeños, el texto no. */
+  font-size: 14px;
+  color: var(--pv-texto);
   text-wrap: pretty;
 }
 

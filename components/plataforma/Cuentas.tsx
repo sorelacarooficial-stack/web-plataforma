@@ -523,15 +523,18 @@ export default function Cuentas() {
                       hay que mirar de un vistazo. */}
                   {(tieneMembresia(c.accesos) || cursosDe(c.accesos).length > 0) && (
                     <span className={css.sellos}>
+                      {/* Con su palabra delante: «Membresía» se paga cada mes,
+                          «Curso» se paga una vez. Solo con el nombre, «Comunidad
+                          Divine» y «Formación Técnica Divine» se confundían. */}
                       {tieneMembresia(c.accesos) && (
                         <span className={css.selloComunidad}>
                           <Destello />
-                          Comunidad Divine
+                          Membresía · Comunidad Divine
                         </span>
                       )}
                       {cursosDe(c.accesos).map((a) => (
                         <span key={a.nombre} className={css.selloCurso}>
-                          {a.nombre}
+                          Curso · {a.nombre}
                         </span>
                       ))}
                     </span>
@@ -556,18 +559,21 @@ export default function Cuentas() {
                       className={tieneMembresia(c.accesos) ? css.btnLinea : css.btnComunidad}
                       onClick={() => cambiarMembresia(c, !tieneMembresia(c.accesos))}
                     >
-                      {tieneMembresia(c.accesos) ? 'Quitar comunidad' : 'Dar comunidad'}
+                      {tieneMembresia(c.accesos) ? 'Quitar membresía' : 'Dar membresía'}
                     </button>
                   )}
                   {!c.protegida && (() => {
                     const conFormacion = cursosDe(c.accesos).some((a) => clave(a.nombre) === clave(CURSO_DIVINE));
                     return (
+                      /* Sin el dorado de la membresía: dorado es la Comunidad.
+                         Con el mismo botón dorado, «Dar formación» y «Dar
+                         comunidad» parecían la misma cosa. */
                       <button
                         type="button"
-                        className={conFormacion ? css.btnLinea : css.btnComunidad}
+                        className={css.btnLinea}
                         onClick={() => cambiarFormacion(c, !conFormacion)}
                       >
-                        {conFormacion ? 'Quitar formación' : 'Dar formación'}
+                        {conFormacion ? 'Quitar curso' : 'Dar acceso al curso'}
                       </button>
                     );
                   })()}
@@ -600,7 +606,7 @@ export default function Cuentas() {
                           {c.accesos.length > 0 && (
                             <button type="button" role="menuitem" onClick={() => { setGestion(null); quitarTodo(c); }}>
                               <strong>Quitar todo el acceso</strong>
-                              <small>Pierde la formación y la comunidad. Su cuenta sigue.</small>
+                              <small>Pierde el curso y la membresía de la Comunidad. Su cuenta sigue.</small>
                             </button>
                           )}
                           <button type="button" role="menuitem" onClick={() => { setGestion(null); bloquear(c, !c.bloqueada); }}>

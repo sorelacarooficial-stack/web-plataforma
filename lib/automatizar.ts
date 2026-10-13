@@ -141,6 +141,9 @@ export async function listaDeEspera(): Promise<{ correo: string; nombre: string 
     const v = c.data();
     const correo = String(v.correo || '').toLowerCase();
     if (!correo || v.estado === 'Descartado') continue;
+    // Apuntada a mano sin haber pedido la información: no se le escribe
+    // (art. 21 LSSI). Ver el POST de app/api/contactos.
+    if (v.aMano && !v.pidioInformacion) continue;
     const tipo = ['clienta', 'alumna', 'comunidad', 'otro'].includes(v.tipoManual) ? v.tipoManual : tipoDeOrigen(v.origen);
     if (tipo === 'comunidad' && !salida.has(correo)) salida.set(correo, { correo, nombre: v.nombre || null });
   }

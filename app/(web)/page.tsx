@@ -362,7 +362,7 @@ export default async function Home() {
             <BotonCaptacion
               className={`btn btn-md ${css.lanzamientoBoton}`}
               titulo="Entra en la lista de espera"
-              entradilla="Te aviso en cuanto abra la Membresía Divine. No pido tarjeta y puedes salirte con un correo."
+              entradilla="Déjame tus datos y, al terminar, entra en el grupo de WhatsApp de la Técnica Divine. No pido tarjeta."
               etiquetaVentana="Entrar en la lista de espera de la Membresía Divine"
               origen="comunidad"
             >
@@ -404,8 +404,7 @@ export default async function Home() {
             Si has llegado hasta aquí, ya sabes que no es otro protocolo.
           </h2>
           <p className={css.cierreTexto}>
-            Déjame tu contacto y te mando la información completa: qué es el método, cómo se
-            aprende y cuándo son las próximas formaciones.
+            Déjame tu contacto y entra en el grupo de WhatsApp de la Técnica Divine.
           </p>
           <LlamadaDivine
             textoPrincipal="Quiero la información"

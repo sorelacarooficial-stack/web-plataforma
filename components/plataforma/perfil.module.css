@@ -187,14 +187,6 @@
   color: var(--ink);
 }
 
-.sello {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: #6f5323;
-}
-
 .sub {
   margin: 4px 0 0;
   font-size: 15px;
@@ -323,13 +315,27 @@
 
 /* ---------- Nivel: la barra dorada y lo que falta ---------- */
 
+/* La insignia del nivel a la izquierda y, a su lado, la barra y lo que falta. */
 .nivel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 520px;
+  padding: 0 clamp(18px, 3vw, 28px);
+  color: var(--ink);
+}
+
+.nivelInsignia {
+  flex: none;
+  filter: drop-shadow(0 6px 12px rgba(138, 106, 50, 0.3));
+}
+
+.nivelBarra {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-width: 460px;
-  padding: 0 clamp(18px, 3vw, 28px);
-  color: var(--ink);
+  min-width: 0;
 }
 
 .nivelTexto {
@@ -341,7 +347,7 @@
 }
 
 .nivelTexto b {
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
@@ -359,7 +365,7 @@
 
 .cifras b {
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
@@ -368,7 +374,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 3px 12px 3px 3px;
+  padding: 2px 12px 2px 2px;
   border-radius: 999px;
   background: var(--oro-tint);
   border: 1px solid var(--oro-line);
@@ -377,18 +383,9 @@
   color: #6f5323;
 }
 
-.chipNumero {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 34% 28%, #fbf1dc 0%, #e6c890 40%, #c49a5a 100%);
-  box-shadow: inset 0 -1px 2px rgba(70, 48, 16, 0.3);
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: #17140f;
+.chipNivel svg {
+  flex: none;
+  display: block;
 }
 
 .bio {
@@ -406,7 +403,7 @@
   align-self: flex-start;
   margin: 0 clamp(18px, 3vw, 28px);
   font-size: 14.5px;
-  font-weight: 600;
+  font-weight: 500;
   color: #6f5323;
   text-decoration: none;
 }
@@ -451,7 +448,7 @@
   align-items: center;
   gap: 4px 10px;
   font-size: 15.5px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
 }
 
@@ -468,7 +465,7 @@
   border-radius: 999px;
   background: #17140f;
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: #e6c890;
 }
@@ -489,7 +486,7 @@
   background: none;
   font: inherit;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted-2);
@@ -621,7 +618,7 @@
   background: var(--oro-tint);
   font: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: #6f5323;
   cursor: pointer;
 }
@@ -920,7 +917,7 @@
   align-items: center;
   gap: 4px 10px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
 }
 
@@ -968,5 +965,145 @@
 
   .completa > button {
     width: 100%;
+  }
+}
+
+/* ==========================================================================
+   «Me gusta» recibidos y sus publicaciones (fase 3)
+   ========================================================================== */
+
+/* Los «me gusta» que ha recibido: el corazón en el vino del acento. */
+.cifraGusta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cifraGusta svg {
+  flex: none;
+  color: var(--divine);
+}
+
+.ultimas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ultima {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 16px 12px 12px;
+  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.1));
+  border-radius: 18px;
+  background: #fffdf9;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(60, 45, 25, 0.05);
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s,
+    transform 0.18s;
+}
+
+.ultima:hover {
+  border-color: rgba(20, 18, 16, 0.2);
+  box-shadow: 0 14px 30px -22px rgba(60, 45, 25, 0.55);
+  transform: translateY(-1px);
+}
+
+.ultima:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+.ultimaFoto {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  object-fit: cover;
+  background: var(--surface-2);
+}
+
+.ultimaFoto[data-vacia] {
+  display: grid;
+  place-items: center;
+  background: var(--oro-tint);
+  color: #6f5323;
+}
+
+.ultimaCuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ultimaMeta {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.ultimaMeta b {
+  font-weight: 500;
+  color: #6f5323;
+}
+
+.ultimaTitulo {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.ultimaCifras {
+  display: flex;
+  gap: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+
+.ultimaCifras > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ultimaCifras > span[data-gusta] {
+  color: var(--divine-ink);
+}
+
+.ultimaCifras > span[data-gusta] svg {
+  color: var(--divine);
+}
+
+.ultimaFlecha {
+  flex: none;
+  color: var(--muted-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultima {
+    transition: none;
+  }
+
+  .ultima:hover {
+    transform: none;
   }
 }

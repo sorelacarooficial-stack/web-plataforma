@@ -198,7 +198,8 @@ export async function enviarAcuerdo(referencia: string, modo: 'firmado' | 'aprob
             : correoAcuerdoRecibido(`${a.nombre}`, a.referencia)),
           adjuntos,
         },
-        { tipo: 'acuerdo' }
+        // Con la referencia: si Sorela borra el acuerdo, su línea del historial se va con él.
+        { tipo: 'acuerdo', acuerdo: a.referencia }
       );
       resultado = { enviado: r.estado === 'enviado', via: 'resend', fecha, detalle: r.detalle ?? 'Enviado.' };
       para = '';
@@ -238,6 +239,7 @@ export async function enviarAcuerdo(referencia: string, modo: 'firmado' | 'aprob
     await apuntarCorreo({
       para,
       tipo: 'acuerdo',
+      acuerdo: referencia,
       asunto: `Acuerdo de confidencialidad ${referencia}`,
       via: resultado.via === 'apps-script' || resultado.via === 'smtp' ? resultado.via : null,
       estado: resultado.enviado ? 'enviado' : 'fallido',

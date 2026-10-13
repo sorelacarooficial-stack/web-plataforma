@@ -429,16 +429,9 @@ export const RESERVAS_AGREGADAS: { nombre: string; pct: number; total: string }[
  * Firestore: ver components/plataforma/Contactos.tsx.
  */
 
-export const CONVOCATORIAS: {
-  curso: string;
-  ciudad: string;
-  fechas: string;
-  vendidas: number;
-  total: number;
-  pct: number;
-  ingreso: string;
-  pendiente: string;
-}[] = [];
+/* Aquí había un CONVOCATORIAS vacío que pintaba la maqueta de Formaciones.
+   Las convocatorias de verdad viven en Firestore: ver lib/convocatorias.ts y
+   components/plataforma/Convocatorias.tsx. */
 
 /*
  * Aquí había un AGENDA_SORELA vacío que alimentaba un bloque «Tu calendario»

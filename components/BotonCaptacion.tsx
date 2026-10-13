@@ -22,9 +22,9 @@ import ModalDivine from './ModalDivine';
 export default function BotonCaptacion({
   children,
   className = 'btn btn-latido',
-  titulo = 'Te mando la información',
-  entradilla = 'Déjame dónde escribirte y recibes en tu correo qué es la Técnica Divine, cómo se aprende y cuándo son las próximas formaciones.',
-  etiquetaVentana = 'Recibir la información de la Técnica Divine',
+  titulo = 'Apúntate',
+  entradilla = 'Déjame tu nombre, tu correo y tu teléfono. Al terminar, el siguiente paso es entrar en el grupo de WhatsApp de la Técnica Divine.',
+  etiquetaVentana = 'Apuntarme a la Técnica Divine',
   origen,
 }: {
   children: React.ReactNode;

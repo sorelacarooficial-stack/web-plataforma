@@ -89,7 +89,7 @@ export default async function PaginaArticulo({ params }: Props) {
         )}
 
         <div className={css.articuloCuerpo}>
-          <Cuerpo bloques={a.bloques} />
+          <Cuerpo bloques={a.bloques} titulo={a.titulo} />
         </div>
       </article>
 

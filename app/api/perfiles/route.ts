@@ -5,23 +5,29 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { aplicacion, baseDeDatos, COLECCIONES, hayFirebase } from '@/lib/firebase-servidor';
 import { accesosDe, sesionActual, type Sesion } from '@/lib/sesion-servidor';
-import { nivelDe } from '@/lib/puntos-tipos';
+import { nivelDe, puntosAlDia } from '@/lib/puntos-tipos';
 
 /**
  * Los perfiles, tipo Instagram, SOLO dentro de la plataforma.
  *
- *   GET    ?uid=           → el perfil (sin uid, el propio), con sus puntos y nivel
+ *   GET    ?uid=           → el perfil (sin uid, el propio), con sus puntos y nivel,
+ *                             los «me gusta» que ha recibido y sus últimas publicaciones
  *   PATCH  { bio?, especialidad?, ciudad?, instagram? }        → el propio; solo lo que llega
  *   POST   multipart { tipo: 'portada'|'foto', archivo, pie? }  → el propio
  *   DELETE ?foto=id[&uid=]     → borrar una foto (la propia; Sorela, cualquiera)
  *   DELETE ?portada=1[&uid=]   → quitar la portada (la propia; Sorela, cualquiera)
  *
  * Los puntos que se enseñan aquí son la foto fija que guarda lib/logros.ts
- * (`usuarios.puntosTotal`): el desglose completo lo da /api/logros.
+ * puesta al día con lo ganado después (lib/puntos-tipos.ts, puntosAlDia): el
+ * desglose completo lo da /api/logros. Sorela no
+ * lleva `puntos`: es la creadora y no compite (aunque le quede una foto fija
+ * de antes, no se manda).
  *
  * Quién ve qué: cada una ve siempre el suyo. Los de las demás, solo quien
  * tiene algo contratado (o Sorela): son terapeutas enseñando su trabajo a
- * compañeras, no un escaparate público.
+ * compañeras, no un escaparate público. Y nunca nada privado: ni correo, ni
+ * teléfono, ni dirección (sin nombre puesto sale «Terapeuta», no un trozo del
+ * correo). Solo lo que ella misma ha puesto en su perfil.
  *
  * Las fotos son privadas en Storage y se sirven con enlaces firmados de una
  * hora. Se reducen y se les quitan los datos del móvil (GPS, modelo).
@@ -32,6 +38,9 @@ export const dynamic = 'force-dynamic';
 
 const COLECCION = 'perfiles';
 const MAX_FOTOS = 60;
+/* Cuántas publicaciones se miran para enseñar las últimas en su perfil. */
+const MAX_SUYAS = 200;
+const ULTIMAS = 12;
 const ID = /^[A-Za-z0-9_-]{6,128}$/;
 const texto = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
 
@@ -69,18 +78,50 @@ export async function GET(peticion: Request) {
   if (!esMio && !(await puedeVerOtras(s))) return NextResponse.json({ ok: false, motivo: 'sin-acceso' }, { status: 403 });
 
   const db = baseDeDatos();
-  const [usuario, perfil, fotos, publicaciones] = await Promise.all([
+  /* Sus publicaciones: sin orderBy junto al where (pediría un índice
+     compuesto); se ordenan aquí. Se eligen solo los campos que se enseñan. */
+  const [usuario, perfil, fotos, publicaciones, suyas] = await Promise.all([
     db.collection(COLECCIONES.usuarios).doc(pedido).get(),
     db.collection(COLECCION).doc(pedido).get(),
     db.collection(COLECCION).doc(pedido).collection('fotos').orderBy('creado', 'desc').limit(MAX_FOTOS).get(),
     db.collection('comunidad_posts').where('autor', '==', pedido).count().get().catch(() => null),
+    db
+      .collection('comunidad_posts')
+      .where('autor', '==', pedido)
+      .select('titulo', 'categoria', 'creado', 'meGusta', 'respuestas', 'imagenes')
+      .limit(MAX_SUYAS)
+      .get()
+      .catch(() => null),
   ]);
   if (!usuario.exists) return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
   const u = usuario.data() ?? {};
   const p = perfil.data() ?? {};
 
   const foto = typeof u.foto === 'string' && u.foto.startsWith('data:image/') ? u.foto : null;
-  const puntosTotal = typeof u.puntosTotal === 'number' ? Math.max(0, Math.round(u.puntosTotal)) : 0;
+  const esSorela = u.rol === 'sorela';
+  const puntosTotal = puntosAlDia(u);
+  const stats = (u.stats ?? {}) as { meGustaRecibidos?: unknown };
+  const meGustaRecibidos = Math.max(0, Math.round(Number(stats.meGustaRecibidos) || 0));
+  /* Las últimas, con su primera foto (firmada una hora) y sus «me gusta». */
+  const ultimas = await Promise.all(
+    (suyas?.docs ?? [])
+      .map((d) => ({ d, t: d.get('creado')?.toMillis?.() ?? 0 }))
+      .sort((a, b) => b.t - a.t)
+      .slice(0, ULTIMAS)
+      .map(async ({ d }) => {
+        const v = d.data();
+        const imagenes = Array.isArray(v.imagenes) ? v.imagenes : [];
+        return {
+          id: d.id,
+          titulo: String(v.titulo ?? ''),
+          categoria: String(v.categoria ?? ''),
+          creado: v.creado?.toDate?.().toISOString() ?? null,
+          meGusta: Object.values((v.meGusta ?? {}) as Record<string, unknown>).filter(Boolean).length,
+          respuestas: Number(v.respuestas) || 0,
+          foto: imagenes.length ? await firmar(String(imagenes[0])) : null,
+        };
+      })
+  );
   const listaFotos = await Promise.all(
     fotos.docs.map(async (d) => ({ id: d.id, url: await firmar(d.get('ruta')), pie: String(d.get('pie') ?? ''), creado: d.get('creado')?.toDate?.().toISOString() ?? null }))
   );
@@ -92,8 +133,8 @@ export async function GET(peticion: Request) {
       puedeModerar: s.rol === 'sorela',
       perfil: {
         uid: pedido,
-        nombre: String(u.nombre || (u.correo ? String(u.correo).split('@')[0] : '') || 'Sin nombre'),
-        esSorela: u.rol === 'sorela',
+        nombre: String(u.nombre || (esMio && u.correo ? String(u.correo).split('@')[0] : '') || 'Terapeuta'),
+        esSorela,
         foto,
         portada: await firmar(p.portada),
         bio: String(p.bio ?? ''),
@@ -103,8 +144,10 @@ export async function GET(peticion: Request) {
         desde: u.creado?.toDate?.().toISOString() ?? null,
       },
       fotos: listaFotos.filter((f) => f.url),
-      publicaciones: publicaciones?.data().count ?? 0,
-      puntos: { total: puntosTotal, nivel: nivelDe(puntosTotal) },
+      publicaciones: publicaciones?.data().count ?? ultimas.length,
+      ultimas,
+      // Los «me gusta» recibidos son de la competición: Sorela no los lleva.
+      ...(esSorela ? {} : { puntos: { total: puntosTotal, nivel: nivelDe(puntosTotal) }, meGustaRecibidos }),
     },
     { headers: { 'Cache-Control': 'private, no-store' } }
   );

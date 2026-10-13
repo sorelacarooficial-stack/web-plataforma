@@ -1,4 +1,5 @@
 import { idYoutube, trocear, type Bloque } from '@/lib/blog-tipos';
+import VideoYoutube from '@/components/VideoYoutube';
 import css from './cuerpo.module.css';
 
 /**
@@ -29,8 +30,24 @@ function Texto({ texto }: { texto: string }) {
   );
 }
 
-export default function Cuerpo({ bloques, capitular = true }: { bloques: Bloque[]; capitular?: boolean }) {
+export default function Cuerpo({
+  bloques,
+  capitular = true,
+  titulo,
+}: {
+  bloques: Bloque[];
+  capitular?: boolean;
+  /** El título del artículo: nombra los vídeos para el lector de pantalla. */
+  titulo?: string;
+}) {
   const primerParrafo = bloques.findIndex((b) => b.tipo === 'parrafo');
+  // «Vídeo» a secas en todos no servía para distinguirlos: van numerados si
+  // hay más de uno y con el título del artículo.
+  const videos = bloques.flatMap((b, i) => (b.tipo === 'video' ? [i] : []));
+  const nombreVideo = (i: number) => {
+    const n = videos.length > 1 ? ` ${videos.indexOf(i) + 1}` : '';
+    return titulo ? `Vídeo${n} del artículo «${titulo}»` : `Vídeo${n} del artículo`;
+  };
   return (
     <div className={css.cuerpo}>
       {bloques.map((b, i) => {
@@ -80,13 +97,8 @@ export default function Cuerpo({ bloques, capitular = true }: { bloques: Bloque[
             const id = idYoutube(b.youtube);
             return id ? (
               <div key={i} className={css.video}>
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${id}?rel=0`}
-                  title="Vídeo"
-                  loading="lazy"
-                  allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                  allowFullScreen
-                />
+                {/* Hasta que se pulsa, sin nada de YouTube: ver VideoYoutube. */}
+                <VideoYoutube src={`https://www.youtube-nocookie.com/embed/${id}?rel=0`} titulo={nombreVideo(i)} />
               </div>
             ) : null;
           }

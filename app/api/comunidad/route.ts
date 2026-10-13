@@ -4,8 +4,8 @@ import { getStorage } from 'firebase-admin/storage';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { accesosDe, sesionActual, type Sesion } from '@/lib/sesion-servidor';
 import { tieneMembresia } from '@/lib/accesos';
-import { COLECCION_ACTIVIDAD, Cuentas, esMes, mesDe, type CampoStats } from '@/lib/actividad';
-import { NIVELES, PUNTOS, nivelDe } from '@/lib/puntos-tipos';
+import { COLECCION_ACTIVIDAD, Cuentas, cuentasDeSorela, esMes, mesDe, type CampoStats } from '@/lib/actividad';
+import { PUNTOS, SUMAN_AL_MES, nivelDe, puntosAlDia, type FuenteMes, type PorFuenteMes } from '@/lib/puntos-tipos';
 import {
   CATEGORIAS_COMUNIDAD,
   type Autora,
@@ -20,6 +20,8 @@ import {
  *   GET                       → publicaciones, ranking del mes (con su nivel),
  *                               tu puesto y tus puntos del mes, próxima clase
  *   GET ?id=…                 → una publicación con sus respuestas
+ *   GET ?id=…&gustan=1[&rid=] → quién ha dado «me gusta» a una publicación (o
+ *                               a una de sus respuestas), con foto y nivel
  *   POST { accion, … }        → publicar, responder, meGusta, fijar, resolver,
  *                               borrar, proximaClase
  *
@@ -32,7 +34,17 @@ import {
  * al ranking del mes y a los contadores de cada una (lib/actividad.ts), en el
  * MISMO lote que el contenido. Al borrar se resta lo mismo, en el mes en que
  * se sumó. Cada publicación y respuesta guarda lo que aportó (`aporte`) y cada
- * «me gusta» que puntuó guarda su mes: así la resta es exacta.
+ * «me gusta» que puntuó guarda su mes: así la resta es exacta. Cada suma lleva
+ * su fuente (publicaciones, respuestas, meGusta), y el ranking enseña cuántas
+ * de cada una lleva cada persona en el mes.
+ *
+ * «ME GUSTA» A LA VISTA: cada publicación y respuesta trae `gustan`, unas
+ * pocas de las que le han dado «me gusta» (tú la primera, si se lo has dado),
+ * para el «Le gusta a Lucía, Ana y 3 más» con sus mini fotos. Sus nombres y
+ * fotos van UNA vez en `personas` (una foto puede pesar cientos de KB: no se
+ * repite en cada publicación) y salen de la misma lectura que las autoras, sin
+ * consultas por fila. La lista entera, al pulsar, con `?gustan=1`: una lectura
+ * del documento y otra de las fichas.
  *
  * Las fotos son privadas como el material del curso: se guardan sin enlace
  * público y se dan con direcciones que caducan.
@@ -52,7 +64,9 @@ const MAX_LOTE = 450;
 const ANTES = { publicacion: 3, respuesta: 2 } as const;
 const recortar = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
 const fecha = (v: unknown) => (v as { toDate?: () => Date })?.toDate?.().toISOString() ?? null;
-const nombreDe = (v: FirebaseFirestore.DocumentData) => String(v.nombre || String(v.correo || '').split('@')[0] || 'Terapeuta');
+/* Sin nombre, «Terapeuta»: nunca un trozo del correo, que las demás no deben ver. */
+const nombreDe = (v: FirebaseFirestore.DocumentData) => String(v.nombre || 'Terapeuta');
+const fotoDe = (v: FirebaseFirestore.DocumentData | undefined) => (typeof v?.foto === 'string' && v.foto.length < 400_000 ? v.foto : null);
 
 type Permisos = { sesion: Sesion; leer: boolean; escribir: boolean; modera: boolean };
 
@@ -96,7 +110,7 @@ async function autorasDe(uids: string[]): Promise<Map<string, Autora>> {
     mapa.set(d.id, {
       uid: d.id,
       nombre: nombreDe(v),
-      foto: typeof v.foto === 'string' && v.foto.length < 400_000 ? v.foto : null,
+      foto: fotoDe(v),
       esSorela: v.rol === 'sorela',
     });
   }
@@ -105,7 +119,33 @@ async function autorasDe(uids: string[]): Promise<Map<string, Autora>> {
 
 const anonima = (uid: string): Autora => ({ uid, nombre: 'Terapeuta', foto: null, esSorela: false });
 
-async function aPublicacion(d: FirebaseFirestore.DocumentSnapshot, autoras: Map<string, Autora>, yo: string): Promise<Publicacion> {
+/** Cuántas caras se adelantan bajo cada publicación (las mini fotos apiladas). */
+const AVANCE_GUSTAN = 3;
+
+/** Quién ha dado «me gusta», según el mapa `meGusta` del documento. */
+const quienesGustan = (v: FirebaseFirestore.DocumentData) =>
+  Object.entries((v.meGusta ?? {}) as Record<string, unknown>)
+    .filter(([uid, x]) => Boolean(x) && ID.test(uid))
+    .map(([uid]) => uid);
+
+/**
+ * Las primeras de quienes han dado «me gusta», para enseñar sus caras: tú la
+ * primera si se lo has dado (lo que más se busca es verse), luego las demás.
+ */
+function avanceGustan(v: FirebaseFirestore.DocumentData, yo: string): string[] {
+  const todas = quienesGustan(v);
+  const mio = todas.includes(yo);
+  return [...(mio ? [yo] : []), ...todas.filter((u) => u !== yo)].slice(0, AVANCE_GUSTAN + (mio ? 1 : 0));
+}
+
+/** Nombre y foto de quienes salen en los avances, una sola vez para toda la respuesta. */
+const personasDe = (uids: string[], autoras: Map<string, Autora>) =>
+  Object.fromEntries([...new Set(uids)].map((u) => [u, autoras.get(u) ?? anonima(u)]));
+
+/** Lo que viaja de cada publicación y respuesta: lo de siempre y las caras de quien le ha dado «me gusta». */
+type ConGustan<T> = T & { gustan: string[] };
+
+async function aPublicacion(d: FirebaseFirestore.DocumentSnapshot, autoras: Map<string, Autora>, yo: string): Promise<ConGustan<Publicacion>> {
   const v = d.data() ?? {};
   const meGusta = (v.meGusta ?? {}) as Record<string, unknown>;
   return {
@@ -124,6 +164,7 @@ async function aPublicacion(d: FirebaseFirestore.DocumentSnapshot, autoras: Map<
     resuelta: Boolean(v.resuelta),
     respondioSorela: Boolean(v.respondioSorela),
     esMia: v.autor === yo,
+    gustan: avanceGustan(v, yo),
   };
 }
 
@@ -151,14 +192,15 @@ function aporteDe(v: FirebaseFirestore.DocumentData, legado: { puntos: number; c
  * llevan su mes como valor (ver «meGusta» en el POST); los de antes, `true`,
  * nunca dieron puntos de ranking y solo restan del contador.
  */
-function restarContenido(c: Cuentas, v: FirebaseFirestore.DocumentData, aporte: Aporte, campo: CampoStats) {
+function restarContenido(c: Cuentas, v: FirebaseFirestore.DocumentData, aporte: Aporte, campo: Exclude<CampoStats, 'meGustaRecibidos'>) {
   const autor = String(v.autor ?? '');
   if (aporte.cuenta) c.contar(autor, campo, -1);
-  if (aporte.puntos) c.puntuar({ uid: autor }, -aporte.puntos, aporte.mes);
+  // El contador del mes se llama igual que el de siempre: «publicaciones», «respuestas».
+  if (aporte.puntos) c.puntuar({ uid: autor }, -aporte.puntos, aporte.mes, campo);
   for (const [quien, valor] of Object.entries((v.meGusta ?? {}) as Record<string, unknown>)) {
     if (!valor || quien === autor) continue;
     c.contar(autor, 'meGustaRecibidos', -1);
-    if (esMes(valor)) c.puntuar({ uid: autor }, -PUNTOS.meGusta, valor);
+    if (esMes(valor)) c.puntuar({ uid: autor }, -PUNTOS.meGusta, valor, 'meGusta');
   }
 }
 
@@ -212,7 +254,7 @@ async function borrarPublicacion(ref: FirebaseFirestore.DocumentReference): Prom
     let borradas = 0;
     const cerrar = async () => {
       if (!borradas) return;
-      cuentas.volcar((r, d) => lote.set(r, d, { merge: true }), vivas);
+      await cuentas.volcar((r, d) => lote.set(r, d, { merge: true }), vivas);
       lote.update(ref, { respuestas: FieldValue.increment(-borradas) });
       await lote.commit();
       lote = db.batch();
@@ -247,7 +289,7 @@ async function borrarPublicacion(ref: FirebaseFirestore.DocumentReference): Prom
       const viva = Boolean(fd?.exists);
       const c = new Cuentas();
       restarContenido(c, v, aporteDe(v, { puntos: fd?.get('rol') === 'sorela' ? 0 : ANTES.publicacion, cuenta: true }), 'publicaciones');
-      c.volcar((r, datos) => t.set(r, datos, { merge: true }), new Set(viva ? [autor] : []));
+      await c.volcar((r, datos) => t.set(r, datos, { merge: true }), new Set(viva ? [autor] : []));
       t.delete(ref, { exists: true });
       return 'borrada' as const;
     });
@@ -286,7 +328,7 @@ async function borrarRespuesta(ref: FirebaseFirestore.DocumentReference, rid: st
     restarContenido(c, rv, aporteDe(rv, legado), 'respuestas');
     t.delete(r);
     t.update(ref, { respuestas: Math.max(0, (Number(pv.respuestas) || 0) - 1), respondioSorela: respondio });
-    c.volcar((x, d) => t.set(x, d, { merge: true }), new Set(viva ? [ra] : []));
+    await c.volcar((x, d) => t.set(x, d, { merge: true }), new Set(viva ? [ra] : []));
     return true;
   });
 }
@@ -295,28 +337,54 @@ async function borrarRespuesta(ref: FirebaseFirestore.DocumentReference, rid: st
    El ranking del mes
    ========================================================================== */
 
-type FilaRanking = { uid: string; nombre: string; puntos: number; nivel: { n: number; nombre: string } | null };
+type FilaRanking = {
+  uid: string;
+  nombre: string;
+  foto: string | null;
+  puntos: number;
+  nivel: { n: number; nombre: string } | null;
+  /** Cuántas publicaciones, respuestas, «me gusta» y clases lleva en el mes. */
+  por: PorFuenteMes;
+};
 
-/** Su nivel según la foto fija que guarda lib/logros.ts (no se recalcula aquí). */
-function nivelBreve(u: FirebaseFirestore.DocumentData): { n: number; nombre: string } | null {
-  if (typeof u.puntosTotal === 'number') {
-    const e = nivelDe(u.puntosTotal);
-    return { n: e.n, nombre: e.nombre };
+/**
+ * De dónde salen sus puntos del mes, limpio: solo números enteros de cero en
+ * adelante y solo las fuentes que suman al mes. Lo de antes de apuntar la
+ * fuente no tiene `por`, y un contador nunca se enseña en negativo.
+ */
+function porDe(v: unknown): PorFuenteMes {
+  const crudo = (v && typeof v === 'object' ? v : {}) as Record<string, unknown>;
+  const por: PorFuenteMes = {};
+  for (const f of SUMAN_AL_MES as readonly FuenteMes[]) {
+    const n = Math.floor(Number(crudo[f]) || 0);
+    if (n > 0) por[f] = n;
   }
-  const x = NIVELES.find((l) => l.n === u.nivel);
-  return x ? { n: x.n, nombre: x.nombre } : null;
+  return por;
+}
+
+/**
+ * Su nivel con sus puntos al día (lib/puntos-tipos.ts, puntosAlDia): la foto
+ * fija de lib/logros.ts más lo que ha ganado desde entonces. `delMes`: sus
+ * puntos de este mes, que nunca pueden ser más que el total. Siempre hay
+ * nivel: quien aún no tiene foto fija sale, como poco, en el primero.
+ */
+function nivelBreve(u: FirebaseFirestore.DocumentData, delMes = 0): { n: number; nombre: string } {
+  const e = nivelDe(Math.max(puntosAlDia(u), delMes));
+  return { n: e.n, nombre: e.nombre };
 }
 
 async function rankingDelMes(
   actividad: FirebaseFirestore.DocumentSnapshot,
   yo: string,
   soySorela: boolean
-): Promise<{ ranking: FilaRanking[]; mio: { puesto: number | null; puntos: number } | null }> {
+): Promise<{ ranking: FilaRanking[]; mio: { puesto: number | null; puntos: number; por: PorFuenteMes } | null }> {
   const db = baseDeDatos();
-  const mapa = (actividad.data() ?? {}) as Record<string, { nombre?: unknown; puntos?: unknown }>;
+  const mapa = (actividad.data() ?? {}) as Record<string, { nombre?: unknown; puntos?: unknown; por?: unknown }>;
+  // Sorela no compite: fuera antes de contar puestos, aunque quedara algo suyo de antes.
+  const sorela = await cuentasDeSorela();
   const orden = Object.entries(mapa)
-    .map(([uid, v]) => ({ uid, nombre: String(v?.nombre ?? ''), puntos: Math.round(Number(v?.puntos) || 0) }))
-    .filter((x) => x.puntos > 0 && ID.test(x.uid))
+    .map(([uid, v]) => ({ uid, nombre: String(v?.nombre ?? ''), puntos: Math.round(Number(v?.puntos) || 0), por: porDe(v?.por) }))
+    .filter((x) => x.puntos > 0 && ID.test(x.uid) && !sorela.has(x.uid))
     .sort((a, b) => b.puntos - a.puntos);
   /* Se miran unas pocas más de cinco: alguna puede tener ya la cuenta borrada
      (o ser Sorela), y esas no salen. De las que salen, nombre y nivel al día. */
@@ -331,11 +399,14 @@ async function rankingDelMes(
   const limpia = orden.filter((x) => !fuera.has(x.uid));
   const ranking = limpia.slice(0, 5).map((x) => {
     const u = datos.get(x.uid);
-    return { uid: x.uid, nombre: u ? nombreDe(u) : x.nombre || 'Terapeuta', puntos: x.puntos, nivel: u ? nivelBreve(u) : null };
+    return { uid: x.uid, nombre: u ? nombreDe(u) : x.nombre || 'Terapeuta', foto: u ? fotoDe(u) : null, puntos: x.puntos, nivel: u ? nivelBreve(u, x.puntos) : null, por: x.por };
   });
   if (soySorela) return { ranking, mio: null };
   const i = limpia.findIndex((x) => x.uid === yo);
-  return { ranking, mio: { puesto: i >= 0 ? i + 1 : null, puntos: Math.max(0, Math.round(Number(mapa[yo]?.puntos) || 0)) } };
+  return {
+    ranking,
+    mio: { puesto: i >= 0 ? i + 1 : null, puntos: Math.max(0, Math.round(Number(mapa[yo]?.puntos) || 0)), por: porDe(mapa[yo]?.por) },
+  };
 }
 
 export async function GET(peticion: Request) {
@@ -344,15 +415,38 @@ export async function GET(peticion: Request) {
   if (!p.leer) return NextResponse.json({ ok: false, motivo: 'sin-acceso' }, { status: 403 });
   const db = baseDeDatos();
   const yo = p.sesion.uid;
-  const id = new URL(peticion.url).searchParams.get('id');
-
+  const q = new URL(peticion.url).searchParams;
+  const id = q.get('id');
   if (id) {
     if (!ID.test(id)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
     const ref = db.collection(POSTS).doc(id);
+
+    /* Quién ha dado «me gusta»: la lista entera (hasta 200), con su nivel
+       para la insignia. Sorela sin nivel: no compite. */
+    if (q.get('gustan') === '1') {
+      const rid = q.get('rid');
+      if (rid !== null && !ID.test(rid)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
+      const d = await (rid ? ref.collection('respuestas').doc(rid) : ref).get();
+      if (!d.exists) return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
+      const todas = quienesGustan(d.data() ?? {});
+      // Tú la primera, como en el avance.
+      const uids = (todas.includes(yo) ? [yo, ...todas.filter((u) => u !== yo)] : todas).slice(0, 200);
+      const fichas = uids.length ? await db.getAll(...uids.map((u) => db.collection(COLECCIONES.usuarios).doc(u))) : [];
+      const personas = fichas
+        .filter((f) => f.exists)
+        .map((f) => {
+          const v = f.data() ?? {};
+          const esSorela = v.rol === 'sorela';
+          return { uid: f.id, nombre: nombreDe(v), foto: fotoDe(v), esSorela, nivel: esSorela ? null : nivelBreve(v), soyYo: f.id === yo };
+        });
+      return NextResponse.json({ ok: true, personas }, { headers: { 'Cache-Control': 'private, no-store' } });
+    }
+
     const [d, rs] = await Promise.all([ref.get(), ref.collection('respuestas').orderBy('creado', 'asc').limit(200).get()]);
     if (!d.exists) return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
-    const autoras = await autorasDe([d.data()?.autor, ...rs.docs.map((r) => r.data().autor)]);
-    const respuestas: Respuesta[] = rs.docs.map((r) => {
+    const avances = rs.docs.map((r) => avanceGustan(r.data(), yo));
+    const autoras = await autorasDe([d.data()?.autor, ...rs.docs.map((r) => r.data().autor), ...avances.flat()]);
+    const respuestas: ConGustan<Respuesta>[] = rs.docs.map((r, i) => {
       const v = r.data();
       const mg = (v.meGusta ?? {}) as Record<string, unknown>;
       return {
@@ -363,9 +457,10 @@ export async function GET(peticion: Request) {
         meGusta: Object.values(mg).filter(Boolean).length,
         loHeDado: Boolean(mg[yo]),
         esMia: v.autor === yo,
+        gustan: avances[i],
       };
     });
-    return NextResponse.json({ ok: true, publicacion: await aPublicacion(d, autoras, yo), respuestas });
+    return NextResponse.json({ ok: true, publicacion: await aPublicacion(d, autoras, yo), respuestas, personas: personasDe(avances.flat(), autoras) });
   }
 
   const [lista, actividad, ajustes, admins] = await Promise.all([
@@ -378,10 +473,12 @@ export async function GET(peticion: Request) {
   const ficha = admins.docs.map((d) => d.data()).sort((a, b) => Number(Boolean(b.foto)) - Number(Boolean(a.foto)))[0];
   const sorela = {
     nombre: String(ficha?.nombre || 'Sorela Caro'),
-    foto: typeof ficha?.foto === 'string' && ficha.foto.length < 400_000 ? ficha.foto : null,
+    foto: fotoDe(ficha),
   };
+  // Las autoras y las caras de los «me gusta», en la misma lectura.
+  const avances = lista.docs.flatMap((d) => avanceGustan(d.data(), yo));
   const [autoras, { ranking, mio }] = await Promise.all([
-    autorasDe(lista.docs.map((d) => d.data().autor)),
+    autorasDe([...lista.docs.map((d) => d.data().autor), ...avances]),
     rankingDelMes(actividad, yo, p.modera),
   ]);
   const publicaciones = await Promise.all(lista.docs.map((d) => aPublicacion(d, autoras, yo)));
@@ -400,8 +497,17 @@ export async function GET(peticion: Request) {
     modera: p.modera,
     /* Quién eres (para escribir) y cómo vas este mes. Sorela no puntúa: a
        ella le llega `puesto: null, puntos: 0` y `puntua: false`. */
-    yo: { uid: yo, nombre: p.sesion.nombre ?? '', foto: p.sesion.foto ?? null, puntua: mio !== null, puesto: mio?.puesto ?? null, puntos: mio?.puntos ?? 0 },
+    yo: {
+      uid: yo,
+      nombre: p.sesion.nombre ?? '',
+      foto: p.sesion.foto ?? null,
+      puntua: mio !== null,
+      puesto: mio?.puesto ?? null,
+      puntos: mio?.puntos ?? 0,
+      por: mio?.por ?? {},
+    },
     publicaciones,
+    personas: personasDe(avances, autoras),
     ranking,
     proximaClase,
     sorela,
@@ -448,16 +554,16 @@ export async function POST(peticion: Request) {
         t.update(objetivo, { [`meGusta.${yo}`]: FieldValue.delete() });
         if (viva) {
           cuentas.contar(autor, 'meGustaRecibidos', -1);
-          if (esMes(previo)) cuentas.puntuar({ uid: autor }, -PUNTOS.meGusta, previo);
+          if (esMes(previo)) cuentas.puntuar({ uid: autor }, -PUNTOS.meGusta, previo, 'meGusta');
         }
       } else {
         const puntua = viva && ficha?.get('rol') !== 'sorela';
         const mes = mesDe();
         t.update(objetivo, { [`meGusta.${yo}`]: puntua ? mes : true });
         if (viva) cuentas.contar(autor, 'meGustaRecibidos', 1);
-        if (puntua) cuentas.puntuar({ uid: autor, nombre: nombreDe(ficha?.data() ?? {}) }, PUNTOS.meGusta, mes);
+        if (puntua) cuentas.puntuar({ uid: autor, nombre: nombreDe(ficha?.data() ?? {}) }, PUNTOS.meGusta, mes, 'meGusta');
       }
-      cuentas.volcar((x, datos) => t.set(x, datos, { merge: true }));
+      await cuentas.volcar((x, datos) => t.set(x, datos, { merge: true }));
       return { dado: !dado };
     });
     if (r === null) return no('no-existe', 404);
@@ -536,9 +642,9 @@ export async function POST(peticion: Request) {
       respondioSorela: false,
       aporte: { mes, puntos },
     });
-    new Cuentas()
+    await new Cuentas()
       .contar(yo, 'publicaciones', 1)
-      .puntuar(autora, puntos, mes)
+      .puntuar(autora, puntos, mes, 'publicaciones')
       .volcar((x, d) => lote.set(x, d, { merge: true }));
     await lote.commit();
     return NextResponse.json({ ok: true, id: nueva.id });
@@ -565,9 +671,9 @@ export async function POST(peticion: Request) {
       ultimaActividad: FieldValue.serverTimestamp(),
       ...(p.modera ? { respondioSorela: true } : {}),
     });
-    const cuentas = new Cuentas().puntuar(autora, puntos, mes);
+    const cuentas = new Cuentas().puntuar(autora, puntos, mes, 'respuestas');
     if (cuenta) cuentas.contar(yo, 'respuestas', 1);
-    cuentas.volcar((x, datos) => lote.set(x, datos, { merge: true }));
+    await cuentas.volcar((x, datos) => lote.set(x, datos, { merge: true }));
     await lote.commit();
     return NextResponse.json({ ok: true, rid: r.id });
   }

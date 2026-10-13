@@ -115,7 +115,7 @@ export async function POST(peticion: Request) {
 
   // Terminar una clase suma al ranking del mes. Si eso falla, la clase ya está apuntada: no se rompe nada.
   if (r.nueva && rol !== 'sorela') {
-    await sumarActividad({ uid, nombre: r.nombre }, PUNTOS.clase).catch((e) => console.error('[progreso] ranking', e));
+    await sumarActividad({ uid, nombre: r.nombre }, PUNTOS.clase, undefined, 'clases').catch((e) => console.error('[progreso] ranking', e));
   }
   return NextResponse.json({ ok: true, nueva: r.nueva });
 }

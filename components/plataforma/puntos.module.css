@@ -3,8 +3,14 @@
  *
  * Oro sobre negro para lo que tiene que dar ganas: la barra se llena con un
  * degradado del oro de la marca (#8a6a32 → #d9b47c), un brillo la recorre y la
- * punta luce. Cifras en Jost con dígitos de igual ancho, para que al contar no
- * baile la línea; nombres de nivel en Cormorant, como los títulos.
+ * punta luce. Cada nivel tiene su insignia (IconosDivine.tsx) y el camino de
+ * los seis se ve de un vistazo. Los iconos de «de dónde vienen» y «cómo sumar»
+ * van en el rosé del acento vino (--divine-claro, 9,2:1 sobre #17140f): así el
+ * bloque no es todo oro.
+ *
+ * Tipografía: la Jost solo está cargada hasta 500, así que aquí nunca pasa de
+ * 500 (antes pedía 600 y 700 y el navegador las inventaba). Las cifras grandes
+ * van en Cormorant con números de caja alta.
  *
  * La barra no impone colores de texto: hereda el del bloque donde va (negro en
  * el marcador y en «Tu nivel», claro si alguien la pone en una tarjeta clara) y
@@ -32,38 +38,19 @@
   margin: 0;
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #d9b47c;
 }
 
-/* ---------- La insignia de nivel: una moneda dorada ---------- */
+/* ---------- La insignia de nivel (el dibujo está en IconosDivine.tsx) ---------- */
 
-.insignia {
+.hudInsignia,
+.panelInsignia {
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 34% 28%, #fbf1dc 0%, #e6c890 38%, #c49a5a 70%, #8a6a32 100%);
-  box-shadow:
-    inset 0 0 0 1.5px rgba(255, 255, 255, 0.35),
-    inset 0 -2px 4px rgba(70, 48, 16, 0.35),
-    0 4px 12px -4px rgba(217, 180, 124, 0.7);
-  font-family: var(--fuente-jost), system-ui, sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  color: #17140f;
-}
-
-.insignia[data-grande] {
-  width: 46px;
-  height: 46px;
-  font-size: 20px;
+  display: block;
+  filter: drop-shadow(0 4px 10px rgba(217, 180, 124, 0.35));
 }
 
 /* ==========================================================================
@@ -97,7 +84,7 @@
   flex: none;
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
@@ -208,12 +195,12 @@
 }
 
 .falta b {
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 .subes {
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.01em;
 }
 
@@ -241,6 +228,111 @@
 }
 
 /* ==========================================================================
+   El camino de niveles
+   ========================================================================== */
+
+.camino {
+  position: relative;
+  min-width: 0;
+  --alto: 46px;
+}
+
+.camino[data-compacto] {
+  --alto: 40px;
+}
+
+/* La línea pasa por el centro de las insignias, del primer paso al último. */
+.caminoLinea {
+  position: absolute;
+  top: calc(var(--alto) / 2 - 1.5px);
+  left: calc(100% / 12);
+  right: calc(100% / 12);
+  height: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.caminoRelleno {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8a6a32, #d9b47c 70%, var(--divine-claro));
+  transform-origin: left center;
+  box-shadow: 0 0 10px -1px rgba(217, 180, 124, 0.5);
+}
+
+.caminoLista {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.caminoPaso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  text-align: center;
+}
+
+.caminoInsignia {
+  display: grid;
+  place-items: center;
+  height: var(--alto);
+}
+
+.caminoInsignia svg {
+  display: block;
+}
+
+.caminoPaso[data-estado='actual'] .caminoInsignia svg {
+  filter: drop-shadow(0 0 10px rgba(243, 227, 195, 0.55));
+}
+
+.caminoNombre {
+  max-width: 100%;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+.caminoPaso[data-estado='actual'] .caminoNombre {
+  font-weight: 500;
+  color: inherit;
+}
+
+.caminoDesde {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, currentColor 72%, transparent);
+}
+
+.caminoPaso[data-estado='actual'] .caminoDesde {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #d9b47c;
+  font-weight: 500;
+  color: #17140f;
+}
+
+/* En el móvil, de los nombres solo el del nivel donde está: los demás no caben. */
+@media (max-width: 560px) {
+  .caminoPaso:not([data-estado='actual']) .caminoNombre {
+    display: none;
+  }
+  .caminoNombre {
+    font-size: 11.5px;
+  }
+}
+
+/* ==========================================================================
    El desglose
    ========================================================================== */
 
@@ -255,7 +347,7 @@
 
 .desglose li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(48px, 88px) auto;
+  grid-template-columns: auto minmax(0, 1fr) minmax(48px, 88px) auto;
   align-items: center;
   gap: 12px;
   padding: 8px 0;
@@ -264,6 +356,16 @@
 
 .desglose li:last-child {
   border-bottom: 0;
+}
+
+.desgloseIcono {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--divine-claro) 14%, transparent);
+  color: var(--divine-claro);
 }
 
 .desgloseTexto {
@@ -308,7 +410,7 @@
   text-align: right;
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
@@ -358,11 +460,12 @@
 .accionIcono {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: rgba(217, 180, 124, 0.14);
-  color: #d9b47c;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: var(--divine-claro-tint);
+  border: 1px solid color-mix(in srgb, var(--divine-claro) 30%, transparent);
+  color: var(--divine-claro);
 }
 
 .accionTexto {
@@ -396,7 +499,7 @@
 .accionPuntos {
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: #f3e3c3;
 }
@@ -410,7 +513,7 @@
   color: #17140f;
   font: inherit;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -463,7 +566,7 @@
   align-items: center;
   gap: 10px;
   min-height: 44px;
-  padding: 6px 16px 6px 7px;
+  padding: 5px 16px 5px 6px;
   border: 1px solid rgba(217, 180, 124, 0.38);
   border-radius: 999px;
   background:
@@ -511,7 +614,7 @@
   gap: 4px;
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
   color: #f7f2ea;
 }
@@ -553,7 +656,7 @@
   border: 1px solid rgba(217, 180, 124, 0.6);
   font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: #f3e3c3;
   white-space: nowrap;
@@ -594,26 +697,41 @@
 
 .panelCabecera {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
+}
+
+.panelCifra {
+  flex: 1;
+  min-width: 0;
+}
+
+.panelCabecera .cerrar {
+  align-self: flex-start;
 }
 
 .panelTotal {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin: 4px 0 0;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
-  font-size: 38px;
+  margin: 2px 0 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 44px;
   font-weight: 600;
   line-height: 1;
   color: #f7f2ea;
 }
 
+.panelTotal .cifra {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
+}
+
 .panelTotal small {
+  font-family: var(--fuente-jost), system-ui, sans-serif;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   color: #cfc6b8;
 }
 

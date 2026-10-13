@@ -8,7 +8,9 @@ import type { Vista } from '@/lib/plataforma';
 import type { ProximaClase, Publicacion } from '@/lib/comunidad-tipos';
 import Noticias from './Noticias';
 import { calcularPuntos, nivelDe, type ResumenPuntos } from '@/lib/puntos-tipos';
-import { BarraNivel, ComoGanarPuntos, ContadorPuntos, useDesdeUnaVez, useResumenPuntos } from './Puntos';
+import { BarraNivel, CaminoNiveles, ComoGanarPuntos, ContadorPuntos, useDesdeUnaVez, useResumenPuntos, useTrofeos } from './Puntos';
+import { VitrinaMini, trofeosDeMuestra } from './Logros';
+import { InsigniaNivel } from './IconosDivine';
 import p from './panelalumna.module.css';
 
 /**
@@ -16,9 +18,14 @@ import p from './panelalumna.module.css';
  *
  * Antes era una lista de «lo que tienes y lo que falta». Ahora es un panel de
  * verdad: cuánto lleva del curso, la clase por la que va con un botón para
- * seguir, su nivel con lo que le falta y cómo sumar más, el material, lo
- * próximo de su agenda y lo último de la comunidad. Todo lleva a su pantalla
- * con un clic.
+ * seguir, su nivel (insignia, barra y camino de los seis niveles) con lo que
+ * le falta, sus trofeos en pequeño y cómo sumar más, el material, lo próximo
+ * de su agenda y lo último de la comunidad. Todo lleva a su pantalla con un
+ * clic.
+ *
+ * Es el panel de quien aprende: Sorela tiene el suyo (PanelSorela) y aquí
+ * solo entra mirando «Ver como», con puntos y trofeos de MUESTRA, nunca los
+ * suyos (ella no compite).
  */
 
 type Evento = { id: string; titulo: string; cuando: string | null; tipo: string; estado: string };
@@ -41,6 +48,7 @@ const PUNTOS_DE_MUESTRA: ResumenPuntos = (() => {
   });
   return { ...c, nivel: nivelDe(c.total), antes: null, subioNivel: false };
 })();
+const TROFEOS_DE_MUESTRA = trofeosDeMuestra();
 
 const saludo = (ahora: Date) => {
   const h = ahora.getHours();
@@ -110,6 +118,8 @@ export default function PanelAlumna({
   const puntos = muestra ? PUNTOS_DE_MUESTRA : llegados;
   // La subida desde lo que vio la última vez, solo la primera vez que se pinta (no en cada vuelta a Inicio).
   const desde = useDesdeUnaVez('panel-alumna', muestra ? null : llegados);
+  const trofeosLlegados = useTrofeos();
+  const trofeos = muestra ? TROFEOS_DE_MUESTRA : trofeosLlegados;
 
   useEffect(() => {
     const json = (u: string) => fetch(u).then((r) => r.json()).catch(() => ({ ok: false }));
@@ -207,7 +217,8 @@ export default function PanelAlumna({
           de la cuenta atrás quedaba a dos pantallas. */}
       <motion.section className={`${p.tarjeta} ${p.oscura} ${p.nivel}`} {...aparecer(1)} aria-labelledby="panel-tu-nivel">
         <div className={p.nivelIzquierda}>
-          <header className={p.cabecera}>
+          <header className={`${p.cabecera} ${p.nivelCabecera}`}>
+            {puntos && <InsigniaNivel n={puntos.nivel.n} size={58} className={p.nivelInsignia} title={`Nivel ${puntos.nivel.n}: ${puntos.nivel.nombre}`} />}
             <h3 id="panel-tu-nivel">Tu nivel</h3>
             {puntos && (
               <span className={p.nivelTotal}>
@@ -217,10 +228,14 @@ export default function PanelAlumna({
             )}
           </header>
           {puntos ? (
-            <BarraNivel total={puntos.total} desde={desde} tamano="grande" />
+            <>
+              <BarraNivel total={puntos.total} desde={desde} tamano="grande" />
+              <CaminoNiveles total={puntos.total} />
+            </>
           ) : (
             <div className={p.esqueletoOscuro} aria-busy="true" aria-label="Cargando tus puntos" />
           )}
+          <VitrinaMini logros={trofeos} soloVer={muestra} />
           <p className={p.nivelNota}>
             Los puntos salen de lo que haces aquí: clases, comunidad, constancia y tu perfil. Si algo se borra, sus
             puntos se van con ello.

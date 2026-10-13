@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { tareasDelDia } from '@/lib/automatizar';
+import { purgarHistorial } from '@/lib/correos';
+import { purgarPersonasMetricas } from '@/lib/purga-metricas';
 
 /**
  * Lo que Vercel llama cada mañana (ver `crons` en vercel.json): recordatorios
- * de la apertura y el resumen de Sorela.
+ * de la apertura, el resumen de Sorela y, al final, la limpieza del historial
+ * de correos (lo de más de 30 días se borra solo).
  *
  * Quién puede llamarla:
  *  - Si existe CRON_SECRET en Vercel, solo quien traiga
@@ -29,5 +32,19 @@ export async function GET(peticion: Request) {
     return NextResponse.json({ ok: false, motivo: 'no-autorizado' }, { status: 401 });
   }
   const informe = await tareasDelDia();
-  return NextResponse.json({ ok: true, ...informe });
+  /* La purga va DESPUÉS de los envíos y aparte: si fallara, lo de hoy ya ha
+     salido igual. Y no puede provocar reenvíos: borra líneas del historial,
+     no las marcas de «ya enviado» (ver lib/correos.ts). */
+  const purga = await purgarHistorial().catch((e) => {
+    console.error('[cron] la purga del historial de correos ha fallado:', e);
+    return null;
+  });
+  /* Y lo que la política de privacidad promete borrar de las estadísticas
+     (ver lib/purga-metricas.ts). Aparte por lo mismo: si falla, no arrastra
+     nada de lo anterior. */
+  const metricas = await purgarPersonasMetricas().catch((e) => {
+    console.error('[cron] la purga de las métricas ha fallado:', e);
+    return null;
+  });
+  return NextResponse.json({ ok: true, ...informe, purga, metricas });
 }

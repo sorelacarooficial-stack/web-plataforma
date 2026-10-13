@@ -3,20 +3,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { LOGROS } from '@/lib/logros-tipos';
+import { ESCALONES, LOGROS, VITRINAS, type EstadoLogro } from '@/lib/logros-tipos';
 import { PUNTOS, formatoPuntos, type ResumenPuntos } from '@/lib/puntos-tipos';
-import { BarraNivel, ContadorPuntos } from './Puntos';
+import { BarraNivel, CaminoNiveles, ContadorPuntos } from './Puntos';
+import { COLORES, Icono, InsigniaNivel, Trofeo } from './IconosDivine';
 import l from './logros.module.css';
 
 /**
- * La celebración: cuando se gana un logro o se sube de nivel, sale en grande
- * con confeti.
+ * La celebración: cuando se gana un trofeo (cada escalón de una vitrina) o se
+ * sube de nivel, sale en grande con confeti.
  *
  * Mira al entrar (a los 600 ms) y cada vez que alguien avisa con el evento
  * `divine:logros` (al terminar una clase nueva, al publicar, responder o
  * borrar en la comunidad, al subir una foto, al terminar la ficha). Cada vez
  * que mira, reparte los puntos a toda la pantalla con `divine:puntos`: el
- * marcador, el panel y el perfil los pintan sin pedirlos otra vez.
+ * marcador, el panel y el perfil los pintan sin pedirlos otra vez; y los
+ * trofeos con `divine:trofeos` (la vitrina pequeña del panel).
+ *
+ * A Sorela no se le monta (Plataforma.tsx), y aunque se montara, el servidor
+ * no le manda nada que celebrar: es la creadora y no compite.
  *
  * Cada logro y cada nivel se celebran una sola vez: el servidor apunta lo que
  * ya se ha visto al devolverlo. Si la ficha de bienvenida está abierta
@@ -53,9 +58,10 @@ export default function Celebracion() {
     pidiendo.current = true;
     try {
       const j = await (await fetch('/api/logros?celebrar=1')).json();
-      if (!j.ok) return;
+      if (!j.ok || j.creadora) return;
       const puntos = j.puntos as ResumenPuntos | undefined;
       if (puntos) window.dispatchEvent(new CustomEvent('divine:puntos', { detail: puntos }));
+      if (Array.isArray(j.logros)) window.dispatchEvent(new CustomEvent<EstadoLogro[]>('divine:trofeos', { detail: j.logros }));
       const nuevas: Fiesta[] = [
         ...((j.nuevos ?? []) as string[]).map((id) => ({ tipo: 'logro' as const, id })),
         // El nivel, al final: es el colofón de lo que se acaba de ganar.
@@ -115,6 +121,7 @@ export default function Celebracion() {
   const siguiente = () => setCola((c) => c.slice(1));
   const fiesta = ocupada ? undefined : cola[0];
   const logro = fiesta?.tipo === 'logro' ? LOGROS.find((x) => x.id === fiesta.id) : undefined;
+  const vitrina = logro ? VITRINAS.find((v) => v.id === logro.vitrina) : undefined;
   const hayFiesta = Boolean(fiesta && (fiesta.tipo === 'nivel' || logro));
   // Un logro que esta pantalla no conoce (versión vieja en caché) se salta.
   useEffect(() => {
@@ -207,8 +214,7 @@ export default function Celebracion() {
               onClick={(e) => e.stopPropagation()}
             >
               <span className={l.nivelMoneda} aria-hidden="true">
-                <small>Nivel</small>
-                <b>{fiesta.puntos.nivel.n}</b>
+                <InsigniaNivel n={fiesta.puntos.nivel.n} size={124} />
               </span>
               <span className={l.etiquetaNivel}>Nuevo nivel</span>
               <h3>¡Subes a nivel {fiesta.puntos.nivel.n}!</h3>
@@ -219,6 +225,7 @@ export default function Celebracion() {
               </p>
               <div className={l.nivelBarra}>
                 <BarraNivel total={fiesta.puntos.total} desde={fiesta.puntos.antes ?? undefined} tamano="grande" conTexto={false} />
+                <CaminoNiveles total={fiesta.puntos.total} compacto />
                 <p>
                   {fiesta.puntos.nivel.siguiente
                     ? `Siguiente: ${fiesta.puntos.nivel.siguiente.nombre}, a ${formatoPuntos(fiesta.puntos.nivel.falta)} pts.`
@@ -233,23 +240,35 @@ export default function Celebracion() {
             logro && (
               <motion.div
                 className={l.tarjetaLogro}
+                data-escalon={logro.escalon}
                 role="dialog"
                 aria-modal="true"
-                aria-label={`Logro conseguido: ${logro.nombre}`}
+                aria-label={`Trofeo conseguido: ${logro.nombre}`}
                 initial={entrada}
                 animate={{ scale: 1, y: 0, rotate: 0, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={muelle}
                 onClick={(e) => e.stopPropagation()}
               >
-                <span className={l.medalla}>{logro.icono}</span>
-                <span className={l.etiqueta}>¡Logro conseguido!</span>
+                <motion.span
+                  className={l.medalla}
+                  initial={reducir ? false : { scale: 0.4, rotate: -12 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 12, delay: 0.12 }}
+                >
+                  <Trofeo escalon={logro.escalon} glifo={vitrina?.glifo ?? 'divine'} size={112} />
+                </motion.span>
+                <span className={l.etiqueta}>
+                  {logro.escalon === 'divine' ? '¡Trofeo Divine!' : `¡Trofeo de ${ESCALONES[logro.escalon].toLowerCase()}!`}
+                </span>
+                {vitrina && vitrina.id !== 'divine' && <span className={l.vitrinaDe}>{vitrina.nombre}</span>}
                 <h3>{logro.nombre}</h3>
                 <p>{logro.texto}</p>
                 <span className={l.masPuntos}>+{formatoPuntos(PUNTOS.logro)} puntos</span>
                 {logro.id === 'curso-completo' && (
                   <a className={l.certificado} href="/api/certificado">
-                    🎓 Descargar mi certificado
+                    <Icono nombre="curso" size={18} />
+                    Descargar mi certificado
                   </a>
                 )}
                 <button type="button" className={l.seguir} onClick={siguiente} autoFocus>
@@ -277,7 +296,8 @@ function Confeti({ fuerte = false }: { fuerte?: boolean }) {
     c.width = innerWidth * dpr;
     c.height = innerHeight * dpr;
     ctx.scale(dpr, dpr);
-    const colores = ['#d9b47c', '#8a6a32', '#f3e3c3', '#c45c3c', '#5f8752', '#ffffff'];
+    // El oro de la marca y el vino de la gamificación (con su rosé).
+    const colores = ['#d9b47c', '#8a6a32', '#f3e3c3', COLORES.divine.vino, COLORES.divine.rose, '#ffffff'];
     // Al subir de nivel, dos chorros desde los lados además del central.
     const origenes = fuerte ? [0.5, 0.12, 0.88] : [0.5];
     const duracion = fuerte ? 4200 : 3200;

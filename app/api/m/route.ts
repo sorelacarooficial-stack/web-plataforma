@@ -28,7 +28,16 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const PROPIO = 'sorelacarodivine.com';
-const SAL = process.env.METRICAS_SAL || process.env.FIREBASE_PROYECTO_ID || 'divine';
+/* La sal TIENE que ser secreta: con una pública (antes, el id del proyecto,
+   que va en el código del navegador) bastaba probar todas las IP para
+   deshacer el resumen. Sin METRICAS_SAL se deriva de la clave privada de
+   Firebase, que solo tiene el servidor. Sin ninguna de las dos, no se cuentan
+   personas (ver más abajo) antes que hacerlo con algo adivinable. */
+const SAL =
+  process.env.METRICAS_SAL ||
+  (process.env.FIREBASE_CLAVE_PRIVADA
+    ? createHash('sha256').update(`metricas|${process.env.FIREBASE_CLAVE_PRIVADA}`).digest('hex')
+    : '');
 const nada = () => new NextResponse(null, { status: 204 });
 
 /* Freno por IP: nadie navega a más de 120 páginas por minuto. */
@@ -77,7 +86,7 @@ export async function POST(peticion: Request) {
       /* Personas distintas del día: un resumen de IP + navegador + día que
          no se puede deshacer. Si ya existía, no se cuenta otra vez. */
       let persona = false;
-      if (nueva && ip) {
+      if (nueva && ip && SAL) {
         const h = createHash('sha256').update(`${SAL}|${dia}|${ip}|${ua}`).digest('hex').slice(0, 24);
         persona = await refDia
           .collection('personas')
