@@ -12,6 +12,8 @@ import { resumenLogros } from '@/lib/logros';
  *                    puntos de todas los ven todas.
  *
  * Respuesta: { ok, esMio, ...Resumen } (lib/logros-tipos.ts), con `puntos`.
+ * De Sorela, solo { ok, esMio, creadora: true }: es la creadora y no compite,
+ * así que no viajan puntos, nivel, trofeos ni racha (ni ceros que pintar).
  */
 
 export const runtime = 'nodejs';
@@ -29,5 +31,6 @@ export async function GET(peticion: Request) {
   }
   // Solo la celebración marca los nuevos como vistos (?celebrar=1).
   const r = await resumenLogros(pedido, esMio && new URL(peticion.url).searchParams.get('celebrar') === '1', esMio);
-  return NextResponse.json({ ok: true, esMio, ...r }, { headers: { 'Cache-Control': 'private, no-store' } });
+  const cuerpo = r.creadora ? { ok: true, esMio, creadora: true } : { ok: true, esMio, ...r };
+  return NextResponse.json(cuerpo, { headers: { 'Cache-Control': 'private, no-store' } });
 }

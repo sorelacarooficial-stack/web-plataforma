@@ -1,8 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { fechaLarga } from '@/lib/acuerdo';
+import { useAviso, useConfirmar } from './Confirmar';
 import css from './plataforma.module.css';
+import a from './acuerdos.module.css';
 
 /**
  * Los acuerdos de confidencialidad firmados por las alumnas.
@@ -15,6 +18,12 @@ import css from './plataforma.module.css';
  * El estado del correo se enseña SIEMPRE, también cuando ha ido bien. Un
  * envío que falla en silencio es justo lo que pasaba antes: la alumna firmaba,
  * no le llegaba nada y nadie se enteraba.
+ *
+ * Y se puede BORRAR un acuerdo (los duplicados y las firmas de prueba). Es el
+ * botón más discreto de la fila a propósito: el acuerdo firmado es la prueba
+ * de la confidencialidad y borrarlo no tiene vuelta atrás, así que no puede
+ * estar a la altura de «Ver acuerdo en PDF», y antes pregunta diciendo
+ * exactamente qué se pierde.
  */
 
 type Fila = {
@@ -38,6 +47,10 @@ export default function Acuerdos() {
   const [fallo, setFallo] = useState('');
   const [aviso, setAviso] = useState('');
   const [enviando, setEnviando] = useState<string | null>(null);
+  const [borrando, setBorrando] = useState<string | null>(null);
+  const [confirmar, dialogo] = useConfirmar();
+  const [avisar, avisoFlotante] = useAviso();
+  const reducir = useReducedMotion();
 
   const cargar = useCallback(async () => {
     setFallo('');
@@ -92,6 +105,34 @@ export default function Acuerdos() {
       setAviso('No se ha podido aprobar. Vuelve a intentarlo.');
     } finally {
       setEnviando(null);
+    }
+  }
+
+  async function borrar(f: Fila) {
+    const quien = `${f.nombre} ${f.apellidos}`.trim() || f.correo;
+    const si = await confirmar({
+      titulo: `¿Borrar el acuerdo de ${quien}?`,
+      texto:
+        `El acuerdo firmado es la prueba de confidencialidad; si lo borras, se pierde el PDF y no se puede recuperar. ` +
+        `Se borran su firma, sus datos, el registro de descargas del dossier y sus correos del historial, y el enlace de su dossier deja de funcionar. ` +
+        `Referencia ${f.referencia}.`,
+      boton: 'Borrar acuerdo',
+    });
+    if (!si) return;
+    setBorrando(f.referencia);
+    setAviso('');
+    try {
+      const r = await fetch(`/api/acuerdos/${f.referencia}`, { method: 'DELETE' });
+      const c = await r.json().catch(() => ({}));
+      if (!r.ok || !c.ok) throw new Error(c.motivo ?? String(r.status));
+      // Fuera de la lista en el acto (las cifras de arriba salen de ella) y luego se relee.
+      setLista((l) => (l ? l.filter((x) => x.referencia !== f.referencia) : l));
+      avisar(`Acuerdo de ${quien} borrado.`, 'hecho');
+      await cargar();
+    } catch (e) {
+      avisar(`No se ha podido borrar el acuerdo (${String((e as Error).message)}). Sigue en la lista; vuelve a intentarlo.`);
+    } finally {
+      setBorrando(null);
     }
   }
 
@@ -155,58 +196,78 @@ export default function Acuerdos() {
               : 'Todavía no ha firmado nadie. En cuanto una alumna firme en la landing, su acuerdo aparece aquí.'}
           </p>
         ) : (
-          lista.map((f) => (
-            <article key={f.referencia} className={css.fila} style={{ padding: '16px 0', gap: 14, flexWrap: 'wrap' }}>
-              <span style={{ flex: '1 1 240px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <strong style={{ fontWeight: 500 }}>
-                  {f.nombre} {f.apellidos}
-                </strong>
-                <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
-                  Doc. {f.documento} · {[f.correo, f.telefono].filter(Boolean).join(' · ')}
-                </span>
-                <span style={{ fontSize: 12.5, fontWeight: 300, color: 'var(--muted)' }}>
-                  {f.referencia} · {f.lugar}, {f.firmadoEl ? fechaLarga(f.firmadoEl) : 'sin fecha'}
-                </span>
-                <span
-                  style={{
-                    fontSize: 12.5,
-                    color: f.correoEnviado ? 'var(--salvia-ink)' : 'var(--arcilla-ink)',
-                  }}
+          <AnimatePresence initial={false}>
+            {lista.map((f) => {
+              const aprobado = f.estado === 'aprobado';
+              const ocupada = enviando === f.referencia || borrando === f.referencia;
+              return (
+                <motion.article
+                  key={f.referencia}
+                  className={`${css.fila} ${a.fila}`}
+                  layout={reducir ? false : 'position'}
+                  exit={reducir ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, x: -16, transition: { duration: 0.22 } }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 36 }}
                 >
-                  {f.estado === 'aprobado' ? '✓ Aprobado · ' : '⏳ Pendiente de tu aprobación · '}
-                  {f.correoEnviado ? '✓ Correo enviado' : '✕ Correo no enviado'}
-                  {!f.correoEnviado && f.correoDetalle ? ` — ${f.correoDetalle}` : ''}
-                </span>
-              </span>
+                  <span className={a.datos}>
+                    <strong className={a.nombre}>
+                      {f.nombre} {f.apellidos}
+                    </strong>
+                    <span className={a.meta}>
+                      Doc. {f.documento} · {[f.correo, f.telefono].filter(Boolean).join(' · ')}
+                    </span>
+                    <span className={a.meta}>
+                      {f.referencia} · {f.lugar}, {f.firmadoEl ? fechaLarga(f.firmadoEl) : 'sin fecha'}
+                    </span>
+                    <span className={a.estados}>
+                      <span className={a.estado} data-tono={aprobado ? 'bien' : 'espera'}>
+                        {aprobado ? 'Aprobado' : 'Pendiente de tu aprobación'}
+                      </span>
+                      <span className={a.estado} data-tono={f.correoEnviado ? 'bien' : 'mal'}>
+                        {f.correoEnviado ? 'Correo enviado' : 'Correo no enviado'}
+                      </span>
+                      {!f.correoEnviado && f.correoDetalle && <span className={a.detalle}>{f.correoDetalle}</span>}
+                    </span>
+                  </span>
 
-              <span className={css.acciones}>
-                <a
-                  className={css.btn}
-                  href={`/api/acuerdos/${f.referencia}/pdf`}
-                  style={{ textDecoration: 'none' }}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Ver acuerdo en PDF
-                </a>
-                {f.estado !== 'aprobado' && f.estado !== 'anulado' && (
-                  <button type="button" className={css.btnComunidad} onClick={() => aprobar(f)} disabled={enviando === f.referencia}>
-                    Aprobar y enviar dossier
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className={css.btnLinea}
-                  onClick={() => reenviar(f)}
-                  disabled={enviando === f.referencia}
-                >
-                  {enviando === f.referencia ? 'Enviando…' : 'Reenviar correo'}
-                </button>
-              </span>
-            </article>
-          ))
+                  <span className={`${css.acciones} ${a.acciones}`}>
+                    <a
+                      className={css.btn}
+                      href={`/api/acuerdos/${f.referencia}/pdf`}
+                      style={{ textDecoration: 'none' }}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Ver acuerdo en PDF
+                    </a>
+                    {f.estado !== 'aprobado' && f.estado !== 'anulado' && (
+                      <button type="button" className={css.btnComunidad} onClick={() => aprobar(f)} disabled={ocupada}>
+                        Aprobar y enviar dossier
+                      </button>
+                    )}
+                    <button type="button" className={css.btnLinea} onClick={() => reenviar(f)} disabled={ocupada}>
+                      {enviando === f.referencia ? 'Enviando…' : 'Reenviar correo'}
+                    </button>
+                    <button
+                      type="button"
+                      className={a.borrar}
+                      onClick={() => borrar(f)}
+                      disabled={ocupada}
+                      aria-label={`Borrar el acuerdo de ${f.nombre} ${f.apellidos} (${f.referencia})`}
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M4.5 7h15M10 11v6M14 11v6M6.5 7l.9 11.6A2 2 0 0 0 9.4 20.5h5.2a2 2 0 0 0 2-1.9L17.5 7M9.5 7V4.5h5V7" />
+                      </svg>
+                      <span>{borrando === f.referencia ? 'Borrando…' : 'Borrar'}</span>
+                    </button>
+                  </span>
+                </motion.article>
+              );
+            })}
+          </AnimatePresence>
         )}
       </section>
+      {dialogo}
+      {avisoFlotante}
     </div>
   );
 }

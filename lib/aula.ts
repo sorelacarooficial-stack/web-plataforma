@@ -3,17 +3,16 @@ import type { Acceso } from './accesos';
 /**
  * Las clases del aula.
  *
- * Una clase es un vídeo con su título. Vive en YouTube —el vídeo, no la
- * clase— y aquí solo se guarda su identificador, el título y a quién va
- * dirigida. Esto no es tacañería: una base de datos no sirve vídeo, y aunque
- * pudiera, servirlo cuesta por giga y se corta en cuanto alguien lo ve desde
- * una conexión mala. YouTube hace esa parte mejor y gratis.
+ * Una clase es un vídeo con su título y a quién va dirigida. El vídeo vive en
+ * el almacén propio de la plataforma (Firebase Storage), en una carpeta
+ * privada: no tiene dirección pública y solo se ve con un enlace firmado que
+ * caduca, que da el servidor a quien le toca (app/api/lecciones/video).
  *
- * LO QUE HAY QUE SABER DE ESTA DECISIÓN: un vídeo de YouTube no listado lo ve
- * cualquiera que tenga el enlace, y los enlaces se reenvían. Una alumna que
- * pague puede pasarlo a un grupo y ese curso queda abierto para siempre. Es
- * una decisión tomada a sabiendas. Si algún día hay que cerrarlo, lo único que
- * cambia es `urlDeVideo()` y el nombre del campo: todo lo demás sigue igual.
+ * Antes las clases eran vídeos «no listados» de YouTube, y eso tenía un
+ * agujero que no se podía tapar: quien tuviera el enlace veía el curso sin
+ * pasar por aquí, y los enlaces se reenvían. Las clases antiguas de YouTube
+ * siguen funcionando igual —guardan el identificador del vídeo en `video`—;
+ * las nuevas se suben aquí y guardan «propio:» y su ruta en el almacén.
  */
 
 /** Una clase, tal y como se guarda. */
@@ -22,7 +21,11 @@ export type Leccion = {
   titulo: string;
   /** Una o dos frases de qué se ve en ella. Puede ir vacía. */
   descripcion: string;
-  /** El identificador del vídeo en YouTube, no la dirección entera. */
+  /**
+   * De dónde sale el vídeo: «propio:<ruta en el almacén>» para los subidos
+   * aquí, o el identificador de YouTube (no la dirección entera) para las
+   * clases antiguas.
+   */
   video: string;
   /** Quién la ve: la comunidad, o quien haya hecho un curso concreto. */
   para: Acceso;
@@ -40,8 +43,14 @@ export type Leccion = {
   duracion?: number;
   /** El apartado dentro del curso: «Día 1 · Desbloqueo», «Facial»… */
   modulo?: string;
-  /** Imagen de portada propia. Si no hay, se usa la de YouTube o un fondo. */
+  /**
+   * La portada, lista para pintar: un enlace firmado al almacén (las nuevas,
+   * sacada de un fotograma del vídeo al subirlo) o la imagen en texto que
+   * llevaban las primeras clases. Si no hay, se usa la de YouTube o un fondo.
+   */
   portada?: string;
+  /** Lo que pesa el vídeo propio, en bytes. Solo lo ve Sorela. */
+  tamano?: number;
 };
 
 export type Capitulo = { t: number; titulo: string };
@@ -55,6 +64,62 @@ export type Progreso = { visto: number; completada: boolean; actualizado?: strin
  * se sirven con un enlace firmado que caduca (ver app/api/lecciones/video).
  */
 export const esVideoPropio = (video: string) => video.startsWith('propio:');
+
+/* ==========================================================================
+   Subir una clase
+   Lo comparten la pantalla de subir (que comprueba antes de empezar) y la API
+   (que vuelve a comprobarlo, porque lo que diga el navegador no vale).
+   ========================================================================== */
+
+/**
+ * Los formatos que se aceptan, por extensión, y con qué tipo se guardan.
+ *
+ * El MOV se guarda como «video/mp4» y no como «video/quicktime», a propósito:
+ * es el mismo contenedor por dentro (lo que graba un iPhone o exporta un Mac
+ * en H.264), pero Chrome no reconoce el tipo de QuickTime y con él algunos
+ * navegadores se niegan a empezar a reproducir. Con el de MP4 lo abren todos.
+ * El M4V es el MP4 que exporta Apple con otro nombre.
+ */
+export const FORMATOS_VIDEO = {
+  mp4: 'video/mp4',
+  m4v: 'video/mp4',
+  mov: 'video/mp4',
+  webm: 'video/webm',
+} as const;
+export type ExtensionVideo = keyof typeof FORMATOS_VIDEO;
+
+/** 4 GB: una clase larga grabada en 1080p cabe de sobra. */
+export const TOPE_VIDEO = 4 * 1024 ** 3;
+
+/**
+ * El trozo en que se sube el vídeo: 8 MB. Google pide que cada trozo, menos el
+ * último, sea múltiplo de 256 KB. Más grande va algo más rápido con buena
+ * conexión, pero si se corta hay que repetir más; con 8 MB, en una conexión
+ * mala se repiten unos segundos y no un minuto.
+ */
+export const TROZO_VIDEO = 8 * 1024 * 1024;
+
+/** La extensión con la que se guarda, o null si no es un vídeo que se acepte. */
+export function extensionDeVideo(nombre: string, tipo = ''): ExtensionVideo | null {
+  const ext = (/\.([a-z0-9]{2,5})$/i.exec(nombre.trim())?.[1] ?? '').toLowerCase();
+  if (Object.prototype.hasOwnProperty.call(FORMATOS_VIDEO, ext)) return ext as ExtensionVideo;
+  // Sin extensión reconocible (pasa al compartir desde algunos móviles): por el tipo.
+  if (tipo === 'video/mp4') return 'mp4';
+  if (tipo === 'video/quicktime') return 'mov';
+  if (tipo === 'video/webm') return 'webm';
+  return null;
+}
+
+/** La carpeta privada de cada clase subida aquí: vídeo y portada. */
+export const carpetaDeClase = (id: string) => `privado/clases/${id}/`;
+
+/** «850 MB», «1,2 GB». */
+export function peso(bytes: number): string {
+  const mb = bytes / 1024 ** 2;
+  if (mb < 1) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  if (mb < 1000) return `${mb < 10 ? mb.toFixed(1).replace('.', ',') : Math.round(mb)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(1).replace('.', ',')} GB`;
+}
 
 /** «08:42» o «1:02:05». */
 export function minutos(segundos: number): string {

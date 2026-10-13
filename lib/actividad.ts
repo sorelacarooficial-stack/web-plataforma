@@ -15,6 +15,13 @@ import { baseDeDatos, COLECCIONES } from './firebase-servidor';
  *
  * Lo usan la comunidad (publicar, responder, «me gusta», borrar) y el aula
  * (terminar una clase).
+ *
+ * SORELA NO COMPITE. Es la creadora: puntos, niveles, trofeos y ranking son
+ * de sus alumnas. Quien llama ya suele decirlo (`esSorela`), pero no se fía
+ * de eso: TODO lo que llega al ranking pasa por `Cuentas.volcar`, y ahí se
+ * mira contra la lista de cuentas de Sorela (`cuentasDeSorela`). Así, si un
+ * día alguien añade otra forma de sumar y se olvida de avisar, Sorela sigue
+ * fuera. Es el único sitio donde se decide.
  */
 
 export const COLECCION_ACTIVIDAD = 'comunidad_actividad';
@@ -28,6 +35,29 @@ export const mesDe = (fecha: Date = new Date()) => fecha.toISOString().slice(0, 
 export const esMes = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d{2}$/.test(v);
 
 export type CampoStats = 'publicaciones' | 'respuestas' | 'meGustaRecibidos';
+
+/* Las cuentas de Sorela, guardadas unos minutos en la memoria del servidor:
+   el rol se cambia una vez en la vida y así no cuesta una lectura por cada
+   «me gusta». Una consulta pequeña (hay una o dos cuentas con ese rol). */
+const VIGENCIA_SORELA_MS = 5 * 60_000;
+let sorelaGuardada: { uids: Set<string>; hasta: number } | null = null;
+
+/**
+ * Los uid de las cuentas de Sorela (rol 'sorela'). Si Firestore no contesta,
+ * se usa la última lista que se tuvo; sin ninguna, una vacía (y queda el
+ * `esSorela` de quien llama como segunda red).
+ */
+export async function cuentasDeSorela(): Promise<Set<string>> {
+  if (sorelaGuardada && sorelaGuardada.hasta > Date.now()) return sorelaGuardada.uids;
+  try {
+    const q = await baseDeDatos().collection(COLECCIONES.usuarios).where('rol', '==', 'sorela').select().limit(20).get();
+    sorelaGuardada = { uids: new Set(q.docs.map((d) => d.id)), hasta: Date.now() + VIGENCIA_SORELA_MS };
+    return sorelaGuardada.uids;
+  } catch (e) {
+    console.error('[actividad] cuentas de Sorela', e);
+    return sorelaGuardada?.uids ?? new Set();
+  }
+}
 export type QuienPuntua = { uid: string; nombre?: string; esSorela?: boolean };
 
 /**
@@ -78,9 +108,14 @@ export class Cuentas {
    * `vivas`: si se da, solo se tocan esas personas. A una cuenta ya borrada no
    * se le restan contadores: el set con merge le volvería a crear la ficha,
    * vacía y sin dueña, y aparecería en la lista de cuentas de Sorela.
+   *
+   * Es asíncrono por una sola razón: aquí se aparta a Sorela del ranking (ver
+   * arriba). La consulta no es de la transacción, así que se puede hacer
+   * después de sus lecturas sin romper la regla de «primero leer».
    */
-  volcar(poner: (ref: DocumentReference, datos: DocumentData) => void, vivas?: Set<string>) {
+  async volcar(poner: (ref: DocumentReference, datos: DocumentData) => void, vivas?: Set<string>) {
     const db = baseDeDatos();
+    const sorela = this.meses.size ? await cuentasDeSorela() : new Set<string>();
     for (const [uid, s] of this.stats) {
       if (vivas && !vivas.has(uid)) continue;
       const datos: Record<string, FieldValue> = {};
@@ -90,7 +125,7 @@ export class Cuentas {
     for (const [mes, m] of this.meses) {
       const datos: Record<string, unknown> = {};
       for (const [uid, x] of m) {
-        if (!x.puntos || (vivas && !vivas.has(uid))) continue;
+        if (!x.puntos || sorela.has(uid) || (vivas && !vivas.has(uid))) continue;
         datos[uid] = { ...(x.nombre ? { nombre: x.nombre } : {}), puntos: FieldValue.increment(x.puntos) };
       }
       if (Object.keys(datos).length) poner(db.collection(COLECCION_ACTIVIDAD).doc(mes), datos);
@@ -102,7 +137,7 @@ export class Cuentas {
     if (!this.escrituras) return;
     const lote = baseDeDatos().batch();
     let n = 0;
-    this.volcar((ref, datos) => {
+    await this.volcar((ref, datos) => {
       lote.set(ref, datos, { merge: true });
       n++;
     });

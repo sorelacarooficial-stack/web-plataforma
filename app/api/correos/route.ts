@@ -1,16 +1,20 @@
 import { NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
-import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
-import { sesionActual } from '@/lib/sesion-servidor';
+import { baseDeDatos } from '@/lib/firebase-servidor';
+import { exigirAdmin } from '@/lib/permisos';
 import { AUTOMATIZACIONES, ID_AUTOMATIZACIONES, type IdAutomatizacion } from '@/lib/automatizaciones';
 import {
   COLECCION_CORREOS,
+  DIAS_HISTORIAL,
   automatizacionesActivas,
   correoDeSorela,
   mandarCorreo,
+  purgarHistorial,
+  quitarDelHistorial,
+  vaciarHistorial,
   viaDeEnvio,
 } from '@/lib/correos';
-import { datosResumen, listaDeEspera, tareasDelDia } from '@/lib/automatizar';
+import { datosResumen, listaDeEspera } from '@/lib/automatizar';
 import { correoBienvenidaPorOrigen } from '@/lib/plantillas-bienvenida';
 import {
   correoAccesoComunidad,
@@ -29,20 +33,18 @@ import {
  *   GET ?ver=id         → la vista previa de un correo, en HTML
  *   PATCH { id, activa }→ encender o apagar una automatización
  *   POST  { accion: 'prueba', id } → mandarle a Sorela ese correo de muestra
- *   POST  { accion: 'ejecutar' }   → hacer ahora lo del cron de la mañana (avisos incluidos)
+ *   DELETE ?id=…        → quitar una línea del historial
+ *   DELETE ?todo=1      → vaciar el historial
+ *
+ * Lo de cada mañana (avisos programados y el resumen) ya no tiene botón aquí:
+ * lo hace solo el cron (`app/api/cron/correos`), que además purga el
+ * historial. Borrar del historial nunca hace que un correo vuelva a salir: la
+ * marca de «ya enviado» se guarda aparte (ver `lib/correos.ts`).
  */
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
-
-async function exigirAdmin() {
-  if (!hayFirebase()) return { error: NextResponse.json({ ok: false, motivo: 'sin-configurar' }, { status: 503 }) };
-  const s = await sesionActual();
-  if (!s) return { error: NextResponse.json({ ok: false, motivo: 'sin-sesion' }, { status: 401 }) };
-  if (s.rol !== 'sorela') return { error: NextResponse.json({ ok: false, motivo: 'sin-permiso' }, { status: 403 }) };
-  return { sesion: s };
-}
 
 const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
 
@@ -116,19 +118,25 @@ export async function GET(peticion: Request) {
     return NextResponse.json({ ok: true, historial });
   }
 
+  /* La purga de respaldo: por si el cron no ha corrido (en local no corre
+     nunca, y en Vercel puede fallar un día). Va a la vez que la lista, y lo
+     que tenga más de 30 días se quita también de la respuesta, por si la
+     lista se ha leído antes de que la purga terminara. */
+  const limite = new Date(Date.now() - DIAS_HISTORIAL * 86_400_000).toISOString();
   const [historial, activas, espera] = await Promise.all([
     col.orderBy('cuando', 'desc').limit(150).get(),
     automatizacionesActivas(),
     listaDeEspera().catch(() => []),
+    purgarHistorial().catch((e) => console.error('[correos] la purga del historial ha fallado:', e)),
   ]);
   return NextResponse.json({
     ok: true,
     via: viaDeEnvio(),
-    correoSorela: correoDeSorela(),
     activas,
     automatizaciones: AUTOMATIZACIONES,
     listaEspera: espera.length,
-    historial: historial.docs.map(aFila),
+    dias: DIAS_HISTORIAL,
+    historial: historial.docs.map(aFila).filter((f) => !f.cuando || f.cuando >= limite),
   });
 }
 
@@ -154,11 +162,6 @@ export async function POST(peticion: Request) {
   if (g.error) return g.error;
   const c = (await peticion.json().catch(() => ({}))) as { accion?: unknown; id?: unknown };
 
-  if (c.accion === 'ejecutar') {
-    const informe = await tareasDelDia();
-    return NextResponse.json({ ok: true, ...informe });
-  }
-
   if (c.accion === 'prueba') {
     if (!esId(c.id)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
     const para = g.sesion.correo || correoDeSorela();
@@ -170,4 +173,25 @@ export async function POST(peticion: Request) {
   }
 
   return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
+}
+
+export async function DELETE(peticion: Request) {
+  const g = await exigirAdmin();
+  if (g.error) return g.error;
+  const q = new URL(peticion.url).searchParams;
+
+  if (q.get('todo') === '1') {
+    const borrados = await vaciarHistorial();
+    return NextResponse.json({ ok: true, borrados });
+  }
+
+  // El id de una línea es su clave (p. ej. `acceso-formacion:uid`) o uno al azar: nunca lleva barras.
+  const id = (q.get('id') ?? '').trim();
+  if (!id || id.length > 300 || id.includes('/')) {
+    return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
+  }
+  const d = await baseDeDatos().collection(COLECCION_CORREOS).doc(id).get();
+  if (!d.exists) return NextResponse.json({ ok: true, borrados: 0 });
+  const borrados = await quitarDelHistorial([d]);
+  return NextResponse.json({ ok: true, borrados });
 }

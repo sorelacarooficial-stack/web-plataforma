@@ -4,13 +4,14 @@ import { baseDeDatos, COLECCIONES } from './firebase-servidor';
 import { revisarAccesos, type Acceso } from './accesos';
 import { puedeVerla } from './aula';
 import { diaDe } from './metricas';
-import { COLECCION_ACTIVIDAD, mesDe } from './actividad';
-import { LOGROS, type Resumen } from './logros-tipos';
+import { COLECCION_ACTIVIDAD, cuentasDeSorela, mesDe } from './actividad';
+import { LOGROS, OROS_PARA_DIVINE, type EstadoLogro, type Resumen } from './logros-tipos';
 import { calcularPuntos, nivelDe, type ResumenPuntos } from './puntos-tipos';
 
 /**
- * Calcula los logros de una persona con lo que ya está guardado: su progreso
- * en las clases, sus contadores de la comunidad y su racha de días.
+ * Calcula los logros (los escalones de sus trofeos, lib/logros-tipos.ts) de
+ * una persona con lo que ya está guardado: su progreso en las clases, sus
+ * contadores de la comunidad, su racha de días, su perfil y sus fotos.
  *
  * Los conseguidos se apuntan en `usuarios/{uid}/logros/{id}` la primera vez:
  * así se sabe cuáles son NUEVOS (para celebrarlos una sola vez) y cuándo se
@@ -20,6 +21,8 @@ import { calcularPuntos, nivelDe, type ResumenPuntos } from './puntos-tipos';
  * uno: se recalculan aquí. Solo se guarda una foto fija del total y el nivel
  * (`usuarios.puntosTotal`, `usuarios.nivel`) para enseñarlos en el ranking y
  * en el perfil sin repetir esta cuenta por cada persona de la lista.
+ *
+ * Sorela no compite: con ella no se calcula ni se guarda nada (ver `creadora`).
  */
 
 const DIA = 86_400_000;
@@ -73,6 +76,17 @@ export async function registrarActividad(uid: string, leida?: Actividad | null):
   }
 }
 
+/** Lo que se devuelve de Sorela: nada que contar, solo que es la creadora. */
+const DE_LA_CREADORA: Resumen = {
+  creadora: true,
+  logros: [],
+  nuevos: [],
+  curso: { hechas: 0, total: 0, porcentaje: 0 },
+  racha: { actual: 0, mejor: 0 },
+  certificado: false,
+  puntos: { total: 0, desglose: calcularPuntos({ clases: 0, cursoCompleto: false, publicaciones: 0, respuestas: 0, meGusta: 0, dias: 0, mejorRacha: 0, logros: 0, perfilCompleto: false, fotos: 0 }).desglose, nivel: nivelDe(0), antes: null, subioNivel: false },
+};
+
 /**
  * El resumen de logros y puntos de una persona.
  *
@@ -86,7 +100,7 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
   const ref = db.collection(COLECCIONES.usuarios).doc(uid);
   /* Todo de una vez. Del progreso solo hacen falta los identificadores de las
      terminadas, y de las clases dos campos: se piden así para no traer de más. */
-  const [usuario, terminadas, lecciones, guardados, ranking, fotos] = await Promise.all([
+  const [usuario, terminadas, lecciones, guardados, ranking, fotos, sorela] = await Promise.all([
     ref.get(),
     ref.collection('progreso').where('completada', '==', true).select().get(),
     db.collection(COLECCIONES.lecciones).select('publicada', 'para').get(),
@@ -100,8 +114,12 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
       .get()
       .then((r) => r.data().count)
       .catch(() => 0),
+    cuentasDeSorela(),
   ]);
   const u = usuario.data() ?? {};
+  /* Sorela es la creadora: no tiene puntos, nivel, trofeos ni racha que
+     enseñar. Se vuelve antes de apuntar nada (ni el día, ni la foto fija). */
+  if (u.rol === 'sorela' || sorela.has(uid)) return DE_LA_CREADORA;
   const accesos = revisarAccesos(u.accesos);
 
   // Las clases que le tocan por lo que tiene contratado (como las ve en el aula).
@@ -123,36 +141,62 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
   const puesto = (() => {
     const mapa = (ranking.data() ?? {}) as Record<string, { puntos?: number }>;
     const orden = Object.entries(mapa)
-      .filter(([, v]) => (v?.puntos ?? 0) > 0)
+      .filter(([k, v]) => (v?.puntos ?? 0) > 0 && !sorela.has(k))
       .sort((a, b) => (b[1].puntos ?? 0) - (a[1].puntos ?? 0))
       .map(([k]) => k);
     const i = orden.indexOf(uid);
     return i >= 0 && i < 3 ? 1 : 0;
   })();
 
+  const publicaciones = Math.max(0, stats.publicaciones ?? 0);
+  const respuestas = Math.max(0, stats.respuestas ?? 0);
+  const meGusta = Math.max(0, stats.meGustaRecibidos ?? 0);
   const valor: Record<string, number> = {
     'primera-clase': hechas,
     'mitad-curso': total ? porcentaje : 0,
     'curso-completo': total ? porcentaje : 0,
-    'primera-publicacion': stats.publicaciones ?? 0,
-    'primera-respuesta': stats.respuestas ?? 0,
-    'cinco-respuestas': stats.respuestas ?? 0,
-    'diez-me-gusta': Math.max(0, stats.meGustaRecibidos ?? 0),
-    podio: puesto,
-    'perfil-completo': perfilCompleto ? 1 : 0,
+    'primera-publicacion': publicaciones,
+    'publicaciones-5': publicaciones,
+    'publicaciones-15': publicaciones,
+    'primera-respuesta': respuestas,
+    'cinco-respuestas': respuestas,
+    'respuestas-20': respuestas,
+    'diez-me-gusta': meGusta,
+    'me-gusta-50': meGusta,
+    'me-gusta-150': meGusta,
     'racha-3': mejor,
     'racha-7': mejor,
     'racha-30': mejor,
+    'perfil-completo': perfilCompleto ? 1 : 0,
+    'fotos-5': fotos,
+    'fotos-10': fotos,
+    podio: puesto,
   };
+  /* Lo que falta del curso se dice en clases, no en porcentaje: «te faltan 3
+     clases» se entiende; «te falta un 37 %», no tanto. */
+  const faltaCurso = (pct: number) => (total ? Math.max(0, Math.ceil((total * pct) / 100) - hechas) : null);
 
   const ya = new Map(guardados.docs.map((d) => [d.id, d.get('cuando')?.toDate?.().toISOString() ?? null]));
   let nuevos: string[] = [];
-  const logros = LOGROS.map((l) => {
-    const progreso = Math.min(l.meta, valor[l.id] ?? 0);
+  const estado = (l: (typeof LOGROS)[number], v: number): EstadoLogro => {
+    const progreso = Math.min(l.meta, Math.max(0, v));
     const conseguido = ya.has(l.id) || progreso >= l.meta;
     if (conseguido && !ya.has(l.id)) nuevos.push(l.id);
-    return { ...l, progreso: conseguido ? l.meta : progreso, conseguido, cuando: ya.get(l.id) ?? (conseguido ? new Date().toISOString() : null) };
-  });
+    const falta = conseguido
+      ? 0
+      : l.id === 'mitad-curso'
+        ? faltaCurso(50)
+        : l.id === 'curso-completo'
+          ? faltaCurso(100)
+          : l.unidad
+            ? l.meta - progreso
+            : null;
+    return { ...l, progreso: conseguido ? l.meta : progreso, conseguido, cuando: ya.get(l.id) ?? (conseguido ? new Date().toISOString() : null), falta };
+  };
+  // Primero todos menos el Divine, que se gana juntando los oros de los demás.
+  const logros = LOGROS.filter((l) => l.vitrina !== 'divine').map((l) => estado(l, valor[l.id] ?? 0));
+  const oros = logros.filter((l) => l.escalon === 'oro' && l.conseguido).length;
+  for (const l of LOGROS.filter((x) => x.vitrina === 'divine')) logros.push(estado(l, Math.min(oros, OROS_PARA_DIVINE)));
 
   const { total: puntosTotal, desglose } = calcularPuntos({
     clases: hechas,
@@ -217,6 +261,7 @@ export async function resumenLogros(uid: string, celebrar: boolean, propia: bool
   const puntos: ResumenPuntos = { total: puntosTotal, desglose, nivel, antes, subioNivel };
 
   return {
+    creadora: false,
     logros,
     nuevos: celebrar ? nuevos : [],
     curso: { hechas, total, porcentaje },

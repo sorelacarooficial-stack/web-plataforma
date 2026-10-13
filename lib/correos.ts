@@ -61,6 +61,7 @@ function marca(clave: string, tipo: unknown, cuando: Date) {
    Métricas bajaría cada vez que se limpia el historial, y lo enviado, enviado
    está. Va en su propio documento para no mezclarse con los interruptores. */
 const CONTADOR = { coleccion: 'ajustes', doc: 'historial-correos' } as const;
+
 export type Via = 'resend' | 'smtp' | 'apps-script';
 export type EstadoCorreo = 'enviado' | 'fallido' | 'omitido';
 
@@ -74,6 +75,8 @@ export type RegistroCorreo = {
   contactoId?: string;
   uid?: string;
   campanaId?: string;
+  /** La referencia del acuerdo, en los correos del acuerdo: al borrar el acuerdo se borran con él. */
+  acuerdo?: string;
 };
 
 const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
@@ -226,6 +229,7 @@ export type Opciones = {
   contactoId?: string;
   uid?: string;
   campanaId?: string;
+  acuerdo?: string;
 };
 
 export type Resultado = { estado: EstadoCorreo; detalle?: string; via: Via | null };
@@ -241,8 +245,8 @@ export type Resultado = { estado: EstadoCorreo; detalle?: string; via: Via | nul
 export async function yaEnviado(clave: string): Promise<boolean> {
   if (!hayFirebase()) return false;
   const db = baseDeDatos();
-  const [marca, linea] = await db.getAll(db.collection(COLECCION_MARCAS).doc(clave), db.collection(COLECCION_CORREOS).doc(clave));
-  return marca.exists || (linea.exists && linea.get('estado') === 'enviado');
+  const [marcada, linea] = await db.getAll(db.collection(COLECCION_MARCAS).doc(clave), db.collection(COLECCION_CORREOS).doc(clave));
+  return marcada.exists || (linea.exists && linea.get('estado') === 'enviado');
 }
 
 /* ------------------------------------------------------------ historial */
@@ -348,7 +352,7 @@ export async function correosEnviadosTotal(): Promise<number> {
 /** Manda un correo y lo apunta. No lanza: devuelve qué ha pasado. */
 export async function mandarCorreo(c: Correo, o: Opciones): Promise<Resultado> {
   const via = viaDeEnvio();
-  const base = { para: c.para, tipo: o.tipo, asunto: c.asunto, contactoId: o.contactoId, uid: o.uid, campanaId: o.campanaId };
+  const base = { para: c.para, tipo: o.tipo, asunto: c.asunto, contactoId: o.contactoId, uid: o.uid, campanaId: o.campanaId, acuerdo: o.acuerdo };
   const limpio = <T extends object>(x: T) =>
     Object.fromEntries(Object.entries(x).filter(([, v]) => v !== undefined)) as T;
 

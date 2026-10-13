@@ -1,0 +1,155 @@
+/*
+ * Acuerdos (Acuerdos.tsx). Lo de la tarjeta, las cifras y los botones grandes
+ * viene de plataforma.module.css; aquí va lo propio de cada fila, que antes
+ * eran estilos sueltos dentro del componente.
+ *
+ * Contraste medido sobre el fondo de la tarjeta (degradado #ffffff → #f5f0e7;
+ * se da el peor de los dos extremos):
+ *   · datos en --muted-2 (#5e564c), 13,5 px y en 400: 6,3 a 1. Antes iban en
+ *     Jost 300 a 12,5 px, que no se leía.
+ *   · estados: verde #3d5a33 sobre su tinte (5,9 a 1), bronce #6f5323 sobre
+ *     --oro-tint (6,2 a 1) y teja #8f3f26 sobre el suyo (5,5 a 1). Antes eran
+ *     emojis (⏳ ✓ ✕) con el texto en el mismo gris que el resto.
+ *   · «Borrar» en --muted-2 (6,3 a 1) y, al pasar por encima, en el rojo de
+ *     peligro de la plataforma (#9a2f1a, 6,6 a 1), el mismo del diálogo.
+ */
+
+.fila {
+  align-items: center;
+  gap: 14px 22px;
+  padding: 18px 0;
+}
+
+.datos {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.nombre {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.meta {
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--muted-2);
+  overflow-wrap: anywhere;
+}
+
+.estados {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: 4px;
+}
+
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px 4px 9px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Un punto delante, del color del estado: se distingue también sin leer. */
+.estado::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.estado[data-tono='bien'] {
+  background: rgba(95, 135, 82, 0.14);
+  color: #3d5a33;
+}
+
+.estado[data-tono='espera'] {
+  background: var(--oro-tint, #f5efe2);
+  color: var(--oro-letra, #6f5323);
+}
+
+.estado[data-tono='mal'] {
+  background: rgba(196, 92, 60, 0.12);
+  color: #8f3f26;
+}
+
+.detalle {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #8f3f26;
+}
+
+.acciones {
+  justify-content: flex-end;
+}
+
+/* Borrar: sin borde ni fondo, en gris, con su icono. Se ve, pero no compite
+   con «Ver acuerdo en PDF»; el color de peligro sale solo al acercarse. */
+.borrar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted-2);
+  cursor: pointer;
+  transition:
+    color 0.18s,
+    background 0.18s;
+}
+
+.borrar:hover {
+  color: #9a2f1a;
+  background: rgba(154, 47, 26, 0.07);
+}
+
+.borrar:focus-visible {
+  outline: 2px solid var(--oro, #8a6a32);
+  outline-offset: 2px;
+}
+
+.borrar:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/* En el móvil, los botones a lo ancho, uno debajo de otro, y «Borrar» el
+   último y centrado: lejos del pulgar que va a abrir el PDF. */
+@media (max-width: 560px) {
+  .acciones {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .acciones > * {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .borrar {
+    transition: none;
+  }
+}

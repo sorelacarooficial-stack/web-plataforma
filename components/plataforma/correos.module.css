@@ -76,93 +76,6 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M7 3v4.6' stroke='%23fff' stroke-width='1.9' stroke-linecap='round'/%3E%3Ccircle cx='7' cy='10.6' r='1.1' fill='%23fff'/%3E%3C/svg%3E");
 }
 
-/* ---------- Cómo salen ---------- */
-
-.estado {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px 18px;
-  padding: clamp(18px, 2.2vw, 24px);
-  border-radius: 24px;
-  background: rgba(196, 92, 60, 0.07);
-  border: 1px solid rgba(196, 92, 60, 0.25);
-}
-
-.estado[data-bien] {
-  background: #fffdf9;
-  border-color: var(--line-1, rgba(20, 18, 16, 0.1));
-}
-
-.estadoPunto {
-  flex: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #c45c3c;
-  box-shadow: 0 0 0 5px rgba(196, 92, 60, 0.15);
-}
-
-.estado[data-bien] .estadoPunto {
-  background: #5f8752;
-  box-shadow: 0 0 0 5px rgba(95, 135, 82, 0.16);
-}
-
-.estadoTexto {
-  flex: 1 1 320px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.55;
-  color: var(--ink-3);
-}
-
-.estadoTexto strong {
-  font-size: 16.5px;
-  font-weight: 500;
-  color: var(--ink);
-}
-
-.estadoNota {
-  margin-top: 6px;
-  font-size: 13.5px;
-  color: var(--oro-letra, #6f5323);
-}
-
-/* Los botones, con la voz de los de la plataforma: mayúsculas en 500 y un
-   espaciado que se lee como palabra (0,08 em), no como letras sueltas. */
-.btn {
-  padding: 12px 22px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--ink);
-  color: #faf8f5;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-}
-
-.btn:focus-visible {
-  outline: 2px solid var(--oro, #8a6a32);
-  outline-offset: 3px;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: progress;
-}
-
 /* ---------- Cifras ---------- */
 
 .cifras {
@@ -204,18 +117,6 @@
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
-}
-
-.cifraValorTexto {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(20px, 2vw, 25px);
-  font-weight: 600;
-  line-height: 1.1;
-  color: var(--ink);
-}
-
-.cifraValorTexto::first-letter {
-  text-transform: uppercase;
 }
 
 .cifraNota {
@@ -392,6 +293,112 @@
 
 /* ---------- Historial ---------- */
 
+/* La cabecera del historial: título con su nota pequeña a la izquierda; el
+   filtro y «Vaciar historial» a la derecha, en una sola línea en escritorio y
+   debajo en el móvil. */
+.cabeceraHistorial {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+}
+
+.titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.titulo h3 {
+  margin: 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 2.2vw, 28px);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+/* «Se borra solo a los 30 días»: en pequeño, como pidió, pero legible
+   (13 px en 400, --muted-2 sobre la tarjeta #fffdf9: 7,1 a 1). */
+.nota {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--muted-2);
+}
+
+.herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* «Vaciar historial»: botón de línea fina en el rojo de peligro de la
+   plataforma (#9a2f1a, 7,4 a 1 sobre la tarjeta; el filete al 60 %, 3,1 a 1).
+   Mismo alto que el filtro. */
+.vaciar {
+  min-height: 38px;
+  padding: 8px 16px;
+  border: 1px solid rgba(154, 47, 26, 0.6);
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #9a2f1a;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
+}
+
+.vaciar:hover {
+  background: rgba(154, 47, 26, 0.07);
+  border-color: #9a2f1a;
+}
+
+.vaciar:focus-visible,
+.quitar:focus-visible {
+  outline: 2px solid var(--oro, #8a6a32);
+  outline-offset: 2px;
+}
+
+.vaciar:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Quitar una línea: solo el icono, en gris, y rojo al acercarse. */
+.quitar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-left: -4px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted-2);
+  cursor: pointer;
+  transition:
+    color 0.18s,
+    background 0.18s;
+}
+
+.quitar:hover {
+  color: #9a2f1a;
+  background: rgba(154, 47, 26, 0.08);
+}
+
+.quitar:disabled {
+  opacity: 0.45;
+  cursor: progress;
+}
+
 .filtro {
   display: inline-flex;
   gap: 4px;
@@ -544,8 +551,24 @@
   .filaCuando {
     margin-left: auto;
   }
+  .quitar {
+    width: 40px;
+    height: 40px;
+    margin: -6px -8px -6px 0;
+  }
+  .herramientas {
+    width: 100%;
+    justify-content: space-between;
+  }
   .auto {
     gap: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vaciar,
+  .quitar {
+    transition: none;
   }
 }
 

@@ -2,15 +2,25 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ETIQUETA_CORREO, type IdAutomatizacion } from '@/lib/automatizaciones';
 import Programados from './Programados';
+import { useAviso, useConfirmar } from './Confirmar';
 import k from './correos.module.css';
 
 /**
- * Los correos automáticos, en una pantalla: por dónde salen, cuáles están
- * encendidos, qué va a salir y cuándo, y qué ha salido ya (y a quién no le ha
- * llegado). Todo lo que se lee aquí lo cuenta `app/api/correos`.
+ * Los correos automáticos, en una pantalla: cuáles están encendidos, qué va a
+ * salir y cuándo, y qué ha salido ya (y a quién no le ha llegado). Todo lo que
+ * se lee aquí lo cuenta `app/api/correos`.
+ *
+ * Arriba ya no está la tarjeta de «por dónde salen» con el botón de «hacer
+ * ahora lo de hoy»: a Sorela no le decía nada y lo de cada mañana lo hace solo
+ * el cron. Solo aparece un aviso si NO hay por dónde mandar, que es lo único
+ * que tiene que saber.
+ *
+ * «Lo que ha salido» se borra solo a los 30 días y se puede limpiar a mano
+ * (una línea o todo). Borrarlo no hace que nada vuelva a salir: lo que
+ * impide repetir un correo es una marca aparte (ver `lib/correos.ts`).
  */
 
 type Auto = {
@@ -35,26 +45,11 @@ type Fila = {
 
 type Datos = {
   via: 'resend' | 'smtp' | 'apps-script' | null;
-  correoSorela: string | null;
   activas: Record<IdAutomatizacion, boolean>;
   automatizaciones: Auto[];
   listaEspera: number;
+  dias: number;
   historial: Fila[];
-};
-
-const VIA: Record<string, { titulo: string; texto: string }> = {
-  'apps-script': {
-    titulo: 'Salen desde tu Gmail',
-    texto: 'A través de tu Apps Script. Gmail deja unos 100 correos al día: de sobra para el día a día, justo para un aviso a toda la lista.',
-  },
-  resend: {
-    titulo: 'Salen desde tu dominio',
-    texto: 'Con Resend, desde la dirección de sorelacarodivine.com. Llegan mejor a la bandeja de entrada y no dependen del límite de Gmail.',
-  },
-  smtp: {
-    titulo: 'Salen por SMTP',
-    texto: 'Con la cuenta de correo configurada en el servidor.',
-  },
 };
 
 function hace(iso: string | null) {
@@ -76,6 +71,9 @@ export default function Correos() {
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [vista, setVista] = useState<{ id: IdAutomatizacion; asunto: string; html: string } | null>(null);
   const [filtro, setFiltro] = useState<'todos' | 'fallido'>('todos');
+  const [confirmar, dialogo] = useConfirmar();
+  const [avisar, avisoFlotante] = useAviso();
+  const reducir = useReducedMotion();
 
   const cargar = useCallback(async () => {
     try {
@@ -136,19 +134,48 @@ export default function Correos() {
     }
   }
 
-  async function hacerHoy() {
-    setOcupado('hoy');
+  /* Quitar del historial. La línea se va de la lista en el acto y, si el
+     servidor dice que no, vuelve al recargar. */
+  async function quitar(f: Fila) {
+    const que = ETIQUETA_CORREO[f.tipo] ?? f.tipo;
+    const si = await confirmar({
+      titulo: '¿Quitar esta línea del historial?',
+      texto: `«${que}» a ${f.para}. Solo se borra la anotación: el correo no se anula ni se vuelve a mandar. No se puede deshacer.`,
+      boton: 'Quitar',
+    });
+    if (!si) return;
+    setOcupado(`quitar:${f.id}`);
+    setDatos((d) => (d ? { ...d, historial: d.historial.filter((x) => x.id !== f.id) } : d));
     try {
-      const j = await (
-        await fetch('/api/correos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accion: 'ejecutar' }) })
-      ).json();
-      const n = (j.hechas ?? []).reduce((s: number, h: { enviados: number }) => s + h.enviados, 0);
-      setAviso(n ? `Hecho: ${n} ${n === 1 ? 'correo enviado' : 'correos enviados'}.` : 'Hecho. Hoy no tocaba mandar nada.');
-      await cargar();
+      const j = await (await fetch(`/api/correos?id=${encodeURIComponent(f.id)}`, { method: 'DELETE' })).json();
+      if (!j.ok) throw new Error();
     } catch {
-      setAviso('No se ha podido. Vuelve a intentarlo.');
+      avisar('No se ha podido quitar esa línea. Vuelve a intentarlo.');
+      await cargar();
     } finally {
       setOcupado(null);
+    }
+  }
+
+  async function vaciar() {
+    const si = await confirmar({
+      titulo: '¿Vaciar el historial de correos?',
+      texto:
+        'Se borra todo lo que hay en «Lo que ha salido», también en la ficha de cada contacto. No se puede deshacer. ' +
+        'Los correos que ya salieron no se vuelven a mandar: la plataforma sigue recordando a quién le escribió.',
+      boton: 'Vaciar historial',
+    });
+    if (!si) return;
+    setOcupado('vaciar');
+    try {
+      const j = await (await fetch('/api/correos?todo=1', { method: 'DELETE' })).json();
+      if (!j.ok) throw new Error();
+      avisar('Historial vaciado.', 'hecho');
+    } catch {
+      avisar('No se ha podido vaciar el historial. Vuelve a intentarlo.');
+    } finally {
+      setOcupado(null);
+      await cargar();
     }
   }
 
@@ -166,7 +193,6 @@ export default function Correos() {
     return <p className={k.cargando}>{fallo ?? 'Cargando los correos…'}</p>;
   }
 
-  const via = datos.via ? VIA[datos.via] : null;
   const filas = datos.historial.filter((f) => filtro === 'todos' || f.estado === 'fallido');
 
   return (
@@ -179,22 +205,12 @@ export default function Correos() {
         )}
       </AnimatePresence>
       {fallo && <p className={k.fallo} role="alert">{fallo}</p>}
-
-      {/* ---------- Cómo salen ---------- */}
-      <section className={k.estado} data-bien={via ? '' : undefined}>
-        <span className={k.estadoPunto} aria-hidden="true" />
-        <div className={k.estadoTexto}>
-          <strong>{via ? via.titulo : 'Ahora mismo no sale ningún correo automático'}</strong>
-          <span>
-            {via
-              ? via.texto
-              : 'Falta conectar una vía de envío en Vercel. Hasta entonces, cada correo queda apuntado aquí como «No salió».'}
-          </span>
-        </div>
-        <button type="button" className={k.btn} onClick={hacerHoy} disabled={ocupado === 'hoy'}>
-          {ocupado === 'hoy' ? 'Haciendo…' : 'Hacer ahora lo de hoy'}
-        </button>
-      </section>
+      {!datos.via && (
+        <p className={k.fallo} role="alert">
+          Ahora mismo no sale ningún correo: falta conectar una vía de envío en Vercel. Hasta entonces, cada correo queda
+          apuntado abajo como «No salió».
+        </p>
+      )}
 
       <div className={k.cifras}>
         <div className={k.cifra}>
@@ -266,36 +282,68 @@ export default function Correos() {
 
       {/* ---------- Historial ---------- */}
       <section className={k.tarjeta}>
-        <header className={k.cabecera}>
-          <h3>Lo que ha salido</h3>
-          <div className={k.filtro} role="group" aria-label="Filtrar">
-            <button type="button" aria-pressed={filtro === 'todos'} onClick={() => setFiltro('todos')}>
-              Todos
-            </button>
-            <button type="button" aria-pressed={filtro === 'fallido'} onClick={() => setFiltro('fallido')}>
-              Solo los que no salieron
-            </button>
+        <header className={k.cabeceraHistorial}>
+          <div className={k.titulo}>
+            <h3>Lo que ha salido</h3>
+            <small className={k.nota}>Se borra solo a los {datos.dias || 30} días.</small>
+          </div>
+          <div className={k.herramientas}>
+            <div className={k.filtro} role="group" aria-label="Filtrar">
+              <button type="button" aria-pressed={filtro === 'todos'} onClick={() => setFiltro('todos')}>
+                Todos
+              </button>
+              <button type="button" aria-pressed={filtro === 'fallido'} onClick={() => setFiltro('fallido')}>
+                Solo los que no salieron
+              </button>
+            </div>
+            {datos.historial.length > 0 && (
+              <button type="button" className={k.vaciar} onClick={vaciar} disabled={ocupado === 'vaciar'}>
+                {ocupado === 'vaciar' ? 'Vaciando…' : 'Vaciar historial'}
+              </button>
+            )}
           </div>
         </header>
         {filas.length === 0 ? (
           <p className={k.vacio}>
-            {filtro === 'fallido' ? 'Ninguno ha fallado.' : 'Todavía no ha salido ningún correo desde que existe este historial.'}
+            {filtro === 'fallido'
+              ? 'Ninguno ha fallado.'
+              : 'No hay nada en el historial. Cada correo que salga aparecerá aquí durante 30 días.'}
           </p>
         ) : (
           <ul className={k.historial}>
-            {filas.map((f) => (
-              <li key={f.id} className={k.fila}>
-                <span className={k.chip} data-estado={f.estado}>
-                  {ESTADO[f.estado]}
-                </span>
-                <span className={k.filaTexto}>
-                  <span className={k.filaQue}>{ETIQUETA_CORREO[f.tipo] ?? f.tipo}</span>
-                  <span className={k.filaPara}>{f.para}</span>
-                  {f.detalle && f.estado !== 'enviado' && <span className={k.filaDetalle}>{f.detalle}</span>}
-                </span>
-                <span className={k.filaCuando}>{hace(f.cuando)}</span>
-              </li>
-            ))}
+            <AnimatePresence initial={false}>
+              {filas.map((f) => (
+                <motion.li
+                  key={f.id}
+                  className={k.fila}
+                  layout={reducir ? false : 'position'}
+                  exit={reducir ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, x: -14, transition: { duration: 0.2 } }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                >
+                  <span className={k.chip} data-estado={f.estado}>
+                    {ESTADO[f.estado]}
+                  </span>
+                  <span className={k.filaTexto}>
+                    <span className={k.filaQue}>{ETIQUETA_CORREO[f.tipo] ?? f.tipo}</span>
+                    <span className={k.filaPara}>{f.para}</span>
+                    {f.detalle && f.estado !== 'enviado' && <span className={k.filaDetalle}>{f.detalle}</span>}
+                  </span>
+                  <span className={k.filaCuando}>{hace(f.cuando)}</span>
+                  <button
+                    type="button"
+                    className={k.quitar}
+                    onClick={() => quitar(f)}
+                    disabled={ocupado === `quitar:${f.id}` || ocupado === 'vaciar'}
+                    aria-label={`Quitar del historial: ${ETIQUETA_CORREO[f.tipo] ?? f.tipo}, a ${f.para}`}
+                    title="Quitar del historial"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4.5 7h15M10 11v6M14 11v6M6.5 7l.9 11.6A2 2 0 0 0 9.4 20.5h5.2a2 2 0 0 0 2-1.9L17.5 7M9.5 7V4.5h5V7" />
+                    </svg>
+                  </button>
+                </motion.li>
+              ))}
+            </AnimatePresence>
           </ul>
         )}
       </section>
@@ -338,6 +386,8 @@ export default function Correos() {
       </AnimatePresence>,
         document.body
       )}
+      {dialogo}
+      {avisoFlotante}
     </div>
   );
 }

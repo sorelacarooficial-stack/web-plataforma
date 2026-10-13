@@ -17,7 +17,9 @@ import { nivelDe } from '@/lib/puntos-tipos';
  *   DELETE ?portada=1[&uid=]   → quitar la portada (la propia; Sorela, cualquiera)
  *
  * Los puntos que se enseñan aquí son la foto fija que guarda lib/logros.ts
- * (`usuarios.puntosTotal`): el desglose completo lo da /api/logros.
+ * (`usuarios.puntosTotal`): el desglose completo lo da /api/logros. Sorela no
+ * lleva `puntos`: es la creadora y no compite (aunque le quede una foto fija
+ * de antes, no se manda).
  *
  * Quién ve qué: cada una ve siempre el suyo. Los de las demás, solo quien
  * tiene algo contratado (o Sorela): son terapeutas enseñando su trabajo a
@@ -80,6 +82,7 @@ export async function GET(peticion: Request) {
   const p = perfil.data() ?? {};
 
   const foto = typeof u.foto === 'string' && u.foto.startsWith('data:image/') ? u.foto : null;
+  const esSorela = u.rol === 'sorela';
   const puntosTotal = typeof u.puntosTotal === 'number' ? Math.max(0, Math.round(u.puntosTotal)) : 0;
   const listaFotos = await Promise.all(
     fotos.docs.map(async (d) => ({ id: d.id, url: await firmar(d.get('ruta')), pie: String(d.get('pie') ?? ''), creado: d.get('creado')?.toDate?.().toISOString() ?? null }))
@@ -93,7 +96,7 @@ export async function GET(peticion: Request) {
       perfil: {
         uid: pedido,
         nombre: String(u.nombre || (u.correo ? String(u.correo).split('@')[0] : '') || 'Sin nombre'),
-        esSorela: u.rol === 'sorela',
+        esSorela,
         foto,
         portada: await firmar(p.portada),
         bio: String(p.bio ?? ''),
@@ -104,7 +107,7 @@ export async function GET(peticion: Request) {
       },
       fotos: listaFotos.filter((f) => f.url),
       publicaciones: publicaciones?.data().count ?? 0,
-      puntos: { total: puntosTotal, nivel: nivelDe(puntosTotal) },
+      ...(esSorela ? {} : { puntos: { total: puntosTotal, nivel: nivelDe(puntosTotal) } }),
     },
     { headers: { 'Cache-Control': 'private, no-store' } }
   );

@@ -1,24 +1,30 @@
 import { NextResponse } from 'next/server';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, type QueryDocumentSnapshot } from 'firebase-admin/firestore';
+import sharp from 'sharp';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { accesosDe, sesionActual } from '@/lib/sesion-servidor';
-import { clave, idDeYoutube, puedeVerla, type Leccion } from '@/lib/aula';
+import { TOPE_VIDEO, carpetaDeClase, clave, puedeVerla, type Leccion } from '@/lib/aula';
+import { almacen, borrarArchivosDeClase, firmarPortada } from '@/lib/aula-almacen';
 import { revisarAccesos, type Acceso } from '@/lib/accesos';
 
 /**
  * Las clases del aula.
  *
  *   GET    → las que le toca ver a quien pregunta
- *   POST   → añadir una (solo Sorela)
+ *   POST   → guardar una cuyo vídeo ya está subido (solo Sorela; multipart)
  *   PATCH  → cambiarla, publicarla o esconderla (solo Sorela)
- *   DELETE → quitarla (solo Sorela)
+ *   DELETE → borrarla, con su vídeo y su portada (solo Sorela)
+ *
+ * El vídeo se sube antes y por otro camino (ver ./subida): aquí solo llega la
+ * información de la clase y su portada, que pesan poco.
  *
  * LO MÁS IMPORTANTE DE ESTE FICHERO está en el GET: el filtro de quién ve qué
  * se hace AQUÍ, en el servidor, y no mandando todas las clases para que la
  * pantalla esconda las que no tocan. Pintar de menos no es proteger: quien
- * abriera la pestaña de red vería el identificador del vídeo de todos los
- * cursos, y con ese identificador el vídeo se abre en YouTube sin pasar por
- * aquí. Lo que no le toca a alguien no sale de este servidor.
+ * abriera la pestaña de red vería las clases de todos los cursos (y de las
+ * antiguas, el identificador con el que el vídeo se abre en YouTube sin pasar
+ * por aquí). Lo que no le toca a alguien no sale de este servidor; tampoco su
+ * portada, que se firma solo para las clases que sí le tocan.
  */
 
 export const runtime = 'nodejs';
@@ -27,6 +33,9 @@ export const dynamic = 'force-dynamic';
 /** Un título largo cabe; una parrafada, no. */
 const MAX_TITULO = 140;
 const MAX_DESCRIPCION = 600;
+const MAX_MODULO = 80;
+/** Los identificadores que reparte Firestore: letras y números. */
+const ID_NUEVA = /^[A-Za-z0-9]{10,40}$/;
 
 const recortar = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
 
@@ -68,9 +77,24 @@ function aLeccion(id: string, v: Record<string, unknown>): Leccion {
           .sort((a, z) => a.t - z.t)
       : [],
     duracion: typeof v.duracion === 'number' ? v.duracion : undefined,
-    modulo: typeof v.modulo === 'string' ? v.modulo : undefined,
+    modulo: typeof v.modulo === 'string' && v.modulo ? v.modulo : undefined,
+    // Las primeras clases llevan la portada como imagen en texto; las subidas
+    // aquí, una ruta del almacén (`portadaRuta`) que se firma al mandarla.
     portada: typeof v.portada === 'string' ? v.portada : undefined,
+    tamano: typeof v.tamano === 'number' ? v.tamano : undefined,
   };
+}
+
+/** Las clases con su portada lista para pintar. Firmar es local (no llama a nadie). */
+async function conPortadas(docs: QueryDocumentSnapshot[]): Promise<Leccion[]> {
+  return Promise.all(
+    docs.map(async (d) => {
+      const l = aLeccion(d.id, d.data());
+      const ruta = d.get('portadaRuta');
+      if (typeof ruta === 'string' && ruta) l.portada = (await firmarPortada(ruta)) ?? l.portada;
+      return l;
+    })
+  );
 }
 
 export async function GET() {
@@ -89,14 +113,13 @@ export async function GET() {
     .limit(500)
     .get();
 
-  const todas = lista.docs.map((d) => aLeccion(d.id, d.data()));
   const esSorela = sesion.rol === 'sorela';
 
   if (esSorela) {
     // Ella las ve todas, publicadas o no: es quien las prepara.
     return NextResponse.json({
       ok: true,
-      lecciones: todas,
+      lecciones: await conPortadas(lista.docs),
       esSorela: true,
       /* Y los cursos que ya existen, para que el desplegable los ofrezca en
          vez de obligarla a escribirlos otra vez. Es lo que evita que el mismo
@@ -109,9 +132,14 @@ export async function GET() {
   /* Y aquí el filtro de verdad. Dos condiciones, las dos necesarias:
      que esté publicada y que le toque por lo que tiene contratado. */
   const accesos = await accesosDe(sesion.uid);
-  const suyas = todas.filter((l) => l.publicada && puedeVerla(l.para, accesos));
+  const suyas = lista.docs.filter((d) => {
+    const l = aLeccion(d.id, d.data());
+    return l.publicada && puedeVerla(l.para, accesos);
+  });
+  // El tamaño del archivo es cosa de Sorela.
+  const lecciones = (await conPortadas(suyas)).map((l) => ({ ...l, tamano: undefined }));
 
-  return NextResponse.json({ ok: true, lecciones: suyas, esSorela: false });
+  return NextResponse.json({ ok: true, lecciones, esSorela: false });
 }
 
 export async function POST(peticion: Request) {
@@ -121,53 +149,107 @@ export async function POST(peticion: Request) {
   const guardia = await exigirSorela();
   if (guardia.error) return guardia.error;
 
-  let cuerpo: Record<string, unknown>;
+  let form: FormData;
   try {
-    cuerpo = await peticion.json();
+    form = await peticion.formData();
   } catch {
     return NextResponse.json({ ok: false, motivo: 'datos', errores: {} }, { status: 400 });
   }
+  const campo = (k: string) => {
+    const v = form.get(k);
+    return typeof v === 'string' ? v : '';
+  };
 
-  const titulo = recortar(cuerpo.titulo, MAX_TITULO);
-  const descripcion = recortar(cuerpo.descripcion, MAX_DESCRIPCION);
-  const para = revisarPara(cuerpo.para);
-  /* El enlace llega como Sorela lo haya copiado y aquí se queda solo el
-     identificador. Ver lib/aula.ts: YouTube reparte cinco formas distintas de
-     la misma dirección y pedirle que las distinga sería pedirle que sepa algo
-     que no tiene por qué saber. */
-  const video = idDeYoutube(String(cuerpo.video ?? ''));
+  const id = campo('id');
+  const titulo = recortar(campo('titulo'), MAX_TITULO);
+  const descripcion = recortar(campo('descripcion'), MAX_DESCRIPCION);
+  const modulo = recortar(campo('modulo'), MAX_MODULO);
+  let para: Acceso | null = null;
+  try {
+    para = revisarPara(JSON.parse(campo('para') || 'null'));
+  } catch {
+    para = null;
+  }
+  const tamano = Number(campo('tamano'));
+  const duracion = Math.round(Number(campo('duracion')));
 
   const errores: Record<string, string> = {};
+  if (!ID_NUEVA.test(id)) errores.video = 'Falta el vídeo. Elígelo y espera a que termine de subir.';
   if (titulo.length < 2) errores.titulo = 'Ponle un título a la clase.';
-  if (!video) errores.video = 'Pega el enlace del vídeo de YouTube. No reconozco ese.';
   if (!para) errores.para = 'Di a quién va dirigida.';
   if (Object.keys(errores).length > 0) {
     return NextResponse.json({ ok: false, motivo: 'datos', errores }, { status: 400 });
   }
 
-  /* El orden, si no se dice, va al final de SU bloque. Se cuenta dentro del
-     bloque y no en toda la colección para que añadir una clase a un curso no
-     mueva de sitio las de otro. */
-  const orden =
-    typeof cuerpo.orden === 'number' && Number.isFinite(cuerpo.orden)
-      ? cuerpo.orden
-      : await siguienteOrden(para as Acceso);
+  /* El vídeo tiene que estar ya en su carpeta, entero. Se busca por la
+     carpeta y no por un nombre que mande el navegador: así nadie puede
+     colgar de una clase un archivo que no es suyo. Y se compara el tamaño
+     con el que se anunció al empezar: si no cuadra, la subida no terminó
+     bien y la clase no se guarda con un vídeo cortado. */
+  const bucket = almacen();
+  const [archivos] = await bucket.getFiles({ prefix: `${carpetaDeClase(id)}video.` });
+  const archivo = archivos[0];
+  if (!archivo) {
+    return NextResponse.json(
+      { ok: false, motivo: 'sin-video', errores: { video: 'El vídeo todavía no ha terminado de subir.' } },
+      { status: 409 }
+    );
+  }
+  const medida = Number(archivo.metadata.size);
+  if (!(medida > 0) || medida > TOPE_VIDEO || (Number.isFinite(tamano) && tamano > 0 && medida !== tamano)) {
+    return NextResponse.json(
+      { ok: false, motivo: 'video-incompleto', errores: { video: 'El vídeo no ha llegado entero. Vuelve a subirlo.' } },
+      { status: 409 }
+    );
+  }
 
-  const ref = await baseDeDatos()
-    .collection(COLECCIONES.lecciones)
-    .add({
+  const ref = baseDeDatos().collection(COLECCIONES.lecciones).doc(id);
+  if ((await ref.get()).exists) return NextResponse.json({ ok: true, id, yaEstaba: true });
+
+  /* La portada: un fotograma del vídeo que ha sacado el navegador. Se vuelve
+     a pasar por sharp para que lo que se guarda sea siempre una imagen de
+     verdad y de un tamaño razonable, venga lo que venga. Si no llega o no se
+     puede leer, la clase se guarda igual, con su fondo. */
+  let portadaRuta: string | null = null;
+  const portada = form.get('portada');
+  if (portada instanceof File && /^image\//.test(portada.type) && portada.size <= 4 * 1024 * 1024) {
+    try {
+      const webp = await sharp(Buffer.from(await portada.arrayBuffer()))
+        .resize({ width: 1280, withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+      portadaRuta = `${carpetaDeClase(id)}portada.webp`;
+      await bucket.file(portadaRuta).save(webp, { contentType: 'image/webp', metadata: { cacheControl: 'private, max-age=43200' } });
+    } catch (e) {
+      console.error('[lecciones] no se ha podido guardar la portada', e);
+      portadaRuta = null;
+    }
+  }
+
+  const orden = await siguienteOrden(para as Acceso);
+  try {
+    // create() y no set(): si por lo que sea ya existe, falla en vez de pisarla.
+    await ref.create({
       titulo,
       descripcion,
-      video,
+      video: `propio:${archivo.name}`,
       para,
       orden,
-      // Nace escondida: así se puede montar un curso entero y abrirlo cuando
-      // esté, en vez de que las alumnas vean aparecer las clases a medias.
-      publicada: cuerpo.publicada === true,
+      ...(modulo ? { modulo } : {}),
+      ...(Number.isFinite(duracion) && duracion > 0 ? { duracion } : {}),
+      tamano: medida,
+      ...(portadaRuta ? { portadaRuta } : {}),
+      // Nace escondida salvo que se diga: así se puede montar un curso entero
+      // y abrirlo cuando esté, en vez de que las alumnas lo vean a medias.
+      publicada: campo('publicada') === 'true',
       creado: FieldValue.serverTimestamp(),
     });
+  } catch (e) {
+    console.error('[lecciones] no se ha podido guardar la clase', e);
+    return NextResponse.json({ ok: false, motivo: 'no-guardada' }, { status: 500 });
+  }
 
-  return NextResponse.json({ ok: true, id: ref.id, video });
+  return NextResponse.json({ ok: true, id });
 }
 
 /**
@@ -259,10 +341,12 @@ export async function PATCH(peticion: Request) {
     else cambios.titulo = titulo;
   }
   if (cuerpo.descripcion !== undefined) cambios.descripcion = recortar(cuerpo.descripcion, MAX_DESCRIPCION);
-  if (cuerpo.video !== undefined) {
-    const video = idDeYoutube(String(cuerpo.video));
-    if (!video) errores.video = 'No reconozco ese enlace de YouTube.';
-    else cambios.video = video;
+  /* El vídeo no se cambia desde aquí: una clase es su vídeo. Para otro
+     vídeo se sube una clase nueva y se borra esta, que es lo que además
+     borra el archivo viejo del almacén en vez de dejarlo huérfano. */
+  if (cuerpo.modulo !== undefined) {
+    const modulo = recortar(cuerpo.modulo, MAX_MODULO);
+    cambios.modulo = modulo || FieldValue.delete();
   }
   if (cuerpo.para !== undefined) {
     const para = revisarPara(cuerpo.para);
@@ -300,10 +384,18 @@ export async function DELETE(peticion: Request) {
   const id = recortar(new URL(peticion.url).searchParams.get('id'), 200);
   if (!idValido(id)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
 
-  /* Se borra la clase, NO el vídeo: ese sigue en YouTube y hay que quitarlo
-     desde allí si se quiere que desaparezca. La pantalla lo dice antes de
-     pulsar, para que nadie crea que borrando aquí se borra allí. */
-  await baseDeDatos().collection(COLECCIONES.lecciones).doc(id).delete();
+  const ref = baseDeDatos().collection(COLECCIONES.lecciones).doc(id);
+  const doc = await ref.get();
+  if (!doc.exists) return NextResponse.json({ ok: true, id });
+  const video = String(doc.get('video') ?? '');
 
-  return NextResponse.json({ ok: true, id });
+  /* Primero la clase y después sus archivos. Al revés, si fallara a medias
+     quedaría una clase visible con el vídeo roto; así, lo peor que puede
+     pasar es un archivo sin clase, que el barrido de subidas recoge solo.
+     Las clases antiguas de YouTube no tienen nada aquí: su vídeo sigue en el
+     canal y se quita desde allí (la pantalla lo dice antes de borrar). */
+  await ref.delete();
+  const restos = await borrarArchivosDeClase(id, video);
+
+  return NextResponse.json({ ok: true, id, restos });
 }

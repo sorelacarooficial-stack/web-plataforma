@@ -4,7 +4,7 @@ import { getStorage } from 'firebase-admin/storage';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { accesosDe, sesionActual, type Sesion } from '@/lib/sesion-servidor';
 import { tieneMembresia } from '@/lib/accesos';
-import { COLECCION_ACTIVIDAD, Cuentas, esMes, mesDe, type CampoStats } from '@/lib/actividad';
+import { COLECCION_ACTIVIDAD, Cuentas, cuentasDeSorela, esMes, mesDe, type CampoStats } from '@/lib/actividad';
 import { NIVELES, PUNTOS, nivelDe } from '@/lib/puntos-tipos';
 import {
   CATEGORIAS_COMUNIDAD,
@@ -212,7 +212,7 @@ async function borrarPublicacion(ref: FirebaseFirestore.DocumentReference): Prom
     let borradas = 0;
     const cerrar = async () => {
       if (!borradas) return;
-      cuentas.volcar((r, d) => lote.set(r, d, { merge: true }), vivas);
+      await cuentas.volcar((r, d) => lote.set(r, d, { merge: true }), vivas);
       lote.update(ref, { respuestas: FieldValue.increment(-borradas) });
       await lote.commit();
       lote = db.batch();
@@ -247,7 +247,7 @@ async function borrarPublicacion(ref: FirebaseFirestore.DocumentReference): Prom
       const viva = Boolean(fd?.exists);
       const c = new Cuentas();
       restarContenido(c, v, aporteDe(v, { puntos: fd?.get('rol') === 'sorela' ? 0 : ANTES.publicacion, cuenta: true }), 'publicaciones');
-      c.volcar((r, datos) => t.set(r, datos, { merge: true }), new Set(viva ? [autor] : []));
+      await c.volcar((r, datos) => t.set(r, datos, { merge: true }), new Set(viva ? [autor] : []));
       t.delete(ref, { exists: true });
       return 'borrada' as const;
     });
@@ -286,7 +286,7 @@ async function borrarRespuesta(ref: FirebaseFirestore.DocumentReference, rid: st
     restarContenido(c, rv, aporteDe(rv, legado), 'respuestas');
     t.delete(r);
     t.update(ref, { respuestas: Math.max(0, (Number(pv.respuestas) || 0) - 1), respondioSorela: respondio });
-    c.volcar((x, d) => t.set(x, d, { merge: true }), new Set(viva ? [ra] : []));
+    await c.volcar((x, d) => t.set(x, d, { merge: true }), new Set(viva ? [ra] : []));
     return true;
   });
 }
@@ -314,9 +314,11 @@ async function rankingDelMes(
 ): Promise<{ ranking: FilaRanking[]; mio: { puesto: number | null; puntos: number } | null }> {
   const db = baseDeDatos();
   const mapa = (actividad.data() ?? {}) as Record<string, { nombre?: unknown; puntos?: unknown }>;
+  // Sorela no compite: fuera antes de contar puestos, aunque quedara algo suyo de antes.
+  const sorela = await cuentasDeSorela();
   const orden = Object.entries(mapa)
     .map(([uid, v]) => ({ uid, nombre: String(v?.nombre ?? ''), puntos: Math.round(Number(v?.puntos) || 0) }))
-    .filter((x) => x.puntos > 0 && ID.test(x.uid))
+    .filter((x) => x.puntos > 0 && ID.test(x.uid) && !sorela.has(x.uid))
     .sort((a, b) => b.puntos - a.puntos);
   /* Se miran unas pocas más de cinco: alguna puede tener ya la cuenta borrada
      (o ser Sorela), y esas no salen. De las que salen, nombre y nivel al día. */
@@ -457,7 +459,7 @@ export async function POST(peticion: Request) {
         if (viva) cuentas.contar(autor, 'meGustaRecibidos', 1);
         if (puntua) cuentas.puntuar({ uid: autor, nombre: nombreDe(ficha?.data() ?? {}) }, PUNTOS.meGusta, mes);
       }
-      cuentas.volcar((x, datos) => t.set(x, datos, { merge: true }));
+      await cuentas.volcar((x, datos) => t.set(x, datos, { merge: true }));
       return { dado: !dado };
     });
     if (r === null) return no('no-existe', 404);
@@ -536,7 +538,7 @@ export async function POST(peticion: Request) {
       respondioSorela: false,
       aporte: { mes, puntos },
     });
-    new Cuentas()
+    await new Cuentas()
       .contar(yo, 'publicaciones', 1)
       .puntuar(autora, puntos, mes)
       .volcar((x, d) => lote.set(x, d, { merge: true }));
@@ -567,7 +569,7 @@ export async function POST(peticion: Request) {
     });
     const cuentas = new Cuentas().puntuar(autora, puntos, mes);
     if (cuenta) cuentas.contar(yo, 'respuestas', 1);
-    cuentas.volcar((x, datos) => lote.set(x, datos, { merge: true }));
+    await cuentas.volcar((x, datos) => lote.set(x, datos, { merge: true }));
     await lote.commit();
     return NextResponse.json({ ok: true, rid: r.id });
   }
