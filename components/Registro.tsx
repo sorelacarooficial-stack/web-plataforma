@@ -76,6 +76,7 @@ export default function Registro({ invitacion }: { invitacion?: string }) {
   const [clave, setClave] = useState('');
   const [quiere, setQuiere] = useState<'comunidad' | 'curso'>('comunidad');
   const [acepta, setAcepta] = useState(false);
+  const [sinNovedades, setSinNovedades] = useState(false);
   /* El señuelo antirrobots: no se ve, no se tabula y nadie lo rellena a mano.
      Si llega con algo, el servidor contesta que sí y no crea nada. */
   const [empresa, setEmpresa] = useState('');
@@ -142,6 +143,7 @@ export default function Registro({ invitacion }: { invitacion?: string }) {
           clave,
           quiere,
           consentimiento: acepta,
+          sinNovedades,
           empresa,
           invitacion: inv ? invitacion : undefined,
           llegada: llegada() ?? undefined,
@@ -384,6 +386,18 @@ export default function Registro({ invitacion }: { invitacion?: string }) {
               {errores.consentimiento}
             </p>
           )}
+          {/* La ley deja escribir a quien ya es usuaria sobre formaciones
+              parecidas (art. 21.2 LSSI) siempre que pueda negarse AL DARSE DE
+              ALTA, de forma sencilla. Esta es esa forma. */}
+          <label className={css.condiciones}>
+            <input
+              type="checkbox"
+              checked={sinNovedades}
+              onChange={(e) => setSinNovedades(e.target.checked)}
+              className={css.casilla}
+            />
+            <span>No quiero novedades de las formaciones por correo.</span>
+          </label>
           <InfoPrivacidad capa={CAPA_CUENTA} />
 
           {error && (

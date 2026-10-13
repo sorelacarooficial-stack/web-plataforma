@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import css from './VideoYoutube.module.css';
 
 /**
@@ -19,21 +19,15 @@ import css from './VideoYoutube.module.css';
  * pulsar. Pulsar ES pedir el vídeo, sabiendo que viene de YouTube: entonces se
  * monta el reproductor y arranca solo, para que siga siendo un clic.
  *
- * La decisión dura lo que la pestaña, en memoria: si en el aula se abre otra
- * clase de YouTube, no se vuelve a preguntar. No se guarda nada en el
- * navegador para recordarlo, que sería justo lo que se intenta evitar.
+ * La decisión es de ESE vídeo y nada más. Antes, pulsar uno cargaba todos
+ * los de la página y los de cualquier otra pantalla en esa visita, y la
+ * política de cookies dice —y tiene que ser verdad— que pulsar es pedir ese
+ * vídeo. Tampoco se guarda nada en el navegador para recordarlo, que sería
+ * justo lo que se intenta evitar.
  *
  * `src` es la dirección de incrustar tal cual (ver lib/youtube.ts). El padre
  * tiene que estar posicionado: la portada y el iframe lo ocupan entero.
  */
-
-let permitido = false;
-const avisar = new Set<() => void>();
-
-function permitir() {
-  permitido = true;
-  avisar.forEach((f) => f());
-}
 
 function conArranque(src: string) {
   if (/[?&]autoplay=1/.test(src)) return src;
@@ -49,23 +43,20 @@ export default function VideoYoutube({
   titulo: string;
   allow?: string;
 }) {
-  const [cargar, setCargar] = useState(permitido);
-  // Lo que ha pulsado ESTA persona en ESTE vídeo arranca solo; los siguientes
-  // (otra clase del aula) se cargan ya sin portada pero no se ponen a sonar.
   const [pulsado, setPulsado] = useState(false);
+  const marco = useRef<HTMLIFrameElement>(null);
 
+  // Al pulsar, el botón desaparece: sin esto el foco se iba al principio de
+  // la página y quien va con teclado o lector perdía su sitio.
   useEffect(() => {
-    const f = () => setCargar(true);
-    avisar.add(f);
-    return () => {
-      avisar.delete(f);
-    };
-  }, []);
+    if (pulsado) marco.current?.focus();
+  }, [pulsado]);
 
-  if (cargar) {
+  if (pulsado) {
     return (
       <iframe
-        src={pulsado ? conArranque(src) : src}
+        ref={marco}
+        src={conArranque(src)}
         title={titulo}
         allow={allow}
         allowFullScreen
@@ -79,11 +70,8 @@ export default function VideoYoutube({
       <button
         type="button"
         className={css.play}
-        onClick={() => {
-          setPulsado(true);
-          permitir();
-        }}
-        aria-label={`Ver el vídeo «${titulo}» en YouTube`}
+        onClick={() => setPulsado(true)}
+        aria-label={`${titulo}: verlo en YouTube`}
       >
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path d="M8 5.5v13l11-6.5z" fill="currentColor" />
@@ -92,8 +80,9 @@ export default function VideoYoutube({
       <p className={css.texto}>
         Este vídeo está en YouTube. Al darle al play se conecta con Google, que puede guardar datos en tu
         navegador.{' '}
-        <Link href="/legal/cookies" target="_blank" className={css.enlace}>
+        <Link href="/legal/cookies#videos" target="_blank" className={css.enlace}>
           Más información
+          <span className="sr-only"> (se abre en otra pestaña)</span>
         </Link>
       </p>
     </div>

@@ -6,7 +6,7 @@ import { revisar, type Contacto } from '@/lib/captacion';
 import { INSTAGRAM, INSTAGRAM_USUARIO } from '@/lib/contenido';
 import css from './Formularios.module.css';
 import InfoPrivacidad from '@/components/InfoPrivacidad';
-import { CAPA_INFORMACION } from '@/lib/privacidad';
+import { CAPA_CONTACTO } from '@/lib/privacidad';
 import { conLlegada } from '@/lib/llegada';
 
 const MOTIVOS = [
@@ -33,6 +33,7 @@ export default function FormularioContacto() {
   const id = useId();
   const [v, setV] = useState(VACIO);
   const [acepta, setAcepta] = useState(false);
+  const [novedades, setNovedades] = useState(false);
   const [senuelo, setSenuelo] = useState('');
   const [errores, setErrores] = useState<Errores>({});
   const [estado, setEstado] = useState<Estado>('quieto');
@@ -52,7 +53,7 @@ export default function FormularioContacto() {
     e.preventDefault();
     if (estado === 'enviando') return;
 
-    const datos = { ...v, consentimiento: acepta, origen: 'contacto', empresa: senuelo };
+    const datos = { ...v, consentimiento: acepta, comercial: novedades, origen: 'contacto', empresa: senuelo };
     const revision = revisar(datos);
     const faltaMensaje = v.nota.trim().length < 5;
     if (!revision.ok || faltaMensaje) {
@@ -99,6 +100,7 @@ export default function FormularioContacto() {
             onClick={() => {
               setV(VACIO);
               setAcepta(false);
+              setNovedades(false);
               setEstado('quieto');
             }}
           >
@@ -176,7 +178,7 @@ export default function FormularioContacto() {
               aria-invalid={errores.consentimiento ? true : undefined}
             />
             <span>
-              Tengo 14 años o más y acepto que Sorela Caro use mis datos para contestarme y avisarme de las formaciones.{' '}
+              Tengo 14 años o más y acepto que Sorela Caro use mis datos para contestarme.{' '}
               <Link href="/legal/privacidad" target="_blank">
                 Cómo se tratan
               </Link>
@@ -184,7 +186,15 @@ export default function FormularioContacto() {
             </span>
           </label>
           {errores.consentimiento && <p className={css.error}>{errores.consentimiento}</p>}
-          <InfoPrivacidad capa={CAPA_INFORMACION} />
+
+          {/* Aparte, opcional y sin marcar: la publicidad no puede ir atada a lo
+              que se pide (art. 7.4 RGPD, art. 21 LSSI). Se guarda como `comercial`
+              y lib/campanas.ts la respeta. */}
+          <label className={css.consentimiento}>
+            <input type="checkbox" checked={novedades} onChange={(e) => setNovedades(e.target.checked)} />
+            <span>Opcional: quiero enterarme por correo de las próximas formaciones de la Técnica Divine.</span>
+          </label>
+          <InfoPrivacidad capa={CAPA_CONTACTO} />
 
           <button
             type="submit"

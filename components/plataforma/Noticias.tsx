@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { APERTURA, APERTURA_POR_PAISES, DIA_APERTURA, HORA_ESPANA } from '@/lib/apertura';
 import type { Vista } from '@/lib/plataforma';
+import { CORREO_PRIVACIDAD } from '@/lib/privacidad';
 import n from './noticias.module.css';
 
 /**
@@ -153,6 +154,19 @@ export default function Noticias({ yaEsMiembro, ir }: { yaEsMiembro: boolean; ir
             </AnimatePresence>
           )}
         </div>
+        {/* La primera capa de protección de datos del botón (art. 11
+            LOPDGDD): qué se usa, para qué y dónde está el resto. */}
+        {!abierta && !yaEsMiembro && !quiere && (
+          <p style={{ margin: 0, maxWidth: 520, fontSize: 13, lineHeight: 1.5, color: 'rgba(239, 230, 216, 0.74)' }}>
+            Al pulsarlo, Sorela usa el nombre y el correo de tu cuenta para apuntarte a la lista de
+            espera y avisarte de la apertura. Puedes borrarte cuando quieras escribiendo a{' '}
+            {CORREO_PRIVACIDAD}.{' '}
+            <a href="/legal/privacidad" style={{ color: '#e3c696', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+              Política de privacidad
+            </a>
+            .
+          </p>
+        )}
       </motion.article>
 
       {articulos.length > 0 && (

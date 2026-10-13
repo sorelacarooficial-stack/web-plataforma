@@ -39,6 +39,7 @@ export default function Captacion({
   const id = useId();
   const [v, setV] = useState(VACIO);
   const [acepta, setAcepta] = useState(false);
+  const [novedades, setNovedades] = useState(false);
   const [senuelo, setSenuelo] = useState('');
   const [errores, setErrores] = useState<Errores>({});
   const [estado, setEstado] = useState<Estado>('quieto');
@@ -75,7 +76,7 @@ export default function Captacion({
     ev.preventDefault();
     if (estado === 'enviando') return;
 
-    const datos = { ...v, consentimiento: acepta, origen, empresa: senuelo };
+    const datos = { ...v, consentimiento: acepta, comercial: novedades, origen, empresa: senuelo };
     const revision = revisar(datos);
 
     // El teléfono es opcional para el servidor, porque la lista de la comunidad
@@ -286,7 +287,13 @@ export default function Captacion({
           aria-invalid={errores.consentimiento ? true : undefined}
         />
         <span>
-          Tengo 14 años o más y acepto que Sorela Caro use mis datos para la lista de espera y para avisarme de la apertura y de las formaciones.{' '}
+          {/* La misma ventana sirve a la lista de espera y a quien pide
+              información (portada, formaciones, asistente): la casilla dice
+              para qué es en cada caso. */}
+          Tengo 14 años o más y acepto que Sorela Caro use mis datos para{' '}
+          {/^(lista-)?comunidad/.test(origen)
+            ? 'guardar mi sitio en la lista de espera.'
+            : 'apuntarme y darme la información que pido.'}{' '}
           <Link href="/legal/privacidad" target="_blank">
             Cómo se tratan
           </Link>
@@ -294,6 +301,13 @@ export default function Captacion({
         </span>
       </label>
       {errores.consentimiento && <p className={css.error}>{errores.consentimiento}</p>}
+      {/* Aparte, opcional y sin marcar: la publicidad no puede ir atada a lo
+          que se pide (art. 7.4 RGPD, art. 21 LSSI). Se guarda como `comercial`
+          y lib/campanas.ts la respeta. */}
+      <label className={css.consentimiento}>
+        <input type="checkbox" checked={novedades} onChange={(e) => setNovedades(e.target.checked)} />
+        <span>Opcional: quiero enterarme por correo de las próximas formaciones de la Técnica Divine.</span>
+      </label>
       <InfoPrivacidad capa={CAPA_INFORMACION} />
 
       <button type="submit" className={`btn ${css.enviar}`} disabled={enviando}>

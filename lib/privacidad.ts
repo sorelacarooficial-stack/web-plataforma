@@ -450,11 +450,7 @@ export const CAPA_CUENTA: PrimeraCapa = {
   base: 'La relación contractual al darte de alta; para esos correos, el interés legítimo que permite la ley de comercio electrónico con quien ya es usuaria (art. 21.2 LSSI).',
 };
 
-/** El botón «Quiero ser parte» de dentro de la plataforma. */
-export const CAPA_QUIERO: PrimeraCapa = {
-  finalidad: 'Apuntar que te interesa, para que Sorela te escriba sobre ello. Usa los datos de tu cuenta.',
-  base: 'Tu petición al pulsar el botón (art. 6.1.b RGPD).',
-};
+
 
 export const CAPA_ACUERDO: PrimeraCapa = {
   finalidad:

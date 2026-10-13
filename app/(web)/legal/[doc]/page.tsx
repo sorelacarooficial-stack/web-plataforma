@@ -6,6 +6,7 @@ import {
   ALMACENAMIENTO,
   CORREO_PRIVACIDAD,
   ENCARGADOS,
+  INSERTADOS,
   REVISADA,
   TERCEROS,
   TRATAMIENTOS,
@@ -104,11 +105,17 @@ function Lista({ items }: { items: ReactNode[] }) {
   );
 }
 
+/* Los enlaces DENTRO de un párrafo llevan su propia clase: `.enlace-fino`
+   es un bloque de 44 px de alto pensado para enlaces sueltos, y metido en
+   una frase la partía en dos y cruzaba la raya con la línea de abajo. */
 const Correo = () => (
-  <a className="enlace-fino" href={`mailto:${CORREO_PRIVACIDAD}`}>
+  <a className={css.enlaceTexto} href={`mailto:${CORREO_PRIVACIDAD}`}>
     {CORREO_PRIVACIDAD}
   </a>
 );
+
+/** Lo que se abre en otra pestaña lo dice, para no desorientar. */
+const OtraPestana = () => <span className="sr-only"> (se abre en otra pestaña)</span>;
 
 /** Iconos de línea fina para las teselas de «de un vistazo». */
 const ICONOS = {
@@ -164,28 +171,28 @@ const ICONOS = {
   ),
 } as const;
 
-function Tesela({
-  icono,
-  cifra,
-  titulo,
-  texto,
-}: {
-  icono: keyof typeof ICONOS;
-  cifra?: string;
-  titulo: string;
-  texto: string;
-}) {
+/* Sin cifras sueltas: un «0» o un «1» en Cormorant no se entendía sin leer
+   el título y desalineaba la fila. Todas iguales: icono, título y texto. */
+function Tesela({ icono, titulo, texto }: { icono: keyof typeof ICONOS; titulo: string; texto: string }) {
   return (
-    <div className={css.tesela}>
+    <li className={css.tesela}>
       <span className={css.icono} aria-hidden="true">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
           {ICONOS[icono]}
         </svg>
       </span>
-      {cifra && <p className={css.teselaCifra}>{cifra}</p>}
       <p className={css.teselaTitulo}>{titulo}</p>
       <p className={css.teselaTexto}>{texto}</p>
-    </div>
+    </li>
+  );
+}
+
+/** Las teselas de «de un vistazo»: una lista con nombre, que sí se anuncia. */
+function Vistazo({ children }: { children: ReactNode }) {
+  return (
+    <ul className={css.vistazo} aria-label="De un vistazo">
+      {children}
+    </ul>
   );
 }
 
@@ -221,7 +228,8 @@ function Titular({ id }: { id: Identidad | null }) {
 }
 
 /** Una base legal resumida en dos palabras, para la cabecera de cada tarjeta. */
-function baseCorta(base: string) {
+function baseCorta(base: string, resumen?: string) {
+  if (resumen) return resumen;
   if (/^Tu consentimiento|^El consentimiento/.test(base)) return 'Consentimiento';
   if (/fiscales|obligaciones/i.test(base) && !/contrato/i.test(base)) return 'Obligación legal';
   if (/^El interés legítimo/.test(base)) return 'Interés legítimo';
@@ -248,12 +256,12 @@ function Privacidad({ id }: { id: Identidad | null }) {
         servicios de la sociedad de la información (LSSI).
       </P>
 
-      <div className={css.vistazo} aria-label="De un vistazo">
+      <Vistazo>
         <Tesela icono="persona" titulo="Responsable" texto="Sorela Caro, creadora de la Técnica Divine." />
         <Tesela icono="candado" titulo="No se venden" texto="Tus datos no se venden ni se ceden para publicidad." />
-        <Tesela icono="galleta" cifra="0" titulo="Cookies de seguimiento" texto="Ni analítica de terceros ni publicidad." />
-        <Tesela icono="sobre" cifra="1" titulo="Correo para todo" texto="Tus derechos, con un solo correo y gratis." />
-      </div>
+        <Tesela icono="galleta" titulo="Sin seguimiento" texto="Ni cookies de análisis, ni de terceros, ni de publicidad." />
+        <Tesela icono="sobre" titulo="Un solo correo" texto="Para todos tus derechos, y gratis." />
+      </Vistazo>
 
       <Indice
         items={[
@@ -289,8 +297,10 @@ function Privacidad({ id }: { id: Identidad | null }) {
                 <span className={css.numero} aria-hidden="true">
                   {i + 1}
                 </span>
-                <span>{t.donde}</span>
-                <span className={css.resumenBase}>{baseCorta(t.base)}</span>
+                {/* Un h3 dentro del summary (es válido): así quien navega por
+                    títulos con el lector de pantalla encuentra cada bloque. */}
+                <h3 className={css.tarjetaTitulo}>{t.donde}</h3>
+                <span className={css.resumenBase}>{baseCorta(t.base, t.baseResumen)}</span>
                 <Flecha />
               </summary>
               <dl className={css.dl}>
@@ -316,8 +326,9 @@ function Privacidad({ id }: { id: Identidad | null }) {
           ))}
         </div>
         <P>
-          Cuando la base es tu consentimiento, darlo es voluntario, pero sin él no puedo atender ese
-          formulario. Cuando la base es el contrato, los datos marcados como obligatorios hacen falta
+          Cuando la base es tu consentimiento, darlo es voluntario. La casilla obligatoria de cada
+          formulario es solo para lo que pides en él; las novedades por correo van siempre en una
+          casilla aparte, sin marcar, y sin ellas todo funciona igual. Cuando la base es el contrato, los datos marcados como obligatorios hacen falta
           para darte el servicio. No se toman decisiones automatizadas con efectos sobre ti: la
           inteligencia artificial solo ayuda a Sorela a ordenar y redactar, y quien decide es ella.
         </P>
@@ -386,6 +397,17 @@ function Privacidad({ id }: { id: Identidad | null }) {
           </tbody>
         </table>
         <P>
+          La web y sus correos <strong>insertan</strong> además contenido de Google. Como lo decide
+          Sorela, de la conexión responden los dos:
+        </P>
+        <Lista
+          items={INSERTADOS.map((t) => (
+            <>
+              <strong>{t.quien}:</strong> {t.cuando}
+            </>
+          ))}
+        />
+        <P>
           Y estos servicios, que <strong>usas tú directamente</strong> desde la web, tratan tus datos
           como responsables propios, según sus condiciones:
         </P>
@@ -450,17 +472,19 @@ function Privacidad({ id }: { id: Identidad | null }) {
           Para ejercer cualquiera, escribe a <Correo /> diciendo cuál. Es gratis y te contesto en un mes
           como máximo (ampliable dos meses más si la petición es compleja, y te lo diría). Solo te
           pediré que acredites quién eres si hay dudas razonables. Para dejar de recibir correos, basta
-          con el enlace de baja que lleva cada uno.
+          con el enlace de baja que lleva cada uno o con responder al propio correo pidiéndolo.
         </P>
         <P>
           Si crees que no se han tratado bien tus datos, puedes reclamar ante la Agencia Española de
           Protección de Datos (C/ Jorge Juan 6, 28001 Madrid), en su sede electrónica{' '}
-          <a className="enlace-fino" href="https://sedeagpd.gob.es" target="_blank" rel="noopener">
+          <a className={css.enlaceTexto} href="https://sedeagpd.gob.es" target="_blank" rel="noopener">
             sedeagpd.gob.es
+            <OtraPestana />
           </a>{' '}
           o en{' '}
-          <a className="enlace-fino" href="https://www.aepd.es" target="_blank" rel="noopener">
+          <a className={css.enlaceTexto} href="https://www.aepd.es" target="_blank" rel="noopener">
             www.aepd.es
+            <OtraPestana />
           </a>
           .
         </P>
@@ -508,12 +532,12 @@ function Cookies() {
         </div>
       </div>
 
-      <div className={css.vistazo} aria-label="De un vistazo">
-        <Tesela icono="galleta" cifra="1" titulo="Cookie" texto="La de tu sesión, solo si entras con tu cuenta." />
-        <Tesela icono="grafica" cifra="0" titulo="Analítica en tu navegador" texto="Las estadísticas se cuentan en el servidor." />
+      <Vistazo>
+        <Tesela icono="galleta" titulo="Una sola cookie" texto="La de tu sesión, solo si entras con tu cuenta." />
+        <Tesela icono="grafica" titulo="Sin analítica" texto="Las visitas se cuentan en el servidor, sin guardar nada en tu navegador." />
         <Tesela icono="play" titulo="YouTube, al pulsar" texto="Hasta que le das al play, nada de Google." />
-        <Tesela icono="globo" cifra="0" titulo="Publicidad" texto="Ni anuncios ni redes sociales incrustadas." />
-      </div>
+        <Tesela icono="globo" titulo="Sin publicidad" texto="Ni anuncios ni redes sociales incrustadas." />
+      </Vistazo>
 
       <Apartado id="tabla" titulo="Lo que se guarda en tu navegador">
         <P>
@@ -554,7 +578,7 @@ function Cookies() {
           servidor de cada página vista. No se guarda nada en tu navegador, no hay identificador que
           te siga de un día a otro ni de una web a otra, y no se comparte con nadie. El detalle está en
           la{' '}
-          <a className="enlace-fino" href="/legal/privacidad#tratamientos">
+          <a className={css.enlaceTexto} href="/legal/privacidad#tratamientos">
             política de privacidad
           </a>
           .
@@ -566,8 +590,9 @@ function Cookies() {
           Los vídeos de YouTube del blog y del aula aparecen primero como una portada propia. Solo
           cuando le das al play se carga el reproductor de YouTube (en su modo de privacidad
           mejorada), que se conecta con Google y puede guardar datos en tu navegador según la
-          política de Google. Darle al play es tu elección para ese vídeo; si no lo haces, no se carga
-          nada. Los demás vídeos se sirven desde la propia web, sin terceros.
+          política de Google. Darle al play es tu elección para ese vídeo y solo para ese: los demás
+          vídeos de YouTube siguen con su portada hasta que los pulses. Los vídeos que no son de
+          YouTube se sirven desde la propia web, sin terceros.
         </P>
       </Apartado>
 
@@ -588,6 +613,7 @@ function Cookies() {
           ].map(([n, u]) => (
             <a key={n} className={css.pastilla} href={u} target="_blank" rel="noopener">
               {n} →
+              <OtraPestana />
             </a>
           ))}
         </div>
@@ -628,11 +654,11 @@ function AvisoLegal({ id }: { id: Identidad | null }) {
       <Apartado titulo="Datos personales y cookies">
         <P>
           Lo que se hace con tus datos está en la{' '}
-          <a className="enlace-fino" href="/legal/privacidad">
+          <a className={css.enlaceTexto} href="/legal/privacidad">
             política de privacidad
           </a>{' '}
           y lo que se guarda en tu navegador, en la{' '}
-          <a className="enlace-fino" href="/legal/cookies">
+          <a className={css.enlaceTexto} href="/legal/cookies">
             política de cookies
           </a>
           .

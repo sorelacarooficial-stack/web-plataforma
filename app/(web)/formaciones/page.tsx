@@ -152,7 +152,9 @@ export default async function Formaciones() {
         <div className="wrap">
           {/* Las dos etapas, en tarjetas que se apilan al bajar. */}
           <Apiladas
-              claseTarjeta="neu-apilada"
+            /* Una clara y otra oscura, como en la portada: con las dos en
+               relieve crema sobre el papel no se distinguían. */
+            clasesTarjetas={ETAPAS.map((e) => (e.destacada ? css.etapaCajaOscura : css.etapaCajaClara))}
             tarjetas={ETAPAS.map((e) => (
               <article
                 key={e.titulo}

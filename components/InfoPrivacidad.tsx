@@ -69,6 +69,7 @@ export default function InfoPrivacidad({
           <dd>
             <Link href="/legal/privacidad" target="_blank">
               Política de privacidad completa
+              <span className="sr-only"> (se abre en otra pestaña)</span>
             </Link>
             .
           </dd>

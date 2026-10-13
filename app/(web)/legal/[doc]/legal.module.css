@@ -27,7 +27,33 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  scroll-margin-top: 96px;
+  /* La cabecera fija mide unos 67 px: con 96 el título quedaba pegado a ella
+     igualmente, porque el salto lo absorbía el padding de la sección. */
+  scroll-margin-top: 132px;
+}
+
+/* Enlaces dentro de una frase: en línea, con el tono oscuro del bronce
+   (6,3:1 sobre el crema; el bronce normal se quedaba en 4,4:1) y subrayado. */
+.enlaceTexto {
+  display: inline;
+  color: var(--arcilla-ink);
+  font-weight: 400;
+  text-decoration: underline;
+  text-decoration-color: var(--arcilla-line);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.enlaceTexto:hover {
+  text-decoration-color: currentColor;
+}
+
+.enlaceTexto:focus-visible {
+  outline: 2px solid var(--arcilla);
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 
 .apartado > h2 {
@@ -37,6 +63,9 @@
 /* ---------- De un vistazo ---------- */
 
 .vistazo {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
@@ -68,19 +97,6 @@
   border-radius: 12px;
   background: var(--arcilla-tint);
   color: var(--arcilla-ink);
-}
-
-.teselaCifra {
-  margin: 0;
-  font-family: var(--fuente-cormorant), Georgia, serif;
-  font-weight: 500;
-  font-size: 30px;
-  line-height: 1;
-  /* Las cifras de Cormorant son de estilo antiguo: el 1 y el 0 se leían
-     como «I» y «O». */
-  font-variant-numeric: lining-nums;
-  font-feature-settings: 'lnum' 1;
-  color: var(--ink);
 }
 
 .teselaTitulo {
@@ -159,6 +175,12 @@
   font-weight: 500;
   font-size: 16px;
   color: var(--ink);
+}
+
+.tarjetaTitulo {
+  margin: 0;
+  font: inherit;
+  color: inherit;
 }
 
 .tarjeta > summary::-webkit-details-marker {

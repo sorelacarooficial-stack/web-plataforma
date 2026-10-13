@@ -8,6 +8,8 @@ import { after } from 'next/server';
 import { correoEsAdmin } from '@/lib/roles';
 import { alRegistrarse } from '@/lib/automatizar';
 import { procedenciaDe } from '@/lib/llegada-servidor';
+import { darDeBaja } from '@/lib/correos';
+import { REVISADA } from '@/lib/privacidad';
 
 /**
  * Crearse una cuenta desde la web.
@@ -294,6 +296,14 @@ export async function POST(peticion: Request) {
    * duplicarla o de reventar. Y si esto falla no se deshace nada: la cuenta es
    * válida y perder el seguimiento es mucho menos grave que perder el acceso.
    */
+  /* «No quiero novedades por correo»: se apunta en la lista de bajas, la
+     misma que usa el enlace de baja de cada correo, así que ninguna campaña
+     le llega. Los correos del servicio (acceso, avisos de su cuenta) no
+     llevan baja y siguen saliendo. */
+  if (cuerpo.sinNovedades === true) {
+    await darDeBaja(correo).catch(() => console.error('[registro] No se ha podido apuntar la baja de novedades.'));
+  }
+
   try {
     const ficha = baseDeDatos().collection(COLECCIONES.contactos).doc(correo.replace(/\//g, '_'));
     const yaEstaba = (await ficha.get()).exists;
@@ -307,6 +317,13 @@ export async function POST(peticion: Request) {
            distinguirla de quien solo ha dejado su contacto: una ya está
            dentro esperando, la otra todavía no ha dado ese paso. */
         registrada: true,
+        /* Qué aceptó y cuándo (art. 7.1 RGPD): la versión de la política que
+           tenía delante y si se negó a las novedades. */
+        pruebaRegistro: {
+          version: REVISADA,
+          sinNovedades: cuerpo.sinNovedades === true,
+          fecha: FieldValue.serverTimestamp(),
+        },
         /* El estado y la fecha de entrada solo se escriben si la ficha es
            NUEVA. Si ya estaba —lo normal: primero deja su contacto en la web y
            luego se registra—, volver a ponerle «Nuevo» borraría por dónde iba

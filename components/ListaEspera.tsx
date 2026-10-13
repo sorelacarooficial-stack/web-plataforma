@@ -37,6 +37,7 @@ export default function ListaEspera() {
   const id = useId();
   const [v, setV] = useState(VACIO);
   const [acepta, setAcepta] = useState(false);
+  const [novedades, setNovedades] = useState(false);
   const [senuelo, setSenuelo] = useState('');
   const [errores, setErrores] = useState<Errores>({});
   const [estado, setEstado] = useState<Estado>('quieto');
@@ -57,7 +58,7 @@ export default function ListaEspera() {
     e.preventDefault();
     if (estado === 'enviando') return;
 
-    const datos = { ...v, consentimiento: acepta, origen: 'lista-comunidad', empresa: senuelo };
+    const datos = { ...v, consentimiento: acepta, comercial: novedades, origen: 'lista-comunidad', empresa: senuelo };
     const revision = revisar(datos);
     if (!revision.ok) {
       setErrores(revision.errores);
@@ -112,6 +113,7 @@ export default function ListaEspera() {
           onClick={() => {
             setV(VACIO);
             setAcepta(false);
+            setNovedades(false);
             setEstado('quieto');
           }}
         >
@@ -207,7 +209,7 @@ export default function ListaEspera() {
           aria-invalid={errores.consentimiento ? true : undefined}
         />
         <span>
-          Tengo 14 años o más y acepto que Sorela Caro use mis datos para la lista de espera y para avisarme de la apertura y de las formaciones.{' '}
+          Tengo 14 años o más y acepto que Sorela Caro use mis datos para guardar mi sitio en la lista de espera.{' '}
           <Link href="/legal/privacidad" target="_blank">
             Cómo se tratan
           </Link>
@@ -215,6 +217,13 @@ export default function ListaEspera() {
         </span>
       </label>
       {errores.consentimiento && <p className={css.error}>{errores.consentimiento}</p>}
+      {/* Aparte, opcional y sin marcar: la publicidad no puede ir atada a lo
+          que se pide (art. 7.4 RGPD, art. 21 LSSI). Se guarda como `comercial`
+          y lib/campanas.ts la respeta. */}
+      <label className={css.consentimiento}>
+        <input type="checkbox" checked={novedades} onChange={(e) => setNovedades(e.target.checked)} />
+        <span>Opcional: quiero enterarme por correo de las próximas formaciones de la Técnica Divine.</span>
+      </label>
       <InfoPrivacidad capa={CAPA_INFORMACION} />
 
       <button
