@@ -46,7 +46,7 @@ const primeraVez = (enlaceClave?: string | null) =>
 
 /**
  * El correo del acceso al curso, según lo que se abre:
- *   · 'precurso'  → ha dejado el abono: el precurso y sus fechas.
+ *   · 'precurso'  → ha dejado el abono: el precurso, los dosieres y sus fechas (los vídeos, tras la parte práctica).
  *   · 'completo'  → el curso entero de una vez.
  *   · 'desbloqueo'→ tenía el precurso y ya ha pagado el resto.
  * El curso NO incluye la Comunidad Divine (es la membresía, aparte): aquí no
@@ -62,8 +62,8 @@ export function correoAccesoFormacion(
     modo === 'precurso'
       ? {
           asunto: 'Tu precurso de la Formación Técnica Divine',
-          abre: 'Ya tienes en mi plataforma el <strong>precurso</strong> de la Formación Técnica Divine y las fechas de tu clase presencial en tu agenda.',
-          sigue: 'Léelo con calma antes de venir: es la base de lo que haremos con las manos. Las clases en vídeo y los dossiers de cada día se abren después de la presencial, cuando completes el pago.',
+          abre: 'Ya tienes en mi plataforma el <strong>precurso</strong> y los dosieres de la Formación Técnica Divine, y las fechas de tu clase presencial en tu agenda.',
+          sigue: 'Léelos con calma antes de venir: son la base de lo que haremos con las manos. Las clases en vídeo se desbloquean una vez completada la parte práctica.',
           boton: 'Leer mi precurso',
           titulo: 'Tu precurso está listo',
           previa: 'Ya puedes leer tu precurso.',
@@ -71,7 +71,7 @@ export function correoAccesoFormacion(
       : modo === 'desbloqueo'
         ? {
             asunto: 'Ya tienes la formación completa',
-            abre: 'Ya tienes abierta la <strong>Formación Técnica Divine completa</strong>: las clases en vídeo y los dossiers de cada día, para repasar a tu ritmo lo que hicimos en la presencial.',
+            abre: 'Ya tienes desbloqueadas las <strong>clases en vídeo</strong> de la Formación Técnica Divine, para repasar a tu ritmo lo que hicimos en la presencial.',
             sigue: 'Te recomiendo ir en orden, clase a clase, y practicar cada protocolo antes de pasar al siguiente. Cualquier duda, respóndeme a este correo.',
             boton: 'Entrar a mis clases',
             titulo: 'Tu formación ya está completa',
@@ -79,7 +79,7 @@ export function correoAccesoFormacion(
           }
         : {
             asunto: 'Ya tienes acceso a la Formación Técnica Divine',
-            abre: 'Ya tienes abierta la <strong>Formación Técnica Divine</strong> en mi plataforma: el precurso, las clases en vídeo y los dossiers de cada día.',
+            abre: 'Ya tienes abierta la <strong>Formación Técnica Divine</strong> en mi plataforma: el precurso, las clases en vídeo y los dosieres de cada día.',
             sigue: 'Te recomiendo ir en orden, clase a clase, y practicar cada protocolo antes de pasar al siguiente. Cualquier duda, respóndeme a este correo.',
             boton: 'Entrar a mis clases',
             titulo: 'Tu formación ya está abierta',
@@ -137,7 +137,7 @@ function comoSeSuma() {
   const otrasTexto = new Intl.ListFormat('es', { type: 'conjunction' }).format(
     otras.map((x) => `${x.texto.charAt(0).toLowerCase()}${x.texto.slice(1)} (+${formatoPuntos(x.puntos)})`)
   );
-  const cierre = `También suman ${otrasTexto}. Con los puntos subes de nivel (son ${NIVELES.length}, de «${primero.nombre}» a «${ultimo.nombre}») y ganas trofeos de bronce, plata y oro. Cada mes, las más activas salen en «Más activas este mes».`;
+  const cierre = `También suman ${otrasTexto}. Con los puntos subes de nivel (son ${NIVELES.length}, de «${primero.nombre}» a «${ultimo.nombre}») y ganas trofeos de bronce, plata y oro. Cada mes, las más activas salen en el «Ranking del mes».`;
   const sans = "'Helvetica Neue',Helvetica,Arial,sans-serif";
   const filas = principales
     .map(

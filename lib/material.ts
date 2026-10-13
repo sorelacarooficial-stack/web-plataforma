@@ -27,11 +27,7 @@ export type Documento = {
   portada: number;
   /** Lo puede ver quien tenga CUALQUIERA de estos accesos. */
   para: Acceso[];
-  /**
-   * El precurso: lo ve quien tenga el curso aunque solo haya dejado el abono.
-   * Es lo que se estudia ANTES de la presencial. El resto del material se
-   * abre con el curso completo.
-   */
+  /** El precurso: lo que se estudia ANTES de la presencial. Va el primero. */
   precurso?: true;
   /** Dónde empieza cada apartado, en páginas del archivo (la portada es la 1). */
   indice: { p: number; titulo: string }[];
@@ -141,3 +137,27 @@ export const DOCUMENTOS: Documento[] = [
 
 /** Dónde vive cada página en el almacén. */
 export const rutaDePagina = (id: string, n: number) => `material/${id}/${String(n).padStart(3, '0')}.webp`;
+
+/**
+ * Lo que lleva leído de cada dossier, guardado en su ficha
+ * (`usuarios/{uid}.lectura.<id>`) por app/api/material al leer en el lector
+ * del aula. Con eso el panel sabe si ha leído el precurso: antes no se sabía
+ * y el paso se quedaba en «Ahora» hasta la presencial.
+ *
+ *   pagina  la página más avanzada a la que ha llegado
+ *   leido   si ha llegado a la última alguna vez (no se pierde al releer)
+ */
+export type Lectura = { pagina: number; leido: boolean };
+
+/** Lee lo guardado sin fiarse de su forma: solo los dossieres que existen y con cifras que encajan. */
+export function leerLectura(crudo: unknown): Record<string, Lectura> {
+  const r = (crudo && typeof crudo === 'object' ? crudo : {}) as Record<string, unknown>;
+  const salida: Record<string, Lectura> = {};
+  for (const d of DOCUMENTOS) {
+    const v = r[d.id] as { pagina?: unknown; leido?: unknown } | undefined;
+    if (!v || typeof v !== 'object') continue;
+    const pagina = Math.max(0, Math.min(d.paginas, Math.floor(Number(v.pagina) || 0)));
+    salida[d.id] = { pagina, leido: v.leido === true || pagina >= d.paginas };
+  }
+  return salida;
+}

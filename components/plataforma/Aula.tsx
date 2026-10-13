@@ -82,9 +82,9 @@ function BarraProgreso({ valor, className }: { valor: number; className: string 
   );
 }
 
-function IconoCandado() {
+function IconoCandado({ tam = 15 }: { tam?: number }) {
   return (
-    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width={tam} height={tam} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
       <path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7" />
     </svg>
@@ -102,8 +102,6 @@ export default function Aula({ correo }: { correo?: string | null }) {
   const [falloVideo, setFalloVideo] = useState(false);
   const [inicioYoutube, setInicioYoutube] = useState(0);
   const [documentos, setDocumentos] = useState<DocumentoVisible[]>([]);
-  /* Lo que se abre cuando pague el resto (solo con el abono): solo títulos. */
-  const [bloqueados, setBloqueados] = useState<{ id: string; titulo: string; subtitulo: string }[]>([]);
   const [leyendo, setLeyendo] = useState<{ id: string; desde: number } | null>(null);
   const video = useRef<HTMLVideoElement>(null);
   const ultimoGuardado = useRef(0);
@@ -126,7 +124,6 @@ export default function Aula({ correo }: { correo?: string | null }) {
       const cp = await rp.json().catch(() => ({ ok: false }));
       const cm = rm ? await rm.json().catch(() => ({ ok: false })) : { ok: false };
       setDocumentos(cm.ok ? cm.documentos ?? [] : []);
-      setBloqueados(cm.ok ? cm.bloqueados ?? [] : []);
       if (!cl.ok) {
         setFallo(cl.motivo === 'sin-configurar' ? 'Falta la configuración del servidor.' : 'No he podido cargar tus clases.');
         setLecciones([]);
@@ -165,8 +162,12 @@ export default function Aula({ correo }: { correo?: string | null }) {
     }));
   }, [ordenadas, progreso]);
 
+  /* Con solo el abono, las clases salen bloqueadas: se ven, pero el vídeo se
+     desbloquea al completar la parte práctica. */
+  const soloPrecurso = ordenadas.some((l) => l.bloqueada);
+  const abiertas = ordenadas.filter((l) => !l.bloqueada);
   /* Se abre en la primera que no ha terminado: entrar es seguir. */
-  const siguiente = ordenadas.find((l) => !progreso[l.id]?.completada) ?? ordenadas[0];
+  const siguiente = abiertas.find((l) => !progreso[l.id]?.completada) ?? abiertas[0] ?? ordenadas[0];
   const actual = ordenadas.find((l) => l.id === actualId) ?? siguiente ?? null;
 
   const hechas = ordenadas.filter((l) => progreso[l.id]?.completada).length;
@@ -185,7 +186,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
     setFalloVideo(false);
     reanudar.current = null;
     renovaciones.current = 0;
-    if (!actual || !esVideoPropio(actual.video)) {
+    if (!actual || actual.bloqueada || !esVideoPropio(actual.video)) {
       setFuente(null);
       return;
     }
@@ -198,7 +199,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
     return () => {
       vivo = false;
     };
-  }, [actual?.id, actual?.video]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [actual?.id, actual?.video, actual?.bloqueada]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* El enlace dura quince minutos (que no se pueda reenviar). Una clase larga
      dura más, y una pausa para el café también: pasado ese rato, el siguiente
@@ -269,37 +270,10 @@ export default function Aula({ correo }: { correo?: string | null }) {
   const lector = docLeyendo && leyendo && (
     <Lector doc={docLeyendo} correo={correo} desde={leyendo.desde} cerrar={() => setLeyendo(null)} />
   );
-  /* Con solo el abono: tiene el curso, pero de momento solo el precurso. */
-  const soloPrecurso = bloqueados.length > 0;
-  const seccionMaterial = (documentos.length > 0 || soloPrecurso) && (
+  const seccionMaterial = documentos.length > 0 && (
     <section className={a.bloque} id="aula-material">
-      <h3 className={a.rotulo}>{soloPrecurso && documentos.every((d) => d.id === 'precurso') ? 'Tu precurso' : 'Material del curso'}</h3>
-      {documentos.length > 0 && <TarjetasMaterial documentos={documentos} abrir={abrirMaterial} />}
-      {soloPrecurso && (
-        <div className={a.cerrado}>
-          <p className={a.cerradoRotulo}>
-            <IconoCandado /> Se abre después de la presencial
-          </p>
-          <ul className={a.cerradoLista}>
-            {bloqueados.map((d) => (
-              <li key={d.id}>
-                <IconoCandado />
-                <span>
-                  <strong>{d.titulo}</strong>
-                  <span>{d.subtitulo}</span>
-                </span>
-              </li>
-            ))}
-            <li>
-              <IconoCandado />
-              <span>
-                <strong>Las clases en vídeo</strong>
-                <span>Cada maniobra grabada, para repasar a tu ritmo</span>
-              </span>
-            </li>
-          </ul>
-        </div>
-      )}
+      <h3 className={a.rotulo}>Material del curso</h3>
+      <TarjetasMaterial documentos={documentos} abrir={abrirMaterial} />
     </section>
   );
 
@@ -336,28 +310,10 @@ export default function Aula({ correo }: { correo?: string | null }) {
               <path d="M10.5 9.2v4.6l4-2.3z" />
             </svg>
           </span>
-          {soloPrecurso ? (
-            <>
-              <h3 className={a.vacioTitulo}>Tu formación empieza con el precurso</h3>
-              <p className={a.vacioTexto}>
-                Léelo con calma antes de la clase presencial: tienes las fechas en tu agenda. Las clases en
-                vídeo y los dossieres de cada día se abren aquí cuando completes el pago, después de la
-                presencial.
-              </p>
-              {documentos.some((d) => d.id === 'precurso') && (
-                <button type="button" className={css.btn} style={{ marginTop: 10 }} onClick={() => abrirMaterial('precurso')}>
-                  Leer el precurso
-                </button>
-              )}
-            </>
-          ) : (
-            <>
-              <h3 className={a.vacioTitulo}>Aún no hay clases</h3>
-              <p className={a.vacioTexto}>
-                En cuanto Sorela suba la primera, la verás aquí sin tener que hacer nada.
-              </p>
-            </>
-          )}
+          <h3 className={a.vacioTitulo}>Aún no hay clases</h3>
+          <p className={a.vacioTexto}>
+            En cuanto Sorela suba la primera, la verás aquí sin tener que hacer nada.
+          </p>
         </section>
         {seccionMaterial}
         {lector}
@@ -387,7 +343,21 @@ export default function Aula({ correo }: { correo?: string | null }) {
         {/* ---------- El vídeo ---------- */}
         <section className={a.reproductor} id="aula-reproductor" aria-label="Clase">
           <div className={a.pantalla} onContextMenu={(e) => e.preventDefault()}>
-            {esVideoPropio(actual.video) ? (
+            {actual.bloqueada ? (
+              <div className={a.bloqueo}>
+                {actual.portada && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img className={a.bloqueoFondo} src={actual.portada} alt="" />
+                )}
+                <div className={a.bloqueoTexto}>
+                  <span className={a.bloqueoCandado} aria-hidden="true">
+                    <IconoCandado tam={22} />
+                  </span>
+                  <strong>Clase bloqueada</strong>
+                  <span>Se desbloquea una vez completada la parte práctica.</span>
+                </div>
+              </div>
+            ) : esVideoPropio(actual.video) ? (
               fuente?.id === actual.id ? (
                 <video
                   key={fuente.url}
@@ -446,7 +416,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
             )}
             {/* Quién está mirando. Si alguien graba la pantalla, la grabación
                 lleva su nombre. */}
-            {correo && esVideoPropio(actual.video) && (
+            {correo && !actual.bloqueada && esVideoPropio(actual.video) && (
               <span className={a.marca} aria-hidden="true">
                 {correo}
               </span>
@@ -463,9 +433,10 @@ export default function Aula({ correo }: { correo?: string | null }) {
             {dossier && (
               <button type="button" className={a.marcarVista} onClick={() => abrirMaterial(dossier.id)}>
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 3h8l4 4v14H6z" strokeLinejoin="round" /><path d="M14 3v4h4M9 12h6M9 16h6" strokeLinejoin="round" strokeLinecap="round" /></svg>
-                Dossier de este día
+                Dosier de este día
               </button>
             )}
+            {!actual.bloqueada && (
             <button
               type="button"
               className={pActual?.completada ? a.vista : a.marcarVista}
@@ -481,12 +452,13 @@ export default function Aula({ correo }: { correo?: string | null }) {
                 'Marcar como vista'
               )}
             </button>
+            )}
             </div>
           </div>
         </section>
 
         {/* ---------- Capítulos ---------- */}
-        {actual.capitulos && actual.capitulos.length > 0 && (
+        {!actual.bloqueada && actual.capitulos && actual.capitulos.length > 0 && (
           <section className={a.tarjeta}>
             <h3 className={a.rotulo}>Capítulos de esta clase</h3>
             <ol className={a.capitulos}>
@@ -556,13 +528,14 @@ export default function Aula({ correo }: { correo?: string | null }) {
               {lista.map((l) => {
                 const p = progreso[l.id];
                 const pct = p?.completada ? 100 : l.duracion && p?.visto ? Math.min(99, Math.round((p.visto / l.duracion) * 100)) : 0;
-                const yt = !esVideoPropio(l.video);
+                const yt = !l.bloqueada && !esVideoPropio(l.video);
                 return (
                   <motion.li key={l.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                     <button
                       type="button"
                       className={a.clase}
                       data-actual={l.id === actual.id ? '' : undefined}
+                      data-bloqueada={l.bloqueada ? '' : undefined}
                       onClick={() => abrir(l.id)}
                     >
                       <span className={a.miniatura}>
@@ -576,7 +549,11 @@ export default function Aula({ correo }: { correo?: string | null }) {
                           <span className={a.miniaturaVacia} />
                         )}
                         <span className={a.play} aria-hidden="true">
-                          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg>
+                          {l.bloqueada ? (
+                            <IconoCandado tam={13} />
+                          ) : (
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg>
+                          )}
                         </span>
                       </span>
                       <span className={a.claseTexto}>
@@ -588,7 +565,9 @@ export default function Aula({ correo }: { correo?: string | null }) {
                         </span>
                       </span>
                       <span className={a.claseProgreso}>
-                        {p?.completada ? (
+                        {l.bloqueada ? (
+                          <span className={a.chipBloqueo}>Tras la práctica</span>
+                        ) : p?.completada ? (
                           <span className={a.hecha} aria-label="Completada">
                             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                           </span>
@@ -615,10 +594,19 @@ export default function Aula({ correo }: { correo?: string | null }) {
           <h3 className={a.rotulo}>Tu progreso</h3>
           <p className={a.ruta}>{modulos.length === 1 ? modulos[0].nombre : 'Tu formación Divine'}</p>
           <Anillo valor={porcentaje} />
+          {/* Con el abono y todo bloqueado, «0 de 8 completadas» no dice nada: cuántas le esperan. */}
           <p className={a.cuenta}>
-            {hechas} de {ordenadas.length} {ordenadas.length === 1 ? 'clase completada' : 'clases completadas'}
+            {soloPrecurso && abiertas.length === 0
+              ? `${ordenadas.length} ${ordenadas.length === 1 ? 'clase esperando' : 'clases esperando'} a la parte práctica`
+              : `${hechas} de ${ordenadas.length} ${ordenadas.length === 1 ? 'clase completada' : 'clases completadas'}`}
           </p>
-          {siguiente && (
+          {soloPrecurso && abiertas.length === 0 && (
+            <p className={a.avisoBloqueo}>
+              <IconoCandado tam={13} /> Tus clases se desbloquean una vez completada la parte práctica. Mientras, ya
+              puedes leer el material.
+            </p>
+          )}
+          {siguiente && !siguiente.bloqueada && (
             <button type="button" className={a.seguir} onClick={() => abrir(siguiente.id)}>
               {hechas === 0 ? 'Empezar' : hechas === ordenadas.length ? 'Repasar' : 'Seguir donde lo dejé'}
             </button>
@@ -634,7 +622,8 @@ export default function Aula({ correo }: { correo?: string | null }) {
                   <button
                     type="button"
                     className={a.paso}
-                    data-estado={hecha ? 'hecha' : esta ? 'actual' : 'pendiente'}
+                    data-estado={hecha ? 'hecha' : esta ? 'actual' : l.bloqueada ? 'bloqueada' : 'pendiente'}
+                    aria-current={esta ? 'step' : undefined}
                     onClick={() => abrir(l.id)}
                   >
                     <span className={a.pasoTexto}>
@@ -643,8 +632,14 @@ export default function Aula({ correo }: { correo?: string | null }) {
                     <span className={a.pasoIcono} aria-hidden="true">
                       {hecha ? (
                         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      ) : l.bloqueada ? (
+                        <IconoCandado tam={11} />
                       ) : null}
                     </span>
+                    {/* El candado no se lee: que el lector sepa que está bloqueada (o hecha). */}
+                    {(hecha || l.bloqueada) && (
+                      <span className="sr-only">{hecha ? ', completada' : ', bloqueada hasta completar la parte práctica'}</span>
+                    )}
                   </button>
                 </li>
               );

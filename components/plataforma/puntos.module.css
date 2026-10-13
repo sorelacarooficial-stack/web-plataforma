@@ -176,6 +176,20 @@
   }
 }
 
+/* El brillo de avanzar: un anillo de luz que sale de la punta y se abre. */
+.avance {
+  position: absolute;
+  top: 50%;
+  right: -14px;
+  width: 28px;
+  height: 28px;
+  margin-top: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 250, 238, 0.95) 0%, rgba(243, 227, 195, 0.55) 35%, rgba(217, 180, 124, 0) 70%);
+  box-shadow: 0 0 22px 6px rgba(243, 227, 195, 0.45);
+  pointer-events: none;
+}
+
 .destello {
   position: absolute;
   inset: -2px;
@@ -412,6 +426,17 @@
   font-size: 15px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
+}
+
+/* En lo estrecho, la barrita cede sitio al nombre de cada fuente. */
+@media (max-width: 520px) {
+  .desglose li {
+    grid-template-columns: auto minmax(0, 1fr) minmax(28px, 52px) auto;
+    gap: 10px;
+  }
+  .desgloseValor {
+    min-width: 44px;
+  }
 }
 
 .desgloseVacio {
@@ -760,6 +785,69 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* «¿Cómo funciona?»: una fila sobria al final, que abre la explicación. */
+.comoFunciona {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 14px 10px 10px;
+  border: 1px solid rgba(217, 180, 124, 0.32);
+  border-radius: 18px;
+  background: rgba(217, 180, 124, 0.06);
+  color: #f7f2ea;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.comoFunciona:hover {
+  background: rgba(217, 180, 124, 0.12);
+  border-color: rgba(217, 180, 124, 0.6);
+}
+
+.comoFunciona:focus-visible {
+  outline: 2px solid #d9b47c;
+  outline-offset: 3px;
+}
+
+.comoFuncionaIcono {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(217, 180, 124, 0.6);
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  color: #ecd2a2;
+}
+
+.comoFuncionaTexto {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.comoFuncionaTexto strong {
+  font-size: 14.5px;
+  font-weight: 500;
+}
+
+.comoFuncionaTexto em {
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #cfc6b8;
+}
+
 /* En el móvil, el panel es una hoja sobre la barra de abajo. */
 @media (max-width: 639px) {
   .velo {
@@ -777,6 +865,14 @@
   }
 }
 
+/* Al pulsar, se hunde un poco: se nota que ha respondido. Al final del
+   archivo para ganar al «hover», que en el móvil va a la vez. */
+.accionBoton:active,
+.hud:active,
+.comoFunciona:active {
+  transform: scale(0.97);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .relleno::before,
   .punta,
@@ -784,7 +880,13 @@
     animation: none;
   }
   .hud,
-  .accionBoton {
+  .accionBoton,
+  .comoFunciona {
     transition: none;
+  }
+  .accionBoton:active,
+  .hud:active,
+  .comoFunciona:active {
+    transform: none;
   }
 }

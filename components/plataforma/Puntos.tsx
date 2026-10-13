@@ -23,7 +23,7 @@ import {
   type FuentePuntos,
   type ResumenPuntos,
 } from '@/lib/puntos-tipos';
-import type { EstadoLogro } from '@/lib/logros-tipos';
+import { LOGROS, type EstadoLogro } from '@/lib/logros-tipos';
 import { irA } from '@/lib/navegar';
 import { ICONO_FUENTE, Icono, InsigniaNivel, type NombreIcono } from './IconosDivine';
 import s from './puntos.module.css';
@@ -42,6 +42,10 @@ import s from './puntos.module.css';
  *
  * Sorela no compite: a ella /api/logros no le manda puntos, así que nada de
  * esto llega a pintarse en su sesión (ni el marcador).
+ *
+ * También vive aquí lo que comparten el panel y el marcador: la racha de días
+ * (useRacha, que reparte la Celebración con `divine:racha`) y
+ * abrirComoFunciona, que abre la explicación entera (ComoFunciona.tsx).
  */
 
 /* ==========================================================================
@@ -84,20 +88,24 @@ if (typeof window !== 'undefined')
     if (Array.isArray(d)) publicarTrofeos(d);
   });
 
+/** Si ya han llegado sus puntos: quien los necesita (el recorrido) no los pide otra vez. */
+export const hayPuntos = () => ultimo !== null;
+
 /* Respaldo: si en unos segundos nadie ha avisado (Sorela mirando «Ver como»,
    donde no hay Celebración), se piden una vez sin marcar nada como visto. De
    Sorela no llega nada: es la creadora y no compite. */
 let respaldoPedido = false;
 function pedirRespaldo() {
-  if (respaldoPedido || ultimo) return;
+  if (respaldoPedido || (ultimo && ultimaRacha)) return;
   respaldoPedido = true;
   window.setTimeout(() => {
-    if (ultimo || document.body.hasAttribute('data-onboarding')) return;
+    if ((ultimo && ultimaRacha) || document.body.hasAttribute('data-onboarding')) return;
     fetch('/api/logros')
       .then((r) => r.json())
       .then((j) => {
         if (!ultimo && j?.ok && j.puntos) publicar(j.puntos as ResumenPuntos);
         if (!ultimosTrofeos && j?.ok && Array.isArray(j.logros)) publicarTrofeos(j.logros as EstadoLogro[]);
+        if (!ultimaRacha && j?.ok) publicarRacha(j);
       })
       .catch(() => {
         /* sin red: ya llegará con el próximo aviso */
@@ -120,6 +128,59 @@ function suscribirTrofeos(f: () => void) {
     oyentesTrofeos.delete(f);
   };
 }
+
+/* La racha (días seguidos entrando) llega como los puntos: la reparte la
+   Celebración con `divine:racha`, de la MISMA petición que trae los puntos
+   (antes el panel hacía otra, entera, solo para leerla). Si no llega nadie
+   la pide el respaldo de arriba. Cambia como mucho una vez al día. */
+export type Racha = { actual: number; mejor: number };
+let ultimaRacha: Racha | null = null;
+const oyentesRacha = new Set<() => void>();
+
+function publicarRacha(j: unknown) {
+  const r = (j as { racha?: { actual?: unknown; mejor?: unknown } } | null)?.racha;
+  if (!r || typeof r.actual !== 'number') return;
+  const actual = Math.max(0, Math.floor(r.actual));
+  ultimaRacha = { actual, mejor: Math.max(actual, Math.floor(Number(r.mejor) || 0)) };
+  oyentesRacha.forEach((f) => f());
+}
+
+if (typeof window !== 'undefined')
+  window.addEventListener('divine:racha', (e: Event) => publicarRacha({ racha: (e as CustomEvent<unknown>).detail }));
+
+function suscribirRacha(f: () => void) {
+  oyentesRacha.add(f);
+  pedirRespaldo();
+  return () => {
+    oyentesRacha.delete(f);
+  };
+}
+
+function suscribirRachaSinPedir(f: () => void) {
+  oyentesRacha.add(f);
+  return () => {
+    oyentesRacha.delete(f);
+  };
+}
+
+/**
+ * Su racha de días seguidos, o null mientras no llega. `pedir` en false (Sorela
+ * mirando «Ver como») no la pide: de la creadora no hay racha que contar.
+ */
+export function useRacha(pedir = true): Racha | null {
+  return useSyncExternalStore(
+    pedir ? suscribirRacha : suscribirRachaSinPedir,
+    () => ultimaRacha,
+    () => null
+  );
+}
+
+/**
+ * Abre «Cómo funciona» (ComoFunciona.tsx, montado una vez en Plataforma.tsx).
+ * `paso`: con cuál empieza ('puntos', 'niveles', 'trofeos' o 'ranking').
+ */
+export const abrirComoFunciona = (paso?: string) =>
+  window.dispatchEvent(new CustomEvent('divine:como-funciona', { detail: paso ? { paso } : null }));
 
 /** Los últimos trofeos que han llegado (los de quien mira), o null mientras no llegan. */
 export function useTrofeos(): EstadoLogro[] | null {
@@ -235,6 +296,12 @@ export function BarraNivel({
   // El muelle puede pasarse un pelo de 1: la barra no se sale nunca.
   const ancho = useTransform(progreso, (v) => `${Math.max(0, Math.min(1, v)) * 100}%`);
   const [destello, setDestello] = useState(0);
+  /* Cada vez que avanza de verdad (llegan puntos nuevos, o se pinta por primera
+     vez desde lo que vio la última vez), la punta suelta un brillo al llegar.
+     Al pintarse sin `desde` se llena desde el principio, pero eso no es avanzar. */
+  const [avance, setAvance] = useState(0);
+  const totalAntes = useRef<number | null>(null);
+  const desdeAlMontar = useRef(desde);
 
   const verNivel = (e: EstadoNivel) => {
     vistoRef.current = e;
@@ -243,6 +310,9 @@ export function BarraNivel({
 
   useEffect(() => {
     const fin = nivelDe(total);
+    const avanza =
+      totalAntes.current !== null ? total > totalAntes.current : desdeAlMontar.current != null && desdeAlMontar.current < total;
+    totalAntes.current = total;
     if (reducir) {
       verNivel(fin);
       progreso.set(fin.progreso);
@@ -275,6 +345,7 @@ export function BarraNivel({
       }
       verNivel(fin);
       ctrl = animate(progreso, fin.progreso, { type: 'spring', stiffness: 70, damping: 15, mass: 1, restDelta: 0.0005 });
+      if (avanza) setAvance((a) => a + 1);
     })();
     return () => {
       vivo = false;
@@ -328,6 +399,18 @@ export function BarraNivel({
       >
         <motion.span className={s.relleno} style={{ width: ancho }}>
           <span className={s.punta} aria-hidden="true" />
+          {/* El brillo de avanzar sale de la punta y se abre; con «reducir
+              movimiento» no se pinta. */}
+          {avance > 0 && !reducir && (
+            <motion.span
+              key={avance}
+              className={s.avance}
+              aria-hidden="true"
+              initial={{ opacity: 0, scale: 0.3 }}
+              animate={{ opacity: [0, 1, 0], scale: [0.3, 1.1, 2.6] }}
+              transition={{ duration: 1.3, times: [0, 0.25, 1], ease: 'easeOut', delay: 0.45 }}
+            />
+          )}
         </motion.span>
         <AnimatePresence>
           {destello > 0 && (
@@ -448,6 +531,8 @@ function detalle(f: FuentePuntos, v: number): string {
       return plural(Math.round(v / PUNTOS.logro), 'trofeo', 'trofeos');
     case 'perfil':
       return 'Foto, quién eres y dónde';
+    case 'recorrido':
+      return 'Hecho de principio a fin';
     case 'fotos':
       return plural(Math.round(v / PUNTOS.foto), 'foto', 'fotos');
   }
@@ -522,11 +607,12 @@ type Accion = {
 
 /**
  * Qué hacer para sumar más, con sus puntos y un botón que lleva a hacerlo.
- * Lo que ya está hecho (el perfil, el curso entero) desaparece de la lista.
+ * Lo que ya está hecho (el recorrido, el perfil, el curso entero) desaparece
+ * de la lista.
  *
- * `puedePublicar`: si escribe en la comunidad (la Comunidad Divine). Quien
- * solo tiene el curso la lee pero no escribe: a ella no se le ofrece un botón
- * de «Publicar» que no puede usar, sino una etiqueta.
+ * `puedePublicar`: si tiene la Comunidad Divine. Quien solo tiene el curso no
+ * ve aquí nada de la comunidad: ni un botón de «Publicar» que no puede usar ni
+ * lo que se suma dentro (para ella, la Comunidad es «Próximamente»).
  * `soloVer`: Sorela mirando «Ver como»: sin botones (no llevan a nada suyo).
  */
 export function ComoGanarPuntos({
@@ -541,6 +627,17 @@ export function ComoGanarPuntos({
   const d = resumen?.desglose;
   const acciones: Accion[] = [];
 
+  // Solo cuando se sabe que no lo ha hecho: hasta que llegan los puntos, no se ofrece.
+  if (d && (d.recorrido ?? 0) <= 0) {
+    acciones.push({
+      id: 'recorrido',
+      icono: 'brujula',
+      titulo: 'Haz el recorrido de bienvenida',
+      texto: `Un minuto por tu espacio y tu trofeo de bienvenida, «${LOGROS.find((l) => l.id === 'recorrido')?.nombre ?? 'Exploradora Divine'}» (+${PUNTOS.logro} más).`,
+      puntos: PUNTOS.recorrido,
+      boton: { texto: 'Empezar', hacer: () => window.dispatchEvent(new Event('divine:recorrido')) },
+    });
+  }
   if (!d || d.perfil <= 0) {
     acciones.push({
       id: 'perfil',
@@ -561,25 +658,16 @@ export function ComoGanarPuntos({
       boton: { texto: 'Ir a clase', hacer: () => irA('aula') },
     });
   }
-  acciones.push(
-    puedePublicar
-      ? {
-          id: 'comunidad',
-          icono: 'publicaciones',
-          titulo: 'Comparte en la comunidad',
-          texto: `Responder a una compañera, +${PUNTOS.respuesta}. Cada me gusta que recibes, +${PUNTOS.meGusta}.`,
-          puntos: PUNTOS.publicacion,
-          boton: { texto: 'Publicar', hacer: () => irA('comunidad') },
-        }
-      : {
-          id: 'comunidad',
-          icono: 'publicaciones',
-          titulo: 'Comparte en la comunidad',
-          texto: `Cuando entres en la Comunidad Divine: publicar, +${PUNTOS.publicacion}; responder a una compañera, +${PUNTOS.respuesta}.`,
-          puntos: PUNTOS.publicacion,
-          etiqueta: 'Con la Comunidad',
-        }
-  );
+  if (puedePublicar) {
+    acciones.push({
+      id: 'comunidad',
+      icono: 'publicaciones',
+      titulo: 'Comparte en la comunidad',
+      texto: `Responder a una compañera, +${PUNTOS.respuesta}. Cada me gusta que recibes, +${PUNTOS.meGusta}.`,
+      puntos: PUNTOS.publicacion,
+      boton: { texto: 'Publicar', hacer: () => irA('comunidad') },
+    });
+  }
   if (d && d.perfil > 0 && d.fotos < PUNTOS.foto * PUNTOS.fotosMax) {
     acciones.push({
       id: 'foto',
@@ -737,7 +825,7 @@ export function MarcadorPuntos({ compacto, puedePublicar = true }: { compacto?: 
       if (panel.current?.contains(t) || boton.current?.contains(t)) return;
       cerrar();
     };
-    // Al ir a otra pantalla (los botones de «cómo sumar») o abrir la ficha, se cierra.
+    // Al ir a otra pantalla (los botones de «cómo sumar»), abrir la ficha o el recorrido, se cierra.
     const alIrse = () => cerrar();
     window.addEventListener('resize', recolocar);
     window.addEventListener('scroll', recolocar, true);
@@ -745,6 +833,7 @@ export function MarcadorPuntos({ compacto, puedePublicar = true }: { compacto?: 
     document.addEventListener('pointerdown', alPulsarFuera);
     window.addEventListener('popstate', alIrse);
     window.addEventListener('divine:onboarding', alIrse);
+    window.addEventListener('divine:recorrido', alIrse);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', recolocar);
@@ -753,6 +842,7 @@ export function MarcadorPuntos({ compacto, puedePublicar = true }: { compacto?: 
       document.removeEventListener('pointerdown', alPulsarFuera);
       window.removeEventListener('popstate', alIrse);
       window.removeEventListener('divine:onboarding', alIrse);
+      window.removeEventListener('divine:recorrido', alIrse);
     };
   }, [abierto, colocar, cerrar]);
 
@@ -845,6 +935,26 @@ export function MarcadorPuntos({ compacto, puedePublicar = true }: { compacto?: 
                 <DesglosePuntos desglose={r.desglose} />
               </div>
               <ComoGanarPuntos resumen={r} puedePublicar={puedePublicar} />
+              {/* La explicación entera, en cuatro pasos. Antes de abrirla se
+                  cierra este panel con el foco en el marcador: al cerrar la
+                  explicación, el foco vuelve ahí. */}
+              <button
+                type="button"
+                className={s.comoFunciona}
+                onClick={() => {
+                  cerrar(true);
+                  abrirComoFunciona();
+                }}
+              >
+                <span className={s.comoFuncionaIcono} aria-hidden="true">
+                  ?
+                </span>
+                <span className={s.comoFuncionaTexto}>
+                  <strong>¿Cómo funciona?</strong>
+                  <em>Puntos, niveles y trofeos{puedePublicar ? ', y el ranking del mes' : ''}, en un minuto</em>
+                </span>
+                <span aria-hidden="true">→</span>
+              </button>
             </motion.div>
           </>,
           document.body

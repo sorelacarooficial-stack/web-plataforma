@@ -99,44 +99,361 @@
   color: rgba(239, 230, 216, 0.88);
 }
 
-.seguir {
+/* ---------- La racha: la llama en rosé, la cifra y los siete días ---------- */
+
+.racha {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  margin: -2px 0 0;
+  padding: 6px 14px 6px 10px;
+  border: 1px solid rgba(230, 167, 178, 0.32);
+  border-radius: 999px;
+  background: rgba(230, 167, 178, 0.1);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: #f7f0e4;
+}
+
+.racha b {
+  font-weight: 500;
+  color: #fff6ea;
+}
+
+/* El hueco de la racha mientras llega: el mismo alto, para que la frase y la
+   misión no salten (y se pulse lo que no era) cuando aparece. */
+.rachaHueco {
+  display: block;
+  height: 32px;
+  margin: -2px 0 0;
+}
+
+/* La llama respira, despacio. */
+.rachaIcono {
+  flex: none;
+  color: var(--divine-claro);
+  transform-origin: 50% 90%;
+  animation: arder 2.6s ease-in-out infinite;
+}
+
+@keyframes arder {
+  50% {
+    transform: scale(1.08) rotate(-3deg);
+  }
+}
+
+.rachaSemana {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 2px;
+}
+
+.rachaSemana i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* Los días que lleva se encienden uno detrás de otro. */
+.rachaSemana i[data-lleno] {
+  background: #d9b47c;
+  box-shadow: 0 0 8px rgba(217, 180, 124, 0.6);
+  animation: encender 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.5s + var(--k) * 70ms);
+}
+
+@keyframes encender {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* ---------- Tu próxima misión ---------- */
+
+.misionCaja {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 600px;
+  margin-top: 6px;
+}
+
+.mision {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
-  max-width: 560px;
-  margin-top: 8px;
-  padding: 12px;
-  border: 1px solid rgba(217, 180, 124, 0.28);
+  width: 100%;
+  padding: 12px 14px 12px 12px;
+  overflow: hidden;
+  border: 1px solid rgba(217, 180, 124, 0.42);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.05);
+  background: linear-gradient(135deg, rgba(217, 180, 124, 0.16), rgba(255, 255, 255, 0.04) 62%);
+  box-shadow: 0 18px 40px -24px rgba(217, 180, 124, 0.55);
   font: inherit;
   text-align: left;
+  text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: background 0.25s, transform 0.25s, border-color 0.25s;
+  transition: background 0.25s, transform 0.25s, border-color 0.25s, box-shadow 0.25s;
 }
 
-.seguir:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(217, 180, 124, 0.5);
+/* De vez en cuando la cruza un brillo: es lo que toca hacer. */
+.mision::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 246, 226, 0.12) 50%, transparent 70%);
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  animation: cruzar 5.5s ease-in-out 1.2s infinite;
+  pointer-events: none;
+}
+
+@keyframes cruzar {
+  0% {
+    background-position: 160% 0;
+  }
+  40%,
+  100% {
+    background-position: -60% 0;
+  }
+}
+
+.mision[data-quieta] {
+  cursor: default;
+}
+
+.mision[data-quieta]::before {
+  display: none;
+}
+
+.mision:not([data-quieta]):hover {
+  border-color: rgba(217, 180, 124, 0.75);
+  background: linear-gradient(135deg, rgba(217, 180, 124, 0.22), rgba(255, 255, 255, 0.06) 62%);
   transform: translateY(-2px);
 }
 
-.seguirFoto {
+.misionFoto {
   position: relative;
   flex: 0 0 auto;
-  width: 112px;
-  height: 72px;
+  width: 104px;
+  height: 70px;
   overflow: hidden;
   border-radius: 14px;
   background: linear-gradient(140deg, #3a2f22, #1e1914);
 }
 
-.seguirFoto img {
+.misionFoto img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   opacity: 0.85;
+}
+
+/* La medalla de la misión: oro con el dibujo de lo que toca. */
+.misionMedalla {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, #fff6e2, #e6c890 45%, #b8914f 100%);
+  color: #2a1d08;
+  box-shadow:
+    0 0 0 4px rgba(217, 180, 124, 0.14),
+    0 10px 22px -10px rgba(217, 180, 124, 0.85);
+}
+
+.misionTexto {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.misionRotulo {
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+.misionTexto strong {
+  font-family: var(--fuente-cormorant), serif;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: #f7f0e4;
+}
+
+.misionMeta {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: rgba(239, 230, 216, 0.84);
+}
+
+.misionPremio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: 4px;
+  font-size: 13px;
+  color: rgba(239, 230, 216, 0.86);
+}
+
+.misionPremio b {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f3e3c3, #d9b47c);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #17140f;
+}
+
+/* Lo que avanzaría su barra si la hace. */
+.misionNivel {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 340px;
+  margin-top: 6px;
+}
+
+.misionNivel em {
+  font-style: normal;
+  font-size: 12.5px;
+  color: rgba(239, 230, 216, 0.84);
+}
+
+.misionNivel em[data-sube] {
+  font-weight: 500;
+  color: #f3e3c3;
+}
+
+.previa {
+  position: relative;
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.previaYa {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8a6a32, #d9b47c);
+}
+
+.previaLuego {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 0 999px 999px 0;
+  background: repeating-linear-gradient(135deg, rgba(243, 227, 195, 0.9) 0 4px, rgba(243, 227, 195, 0.55) 4px 8px);
+  animation: latirPrevia 1.6s ease-in-out infinite;
+}
+
+@keyframes latirPrevia {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.misionIr {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f3e3c3, #d9b47c);
+  color: #17140f;
+  box-shadow: 0 8px 18px -8px rgba(217, 180, 124, 0.85);
+  transition: transform 0.25s;
+}
+
+.mision:not([data-quieta]):hover .misionIr {
+  transform: translateX(3px);
+}
+
+.misionEtiqueta {
+  flex: none;
+  padding: 6px 12px;
+  border: 1px solid rgba(217, 180, 124, 0.45);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #e8d3ad;
+}
+
+/* «O sigue con…»: la clase a medias, cuando la misión es otra cosa. */
+.otraClase {
+  align-self: flex-start;
+  min-height: 32px;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  color: rgba(239, 230, 216, 0.88);
+  cursor: pointer;
+}
+
+.otraClase:hover {
+  color: #f3e3c3;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.misionEsqueleto {
+  max-width: 600px;
+  height: 96px;
+  margin-top: 6px;
+  border-radius: 22px;
+  background: linear-gradient(90deg, #1f1b15 0%, #2b261e 50%, #1f1b15 100%);
+  background-size: 200% 100%;
+  animation: brillar 1.3s linear infinite;
+}
+
+@media (max-width: 520px) {
+  .mision {
+    gap: 12px;
+    padding: 12px;
+  }
+  .misionFoto {
+    width: 76px;
+    height: 56px;
+  }
+  .misionMedalla {
+    width: 48px;
+    height: 48px;
+  }
+  .misionTexto strong {
+    font-size: 19px;
+  }
+}
+
+/* En lo más estrecho, la flecha sobra (toda la tarjeta es el botón) y deja el sitio al texto. */
+@media (max-width: 420px) {
+  .misionIr {
+    display: none;
+  }
 }
 
 .play {
@@ -151,51 +468,6 @@
   background: linear-gradient(140deg, #f3e2c4, #cfa25e);
   color: #1a1208;
   box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.6);
-}
-
-.seguirTexto {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-  flex: 1;
-}
-
-.seguirRotulo {
-  font-size: 11.5px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #d9b47c;
-}
-
-.seguirTexto strong {
-  font-family: var(--fuente-cormorant), serif;
-  font-size: 21px;
-  font-weight: 600;
-  line-height: 1.15;
-  color: #f7f0e4;
-}
-
-.seguirMeta {
-  font-size: 13px;
-  font-weight: 400;
-  color: rgba(239, 230, 216, 0.8);
-}
-
-.barra {
-  display: block;
-  height: 3px;
-  margin-top: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  overflow: hidden;
-}
-
-.barra i {
-  display: block;
-  height: 100%;
-  background: linear-gradient(90deg, #cfa25e, #f0d4a6);
 }
 
 .heroProgreso {
@@ -237,6 +509,11 @@
   font-size: 22px;
   font-weight: 500;
   fill: #f7f0e4;
+}
+
+/* Con el abono, sus vídeos esperan a la parte práctica: el candado en el centro. */
+.anilloCandado {
+  color: #e8cc9a;
 }
 
 .datos {
@@ -332,7 +609,8 @@
 }
 
 .oscura .enlace:focus-visible,
-.seguir:focus-visible {
+.mision:focus-visible,
+.otraClase:focus-visible {
   outline: 2px solid #d9b47c;
   outline-offset: 3px;
 }
@@ -690,13 +968,752 @@
   animation: brillar 1.3s linear infinite;
 }
 
+/* Cuando le llegan puntos con el panel abierto, la tarjeta se ilumina un momento. */
+.nivel[data-brilla] {
+  animation: brillaNivel 1.6s ease-out;
+}
+
+@keyframes brillaNivel {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 180, 124, 0.55), 0 30px 60px -40px rgba(20, 16, 10, 0.8);
+  }
+  40% {
+    box-shadow: 0 0 0 10px rgba(217, 180, 124, 0), 0 0 44px 4px rgba(217, 180, 124, 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 180, 124, 0), 0 30px 60px -40px rgba(20, 16, 10, 0.8);
+  }
+}
+
+/* La columna de la derecha: de dónde vienen sus puntos y «¿Cómo funciona?». */
+.nivelDerecha {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.deDonde {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid rgba(217, 180, 124, 0.2);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.deDonde .nivelNota {
+  margin-top: 4px;
+  font-size: 13.5px;
+}
+
+/* En una columna, sin caja dentro de la caja: una línea arriba, como «Tus trofeos». */
+@media (max-width: 960px) {
+  .deDonde {
+    padding: 16px 0 0;
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+    background: none;
+  }
+}
+
+.rotuloOro {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+.comoFunciona {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 64px;
+  padding: 12px 18px 12px 12px;
+  border: 1px solid rgba(217, 180, 124, 0.35);
+  border-radius: 20px;
+  background: rgba(217, 180, 124, 0.07);
+  font: inherit;
+  text-align: left;
+  color: #f7f2ea;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.comoFunciona:hover {
+  border-color: rgba(217, 180, 124, 0.65);
+  background: rgba(217, 180, 124, 0.13);
+}
+
+.comoFunciona:focus-visible {
+  outline: 2px solid #d9b47c;
+  outline-offset: 3px;
+}
+
+.comoIcono {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(217, 180, 124, 0.6);
+  border-radius: 50%;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1;
+  color: #ecd2a2;
+}
+
+.comoTexto {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.comoTexto strong {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.comoTexto em {
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #cfc6b8;
+}
+
+.comoFlecha {
+  flex: none;
+  color: #d9b47c;
+  transition: transform 0.2s;
+}
+
+.comoFunciona:hover .comoFlecha {
+  transform: translateX(3px);
+}
+
+/* «Nuevo», hasta que lo abre la primera vez. */
+.nuevo {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--divine-claro);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+  color: #2a0f16;
+}
+
+/* ==========================================================================
+   Tu camino
+   ========================================================================== */
+
+/* Se mide su propio ancho: en horizontal cuando caben los seis pasos. */
+.camino {
+  container-type: inline-size;
+}
+
+.caminoCabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 16px;
+}
+
+.caminoCabecera h3 {
+  margin: 0;
+  font-family: var(--fuente-cormorant), serif;
+  font-size: clamp(24px, 2.4vw, 30px);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.caminoResumen {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--muted-2);
+}
+
+.caminoResumen b {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* Formación / Comunidad, si tiene las dos. */
+.rutas {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--neu-base);
+  box-shadow: var(--neu-dentro-sm);
+}
+
+.rutas button {
+  position: relative;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted-2);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.rutaTexto {
+  position: relative;
+  z-index: 1;
+}
+
+.rutas button[aria-selected='true'] {
+  color: var(--bg);
+}
+
+.rutaPildora {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--ink);
+}
+
+.rutas button:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+.ruta {
+  --nodo: 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 2px;
+}
+
+/* Cada paso: su círculo, su nombre y lo que da. En el móvil van en columna,
+   unidos por una línea a la izquierda que se pinta de oro por donde ya ha pasado. */
+.paso {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--nodo) minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 14px;
+  min-height: 64px;
+  padding: 10px 10px 10px 0;
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s;
+}
+
+.paso::before,
+.paso::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--nodo) / 2 - 1px);
+  width: 2px;
+  background: var(--line-3);
+  transform-origin: top center;
+}
+
+.paso::before {
+  top: 0;
+  height: calc(50% - var(--nodo) / 2);
+}
+
+.paso::after {
+  bottom: 0;
+  height: calc(50% - var(--nodo) / 2);
+}
+
+.paso[data-primero]::before,
+.paso[data-ultimo]::after {
+  display: none;
+}
+
+/* El tramo andado, en oro liso (las dos mitades se juntan sin costura), que se
+   dibuja al entrar. Una sola animación para las dos orientaciones: en vertical
+   crece hacia abajo y en horizontal (más abajo) hacia la derecha, con las
+   variables. Cambiar de animación dentro del @container dejaba el tramo
+   horizontal sin pintar en Chrome (el estilo decía que estaba, la pantalla no). */
+.paso[data-llega]::before,
+.paso[data-estado='hecho']::after {
+  background: #c49a58;
+  animation: tramo 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.2s + var(--i) * 0.09s);
+}
+
+@keyframes tramo {
+  from {
+    transform: scale(var(--tramo-x, 1), var(--tramo-y, 0));
+  }
+}
+
+.pasoNodo {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: var(--nodo);
+  height: var(--nodo);
+  border: 1.5px solid var(--line-4);
+  border-radius: 50%;
+  background: var(--neu-base);
+  color: var(--muted-2);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s;
+}
+
+.pasoGlifo {
+  display: grid;
+  place-items: center;
+}
+
+.paso[data-estado='hecho'] .pasoNodo {
+  border-color: transparent;
+  background: linear-gradient(140deg, #f3e3c3, #d9b47c 55%, #b8914f);
+  color: #3a2a10;
+  box-shadow: 0 8px 16px -8px rgba(138, 106, 50, 0.7);
+}
+
+.paso[data-estado='ahora'] .pasoNodo {
+  border: 2px solid #b8914f;
+  background: var(--surface);
+  color: var(--arcilla-ink);
+  box-shadow: 0 0 0 5px rgba(217, 180, 124, 0.18);
+}
+
+/* «Ahora»: un aro que late a su alrededor. */
+.paso[data-estado='ahora'] .pasoNodo::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 2px solid rgba(184, 145, 79, 0.55);
+  border-radius: 50%;
+  animation: latirNodo 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes latirNodo {
+  from {
+    transform: scale(0.92);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+.paso[data-estado='bloqueado'] .pasoNodo {
+  border-style: dashed;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.pasoTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pasoTexto strong {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.pasoTexto em {
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-2);
+}
+
+.paso[data-estado='ahora'] .pasoTexto em,
+.paso[data-estado='hecho'] .pasoTexto em {
+  font-weight: 500;
+  color: var(--arcilla-ink);
+}
+
+.pasoPremio {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--oro-tint);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--arcilla-ink);
+}
+
+/* Lo ya ganado, sin pastilla: ya es suyo. */
+.paso[data-estado='hecho'] .pasoPremio {
+  background: transparent;
+  color: var(--muted-2);
+}
+
+.pasoPremioVacio {
+  display: none;
+}
+
+.paso[aria-expanded='true'] {
+  background: rgba(138, 106, 50, 0.07);
+}
+
+.paso:hover .pasoNodo,
+.paso[aria-expanded='true'] .pasoNodo {
+  transform: scale(1.06);
+}
+
+.paso:active .pasoNodo {
+  transform: scale(0.94);
+}
+
+.paso:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+/* ---------- El detalle de cada paso ----------
+   Siempre en la página: cerrado no ocupa, no se ve y no se enfoca. Se abre
+   desplegándose (el alto, con la rejilla de 0fr a 1fr). */
+
+.detalle {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease,
+    visibility 0s linear 0.38s;
+}
+
+.detalle[data-abierto] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.detalleDentro {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* En el móvil el detalle sigue la línea del camino por la izquierda. */
+.detalleCaja {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: calc(var(--nodo) / 2 - 1px);
+  padding: 4px 4px 16px calc(var(--nodo) / 2 + 13px);
+  border-left: 2px solid var(--line-3);
+}
+
+.detalle[data-tramo] .detalleCaja {
+  border-left-color: #c49a58;
+}
+
+.detalle[data-ultimo] .detalleCaja {
+  border-left-color: transparent;
+}
+
+.detalleRotulo {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.detalleRotulo[data-estado='ahora'],
+.detalleRotulo[data-estado='hecho'] {
+  color: var(--arcilla-ink);
+}
+
+.detalleTitulo {
+  margin: 0;
+  font-family: var(--fuente-cormorant), serif;
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.detalleTexto {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.detalleProgreso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-2);
+}
+
+.detalleBarra {
+  position: relative;
+  flex: 1;
+  max-width: 260px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line-2);
+}
+
+.detalleBarra i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8a6a32, #d9b47c);
+  transform-origin: left center;
+}
+
+/* La barra se llena cada vez que se abre su paso. */
+.detalle[data-abierto] .detalleBarra i {
+  animation: llenar 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+@keyframes llenar {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.detallePie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  margin-top: 4px;
+}
+
+.detallePremio {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  font-size: 13.5px;
+  color: var(--muted-2);
+}
+
+.detallePremio svg {
+  flex: none;
+  color: var(--divine);
+}
+
+.detallePremio[data-hecho] svg {
+  color: var(--arcilla-ink);
+}
+
+.detallePremio b {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--arcilla-ink);
+}
+
+.detalleBoton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 20px;
+  border: 1px solid rgba(217, 180, 124, 0.5);
+  border-radius: 999px;
+  background: #17140f;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  color: #fffaf0;
+  cursor: pointer;
+  box-shadow: 0 10px 22px -12px rgba(20, 16, 10, 0.7);
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.detalleBoton:hover {
+  background: #2a241c;
+  transform: translateY(-1px);
+}
+
+/* Lo ya hecho («Repetir», «Repasar»): sin tanto peso. */
+.detalleBoton[data-suave] {
+  border-color: var(--line-5);
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.detalleBoton[data-suave]:hover {
+  background: rgba(138, 106, 50, 0.08);
+}
+
+.detalleBoton:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 3px;
+}
+
+.detalleEtiqueta {
+  padding: 6px 12px;
+  border: 1px solid var(--oro-line);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--arcilla-ink);
+}
+
+/* ---------- En horizontal, cuando caben los pasos en fila ---------- */
+
+@container (min-width: 620px) {
+  .ruta {
+    grid-template-columns: repeat(var(--pasos), minmax(0, 1fr));
+    margin-top: 8px;
+  }
+  .paso {
+    grid-row: 1;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    align-content: start;
+    row-gap: 8px;
+    min-height: 0;
+    padding: 6px 4px 12px;
+    text-align: center;
+  }
+  .paso::before,
+  .paso::after {
+    top: calc(6px + var(--nodo) / 2 - 1px);
+    bottom: auto;
+    width: calc(50% - var(--nodo) / 2);
+    height: 2px;
+    transform-origin: left center;
+    /* El tramo crece a lo ancho (ver @keyframes tramo). */
+    --tramo-x: 0;
+    --tramo-y: 1;
+  }
+  .paso::before {
+    left: 0;
+  }
+  .paso::after {
+    left: auto;
+    right: 0;
+  }
+  .pasoTexto {
+    align-items: center;
+  }
+  .pasoTexto strong {
+    font-size: 14.5px;
+  }
+  .pasoPremioVacio {
+    display: block;
+    height: 22px;
+  }
+  .detalle {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+  .detalleCaja {
+    margin: 6px 0 0;
+    padding: 18px 20px;
+    border-left: 0;
+    border-radius: 20px;
+    background: var(--neu-base);
+    box-shadow: var(--neu-dentro-sm);
+  }
+}
+
+/* ---------- Al pulsar, se hunde un poco ---------- */
+
+.mision:not([data-quieta]):active,
+.comoFunciona:active,
+.detalleBoton:active,
+.otraClase:active,
+.dossier:active,
+.clases button:active,
+.posts button:active {
+  transform: scale(0.98);
+}
+
+.soloLector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .esqueleto,
-  .esqueletoOscuro {
+  .esqueletoOscuro,
+  .misionEsqueleto,
+  .mision::before,
+  .previaLuego,
+  .rachaIcono,
+  .rachaSemana i[data-lleno],
+  .nivel[data-brilla],
+  .paso[data-llega]::before,
+  .paso[data-estado='hecho']::after,
+  .paso[data-estado='ahora'] .pasoNodo::after,
+  .detalle[data-abierto] .detalleBarra i {
     animation: none;
   }
-  .seguir,
+  .mision,
+  .misionIr,
+  .comoFunciona,
+  .comoFlecha,
+  .pasoNodo,
+  .paso,
+  .detalle,
+  .detalleBoton,
   .dossier img {
     transition: none;
+  }
+  .mision:not([data-quieta]):hover,
+  .mision:not([data-quieta]):hover .misionIr,
+  .comoFunciona:hover .comoFlecha,
+  .detalleBoton:hover,
+  .paso:hover .pasoNodo,
+  .paso[aria-expanded='true'] .pasoNodo,
+  .mision:not([data-quieta]):active,
+  .comoFunciona:active,
+  .detalleBoton:active,
+  .otraClase:active,
+  .dossier:active,
+  .clases button:active,
+  .posts button:active,
+  .paso:active .pasoNodo {
+    transform: none;
   }
 }

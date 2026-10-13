@@ -46,6 +46,12 @@ export default async function PaginaPlataforma({ searchParams }: { searchParams:
   const bienvenidaPendiente =
     sesion.rol !== 'sorela' && entrada.onboarding !== null && !entrada.onboarding.completado && !entrada.onboarding.saltado;
 
+  /* El recorrido de bienvenida (por dónde se va a cada sitio): cómo lo dejó,
+     leído en la misma lectura. Llega ya resuelto, como la bienvenida, para que
+     se abra —o no— sin parpadeo. Sorela no lo tiene. Si la ficha no se ha
+     podido leer, null: no se abre solo. */
+  const recorrido = sesion.rol !== 'sorela' ? entrada.recorrido : null;
+
   // La pantalla pedida en la dirección (?v=leads) llega ya resuelta: así no se
   // ve el Inicio un instante antes de saltar a ella. Plataforma la revisa.
   const { v } = await searchParams;
@@ -55,6 +61,7 @@ export default async function PaginaPlataforma({ searchParams }: { searchParams:
       sesion={{ ...sesion, foto: entrada.foto ?? sesion.foto }}
       accesos={entrada.accesos}
       bienvenidaPendiente={bienvenidaPendiente}
+      recorrido={recorrido}
       vistaInicial={typeof v === 'string' ? v.slice(0, 30) : null}
     />
   );

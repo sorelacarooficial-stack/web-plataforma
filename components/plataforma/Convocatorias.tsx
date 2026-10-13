@@ -444,7 +444,7 @@ function TresCosas({ curso }: { curso: string }) {
         </span>
         <span>
           <b>Acceso al curso · {curso}</b>
-          <span>Con el abono, el precurso; al marcarla «Pagado», todo. Su enlace se crea en Cuentas (el botón de cada inscrita te lleva).</span>
+          <span>Con el abono, el material; al marcarla «Pagado», también los vídeos. Su enlace se crea en Cuentas (el botón de cada inscrita te lleva).</span>
         </span>
       </li>
       <li data-que="membresia">

@@ -170,7 +170,7 @@ export async function POST(peticion: Request) {
     codigo,
     correo,
     nombre,
-    que: que.map((q) => (q === 'curso' && nivel === 'precurso' ? `el precurso de la ${CURSO_DIVINE}` : ETIQUETA_QUE_DA[q])),
+    que: que.map((q) => (q === 'curso' && nivel === 'precurso' ? `el precurso y los dosieres de la ${CURSO_DIVINE}` : ETIQUETA_QUE_DA[q])),
     caduca: invitacion.caduca,
     enlace,
   });

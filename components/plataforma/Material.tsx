@@ -137,6 +137,34 @@ export function Lector({
     if (desde > 1) requestAnimationFrame(() => ir(desde, false));
   }, [paginas, desde, ir]);
 
+  /* Hasta dónde ha leído, a su ficha (app/api/material): al abrir, al llegar
+     a la última página y al cerrar. Solo sube, y solo se manda si ha
+     avanzado. Con eso el panel da por leído el precurso. */
+  const maxima = useRef(desde);
+  const enviada = useRef(0);
+  const apuntar = useCallback(
+    (pagina: number) => {
+      if (pagina <= enviada.current) return;
+      enviada.current = pagina;
+      fetch('/api/material', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: doc.id, pagina }),
+        // Que llegue aunque se cierre la pestaña con el lector abierto.
+        keepalive: true,
+      }).catch(() => {});
+    },
+    [doc.id]
+  );
+  useEffect(() => {
+    if (paginas) apuntar(maxima.current);
+  }, [paginas, apuntar]);
+  useEffect(() => {
+    maxima.current = Math.max(maxima.current, actual);
+    if (actual >= doc.paginas) apuntar(actual);
+  }, [actual, doc.paginas, apuntar]);
+  useEffect(() => () => apuntar(maxima.current), [apuntar]);
+
   /* Qué página se está leyendo, para el contador y el índice. */
   useEffect(() => {
     if (!paginas || !hoja.current) return;
@@ -218,13 +246,13 @@ export function Lector({
         >
           Índice
         </button>
-        <button type="button" className={m.cerrar} onClick={cerrar} aria-label="Cerrar el dossier">
+        <button type="button" className={m.cerrar} onClick={cerrar} aria-label="Cerrar el dosier">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" /></svg>
         </button>
       </header>
 
       <div className={m.cuerpo}>
-        <nav className={m.lateral} data-abierto={indiceAbierto ? '' : undefined} aria-label="Índice del dossier">
+        <nav className={m.lateral} data-abierto={indiceAbierto ? '' : undefined} aria-label="Índice del dosier">
           <p className={m.lateralRotulo}>Índice</p>
           {indice}
         </nav>
@@ -232,13 +260,13 @@ export function Lector({
         <div className={m.hoja} ref={hoja}>
           {fallo && !paginas && (
             <p className={m.aviso}>
-              No he podido abrir el dossier.{' '}
+              No he podido abrir el dosier.{' '}
               <button type="button" onClick={cargar}>
                 Reintentar
               </button>
             </p>
           )}
-          {!paginas && !fallo && <p className={m.aviso}>Abriendo el dossier…</p>}
+          {!paginas && !fallo && <p className={m.aviso}>Abriendo el dosier…</p>}
           {paginas?.map((url, i) => (
             <div key={i} className={m.pagina} data-pagina={i + 1}>
               {cerca.has(i + 1) && (

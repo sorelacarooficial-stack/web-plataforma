@@ -34,7 +34,7 @@ const YA: Pieza[] = [
     listo: true,
   },
   {
-    titulo: 'Los dossieres',
+    titulo: 'Los dosieres',
     texto: 'El material de cada día para leer en la plataforma, también en «Mis clases».',
     listo: true,
   },
@@ -149,7 +149,7 @@ export default function Proximamente({
             ? /* Con acceso, la pantalla dice dónde ir en vez de pedir que
                  espere: sus clases y su agenda están en el menú, y decirle
                  «estamos terminando» le haría irse sin abrirlos. */
-              'Tus clases, los dossieres y tu agenda ya están en el menú. Lo demás —la certificación y la comunidad— lo estamos terminando, y te avisamos por correo en cuanto se abra.'
+              'Tus clases, los dosieres y tu agenda ya están en el menú. Lo demás —la certificación y la comunidad— lo estamos terminando, y te avisamos por correo en cuanto se abra.'
             : esAlumna
               ? 'Estamos terminando el aula de la formación. Cuando esté abierta te llegará un correo y podrás entrar con esta misma cuenta.'
               : 'Estamos terminando la comunidad de terapeutas. Cuando esté abierta te llegará un correo y podrás entrar con esta misma cuenta.'}

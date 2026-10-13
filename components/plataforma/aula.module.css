@@ -844,58 +844,104 @@
   }
 }
 
-/* Lo que se abre después de la presencial (solo con el abono). */
-.cerrado {
-  margin-top: 14px;
-  padding: 18px 20px;
-  border-radius: 20px;
-  background: #1f1a16;
-  color: #f4ece2;
+/* Una clase bloqueada (solo con el abono): la portada apagada y el aviso. */
+.bloqueo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 100%, #2a2117 0%, #0b0a09 70%);
 }
 
-.cerradoRotulo {
-  display: flex;
-  align-items: center;
+.bloqueoFondo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(14px) saturate(0.6) brightness(0.45);
+  transform: scale(1.08);
+}
+
+.bloqueoTexto {
+  position: relative;
+  display: grid;
+  justify-items: center;
   gap: 8px;
-  margin: 0 0 12px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #e9c9a8;
-}
-
-.cerradoLista {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.cerradoLista li {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  color: rgba(244, 236, 226, 0.55);
-}
-
-.cerradoLista li > svg {
-  flex: none;
-  margin-top: 3px;
-}
-
-.cerradoLista li > span {
-  display: grid;
-  gap: 2px;
-}
-
-.cerradoLista strong {
-  font-size: 15px;
-  font-weight: 600;
+  max-width: 340px;
+  padding: 0 20px;
+  text-align: center;
   color: #f4ece2;
 }
 
-.cerradoLista li > span > span {
-  font-size: 13.5px;
+.bloqueoTexto strong {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.bloqueoTexto span:last-child {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: rgba(244, 236, 226, 0.78);
+}
+
+.bloqueoCandado {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  border: 1px solid rgba(217, 180, 124, 0.55);
+  background: rgba(23, 20, 15, 0.6);
+  color: #e3c48f;
+}
+
+.clase[data-bloqueada] .miniatura img {
+  filter: grayscale(0.6) brightness(0.7);
+}
+
+.clase[data-bloqueada] .claseTitulo {
+  color: var(--ink-3);
+}
+
+.chipBloqueo {
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ink-3);
+}
+
+.paso[data-estado='bloqueada'] {
+  color: var(--ink-3);
+}
+
+.paso[data-estado='bloqueada'] .pasoIcono {
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+}
+
+.avisoBloqueo {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 10px 0 4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--oro-tint, rgba(217, 180, 124, 0.14));
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-2, #3b342c);
+}
+
+.avisoBloqueo svg {
+  flex: none;
+  margin-top: 2px;
 }

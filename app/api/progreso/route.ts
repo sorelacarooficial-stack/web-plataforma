@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
-import { revisarAccesos } from '@/lib/accesos';
+import { revisarAccesos, tieneMembresia } from '@/lib/accesos';
 import { leTocaLaClase } from '@/lib/logros';
 import { sumarActividad } from '@/lib/actividad';
 import { PUNTOS } from '@/lib/puntos-tipos';
@@ -23,6 +23,10 @@ import { PUNTOS } from '@/lib/puntos-tipos';
  * true solo la vez que pasa de no terminada a terminada. El reproductor repite
  * «terminada» cada diez segundos pasado el 90 %; con esto, el aula solo
  * celebra (y el ranking solo suma) la primera.
+ *
+ * El ranking del mes es de la Comunidad: solo suma a quien tiene la membresía.
+ * Quien solo tiene el curso gana sus puntos por la clase (lib/logros.ts), pero
+ * no sale en un ranking que para ella aún no existe. Curso ≠ membresía.
  */
 
 export const runtime = 'nodejs';
@@ -84,6 +88,7 @@ export async function POST(peticion: Request) {
     const yaTerminada = actual.get('completada') === true;
     const nueva = quiereTerminar && !yaTerminada;
     let nombre = '';
+    let miembro = false;
     /* La clase se comprueba al empezar a apuntarla y al terminarla, que es
        cuando cuenta. Los guardados de posición de una ya apuntada no vuelven
        a leerla: son la mayoría y así cuestan una lectura, no tres. */
@@ -94,7 +99,9 @@ export async function POST(peticion: Request) {
         return { fallo: 'sin-acceso' as const };
       }
       const f = ficha.data() ?? {};
-      nombre = String(f.nombre || String(f.correo || '').split('@')[0] || 'Terapeuta');
+      // Lo leen las demás en el ranking: nunca un trozo de su correo.
+      nombre = String(f.nombre || 'Terapeuta');
+      miembro = tieneMembresia(revisarAccesos(f.accesos));
     }
     t.set(
       ref,
@@ -106,15 +113,15 @@ export async function POST(peticion: Request) {
       },
       { merge: true }
     );
-    return { nueva, nombre };
+    return { nueva, nombre, miembro };
   });
 
   if ('fallo' in r) {
     return NextResponse.json({ ok: false, motivo: r.fallo }, { status: r.fallo === 'no-existe' ? 404 : 403 });
   }
 
-  // Terminar una clase suma al ranking del mes. Si eso falla, la clase ya está apuntada: no se rompe nada.
-  if (r.nueva && rol !== 'sorela') {
+  // Terminar una clase suma al ranking del mes (con la membresía). Si eso falla, la clase ya está apuntada: no se rompe nada.
+  if (r.nueva && r.miembro && rol !== 'sorela') {
     await sumarActividad({ uid, nombre: r.nombre }, PUNTOS.clase, undefined, 'clases').catch((e) => console.error('[progreso] ranking', e));
   }
   return NextResponse.json({ ok: true, nueva: r.nueva });

@@ -1437,7 +1437,9 @@
     width: min(290px, 84vw);
     max-height: none;
     border-right: 1px solid var(--line-2);
-    padding: 22px 18px;
+    /* Abajo, el hueco de la barra de inicio del iPhone: el pie del cajón
+       («Ver el recorrido», «Salir») tiene que poder pulsarse. */
+    padding: 22px 18px calc(22px + env(safe-area-inset-bottom));
     gap: 22px;
     overflow-y: auto;
     transform: translateX(-100%);

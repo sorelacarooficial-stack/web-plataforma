@@ -17,8 +17,9 @@ import l from './logros.module.css';
  * `divine:logros` (al terminar una clase nueva, al publicar, responder o
  * borrar en la comunidad, al subir una foto, al terminar la ficha). Cada vez
  * que mira, reparte los puntos a toda la pantalla con `divine:puntos`: el
- * marcador, el panel y el perfil los pintan sin pedirlos otra vez; y los
- * trofeos con `divine:trofeos` (la vitrina pequeña del panel).
+ * marcador, el panel y el perfil los pintan sin pedirlos otra vez; los
+ * trofeos con `divine:trofeos` (la vitrina pequeña del panel) y la racha de
+ * días con `divine:racha` (el saludo del panel).
  *
  * A Sorela no se le monta (Plataforma.tsx), y aunque se montara, el servidor
  * no le manda nada que celebrar: es la creadora y no compite.
@@ -62,6 +63,8 @@ export default function Celebracion() {
       const puntos = j.puntos as ResumenPuntos | undefined;
       if (puntos) window.dispatchEvent(new CustomEvent('divine:puntos', { detail: puntos }));
       if (Array.isArray(j.logros)) window.dispatchEvent(new CustomEvent<EstadoLogro[]>('divine:trofeos', { detail: j.logros }));
+      // Y su racha de días, que viene en la misma respuesta: el panel no la pide aparte.
+      if (j.racha) window.dispatchEvent(new CustomEvent('divine:racha', { detail: j.racha }));
       const nuevas: Fiesta[] = [
         ...((j.nuevos ?? []) as string[]).map((id) => ({ tipo: 'logro' as const, id })),
         // El nivel, al final: es el colofón de lo que se acaba de ganar.
@@ -264,7 +267,8 @@ export default function Celebracion() {
                 {vitrina && vitrina.id !== 'divine' && <span className={l.vitrinaDe}>{vitrina.nombre}</span>}
                 <h3>{logro.nombre}</h3>
                 <p>{logro.texto}</p>
-                <span className={l.masPuntos}>+{formatoPuntos(PUNTOS.logro)} puntos</span>
+                {/* El del recorrido trae además los puntos del recorrido: lo que se prometía al hacerlo. */}
+                <span className={l.masPuntos}>+{formatoPuntos(PUNTOS.logro + (logro.id === 'recorrido' ? PUNTOS.recorrido : 0))} puntos</span>
                 {logro.id === 'curso-completo' && (
                   <a className={l.certificado} href="/api/certificado">
                     <Icono nombre="curso" size={18} />

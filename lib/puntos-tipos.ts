@@ -9,6 +9,8 @@
  * mano ni manera de inflarlos publicando y borrando.
  */
 
+import { recorridoHecho } from './recorrido-tipos';
+
 export const PUNTOS = {
   clase: 50,
   curso: 300,
@@ -20,6 +22,8 @@ export const PUNTOS = {
   racha30: 200,
   logro: 25,
   perfil: 100,
+  /** Terminar el recorrido de bienvenida (una vez; repetirlo no suma). */
+  recorrido: 30,
   foto: 5,
   /** Las fotos del perfil cuentan hasta aquí: subir cien no es mérito. */
   fotosMax: 10,
@@ -65,10 +69,11 @@ export type FuentePuntos =
   | 'racha'
   | 'logros'
   | 'perfil'
+  | 'recorrido'
   | 'fotos';
 
 /** En el orden en que se enseñan en el desglose. */
-export const FUENTES: FuentePuntos[] = ['clases', 'curso', 'publicaciones', 'respuestas', 'meGusta', 'dias', 'racha', 'logros', 'perfil', 'fotos'];
+export const FUENTES: FuentePuntos[] = ['clases', 'curso', 'publicaciones', 'respuestas', 'meGusta', 'dias', 'racha', 'logros', 'perfil', 'recorrido', 'fotos'];
 
 export const ETIQUETA_FUENTE: Record<FuentePuntos, string> = {
   clases: 'Clases terminadas',
@@ -80,6 +85,7 @@ export const ETIQUETA_FUENTE: Record<FuentePuntos, string> = {
   racha: 'Rachas',
   logros: 'Trofeos',
   perfil: 'Perfil completo',
+  recorrido: 'Recorrido de bienvenida',
   fotos: 'Fotos del perfil',
 };
 
@@ -100,11 +106,12 @@ export const FORMAS_DE_SUMAR: { fuente: FuentePuntos; texto: string; corto: stri
   { fuente: 'racha', texto: `7 días seguidos (y +${PUNTOS.racha30} a los 30)`, corto: 'Racha de 7 días', puntos: PUNTOS.racha7 },
   { fuente: 'logros', texto: 'Cada trofeo que ganas', corto: 'Trofeo', puntos: PUNTOS.logro },
   { fuente: 'perfil', texto: 'Completar tu perfil', corto: 'Perfil completo', puntos: PUNTOS.perfil },
+  { fuente: 'recorrido', texto: 'Hacer el recorrido de bienvenida', corto: 'Recorrido', puntos: PUNTOS.recorrido },
   { fuente: 'fotos', texto: `Cada foto de tu trabajo (hasta ${PUNTOS.fotosMax})`, corto: 'Foto', puntos: PUNTOS.foto },
 ];
 
 /**
- * Lo que suma al ranking del mes («Más activas este mes»): lo que se hace en
+ * Lo que suma al «Ranking del mes» de la Comunidad: lo que se hace en
  * la comunidad y el aula. Cada fila del ranking guarda cuántas de cada una
  * lleva en el mes (lib/actividad.ts), y así se enseña de dónde salen sus puntos.
  */
@@ -134,6 +141,12 @@ export type EntradaPuntos = {
   logros: number;
   perfilCompleto: boolean;
   fotos: number;
+  /**
+   * Si ha terminado alguna vez el recorrido de bienvenida (lib/recorrido-tipos.ts).
+   * Opcional: los puntos de muestra (Sorela mirando «Ver como») no lo traen y
+   * cuentan sin él.
+   */
+  recorrido?: boolean;
 };
 
 export type ResumenPuntos = {
@@ -161,6 +174,7 @@ export function calcularPuntos(e: EntradaPuntos): { total: number; desglose: Rec
     racha: (racha >= 7 ? PUNTOS.racha7 : 0) + (racha >= 30 ? PUNTOS.racha30 : 0),
     logros: cuantos(e.logros) * PUNTOS.logro,
     perfil: e.perfilCompleto ? PUNTOS.perfil : 0,
+    recorrido: e.recorrido ? PUNTOS.recorrido : 0,
     fotos: Math.min(cuantos(e.fotos), PUNTOS.fotosMax) * PUNTOS.foto,
   };
   const total = FUENTES.reduce((s, f) => s + desglose[f], 0);
@@ -172,8 +186,9 @@ export const formatoPuntos = (n: number): string => Math.round(Number(n) || 0).t
 
 /**
  * Los puntos que se pueden sacar de su ficha (`usuarios/{uid}`) sin leer nada
- * más: lo de la comunidad (`stats`), los días y la racha (`actividad`) y el
- * perfil. Lo demás (clases, trofeos, fotos) solo lo cuenta lib/logros.ts.
+ * más: lo de la comunidad (`stats`), los días y la racha (`actividad`), el
+ * perfil y el recorrido de bienvenida. Lo demás (clases, trofeos, fotos) solo
+ * lo cuenta lib/logros.ts.
  */
 export function puntosDeLaFicha(u: Record<string, unknown>): number {
   const stats = (u.stats ?? {}) as { publicaciones?: number; respuestas?: number; meGustaRecibidos?: number };
@@ -189,6 +204,7 @@ export function puntosDeLaFicha(u: Record<string, unknown>): number {
     logros: 0,
     perfilCompleto: Boolean((u.onboarding as { completado?: unknown } | undefined)?.completado),
     fotos: 0,
+    recorrido: recorridoHecho(u),
   }).total;
 }
 

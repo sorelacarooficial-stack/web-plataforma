@@ -1,0 +1,534 @@
+/*
+ * El recorrido de bienvenida (Recorrido.tsx): la pantalla a oscuras menos lo
+ * que se señala, con un aro de oro que late, y una tarjeta de papel al lado.
+ *
+ * La tarjeta es siempre papel claro (#fffdf9), como la ventana de la
+ * bienvenida (onboarding.module.css), sea cual sea el tema: por eso lleva sus
+ * colores escritos aquí. Los mismos pares, medidos allí con script:
+ *   sobre #fffdf9 · título #141210 (18,4:1) · texto #3e3831 (11,4:1)
+ *                 · secundario #4f4840 (8,9:1) · rótulo dorado #6f5323 (7,0:1)
+ *                 · error #9a2f1a (7,4:1)
+ *   sobre #17140f · texto #f7f2ea (16,5:1) · oro #d9b47c (9,4:1)
+ *
+ * Capas: por encima de la barra de abajo (45), del cajón del móvil (60) y del
+ * panel de los puntos (1050); por debajo de la bienvenida (1150) y de las
+ * preguntas (1300), que nunca coinciden con él.
+ */
+
+.capa {
+  position: fixed;
+  inset: 0;
+  z-index: 1120;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+}
+
+/* ==========================================================================
+   El foco: un hueco con la sombra más grande del mundo alrededor
+   ========================================================================== */
+
+.foco {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  box-shadow: 0 0 0 200vmax rgba(12, 10, 8, 0.66);
+}
+
+/* El aro de oro, con un halo suave. */
+.foco::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 2px #d9b47c,
+    0 0 0 7px rgba(217, 180, 124, 0.18),
+    0 0 28px 4px rgba(217, 180, 124, 0.32);
+}
+
+/* Y su latido: un segundo aro que se abre y se desvanece. */
+.foco::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid rgba(217, 180, 124, 0.75);
+  animation: latido 1.9s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+/* Sin nada que señalar (el paso final): solo la penumbra. */
+.foco[data-vacio]::before,
+.foco[data-vacio]::after {
+  display: none;
+}
+
+@keyframes latido {
+  0% {
+    inset: 0;
+    opacity: 0.9;
+  }
+  100% {
+    inset: -12px;
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   La tarjeta
+   ========================================================================== */
+
+.carta {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 20px 18px;
+  border-radius: 24px;
+  background: #fffdf9;
+  color: #141210;
+  font-size: 15px;
+  line-height: 1.5;
+  box-shadow:
+    0 1px 2px rgba(20, 18, 16, 0.08),
+    0 34px 80px -26px rgba(12, 10, 8, 0.78),
+    inset 0 0 0 1px rgba(217, 180, 124, 0.38);
+}
+
+/* Un filete de oro arriba: lo único dorado del papel, además del rótulo. */
+.carta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #d9b47c 30%, #d9b47c 70%, transparent);
+}
+
+.cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+}
+
+.rotulo {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6f5323;
+}
+
+.cuenta {
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: #4f4840;
+  font-variant-numeric: tabular-nums;
+}
+
+.saltar {
+  flex: none;
+  min-height: 40px;
+  margin-right: -8px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #4f4840;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.saltar:hover:not(:disabled) {
+  background: rgba(20, 18, 16, 0.06);
+  color: #141210;
+}
+
+.contenido {
+  min-width: 0;
+}
+
+.saludo {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #4f4840;
+}
+
+.titulo {
+  margin: 6px 0 0;
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: #141210;
+  text-wrap: balance;
+}
+
+.texto {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #3e3831;
+  text-wrap: pretty;
+}
+
+/* ---------- Los niveles (paso de los puntos) ---------- */
+
+.niveles {
+  margin-top: 14px;
+  padding: 12px 12px 10px;
+  border-radius: 18px;
+  background:
+    radial-gradient(80% 120% at 100% 0%, rgba(217, 180, 124, 0.18), transparent 60%),
+    #17140f;
+}
+
+.nivelesFila {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nivelesFila li {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+}
+
+.nivelesPie {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #e2d9ca;
+  text-align: center;
+}
+
+/* ---------- El trofeo de bienvenida (paso final) ---------- */
+
+.insignia {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 12px 16px 12px 12px;
+  border-radius: 18px;
+  background:
+    radial-gradient(70% 140% at 0% 50%, rgba(217, 180, 124, 0.22), transparent 62%),
+    #17140f;
+  color: #f7f2ea;
+}
+
+.insigniaCopa {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+
+/* El brillo detrás de la copa, que respira. */
+.insigniaCopa::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(236, 210, 162, 0.45), transparent 68%);
+  animation: brillo 2.6s ease-in-out infinite alternate;
+}
+
+.insigniaCopa svg {
+  position: relative;
+}
+
+@keyframes brillo {
+  from {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+.insigniaTexto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.insigniaRotulo {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+
+.insigniaNombre {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #f7f2ea;
+}
+
+.premio {
+  margin-top: 2px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ecd2a2, #d9b47c 55%, #c29a5b);
+  color: #17140f;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.fallo {
+  margin: 12px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #9a2f1a;
+}
+
+/* ---------- El camino y los botones ---------- */
+
+.camino {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.camino li {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(20, 18, 16, 0.16);
+  transition:
+    width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.35s;
+}
+
+.camino li[data-hecho] {
+  background: #c9a56a;
+}
+
+.camino li[data-ahora] {
+  width: 24px;
+  background: #8a6a32;
+}
+
+.botones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.atras,
+.seguir {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.atras {
+  border: 1px solid #8c8173;
+  background: #ffffff;
+  color: #141210;
+}
+
+.atras:hover:not(:disabled) {
+  border-color: #141210;
+}
+
+.seguir {
+  margin-left: auto;
+  border: 1px solid #17140f;
+  background: #17140f;
+  color: #fffaf0;
+}
+
+.seguir:hover:not(:disabled) {
+  background: #2a241c;
+  transform: translateY(-1px);
+}
+
+/* El último botón, con filo de oro: es la meta. */
+.seguir[data-oro] {
+  box-shadow:
+    inset 0 0 0 1px rgba(217, 180, 124, 0.6),
+    0 12px 26px -12px rgba(138, 106, 50, 0.85);
+}
+
+.seguir[data-oro] svg {
+  color: #ecd2a2;
+}
+
+.atras:disabled,
+.seguir:disabled,
+.saltar:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.saltar:focus-visible,
+.atras:focus-visible,
+.seguir:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 3px;
+}
+
+/* Para el lector de pantalla: el paso nuevo se anuncia sin verse. */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ==========================================================================
+   La pista de después de saltarlo
+   ========================================================================== */
+
+.pista {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  z-index: 1120;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  padding: 12px 18px;
+  border-radius: 18px;
+  background: #17140f;
+  color: #f7f2ea;
+  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.4;
+  box-shadow: 0 18px 40px -16px rgba(12, 10, 9, 0.6);
+  translate: -50% 0;
+}
+
+.pista svg {
+  flex: none;
+  color: #d9b47c;
+}
+
+.pista b {
+  font-weight: 600;
+  color: #ecd2a2;
+}
+
+/* En el móvil, por encima de la barra de abajo. */
+@media (max-width: 880px) {
+  .pista {
+    bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ==========================================================================
+   «Ver el recorrido», en el pie del menú (Plataforma.tsx)
+   El menú es negro: los colores salen de las variables que le pone la lateral.
+   ========================================================================== */
+
+.verRecorrido {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  align-self: flex-start;
+  min-height: 40px;
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+  color: var(--muted-2);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.verRecorrido:hover {
+  color: var(--ink);
+}
+
+.verRecorrido svg {
+  flex: none;
+  color: var(--oro);
+}
+
+/* Mientras no lo ha terminado, lo que trae. */
+.verRecorridoPremio {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ecd2a2, #d9b47c 55%, #c29a5b);
+  color: #17140f;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   Menos movimiento
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .foco::after,
+  .insigniaCopa::before {
+    animation: none;
+  }
+
+  .camino li,
+  .saltar,
+  .atras,
+  .seguir,
+  .verRecorrido {
+    transition: none;
+  }
+
+  .seguir:hover:not(:disabled) {
+    transform: none;
+  }
+}

@@ -42,15 +42,16 @@ export type Acceso = {
    */
   convocatoria?: string;
   /**
-   * Solo cursos. `false` = ha dejado el abono: ve el precurso y sus fechas,
-   * pero no las clases ni los dossieres de cada día. Se abre todo cuando paga
-   * el resto, después de la presencial. Sin el campo cuenta como completo:
-   * así siguen igual los accesos que ya estaban dados antes de existir esto.
+   * Solo cursos. `false` = ha dejado el abono: ve el precurso, los dosieres
+   * de cada día y sus fechas; las clases en vídeo le salen BLOQUEADAS («Se
+   * desbloquea una vez completada la parte práctica»). Se abren cuando paga el
+   * resto, después de la presencial. Sin el campo cuenta como completo: así
+   * siguen igual los accesos que ya estaban dados antes de existir esto.
    */
   completo?: boolean;
 };
 
-/** Si un acceso de curso abre ya las clases y el material, o solo el precurso. */
+/** Si un acceso de curso abre ya las clases en vídeo (el material lo abre siempre, también con el abono). */
 export const esCompleto = (a: Acceso) => a.tipo !== 'curso' || a.completo !== false;
 
 /**

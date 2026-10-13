@@ -10,11 +10,12 @@ import {
   vitrinas,
   type EstadoLogro,
   type EstadoVitrina,
+  type IdVitrina,
   type Resumen,
 } from '@/lib/logros-tipos';
 import { PUNTOS, formatoPuntos, type ResumenPuntos } from '@/lib/puntos-tipos';
 import { irA } from '@/lib/navegar';
-import { BarraNivel, CaminoNiveles, ContadorPuntos, DesglosePuntos, useVisto } from './Puntos';
+import { BarraNivel, CaminoNiveles, ContadorPuntos, DesglosePuntos, abrirComoFunciona, useVisto } from './Puntos';
 import { DistintivoCreadora, Icono, InsigniaNivel, Trofeo } from './IconosDivine';
 import l from './logros.module.css';
 
@@ -102,9 +103,12 @@ export default function Logros({ uid, nombre }: { uid?: string; nombre?: string 
   if (!r) return <div className={l.esqueleto} aria-busy="true" aria-label="Cargando los trofeos" />;
 
   if ('creadora' in r && r.creadora) return <DistintivoCreadora variante="bloque" ajena={!r.esMio} nombre={nombre} />;
-  const d = r as Resumen & { esMio: boolean };
+  const d = r as Resumen & { esMio: boolean; verComunidad?: boolean };
   const ajena = !d.esMio;
-  const conseguidos = d.logros.filter((x) => x.conseguido).length;
+  /* Quien solo tiene el curso no ve las vitrinas de la Comunidad (ni el
+     podio): para ella la Comunidad es «Próximamente». Lo mismo que el panel. */
+  const logros = d.verComunidad === false ? d.logros.filter((x) => !VITRINAS_DE_LA_COMUNIDAD.includes(x.vitrina)) : d.logros;
+  const conseguidos = logros.filter((x) => x.conseguido).length;
   const p = d.puntos;
 
   return (
@@ -117,6 +121,12 @@ export default function Logros({ uid, nombre }: { uid?: string; nombre?: string 
               <ContadorPuntos valor={p.total} desde={0} />
               <small>puntos</small>
             </p>
+            {/* Los propios, con la explicación a mano (la de otra persona no la necesita). */}
+            {d.esMio && (
+              <button type="button" className={l.comoFunciona} onClick={() => abrirComoFunciona()}>
+                ¿Cómo funciona?
+              </button>
+            )}
           </div>
           <span className={l.moneda}>
             <InsigniaNivel n={p.nivel.n} size={84} title={`Nivel ${p.nivel.n}: ${p.nivel.nombre}`} />
@@ -149,14 +159,17 @@ export default function Logros({ uid, nombre }: { uid?: string; nombre?: string 
         </div>
 
         <div className={l.curso}>
-          <Anillo valor={d.curso.porcentaje} />
+          {/* El curso, solo si lo hay: sin clases del curso (solo la Comunidad), «0 de 0» no dice nada. */}
+          {d.curso.total > 0 && <Anillo valor={d.curso.porcentaje} />}
           <div className={l.datos}>
-            <p>
-              <Icono nombre="clases" size={18} className={l.datoIcono} />
-              <span>
-                <b>{d.curso.hechas}</b> de {d.curso.total} clases terminadas
-              </span>
-            </p>
+            {d.curso.total > 0 && (
+              <p>
+                <Icono nombre="clases" size={18} className={l.datoIcono} />
+                <span>
+                  <b>{d.curso.hechas}</b> de {d.curso.total} clases del curso terminadas
+                </span>
+              </p>
+            )}
             <p>
               <Icono nombre="racha" size={18} className={l.datoIcono} style={d.racha.actual > 0 ? undefined : { opacity: 0.55 }} />
               <span>
@@ -166,7 +179,7 @@ export default function Logros({ uid, nombre }: { uid?: string; nombre?: string 
             <p>
               <Icono nombre="logros" size={18} className={l.datoIcono} />
               <span>
-                <b>{conseguidos}</b> de {d.logros.length} trofeos
+                <b>{conseguidos}</b> de {logros.length} trofeos
               </span>
             </p>
             {d.esMio && d.certificado && (
@@ -179,7 +192,7 @@ export default function Logros({ uid, nombre }: { uid?: string; nombre?: string 
         </div>
       </section>
 
-      <Vitrina logros={d.logros} ajena={ajena} />
+      <Vitrina logros={logros} ajena={ajena} />
     </div>
   );
 }
@@ -407,13 +420,28 @@ function TarjetaVitrina({ v, i, ajena }: { v: EstadoVitrina; i: number; ajena: b
    La vitrina en pequeño (para el panel de inicio)
    ========================================================================== */
 
+/** Las vitrinas que son de la Comunidad: quien solo tiene el curso no las ve en su panel ni en «Cómo funciona». */
+export const VITRINAS_DE_LA_COMUNIDAD: readonly IdVitrina[] = ['casos', 'companera', 'inspiras', 'podio'];
+
 /**
  * Una fila con una copa por vitrina, en el metal que lleva cada una, y un
  * botón a la vitrina entera (pestaña Trofeos del perfil). Sin datos todavía,
  * un hueco del mismo alto para que nada salte.
+ *
+ * `sinComunidad`: sin membresía, sin las vitrinas de la Comunidad (y la
+ * cuenta, sin sus trofeos).
  */
-export function VitrinaMini({ logros, soloVer = false }: { logros: EstadoLogro[] | null; soloVer?: boolean }) {
-  if (!logros) return <div className={l.miniEsqueleto} aria-busy="true" aria-label="Cargando tus trofeos" />;
+export function VitrinaMini({
+  logros: todos,
+  soloVer = false,
+  sinComunidad = false,
+}: {
+  logros: EstadoLogro[] | null;
+  soloVer?: boolean;
+  sinComunidad?: boolean;
+}) {
+  if (!todos) return <div className={l.miniEsqueleto} aria-busy="true" aria-label="Cargando tus trofeos" />;
+  const logros = sinComunidad ? todos.filter((x) => !VITRINAS_DE_LA_COMUNIDAD.includes(x.vitrina)) : todos;
   const todas = vitrinas(logros);
   const conseguidos = logros.filter((x) => x.conseguido).length;
   return (
@@ -447,9 +475,13 @@ export function VitrinaMini({ logros, soloVer = false }: { logros: EstadoLogro[]
   );
 }
 
-/** Trofeos de muestra (Sorela mirando «Ver como»): algunos ganados, otros a medias. */
+/**
+ * Trofeos de muestra (Sorela mirando «Ver como»): algunos ganados, otros a
+ * medias. Los de una alumna del curso que ya hizo el recorrido: así se ve su
+ * misión de verdad (la clase siguiente), no la del recorrido.
+ */
 export function trofeosDeMuestra(): EstadoLogro[] {
-  const hechos = new Set(['primera-clase', 'perfil-completo', 'racha-3', 'primera-publicacion']);
+  const hechos = new Set(['recorrido', 'primera-clase', 'perfil-completo', 'racha-3']);
   return LOGROS.map((x) => {
     const conseguido = hechos.has(x.id);
     const progreso = conseguido ? x.meta : Math.floor(x.meta / 3);

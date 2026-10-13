@@ -18,7 +18,7 @@ import c from './comunidad.module.css';
  * También explica el juego en cuatro líneas: cómo se ganan los puntos (con
  * los iconos y los valores de lib/puntos-tipos.ts, nunca escritos a mano), los
  * niveles, los trofeos y el ranking del mes. Lo de la comunidad y el aula va
- * primero, que es lo que mueve «Más activas este mes».
+ * primero, que es lo que mueve el «Ranking del mes».
  */
 
 const PRIMERO = new Set<FuentePuntos>(SUMAN_AL_MES);
@@ -74,7 +74,7 @@ function ComoSeSuma() {
         <span className={c.bienvenidaMuestra} aria-hidden="true">
           <Icono nombre="medalla" size={24} grosor={1.6} />
         </span>
-        <span>Cada mes, las que más comparten y ayudan salen en «Más activas este mes». Empieza de cero el día 1.</span>
+        <span>Cada mes, las que más comparten y ayudan salen en el «Ranking del mes». Empieza de cero el día 1.</span>
       </p>
     </section>
   );

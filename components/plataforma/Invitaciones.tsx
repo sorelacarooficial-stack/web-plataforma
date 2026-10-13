@@ -38,8 +38,8 @@ type InscritaOpcion = { id: string; nombre: string; correo: string; estado: 'pag
 type ConvOpcion = { id: string; ciudad: string; inicio: string; fin: string; inscritas: InscritaOpcion[] };
 
 const NIVELES: { id: Nivel; titulo: string; texto: string }[] = [
-  { id: 'precurso', titulo: 'Solo el precurso', texto: 'Ha dejado el abono. Ve el precurso y sus fechas; las clases en vídeo, no.' },
-  { id: 'completo', titulo: 'Curso completo', texto: 'Ha pagado todo. Ve el precurso, las clases y los dossieres.' },
+  { id: 'precurso', titulo: 'Con el abono', texto: 'Ha dejado el abono. Ve el precurso, los dosieres y sus fechas; las clases en vídeo, bloqueadas hasta la parte práctica.' },
+  { id: 'completo', titulo: 'Curso completo', texto: 'Ha pagado todo. Ve también las clases en vídeo.' },
 ];
 
 const PAGO: Record<InscritaOpcion['estado'], string> = { pagado: 'Pagado', senal: 'Abono', pendiente: 'Sin pagar' };
