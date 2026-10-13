@@ -621,6 +621,8 @@
   line-height: 1.6;
   opacity: 0.66;
   font-size: clamp(0.9rem, 1.6vw, 1.2rem);
+  /* Que la última línea no se quede con una palabra sola. */
+  text-wrap: pretty;
 }
 
 /* ==========================================================================

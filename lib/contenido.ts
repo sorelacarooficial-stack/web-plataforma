@@ -317,7 +317,7 @@ export const PILARES: Pilar[] = [
   {
     titulo: 'Moldear al final',
     texto:
-      'Sobre la base drenante entran las maniobras de presión variable: toques, despegues, pastoreo, rastrillo. Movilizan el tejido y redefinen el contorno.',
+      'Sobre la base drenante entran las maniobras de presión variable: toques, despegues, palmoteo o percusión, rastrillo. Movilizan el tejido y redefinen el contorno.',
   },
 ];
 
