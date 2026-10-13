@@ -29,7 +29,7 @@ const cuando = `el ${DIA_APERTURA} a las ${HORA_ESPANA}, hora de España,`;
 function cierreComunidad(t: Tipo) {
   if (t === 'comunidad')
     // Lo que hay dentro NO se cuenta: se presenta ese día en la masterclass.
-    return `${CUANDO} abro la Comunidad Divine${fuera ? ` (${fuera})` : ''} con una masterclass en directo por Zoom: te hablo de mi técnica y del alto impacto de lo digital en las terapeutas, y al final te cuento qué hay dentro.`;
+    return `${CUANDO} abro la Comunidad Divine${fuera ? ` (${fuera})` : ''} con una masterclass en directo por Zoom: cómo está cambiando la terapia y qué puede hacer la inteligencia artificial por ti.`;
   if (t === 'alumna')
     return `Y por si te sirve para decidirte: la formación no termina en el certificado. ${CUANDO} abro la Comunidad Divine con una masterclass en directo. Si quieres formar parte, apúntate a la lista de espera en mi web.`;
   if (t === 'clienta')
@@ -123,6 +123,16 @@ export function correoBienvenidaPorOrigen(nombre: string | null, origen: string 
  * el del grupo de WhatsApp. Todo en tablas y estilos en línea, que es lo único
  * que Gmail, Apple Mail y Outlook pintan igual (nada de SVG ni de CSS moderno).
  */
+/* Iconos de trazo fino (PNG en Storage, `correo/iconos/`): Gmail y Outlook no pintan SVG. */
+const ICONO = {
+  sitio: 'https://firebasestorage.googleapis.com/v0/b/sorela-12c46.firebasestorage.app/o/correo%2Ficonos%2Fsitio.png?alt=media&token=e5dd8da5-be7b-4883-a9c4-7bc90809a899',
+  grupo: 'https://firebasestorage.googleapis.com/v0/b/sorela-12c46.firebasestorage.app/o/correo%2Ficonos%2Fgrupo.png?alt=media&token=ff9df3d1-e3d5-4c39-9616-2e6ecacadaf4',
+  directo: 'https://firebasestorage.googleapis.com/v0/b/sorela-12c46.firebasestorage.app/o/correo%2Ficonos%2Fdirecto.png?alt=media&token=65de5226-a7f6-4ed5-b5f8-84f21e1c26f4',
+};
+
+/** De qué va la masterclass, en una línea. Las horas van solo en la tarjeta. */
+const TEMA = 'Cómo está cambiando la terapia y qué puede hacer la inteligencia artificial por ti.';
+
 function correoListaEspera(n: string, asunto: string, saludo: string) {
   const serif = "'Cormorant Garamond',Georgia,'Times New Roman',serif";
   const sans = "'Helvetica Neue',Helvetica,Arial,sans-serif";
@@ -130,55 +140,52 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
   const parte = (o: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat('es-ES', { timeZone: 'Europe/Madrid', ...o }).format(fecha);
   const dia = parte({ day: 'numeric' });
-  const mes = parte({ month: 'long' }).toUpperCase();
-  const semana = parte({ weekday: 'long' }).toUpperCase();
+  const mes = parte({ month: 'long' });
+  const semana = parte({ weekday: 'long' });
+  const linea = 'border-top:1px solid #ece3d3';
 
+  /* La tarjeta: la fecha, el tema y las horas de cada país (el único sitio
+     donde salen). Línea dorada fina arriba para marcar lo importante. */
   const horas = HORAS_APERTURA.map(
-    (h, i) => `<td width="25%" align="center" style="padding:12px 4px;${i ? 'border-left:1px solid rgba(243,227,195,.16);' : ''}">
-        <span style="display:block;font-family:${serif};font-size:24px;font-weight:600;line-height:1.1;color:${i ? '#f3e3c3' : '#d9b47c'}">${escapar(h.hora)}</span>
-        <span style="display:block;margin-top:4px;font-family:${sans};font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#bfb3a2">${escapar(h.lugar)}</span>
+    (h, i) => `<td width="25%" align="center" style="padding:14px 2px 2px;${i ? 'border-left:1px solid rgba(243,227,195,.12);' : ''}">
+        <span style="display:block;font-family:${sans};font-size:17px;font-weight:600;letter-spacing:-.01em;color:${i ? '#f3e3c3' : '#e3c48f'}">${escapar(h.hora)}</span>
+        <span style="display:block;margin-top:3px;font-family:${sans};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#a89c8b">${escapar(h.lugar)}</span>
       </td>`
   ).join('');
-
-  const entrada = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 30px;border-radius:18px;overflow:hidden;background:#17140f">
-    <tr><td style="padding:26px 26px 6px">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-        <td width="96" valign="middle" style="padding-right:18px;border-right:1px solid rgba(217,180,124,.35)">
-          <span style="display:block;font-family:${serif};font-size:64px;font-weight:600;line-height:.9;color:#f3e3c3">${escapar(dia)}</span>
-          <span style="display:block;margin-top:6px;font-family:${sans};font-size:11px;font-weight:700;letter-spacing:.2em;color:#d9b47c">${escapar(mes)}</span>
-        </td>
-        <td valign="middle" style="padding-left:20px">
-          <span style="display:block;font-family:${sans};font-size:10.5px;font-weight:700;letter-spacing:.22em;color:#d9b47c">${escapar(semana)} · EN DIRECTO</span>
-          <span style="display:block;margin-top:6px;font-family:${serif};font-size:25px;font-weight:600;line-height:1.15;color:#f3e3c3">Masterclass de apertura</span>
-          <span style="display:block;margin-top:6px;font-family:${sans};font-size:13px;color:#bfb3a2">Por Zoom · desde el móvil o el ordenador</span>
-        </td>
-      </tr></table>
+  const entrada = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 30px;border-radius:16px;background:#17140f;border-top:2px solid #d9b47c">
+    <tr><td style="padding:24px 24px 0">
+      <span style="display:block;font-family:${sans};font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#d9b47c">Masterclass en directo · Zoom</span>
+      <span style="display:block;margin-top:10px;font-family:${serif};font-size:30px;font-weight:600;line-height:1.1;color:#f3e3c3">${escapar(`${semana.charAt(0).toUpperCase()}${semana.slice(1)} ${dia} de ${mes}`)}</span>
+      <span style="display:block;margin-top:8px;font-family:${sans};font-size:14px;line-height:1.5;color:#cfc4b3">${escapar(TEMA)}</span>
     </td></tr>
-    <tr><td style="padding:14px 14px 18px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid rgba(243,227,195,.16)"><tr>${horas}</tr></table></td></tr>
+    <tr><td style="padding:18px 16px 20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid rgba(243,227,195,.12)"><tr>${horas}</tr></table></td></tr>
   </table>`;
 
-  const paso = (num: string, titulo: string, texto: string, hecho = false) =>
-    `<td width="33%" valign="top" style="padding:0 6px">
-      <div style="width:34px;height:34px;border-radius:50%;text-align:center;line-height:34px;font-family:${sans};font-size:14px;font-weight:700;${hecho ? 'background:#d9b47c;color:#17140f' : 'background:#f5efe2;color:#6e5327;border:1px solid #d9c6a0'}">${hecho ? '&#10003;' : num}</div>
-      <span style="display:block;margin-top:10px;font-family:${serif};font-size:18px;font-weight:600;line-height:1.2;color:#17140f">${titulo}</span>
-      <span style="display:block;margin-top:4px;font-family:${sans};font-size:13px;line-height:1.5;color:#6c645a">${texto}</span>
-    </td>`;
-  const pasos = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 30px"><tr>
-    ${paso('1', 'Tu sitio', 'Guardado en la lista de espera.', true)}
-    ${paso('2', 'El grupo', 'Entra en el grupo de WhatsApp de la lista.')}
-    ${paso('3', `El ${escapar(dia)} de ${escapar(parte({ month: 'long' }))}`, `Masterclass en directo a las ${escapar(HORA_ESPANA)} (España).`)}
-  </tr></table>`;
+  /* Los pasos, en filas separadas por líneas finas, cada uno con su icono. */
+  const paso = (icono: string, titulo: string, texto: string, estado: string, primero = false) =>
+    `<tr><td style="padding:16px 0;${primero ? '' : linea}">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td width="44" valign="top"><img src="${icono}" width="32" height="32" alt="" style="display:block;border:0"></td>
+        <td valign="top">
+          <span style="display:block;font-family:${sans};font-size:15px;font-weight:600;color:#17140f">${titulo}</span>
+          <span style="display:block;margin-top:3px;font-family:${sans};font-size:13.5px;line-height:1.5;color:#6c645a">${texto}</span>
+        </td>
+        <td width="72" align="right" valign="top" style="padding-top:2px;font-family:${sans};font-size:11px;font-weight:600;letter-spacing:.06em;color:${estado === 'Hecho' ? '#4f7a55' : '#8a6a32'}">${estado}</td>
+      </tr></table>
+    </td></tr>`;
+  const pasos = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 26px;border-top:1px solid #ece3d3;border-bottom:1px solid #ece3d3">
+    ${paso(ICONO.sitio, 'Tu sitio está guardado', 'Estás en la lista de espera.', 'Hecho', true)}
+    ${paso(ICONO.grupo, 'Entra en el grupo de WhatsApp', 'Ahí aviso de todo lo de la masterclass.', 'Ahora')}
+    ${paso(ICONO.directo, `Conéctate el ${escapar(dia)} de ${escapar(mes)}`, 'Desde el móvil o el ordenador. El enlace te llega por correo ese día.', escapar(`${dia} ${mes.slice(0, 3)}`))}
+  </table>`;
 
   const html = envoltorio(
     escapar(n ? `Hola ${n},` : 'Hola,'),
-    `<p style="margin:0 0 22px">${escapar(saludo)}</p>
+    `<p style="margin:0 0 20px">${escapar(saludo)}</p>
      ${entrada}
-     <p style="margin:0 0 22px">${escapar(cierreComunidad('comunidad'))}</p>
      ${pasos}
-     <p style="margin:0 0 8px;font-family:${serif};font-size:21px;font-weight:600;color:#17140f">Ahora, entra en el grupo</p>
-     <p style="margin:0 0 18px">Ahí te espero hasta el día de la masterclass.</p>
-     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 28px"><tr><td align="center" style="border-radius:999px;background:#17140f">
-       <a href="${escapar(GRUPO_WHATSAPP)}" style="display:block;padding:17px 18px;font-family:${sans};font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#f3e3c3;text-decoration:none;border-radius:999px;white-space:nowrap">Entrar al grupo de WhatsApp&nbsp;&rarr;</a>
+     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 26px"><tr><td align="center" style="border-radius:999px;background:#17140f">
+       <a href="${escapar(GRUPO_WHATSAPP)}" style="display:block;padding:16px 18px;font-family:${sans};font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#f3e3c3;text-decoration:none;border-radius:999px;white-space:nowrap">Entrar al grupo de WhatsApp</a>
      </td></tr></table>`,
     undefined,
     '',
@@ -189,10 +196,13 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
     '',
     saludo,
     '',
-    cierreComunidad('comunidad'),
+    `Masterclass en directo por Zoom: ${semana} ${dia} de ${mes}. ${APERTURA_POR_PAISES}.`,
+    TEMA,
     '',
-    'Ahora, entra en el grupo de WhatsApp de la lista de espera. Ahí te espero hasta el día de la masterclass:',
+    'Ahora, entra en el grupo de WhatsApp de la lista de espera. Ahí aviso de todo lo de la masterclass:',
     GRUPO_WHATSAPP,
+    '',
+    'El enlace para conectarte te llega por correo ese día.',
     '',
     'Sorela Caro',
     'Creadora de la Técnica Divine',
