@@ -48,6 +48,12 @@ export function aCampana(id: string, v: FirebaseFirestore.DocumentData): Campana
     estado: (['borrador', 'programada', 'enviada', 'pausada', 'caducada'].includes(v.estado) ? v.estado : 'borrador') as EstadoCampana,
     serie: v.serie ?? null,
     plantilla: v.plantilla === 'lista-espera' ? 'lista-espera' : null,
+    excluir: Array.isArray(v.excluir) ? v.excluir.map((x: unknown) => String(x).toLowerCase().trim()) : [],
+    anadir: Array.isArray(v.anadir)
+      ? v.anadir
+          .filter((x: { correo?: unknown }) => typeof x?.correo === 'string' && x.correo.includes('@'))
+          .map((x: { correo: string; nombre?: unknown }) => ({ correo: x.correo.toLowerCase().trim(), nombre: x.nombre ? String(x.nombre) : null }))
+      : [],
     resultado: r
       ? { enviados: r.enviados ?? 0, fallidos: r.fallidos ?? 0, omitidos: r.omitidos ?? 0, cuando: r.cuando?.toDate?.().toISOString() ?? null }
       : null,
@@ -151,7 +157,12 @@ export async function enviarCampana(id: string): Promise<InformeCampana> {
   // No sale nada con un botón vacío: se queda programada hasta que tenga enlace.
   if (faltaEnlace(c)) return { ...r, motivo: 'falta-enlace' };
 
-  for (const p of await destinatarios(c.audiencia)) {
+  /* La audiencia, con los ajustes a mano de esta campaña: quien ya tiene lo
+     que dice el correo se quita, y alguien concreto se puede añadir. */
+  const fuera = new Set(c.excluir ?? []);
+  const base = (await destinatarios(c.audiencia)).filter((p) => !fuera.has(p.correo));
+  const lista = [...base, ...(c.anadir ?? []).filter((p) => !fuera.has(p.correo) && !base.some((b) => b.correo === p.correo))];
+  for (const p of lista) {
     const baja = enlaceBaja(p.correo);
     const contenido =
       c.plantilla === 'lista-espera'

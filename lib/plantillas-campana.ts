@@ -49,6 +49,9 @@ export type Campana = {
    * WhatsApp): sirve para reenviársela a quien se apuntó antes de que existiera.
    */
   plantilla?: 'lista-espera' | null;
+  /** Ajustes a mano de la audiencia: correos que se quitan y personas que se añaden. */
+  excluir?: string[];
+  anadir?: { correo: string; nombre: string | null }[];
 };
 
 /** Un botón con texto y sin enlace es un correo a medias (el de Zoom antes de tenerlo): no sale. */

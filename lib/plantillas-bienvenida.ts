@@ -29,7 +29,7 @@ const cuando = `el ${DIA_APERTURA} a las ${HORA_ESPANA}, hora de España,`;
 function cierreComunidad(t: Tipo) {
   if (t === 'comunidad')
     // Lo que hay dentro NO se cuenta: se presenta ese día en la masterclass.
-    return `${CUANDO} abro la Comunidad Divine${fuera ? ` (${fuera})` : ''} con una masterclass en directo por Zoom: cómo está cambiando la terapia y qué puede hacer la inteligencia artificial por ti.`;
+    return `${CUANDO} abro la Comunidad Divine${fuera ? ` (${fuera})` : ''} con la masterclass en directo «La nueva era de las manos», por Zoom.`;
   if (t === 'alumna')
     return `Y por si te sirve para decidirte: la formación no termina en el certificado. ${CUANDO} abro la Comunidad Divine con una masterclass en directo. Si quieres formar parte, apúntate a la lista de espera en mi web.`;
   if (t === 'clienta')
@@ -135,9 +135,6 @@ const TITULO_MASTERCLASS = 'La nueva era de las manos';
 const IMAGEN_TITULO =
   'https://firebasestorage.googleapis.com/v0/b/sorela-12c46.firebasestorage.app/o/correo%2Fmasterclass-titulo.gif?alt=media&token=3c07b7c9-9651-4935-9a15-48e1e0a57c68';
 
-/** De qué va la masterclass, en una línea. Las horas van solo en la tarjeta. */
-const TEMA = 'Cómo está cambiando la terapia y qué puede hacer la inteligencia artificial por ti.';
-
 function correoListaEspera(n: string, asunto: string, saludo: string) {
   const serif = "'Cormorant Garamond',Georgia,'Times New Roman',serif";
   const sans = "'Helvetica Neue',Helvetica,Arial,sans-serif";
@@ -162,7 +159,6 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
     <tr><td style="padding:22px 24px 0;border-top:1px solid rgba(217,180,124,.35)">
       <span style="display:block;font-family:${serif};font-size:28px;font-weight:600;line-height:1.1;color:#f3e3c3">${escapar(`${semana.charAt(0).toUpperCase()}${semana.slice(1)} ${dia} de ${mes}`)}</span>
       <span style="display:block;margin-top:4px;font-family:${sans};font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#d9b47c">En directo por Zoom</span>
-      <span style="display:block;margin-top:8px;font-family:${sans};font-size:14px;line-height:1.5;color:#cfc4b3">${escapar(TEMA)}</span>
     </td></tr>
     <tr><td style="padding:18px 16px 20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid rgba(243,227,195,.12)"><tr>${horas}</tr></table></td></tr>
   </table>`;
@@ -203,7 +199,6 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
     saludo,
     '',
     `${TITULO_MASTERCLASS}. Masterclass en directo por Zoom: ${semana} ${dia} de ${mes}. ${APERTURA_POR_PAISES}.`,
-    TEMA,
     '',
     'Ahora, entra en el grupo de WhatsApp de la lista de espera. Ahí aviso de todo lo de la masterclass:',
     GRUPO_WHATSAPP,
