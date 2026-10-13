@@ -8,6 +8,7 @@ import {
   DIAS_HISTORIAL,
   automatizacionesActivas,
   correoDeSorela,
+  enviadosUltimos30,
   mandarCorreo,
   purgarHistorial,
   quitarDelHistorial,
@@ -123,10 +124,12 @@ export async function GET(peticion: Request) {
      que tenga más de 30 días se quita también de la respuesta, por si la
      lista se ha leído antes de que la purga terminara. */
   const limite = new Date(Date.now() - DIAS_HISTORIAL * 86_400_000).toISOString();
-  const [historial, activas, espera] = await Promise.all([
+  const [historial, activas, espera, enviados30] = await Promise.all([
     col.orderBy('cuando', 'desc').limit(150).get(),
     automatizacionesActivas(),
     listaDeEspera().catch(() => []),
+    // La cifra de «Enviados» sale de aquí y no de las líneas que se ven: borrar una o vaciar no la baja.
+    enviadosUltimos30().catch(() => null),
     purgarHistorial().catch((e) => console.error('[correos] la purga del historial ha fallado:', e)),
   ]);
   return NextResponse.json({
@@ -136,6 +139,7 @@ export async function GET(peticion: Request) {
     automatizaciones: AUTOMATIZACIONES,
     listaEspera: espera.length,
     dias: DIAS_HISTORIAL,
+    enviados30,
     historial: historial.docs.map(aFila).filter((f) => !f.cuando || f.cuando >= limite),
   });
 }
@@ -190,8 +194,7 @@ export async function DELETE(peticion: Request) {
   if (!id || id.length > 300 || id.includes('/')) {
     return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
   }
-  const d = await baseDeDatos().collection(COLECCION_CORREOS).doc(id).get();
-  if (!d.exists) return NextResponse.json({ ok: true, borrados: 0 });
-  const borrados = await quitarDelHistorial([d]);
+  // La transacción de quitarDelHistorial la relee: si no existe (o otra petición se adelanta), borra 0.
+  const borrados = await quitarDelHistorial([baseDeDatos().collection(COLECCION_CORREOS).doc(id)]);
   return NextResponse.json({ ok: true, borrados });
 }

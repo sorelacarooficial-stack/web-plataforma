@@ -33,10 +33,10 @@ export default function CaptacionGlobal() {
           y no se arrastra lo que alguien escribió a medias hace un rato. */}
       {peticion && (
         <Captacion
-          titulo={peticion.titulo ?? 'Te mando la información'}
+          titulo={peticion.titulo ?? 'Apúntate'}
           entradilla={
             peticion.entradilla ??
-            'Déjame dónde escribirte y recibes en tu correo qué es la Técnica Divine, cómo se aprende y cuándo son las próximas formaciones.'
+            'Déjame tu nombre, tu correo y tu teléfono. Al terminar, el siguiente paso es entrar en el grupo de WhatsApp de la Técnica Divine.'
           }
           origenForzado={peticion.origen}
         />

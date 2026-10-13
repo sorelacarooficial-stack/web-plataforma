@@ -49,6 +49,8 @@ type Datos = {
   automatizaciones: Auto[];
   listaEspera: number;
   dias: number;
+  /** Enviados en 30 días contados en el servidor (incluye lo quitado del historial). null si no se pudo contar. */
+  enviados30: number | null;
   historial: Fila[];
 };
 
@@ -184,7 +186,11 @@ export default function Correos() {
     const mes = Date.now() - 30 * 86_400_000;
     const recientes = h.filter((f) => f.cuando && new Date(f.cuando).getTime() >= mes);
     return {
-      enviados: recientes.filter((f) => f.estado === 'enviado').length,
+      /* Los enviados los cuenta el servidor: quitar una línea o vaciar el
+         historial no deshace un correo que ya salió, y la cifra no debe bajar.
+         Los que no salieron sí se cuentan de la lista: son para revisarlos,
+         y si Sorela los quita es que ya están vistos. */
+      enviados: datos?.enviados30 ?? recientes.filter((f) => f.estado === 'enviado').length,
       fallidos: recientes.filter((f) => f.estado === 'fallido').length,
     };
   }, [datos]);

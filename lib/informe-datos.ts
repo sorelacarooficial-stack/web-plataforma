@@ -57,9 +57,20 @@ const ordenar = (m: Mapa, n = 12): Par[] =>
     .slice(0, n);
 const anotar = (m: Mapa, k: string, n = 1) => (m[k] = (m[k] ?? 0) + n);
 
+/**
+ * Resta días de calendario a una fecha «AAAA-MM-DD». Se cuenta desde el
+ * mediodía UTC de esa fecha y no restando 24 h al momento actual: con el
+ * cambio de hora un día de Madrid dura 23 o 25 h, y entre las 23:00 y las
+ * 24:00 un día salía repetido y otro desaparecía (y sus visitas se sumaban
+ * dos veces).
+ */
+function restarDias(dia: string, n: number): string {
+  return new Date(Date.parse(`${dia}T12:00:00Z`) - n * DIA_MS).toISOString().slice(0, 10);
+}
+
 function diasHacia(atras: number, cuantos: number): string[] {
-  const hoy = new Date();
-  return Array.from({ length: cuantos }, (_, i) => diaDe(new Date(hoy.getTime() - (atras + cuantos - 1 - i) * DIA_MS)));
+  const hoy = diaDe();
+  return Array.from({ length: cuantos }, (_, i) => restarDias(hoy, atras + cuantos - 1 - i));
 }
 
 /** El día (en España) de un campo de fecha, venga como Timestamp, Date o texto. */
@@ -434,7 +445,7 @@ export async function datosDelInforme(periodo: Periodo): Promise<DatosInforme> {
   let porAtender = 0;
   let porAtenderViejos = 0;
   let primero: string | null = null;
-  const hace3 = diaDe(new Date(Date.now() - 3 * DIA_MS));
+  const hace3 = restarDias(diaDe(), 3);
   /* Desde cuándo espera cada correo la comunidad, para contar las nuevas de la lista. */
   const altaEspera = new Map<string, string>();
   const apuntarEspera = (correo: unknown, dia: string | null) => {

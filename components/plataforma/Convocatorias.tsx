@@ -958,7 +958,7 @@ type HojaAcceso =
 function mensajeWhatsapp(nombre: string, curso: string, enlace: string, caduca: string | null) {
   const pila = nombre.trim().split(/\s+/)[0];
   const hasta = caduca ? ` Sirve una sola vez y caduca el ${new Date(caduca).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.` : ' Sirve una sola vez.';
-  return `${pila ? `Hola ${pila}! ` : 'Hola! '}Aquí tienes tu acceso al curso ${curso} en la plataforma: entra en este enlace, crea tu contraseña y verás sus clases y su material.${hasta} ${enlace}`;
+  return `${pila ? `¡Hola ${pila}! ` : '¡Hola! '}Aquí tienes tu acceso al curso ${curso} en la plataforma: entra en este enlace, crea tu contraseña y verás sus clases y su material.${hasta} ${enlace}`;
 }
 
 function HojaEnlace({ h, alCerrar, avisar }: { h: Extract<HojaAcceso, { tipo: 'enlace' }>; alCerrar: () => void; avisar: (t: string, tipo?: 'error' | 'hecho') => void }) {
@@ -1024,7 +1024,10 @@ function HojaEnlace({ h, alCerrar, avisar }: { h: Extract<HojaAcceso, { tipo: 'e
         <p className={s.ayuda}>
           Al abrirlo se crea su cuenta con su contraseña y entra ya con el curso.
           {caduca ? ` Caduca el ${new Date(caduca).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.` : ''}
-          {h.correo ? (h.nuevo ? ` También le ha llegado a ${h.correo}, y solo vale con ese correo.` : ` Solo vale con ${h.correo}.`) : ''}
+          {/* No se dice que le haya llegado por correo: ese envío sale después
+              de contestar y puede no salir (automatización apagada o fallo).
+              Lo seguro es lo que hay en pantalla: Copiar o WhatsApp. */}
+          {h.correo ? ` Solo vale con ${h.correo}.` : ''}
         </p>
       </div>
     </Hoja>
@@ -1211,7 +1214,11 @@ function TarjetaConvocatoria({
         <div className={s.tarjetaTitulos}>
           <p className={s.tarjetaCurso}>
             <Icono d={I.pago} size={14} />
-            {curso.modalidad} · {curso.nombre}
+            {curso.modalidad}
+            {/* En móvil el nombre del curso partía el rótulo en tres líneas
+                y empujaba la ciudad, que es lo que se busca primero. Ya está
+                en las tarjetas de arriba, así que ahí se queda solo el tipo. */}
+            <span className={s.tarjetaCursoNombre}> · {curso.nombre}</span>
           </p>
           <h3 className={s.tarjetaCiudad}>{c.ciudad}</h3>
           <p className={s.tarjetaFechas}>

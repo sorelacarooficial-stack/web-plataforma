@@ -813,7 +813,8 @@ function FilaClase({
           <p className={s.filaTitulo}>{l.titulo}</p>
           <p className={s.filaMeta}>
             {l.modulo && <span>{l.modulo}</span>}
-            <span>{propio ? (l.tamano ? `Vídeo propio · ${peso(l.tamano)}` : 'Vídeo propio') : 'YouTube'}</span>
+            <span>{propio ? 'Vídeo propio' : 'YouTube'}</span>
+            {propio && l.tamano ? <span>{peso(l.tamano)}</span> : null}
           </p>
           {l.descripcion && <p className={s.filaDescripcion}>{l.descripcion}</p>}
         </div>

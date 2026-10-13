@@ -144,6 +144,7 @@
   flex-direction: column;
   gap: 14px;
   align-items: flex-start;
+  width: 100%;
   max-width: 460px;
   animation: divineUp 0.35s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
@@ -166,14 +167,138 @@
   text-wrap: pretty;
 }
 
+/* Los dos pasos de después de apuntarse: el primero ya hecho, el segundo es
+   el grupo. Sirven de gráfico: se ve de un vistazo qué queda por hacer. */
+.pasos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paso {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+.pasoMarca {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--line-5);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.paso[data-hecho] .pasoMarca {
+  background: var(--oro);
+  border-color: var(--oro);
+  color: var(--bg);
+}
+
+.paso[data-hecho] {
+  color: var(--muted);
+}
+
+/* La tarjeta del grupo: lo único que se le pide hacer, y por eso lo único
+   que pesa. Tinta sobre papel, que cambia sola con el tema. */
+.grupoWhatsapp {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 64px;
+  margin-top: 6px;
+  padding: 12px 16px 12px 12px;
+  border-radius: 18px;
+  background: var(--ink);
+  color: var(--bg);
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(20, 18, 16, 0.14);
+  transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1.2), box-shadow 0.25s ease;
+}
+
+.grupoWhatsapp:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(20, 18, 16, 0.18);
+}
+
+.grupoWhatsapp:focus-visible {
+  outline: 2px solid var(--oro);
+  outline-offset: 3px;
+}
+
+.grupoIcono {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--oro);
+  color: var(--bg);
+}
+
+.grupoTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.grupoTexto b {
+  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.grupoTexto span {
+  font-size: 13.5px;
+  font-weight: 400;
+  opacity: 0.82;
+}
+
+.grupoFlecha {
+  flex: none;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grupoWhatsapp {
+    transition: none;
+  }
+  .grupoWhatsapp:hover {
+    transform: none;
+  }
+}
+
 .reintentar {
+  display: inline-flex;
+  align-items: center;
   padding: 0;
   min-height: 44px;
   background: none;
   border: none;
   border-bottom: 1px solid var(--line-5);
   font-size: 13.5px;
-  font-weight: 300;
+  font-weight: 400;
+  text-decoration: none;
   color: var(--muted);
   cursor: pointer;
 }

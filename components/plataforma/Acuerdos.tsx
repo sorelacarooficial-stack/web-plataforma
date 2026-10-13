@@ -212,8 +212,13 @@ export default function Acuerdos() {
                     <strong className={a.nombre}>
                       {f.nombre} {f.apellidos}
                     </strong>
+                    {/* Cada dato en su trozo: el teléfono y el documento no se parten nunca
+                        («+34» en una línea y el número en otra se lee y se copia mal); el
+                        correo, que es largo, sí puede partirse si no cabe. */}
                     <span className={a.meta}>
-                      Doc. {f.documento} · {[f.correo, f.telefono].filter(Boolean).join(' · ')}
+                      <span className={a.entero}>Doc. {f.documento}</span>
+                      {f.correo && <> · <span className={a.correo}>{f.correo}</span></>}
+                      {f.telefono && <> · <span className={a.entero}>{f.telefono}</span></>}
                     </span>
                     <span className={a.meta}>
                       {f.referencia} · {f.lugar}, {f.firmadoEl ? fechaLarga(f.firmadoEl) : 'sin fecha'}

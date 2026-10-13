@@ -594,7 +594,7 @@ export function textosDe(d: DatosInforme, a: Analisis): Record<IdSeccion, Textos
   );
   if (au && au.conAcceso) {
     aula.significa.push(
-      `De ${num(au.conAcceso)} ${plural(au.conAcceso, 'alumna con acceso', 'alumnas con acceso')}, **${num(au.activas)} ${plural(au.activas, 'ha estado', 'han estado')} activas** y se han terminado ${num(au.terminadas)} ${plural(au.terminadas, 'clase', 'clases')}. De media llevan hecho el **${au.progresoMedio} %** del curso.`
+      `De ${num(au.conAcceso)} ${plural(au.conAcceso, 'alumna con acceso', 'alumnas con acceso')}, **${num(au.activas)} ${plural(au.activas, 'ha estado activa', 'han estado activas')}** y se han terminado ${num(au.terminadas)} ${plural(au.terminadas, 'clase', 'clases')}. De media llevan hecho el **${au.progresoMedio} %** del curso.`
     );
     if (au.tramos.sinEmpezar)
       aula.haria.push({
@@ -654,10 +654,12 @@ export function textosDe(d: DatosInforme, a: Analisis): Record<IdSeccion, Textos
   );
   if (cr) {
     correos.significa.push(
-      `${cr.parcial ? 'El historial se borra solo a los 30 días, así que aquí solo cuentan **los últimos 30 días**' : 'En este periodo'}: **${num(cr.enviados)} ${plural(cr.enviados, 'enviado', 'enviados')}**${cr.fallidos ? ` y ${num(cr.fallidos)} que no salieron` : ''}${cr.parcial ? '' : comparar(cr.enviados, cr.enviadosAntes, p, false)}. Desde el principio han salido ${num(cr.enviadosSiempre)}.`
+      `${cr.parcial ? 'El historial se borra solo a los 30 días, así que aquí solo cuentan **los últimos 30 días**' : 'En este periodo'}: **${num(cr.enviados)} ${plural(cr.enviados, 'enviado', 'enviados')}**${cr.fallidos ? ` y ${num(cr.fallidos)} ${plural(cr.fallidos, 'que no salió', 'que no salieron')}` : ''}${cr.parcial ? '' : comparar(cr.enviados, cr.enviadosAntes, p, false)}. Desde el principio han salido ${num(cr.enviadosSiempre)}.`
     );
     if (cr.omitidos)
-      correos.significa.push(`Otros ${num(cr.omitidos)} no se mandaron a propósito: esa persona ya lo había recibido antes, y nadie recibe el mismo correo dos veces.`);
+      correos.significa.push(
+        `${cr.omitidos === 1 ? 'Otro no se mandó' : `Otros ${num(cr.omitidos)} no se mandaron`} a propósito: esa persona ya lo había recibido antes, y nadie recibe el mismo correo dos veces.`
+      );
     if (cr.fallidos)
       correos.haria.push({
         texto: `${cr.fallidos} ${plural(cr.fallidos, 'correo no salió', 'correos no salieron')}. **Míralo en Mensajes › Correos**: suele ser una dirección mal escrita.`,

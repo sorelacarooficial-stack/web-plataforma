@@ -66,15 +66,15 @@ export async function borrarArchivosDeClase(id: string, video: string): Promise<
   if (esVideoPropio(video)) {
     const ruta = video.slice('propio:'.length);
     if (ruta && !ruta.startsWith(carpetaDeClase(id))) {
-      const otras = await baseDeDatos().collection(COLECCIONES.lecciones).where('video', '==', video).limit(1).get();
-      if (otras.empty) {
-        await bucket
-          .file(ruta)
-          .delete({ ignoreNotFound: true })
-          .catch((e) => {
-            console.error('[lecciones] no se ha podido borrar el vídeo', ruta, e);
-            fallos++;
-          });
+      /* La clase ya está borrada cuando se llega aquí: si algo falla, se
+         cuenta como resto y no como error, para que la pantalla no vuelva a
+         pintar una clase que ya no existe. */
+      try {
+        const otras = await baseDeDatos().collection(COLECCIONES.lecciones).where('video', '==', video).limit(1).get();
+        if (otras.empty) await bucket.file(ruta).delete({ ignoreNotFound: true });
+      } catch (e) {
+        console.error('[lecciones] no se ha podido borrar el vídeo', ruta, e);
+        fallos++;
       }
     }
   }

@@ -1827,6 +1827,10 @@ textarea.entrada {
     flex-direction: column;
   }
 
+  .tarjetaCursoNombre {
+    display: none;
+  }
+
   .horarioDia {
     grid-template-columns: 62px minmax(0, 1fr) auto minmax(0, 1fr);
     gap: 6px;

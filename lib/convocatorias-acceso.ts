@@ -28,7 +28,8 @@ import { cursoDe, type AccesoInscrita, type Convocatoria } from './convocatorias
  *     es esa cuenta antes de tocarla).
  *   · No la tiene → un enlace de invitación de UN SOLO USO, el mismo sistema
  *     de Cuentas (lib/invitaciones.ts): caduca a los 30 días y, si la inscrita
- *     tiene correo, solo vale para ese correo y le llega también por correo.
+ *     tiene correo, solo vale para ese correo (y se intenta mandar también por
+ *     correo, sin prometerlo en pantalla).
  *
  * Lo que se ha hecho se guarda en la inscrita (`acceso`) para que su fila
  * diga «Enlace sin usar» o «Ya tiene cuenta» sin tener que buscarlo.
@@ -89,16 +90,20 @@ export async function convocatoriaConAccesos(id: string, v: FirebaseFirestore.Do
  */
 export async function anularEnlaces(codigos: string[]) {
   const db = baseDeDatos();
-  for (const codigo of codigos) {
-    try {
-      await db.runTransaction(async (t) => {
-        const d = await t.get(docInvitacion(codigo));
-        if (d.exists && estadoDe(d.data() ?? {}) === 'pendiente') t.update(d.ref, { anulada: true });
-      });
-    } catch (e) {
-      console.error('[convocatorias] no se ha podido anular un enlace', e);
-    }
-  }
+  /* Una transacción por enlace, pero todas a la vez: con un grupo grande, una
+     detrás de otra hacían esperar el borrado decenas de viajes a Firestore.
+     Sigue siendo transacción (y no un batch a ciegas) para no marcar como
+     anulado un enlace que alguien acabe de usar en ese mismo instante. */
+  await Promise.all(
+    codigos.map((codigo) =>
+      db
+        .runTransaction(async (t) => {
+          const d = await t.get(docInvitacion(codigo));
+          if (d.exists && estadoDe(d.data() ?? {}) === 'pendiente') t.update(d.ref, { anulada: true });
+        })
+        .catch((e) => console.error('[convocatorias] no se ha podido anular un enlace', e))
+    )
+  );
 }
 
 /** Los códigos de enlace de una lista de inscritas guardadas. */

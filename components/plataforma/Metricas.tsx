@@ -308,10 +308,19 @@ function BotonInforme({ periodo }: { periodo: Periodo }) {
   const reducir = useReducedMotion();
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => void (temporizador.current && clearTimeout(temporizador.current)), []);
-  const etiqueta = PERIODOS.find((p) => p.valor === periodo)?.largo ?? '';
+  /* El periodo del informe que se está preparando. Si mientras tanto cambia el
+     de la pantalla, el botón sigue diciendo cuál se va a bajar, para no
+     prometer uno y entregar otro. */
+  const [pedido, setPedido] = useState<Periodo | null>(null);
+  /* Al cambiar de periodo, un aviso de fallo o un «descargado» ya no van con
+     él: el botón vuelve a estar listo (salvo si hay uno en camino). */
+  useEffect(() => setEstado((e) => (e === 'preparando' ? e : 'listo')), [periodo]);
+  const mostrado = estado === 'preparando' && pedido !== null ? pedido : periodo;
+  const etiqueta = PERIODOS.find((p) => p.valor === mostrado)?.largo ?? '';
 
   const descargar = async () => {
     if (estado === 'preparando') return;
+    setPedido(periodo);
     setEstado('preparando');
     try {
       const r = await fetch(`/api/metricas/informe?dias=${periodo}`);

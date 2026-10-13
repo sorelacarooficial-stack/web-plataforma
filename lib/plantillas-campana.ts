@@ -43,6 +43,12 @@ export type Campana = {
   /** Si es de una serie (la cuenta atrás), para agruparla en pantalla. */
   serie: string | null;
   resultado: { enviados: number; fallidos: number; omitidos: number; cuando: string | null } | null;
+  /**
+   * Un diseño propio en vez del texto de la campaña. «lista-espera» manda la
+   * confirmación de la lista (la entrada con la fecha y el botón del grupo de
+   * WhatsApp): sirve para reenviársela a quien se apuntó antes de que existiera.
+   */
+  plantilla?: 'lista-espera' | null;
 };
 
 /** Un botón con texto y sin enlace es un correo a medias (el de Zoom antes de tenerlo): no sale. */

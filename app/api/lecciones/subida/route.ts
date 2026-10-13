@@ -26,7 +26,7 @@ import { almacen, barrerHuerfanas } from '@/lib/aula-almacen';
  * /api/lecciones, que antes comprueba en el almacén que está y que mide lo que
  * tiene que medir. Si se cancela o se abandona, no queda nada a medias: una
  * sesión sin terminar no crea ningún archivo, y lo que sí llegó entero pero no
- * se guardó lo recoge `barrerHuerfanas` pasada una semana (ver allí por qué).
+ * se guardó lo recoge `barrerHuerfanas` pasado un día (ver allí por qué).
  */
 
 export const runtime = 'nodejs';

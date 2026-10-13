@@ -28,7 +28,7 @@ export default function ProximasFechas({ fechas }: { fechas: ConvocatoriaPublica
           {fechas.length === 1 ? 'La próxima presencial.' : 'Las próximas presenciales.'}
         </h2>
         <p className="texto max-520">
-          Dos jornadas conmigo, en grupo reducido. Para entrar hace falta tener hecha la formación online.
+          Presencial conmigo, en grupo reducido. Para entrar hace falta tener hecha la formación online.
         </p>
       </div>
 
@@ -65,16 +65,16 @@ export default function ProximasFechas({ fechas }: { fechas: ConvocatoriaPublica
                 </span>
                 <BotonCaptacion
                   className={sinPlaza ? 'btn-linea' : 'btn btn-md'}
-                  titulo={sinPlaza ? 'Te aviso si se libera una plaza' : 'Te guardo la plaza'}
+                  titulo={sinPlaza ? 'Lista por si se libera una plaza' : 'Reservar plaza'}
                   entradilla={
                     sinPlaza
-                      ? `${f.modalidad} en ${f.ciudad}, ${fechasTexto}. Déjame dónde escribirte y te aviso si se libera una plaza o cuando abra la siguiente fecha.`
-                      : `${f.modalidad} en ${f.ciudad}, ${fechasTexto}. Déjame dónde escribirte y te confirmo la plaza, el precio y cómo reservar.`
+                      ? `${f.modalidad} en ${f.ciudad}, ${fechasTexto}. Déjame tus datos para quedar en la lista por si se libera una plaza. Al terminar, entra en el grupo de WhatsApp de la Técnica Divine.`
+                      : `${f.modalidad} en ${f.ciudad}, ${fechasTexto}. Déjame tus datos para pedir tu plaza. Al terminar, entra en el grupo de WhatsApp de la Técnica Divine.`
                   }
                   etiquetaVentana={`${f.modalidad} en ${f.ciudad}`}
                   origen="formacion"
                 >
-                  {sinPlaza ? 'Avisarme' : 'Reservar plaza'}
+                  {sinPlaza ? 'Apuntarme a la lista' : 'Reservar plaza'}
                 </BotonCaptacion>
               </div>
             </li>

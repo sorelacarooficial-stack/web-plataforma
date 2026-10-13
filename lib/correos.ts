@@ -1,6 +1,6 @@
 import 'server-only';
 import { createHmac } from 'node:crypto';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldPath, FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from './firebase-servidor';
 import { enviar as enviarSmtp, hayCorreo as haySmtp } from './correo';
 import { AUTOMATIZACIONES, type IdAutomatizacion } from './automatizaciones';
@@ -255,41 +255,89 @@ export async function yaEnviado(clave: string): Promise<boolean> {
    (copiar la marca y borrar). */
 const POR_LOTE = 200;
 
+/** El día de una fecha en España (`2026-10-13`): las cuentas por día van en su hora. */
+const diaDe = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(d);
+
 /**
  * Quita líneas del historial SIN olvidar lo enviado.
  *
  * Es la única puerta para borrar de `correos`: la usan la purga de los 30
- * días, el botón de borrar una línea y «Vaciar historial». Antes de borrar una
- * línea enviada con clave, copia su marca a `correos_enviados` (si ya estaba,
- * no cambia nada); y suma las enviadas al contador de Métricas.
+ * días, el botón de borrar una línea, «Vaciar historial» y el borrado de un
+ * acuerdo. Antes de borrar una línea enviada con clave, copia su marca a
+ * `correos_enviados` (si ya estaba, no cambia nada); y suma las enviadas al
+ * contador de Métricas y, por día, al de la pantalla Correos.
+ *
+ * Cada tanda va en una transacción que vuelve a leer las líneas: si dos
+ * llamadas quitan la misma a la vez (la pantalla abierta en dos sitios, el
+ * cron y la pantalla, un doble clic), solo cuenta la que llega primera; la
+ * otra la ve ya borrada y no suma nada. Con un lote sin releer, el contador
+ * sumaba dos veces el mismo correo y se quedaba inflado para siempre.
+ *
+ * `porEdad`: las que se van por tener más de 30 días ya no cuentan en «los
+ * últimos 30 días», así que no se apuntan por día.
  */
-export async function quitarDelHistorial(docs: FirebaseFirestore.DocumentSnapshot[]): Promise<number> {
+export async function quitarDelHistorial(
+  docs: (FirebaseFirestore.DocumentSnapshot | FirebaseFirestore.DocumentReference)[],
+  { porEdad = false }: { porEdad?: boolean } = {}
+): Promise<number> {
   const db = baseDeDatos();
-  const vivos = docs.filter((d) => d.exists);
+  const refs = docs.flatMap((d) => ('exists' in d ? (d.exists ? [d.ref] : []) : [d]));
+  const contador = db.collection(CONTADOR.coleccion).doc(CONTADOR.doc);
   let quitados = 0;
-  for (let i = 0; i < vivos.length; i += POR_LOTE) {
-    const tanda = vivos.slice(i, i + POR_LOTE);
-    const lote = db.batch();
-    let enviados = 0;
-    for (const d of tanda) {
-      const v = d.data() ?? {};
-      if (v.estado === 'enviado') {
-        enviados++;
-        const clave = typeof v.clave === 'string' && v.clave ? v.clave : null;
-        if (clave) {
+  for (let i = 0; i < refs.length; i += POR_LOTE) {
+    const tanda = refs.slice(i, i + POR_LOTE);
+    quitados += await db.runTransaction(async (t) => {
+      const leidas = (await t.getAll(...tanda)).filter((d) => d.exists);
+      let enviados = 0;
+      const porDia: Record<string, { enviado: FieldValue }> = {};
+      const cuantosPorDia: Record<string, number> = {};
+      for (const d of leidas) {
+        const v = d.data() ?? {};
+        if (v.estado === 'enviado') {
+          enviados++;
           const cuando: Date = v.cuando?.toDate?.() ?? new Date();
-          lote.set(db.collection(COLECCION_MARCAS).doc(clave), marca(clave, v.tipo, cuando), { merge: true });
+          const clave = typeof v.clave === 'string' && v.clave ? v.clave : null;
+          if (clave) t.set(db.collection(COLECCION_MARCAS).doc(clave), marca(clave, v.tipo, cuando), { merge: true });
+          if (!porEdad) cuantosPorDia[diaDe(cuando)] = (cuantosPorDia[diaDe(cuando)] ?? 0) + 1;
         }
+        t.delete(d.ref);
       }
-      lote.delete(d.ref);
-    }
-    if (enviados) {
-      lote.set(db.collection(CONTADOR.coleccion).doc(CONTADOR.doc), { enviadosBorrados: FieldValue.increment(enviados) }, { merge: true });
-    }
-    await lote.commit();
-    quitados += tanda.length;
+      for (const [dia, n] of Object.entries(cuantosPorDia)) porDia[dia] = { enviado: FieldValue.increment(n) };
+      if (enviados) {
+        t.set(
+          contador,
+          { enviadosBorrados: FieldValue.increment(enviados), ...(Object.keys(porDia).length ? { porDia } : {}) },
+          { merge: true }
+        );
+      }
+      return leidas.length;
+    });
   }
   return quitados;
+}
+
+/**
+ * Cuántos correos han salido en los últimos 30 días: los que siguen en el
+ * historial más los que se quitaron a mano de él (apuntados por día). Así la
+ * cifra de la pantalla Correos no baja al borrar una línea ni al vaciar: lo
+ * enviado, enviado está.
+ */
+export async function enviadosUltimos30(ahora = new Date()): Promise<number> {
+  if (!hayFirebase()) return 0;
+  const db = baseDeDatos();
+  const limite = new Date(ahora.getTime() - MS_HISTORIAL);
+  const desde = diaDe(limite);
+  const [lineas, contador] = await Promise.all([
+    // Solo la fecha y el estado: el historial no pasa de 30 días, son pocas.
+    db.collection(COLECCION_CORREOS).where('cuando', '>=', limite).select('estado').get(),
+    db.collection(CONTADOR.coleccion).doc(CONTADOR.doc).get(),
+  ]);
+  const enHistorial = lineas.docs.filter((d) => d.get('estado') === 'enviado').length;
+  const porDia = (contador.get('porDia') ?? {}) as Record<string, { enviado?: number }>;
+  const quitados = Object.entries(porDia)
+    .filter(([dia]) => dia >= desde)
+    .reduce((s, [, v]) => s + Number(v?.enviado ?? 0), 0);
+  return enHistorial + quitados;
 }
 
 /**
@@ -308,8 +356,18 @@ export async function purgarHistorial(ahora = new Date()): Promise<{ lineas: num
   for (let vuelta = 0; vuelta < 25; vuelta++) {
     const viejos = await db.collection(COLECCION_CORREOS).where('cuando', '<', limite).limit(POR_LOTE).get();
     if (viejos.empty) break;
-    lineas += await quitarDelHistorial(viejos.docs);
+    lineas += await quitarDelHistorial(viejos.docs, { porEdad: true });
     if (viejos.size < POR_LOTE) break;
+  }
+  /* Los días del contador de «últimos 30 días» que ya quedan fuera no sirven:
+     se quitan para que el documento no crezca sin fin. */
+  const contador = db.collection(CONTADOR.coleccion).doc(CONTADOR.doc);
+  const dias = Object.keys(((await contador.get()).get('porDia') ?? {}) as Record<string, unknown>);
+  const viejosDias = dias.filter((dia) => dia < diaDe(limite));
+  if (viejosDias.length) {
+    // Con FieldPath: el día lleva guiones y no debe leerse como una ruta con puntos.
+    const pares = viejosDias.flatMap((dia) => [new FieldPath('porDia', dia), FieldValue.delete()]);
+    await contador.update(...(pares as [FieldPath, FieldValue, ...unknown[]]));
   }
   // Solo las marcas con caducidad (las de un día): las demás no salen en la consulta.
   for (let vuelta = 0; vuelta < 25; vuelta++) {

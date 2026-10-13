@@ -185,19 +185,19 @@ export default async function Formaciones() {
                 <h2 className={css.fechasTitulo}>Sudamérica, próximamente.</h2>
                 <p className="texto max-520">
                   Las ciudades y las fechas están a punto de confirmarse. Todavía no te voy a dar
-                  una fecha que pueda moverse. Lo que sí puedo es guardarte el sitio y avisarte
-                  antes que a nadie en cuanto se cierre.
+                  una fecha que pueda moverse. Apúntate y, al terminar, entra en el grupo de
+                  WhatsApp de la Técnica Divine.
                 </p>
               </div>
               <div className={css.fechasAcciones}>
                 <BotonCaptacion
                   className="btn btn-md"
-                  titulo="Te guardo el sitio"
-                  entradilla="Déjame dónde escribirte y te aviso en cuanto se cierre la primera convocatoria, con la ciudad, las fechas y el precio."
-                  etiquetaVentana="Guardar sitio en la próxima formación"
+                  titulo="Apúntate"
+                  entradilla="Déjame tu nombre, tu correo y tu teléfono. Al terminar, el siguiente paso es entrar en el grupo de WhatsApp de la Técnica Divine."
+                  etiquetaVentana="Apuntarme a la próxima formación"
                   origen="formacion"
                 >
-                  Guardar mi sitio
+                  Apuntarme
                 </BotonCaptacion>
                 <BotonAsistente
                   pregunta="Quiero consultar las próximas fechas en Sudamérica y que me guardes sitio."

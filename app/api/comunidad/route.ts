@@ -20,6 +20,8 @@ import {
  *   GET                       → publicaciones, ranking del mes (con su nivel),
  *                               tu puesto y tus puntos del mes, próxima clase
  *   GET ?id=…                 → una publicación con sus respuestas
+ *   GET ?id=…&gustan=1[&rid=] → quién ha dado «me gusta» a una publicación (o
+ *                               a una de sus respuestas), con foto y nivel
  *   POST { accion, … }        → publicar, responder, meGusta, fijar, resolver,
  *                               borrar, proximaClase
  *
@@ -35,6 +37,14 @@ import {
  * «me gusta» que puntuó guarda su mes: así la resta es exacta. Cada suma lleva
  * su fuente (publicaciones, respuestas, meGusta), y el ranking enseña cuántas
  * de cada una lleva cada persona en el mes.
+ *
+ * «ME GUSTA» A LA VISTA: cada publicación y respuesta trae `gustan`, unas
+ * pocas de las que le han dado «me gusta» (tú la primera, si se lo has dado),
+ * para el «Le gusta a Lucía, Ana y 3 más» con sus mini fotos. Sus nombres y
+ * fotos van UNA vez en `personas` (una foto puede pesar cientos de KB: no se
+ * repite en cada publicación) y salen de la misma lectura que las autoras, sin
+ * consultas por fila. La lista entera, al pulsar, con `?gustan=1`: una lectura
+ * del documento y otra de las fichas.
  *
  * Las fotos son privadas como el material del curso: se guardan sin enlace
  * público y se dan con direcciones que caducan.
@@ -54,7 +64,8 @@ const MAX_LOTE = 450;
 const ANTES = { publicacion: 3, respuesta: 2 } as const;
 const recortar = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
 const fecha = (v: unknown) => (v as { toDate?: () => Date })?.toDate?.().toISOString() ?? null;
-const nombreDe = (v: FirebaseFirestore.DocumentData) => String(v.nombre || String(v.correo || '').split('@')[0] || 'Terapeuta');
+/* Sin nombre, «Terapeuta»: nunca un trozo del correo, que las demás no deben ver. */
+const nombreDe = (v: FirebaseFirestore.DocumentData) => String(v.nombre || 'Terapeuta');
 const fotoDe = (v: FirebaseFirestore.DocumentData | undefined) => (typeof v?.foto === 'string' && v.foto.length < 400_000 ? v.foto : null);
 
 type Permisos = { sesion: Sesion; leer: boolean; escribir: boolean; modera: boolean };
@@ -108,7 +119,33 @@ async function autorasDe(uids: string[]): Promise<Map<string, Autora>> {
 
 const anonima = (uid: string): Autora => ({ uid, nombre: 'Terapeuta', foto: null, esSorela: false });
 
-async function aPublicacion(d: FirebaseFirestore.DocumentSnapshot, autoras: Map<string, Autora>, yo: string): Promise<Publicacion> {
+/** Cuántas caras se adelantan bajo cada publicación (las mini fotos apiladas). */
+const AVANCE_GUSTAN = 3;
+
+/** Quién ha dado «me gusta», según el mapa `meGusta` del documento. */
+const quienesGustan = (v: FirebaseFirestore.DocumentData) =>
+  Object.entries((v.meGusta ?? {}) as Record<string, unknown>)
+    .filter(([uid, x]) => Boolean(x) && ID.test(uid))
+    .map(([uid]) => uid);
+
+/**
+ * Las primeras de quienes han dado «me gusta», para enseñar sus caras: tú la
+ * primera si se lo has dado (lo que más se busca es verse), luego las demás.
+ */
+function avanceGustan(v: FirebaseFirestore.DocumentData, yo: string): string[] {
+  const todas = quienesGustan(v);
+  const mio = todas.includes(yo);
+  return [...(mio ? [yo] : []), ...todas.filter((u) => u !== yo)].slice(0, AVANCE_GUSTAN + (mio ? 1 : 0));
+}
+
+/** Nombre y foto de quienes salen en los avances, una sola vez para toda la respuesta. */
+const personasDe = (uids: string[], autoras: Map<string, Autora>) =>
+  Object.fromEntries([...new Set(uids)].map((u) => [u, autoras.get(u) ?? anonima(u)]));
+
+/** Lo que viaja de cada publicación y respuesta: lo de siempre y las caras de quien le ha dado «me gusta». */
+type ConGustan<T> = T & { gustan: string[] };
+
+async function aPublicacion(d: FirebaseFirestore.DocumentSnapshot, autoras: Map<string, Autora>, yo: string): Promise<ConGustan<Publicacion>> {
   const v = d.data() ?? {};
   const meGusta = (v.meGusta ?? {}) as Record<string, unknown>;
   return {
@@ -127,6 +164,7 @@ async function aPublicacion(d: FirebaseFirestore.DocumentSnapshot, autoras: Map<
     resuelta: Boolean(v.resuelta),
     respondioSorela: Boolean(v.respondioSorela),
     esMia: v.autor === yo,
+    gustan: avanceGustan(v, yo),
   };
 }
 
@@ -376,15 +414,38 @@ export async function GET(peticion: Request) {
   if (!p.leer) return NextResponse.json({ ok: false, motivo: 'sin-acceso' }, { status: 403 });
   const db = baseDeDatos();
   const yo = p.sesion.uid;
-  const id = new URL(peticion.url).searchParams.get('id');
-
+  const q = new URL(peticion.url).searchParams;
+  const id = q.get('id');
   if (id) {
     if (!ID.test(id)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
     const ref = db.collection(POSTS).doc(id);
+
+    /* Quién ha dado «me gusta»: la lista entera (hasta 200), con su nivel
+       para la insignia. Sorela sin nivel: no compite. */
+    if (q.get('gustan') === '1') {
+      const rid = q.get('rid');
+      if (rid !== null && !ID.test(rid)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
+      const d = await (rid ? ref.collection('respuestas').doc(rid) : ref).get();
+      if (!d.exists) return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
+      const todas = quienesGustan(d.data() ?? {});
+      // Tú la primera, como en el avance.
+      const uids = (todas.includes(yo) ? [yo, ...todas.filter((u) => u !== yo)] : todas).slice(0, 200);
+      const fichas = uids.length ? await db.getAll(...uids.map((u) => db.collection(COLECCIONES.usuarios).doc(u))) : [];
+      const personas = fichas
+        .filter((f) => f.exists)
+        .map((f) => {
+          const v = f.data() ?? {};
+          const esSorela = v.rol === 'sorela';
+          return { uid: f.id, nombre: nombreDe(v), foto: fotoDe(v), esSorela, nivel: esSorela ? null : nivelBreve(v), soyYo: f.id === yo };
+        });
+      return NextResponse.json({ ok: true, personas }, { headers: { 'Cache-Control': 'private, no-store' } });
+    }
+
     const [d, rs] = await Promise.all([ref.get(), ref.collection('respuestas').orderBy('creado', 'asc').limit(200).get()]);
     if (!d.exists) return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
-    const autoras = await autorasDe([d.data()?.autor, ...rs.docs.map((r) => r.data().autor)]);
-    const respuestas: Respuesta[] = rs.docs.map((r) => {
+    const avances = rs.docs.map((r) => avanceGustan(r.data(), yo));
+    const autoras = await autorasDe([d.data()?.autor, ...rs.docs.map((r) => r.data().autor), ...avances.flat()]);
+    const respuestas: ConGustan<Respuesta>[] = rs.docs.map((r, i) => {
       const v = r.data();
       const mg = (v.meGusta ?? {}) as Record<string, unknown>;
       return {
@@ -395,9 +456,10 @@ export async function GET(peticion: Request) {
         meGusta: Object.values(mg).filter(Boolean).length,
         loHeDado: Boolean(mg[yo]),
         esMia: v.autor === yo,
+        gustan: avances[i],
       };
     });
-    return NextResponse.json({ ok: true, publicacion: await aPublicacion(d, autoras, yo), respuestas });
+    return NextResponse.json({ ok: true, publicacion: await aPublicacion(d, autoras, yo), respuestas, personas: personasDe(avances.flat(), autoras) });
   }
 
   const [lista, actividad, ajustes, admins] = await Promise.all([
@@ -412,8 +474,10 @@ export async function GET(peticion: Request) {
     nombre: String(ficha?.nombre || 'Sorela Caro'),
     foto: fotoDe(ficha),
   };
+  // Las autoras y las caras de los «me gusta», en la misma lectura.
+  const avances = lista.docs.flatMap((d) => avanceGustan(d.data(), yo));
   const [autoras, { ranking, mio }] = await Promise.all([
-    autorasDe(lista.docs.map((d) => d.data().autor)),
+    autorasDe([...lista.docs.map((d) => d.data().autor), ...avances]),
     rankingDelMes(actividad, yo, p.modera),
   ]);
   const publicaciones = await Promise.all(lista.docs.map((d) => aPublicacion(d, autoras, yo)));
@@ -442,6 +506,7 @@ export async function GET(peticion: Request) {
       por: mio?.por ?? {},
     },
     publicaciones,
+    personas: personasDe(avances, autoras),
     ranking,
     proximaClase,
     sorela,
