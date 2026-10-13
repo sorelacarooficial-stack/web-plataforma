@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Contador from '@/components/Contador';
 import ListaEspera from '@/components/ListaEspera';
-import { COMUNIDAD, OBJECIONES, PIEZAS_MASTERCLASS } from '@/lib/contenido';
-import { DIA_APERTURA } from '@/lib/apertura';
+import { OBJECIONES, PIEZAS_MASTERCLASS } from '@/lib/contenido';
+import { DIA_APERTURA, HORA_ESPANA } from '@/lib/apertura';
 import css from './comunidad.module.css';
 
 /**
@@ -27,44 +27,57 @@ export const metadata: Metadata = {
 export default function Comunidad() {
   return (
     <main className="pagina">
+      {/* La portada es la banda negra de «Membresía Divine» del inicio, la que
+          gusta: antes era papel crema con todo en relieve crema sobre crema, y
+          en el móvil la fecha, la cuenta atrás y el formulario se fundían con
+          el fondo. Sobre el negro, el titular, la cuenta atrás y la tarjeta del
+          formulario se leen a la primera. */}
       <section className={css.portada}>
-        <div className="wrap rejilla-290" style={{ alignItems: 'start' }}>
-          <div className="columna" style={{ gap: 24, alignItems: 'flex-start' }}>
-            <span className="distintivo">Abre el {COMUNIDAD.apertura}</span>
+        <div className={`wrap ${css.portadaRejilla}`}>
+          <div className={css.portadaTexto}>
+            {/* La misma frase de siempre («Abre el viernes 6 de noviembre, 19:00
+                (hora de España)»), partida en dos trozos que no se cortan por
+                dentro: en el móvil no cabe en una línea, y si el navegador
+                elige dónde partir deja «19:00 (HORA DE» arriba y «ESPAÑA)»
+                sola abajo. Así parte siempre por la coma. */}
+            <p className={css.fecha}>
+              <span>Abre el {DIA_APERTURA},</span> <span>{HORA_ESPANA} (hora de España)</span>
+            </p>
             {/* En primera persona, y titular distinto del que lleva el inicio:
                 si las dos páginas encabezan igual, la segunda parece un error.
                 Antes ponía «La membresía de Sorela», que habla de ella en
                 tercera persona como si lo contara otro; aquí quien escribe es
                 ella y quien lee es una terapeuta a la que conoce. */}
-            <h1 className={`${css.titulo} degradado`}>Estoy preparando algo especial para ti.</h1>
+            <h1 className={`${css.titulo} degradado-claro`}>Estoy preparando algo especial para ti.</h1>
             {/* Es una lista de espera y nada más: se dice así, sin describir la
                 comunidad. Lo de dentro se cuenta el día de la masterclass. */}
-            <p className="lede max-540" style={{ lineHeight: 1.62 }}>
+            <p className={css.lede}>
               Esta es la lista de espera de la Comunidad Divine. Si quieres formar parte, apúntate:
               el {DIA_APERTURA} hago una masterclass en directo por Zoom y te mando el enlace.
             </p>
-            <Contador />
+            <Contador sobre="oscuro" />
           </div>
 
-          <div className={`${css.caja} caja-landing`}>
+          {/* Sin .caja-landing: esa clase le pone el relieve neumórfico, cuya
+              luz blanca sobre el negro se ve como un halo. */}
+          <div className={css.caja}>
             <ListaEspera />
           </div>
         </div>
       </section>
 
-      <section className={`${css.piezasSeccion} panel-blanco`}>
+      {/* Papel que sube y tapa el borde de la banda negra, como en el inicio y
+          en «Sobre mí». Antes esta sección era la oscura; con la portada ya en
+          negro, quedaban dos bandas negras seguidas. */}
+      <section className={`${css.piezasSeccion} panel-oscuro`}>
         <div className="wrap">
-          <p className="antetitulo" style={{ marginBottom: 'clamp(30px,4vw,52px)' }}>
-            La masterclass de la apertura
-          </p>
+          <p className={css.antetitulo}>La masterclass de la apertura</p>
           <div className={css.piezas}>
             {PIEZAS_MASTERCLASS.map((m) => (
-              <article key={m.titulo} className={`tarjeta ${css.pieza}`}>
+              <article key={m.titulo} className={css.pieza}>
                 <span className={css.estado}>{m.estado}</span>
                 <h3 className={css.piezaTitulo}>{m.titulo}</h3>
-                <p className="texto-fijo" style={{ fontSize: 16 }}>
-                  {m.texto}
-                </p>
+                <p className={css.piezaTexto}>{m.texto}</p>
               </article>
             ))}
           </div>
@@ -74,7 +87,7 @@ export default function Comunidad() {
       {/* Aquí iba el precio. Se retira: hasta que abra, solo se habla de la
           lista de espera, y el precio se anuncia con la apertura. */}
 
-      <section className="seccion-sm">
+      <section className={css.preguntas}>
         <div className="wrap wrap-1000">
           <h2 className="titulo-sm" style={{ marginBottom: 'clamp(26px,3vw,44px)', fontSize: 'clamp(26px,3.4vw,42px)' }}>
             Preguntas de la lista

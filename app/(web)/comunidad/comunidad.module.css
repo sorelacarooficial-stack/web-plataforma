@@ -1,6 +1,77 @@
+/* ==========================================================================
+   Portada: la banda negra
+   ==========================================================================
+   La misma banda que «Membresía Divine» en el inicio: negro #0c0c0c, un halo
+   dorado y el titular en crema. Antes era papel crema con todo en relieve
+   crema sobre crema; en el móvil, la fecha, la cuenta atrás y el formulario
+   se fundían con el fondo y no se sabía dónde mirar.
+
+   Los colores van fijos y no con los tokens del tema por la misma razón que
+   en la banda del inicio: esto es negro siempre, sea cual sea el tema.
+   ========================================================================== */
 .portada {
-  padding: clamp(80px, 12vw, 170px) 0 clamp(70px, 9vw, 130px);
-  background: radial-gradient(60% 70% at 30% 30%, rgba(217, 180, 124, 0.1), transparent 70%);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  /* Abajo, 40-56 px de más: la sección siguiente sube y tapa ese trozo con
+     sus esquinas redondeadas (.panel-oscuro). */
+  padding: clamp(56px, 9vw, 140px) 0 calc(clamp(64px, 8vw, 120px) + 40px);
+  background: #0c0c0c;
+  color: #ede3d3;
+}
+
+/* El halo del inicio, detrás del titular. En el móvil, centrado arriba; en
+   escritorio, a la izquierda, que es donde está el titular. */
+.portada::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 30%;
+  left: 50%;
+  width: min(900px, 170%);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(207, 167, 101, 0.15) 0%, transparent 62%);
+  pointer-events: none;
+}
+
+.portadaRejilla {
+  display: grid;
+  gap: clamp(44px, 6vw, 88px);
+  align-items: center;
+}
+
+/* En una columna todo va centrado, como la banda del inicio; la tarjeta del
+   formulario es lo único alineado a la izquierda, porque un formulario
+   centrado se lee peor. */
+.portadaTexto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 2.4vw, 28px);
+  text-align: center;
+}
+
+/* La fecha. Contorno dorado fino y nada más: sin el relieve de .distintivo,
+   que sobre el negro era un halo blanco. */
+.fecha {
+  margin: 0;
+  padding: 8px 18px;
+  border: 1px solid rgba(217, 180, 124, 0.55);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e0c28e;
+  text-wrap: balance;
+}
+
+/* Cada trozo entero: si no cabe en una línea, parte por la coma. */
+.fecha > span {
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .titulo {
@@ -16,6 +87,166 @@
   text-wrap: balance;
 }
 
+/* Crema de verdad y peso 400. Era el gris claro de los textos en Jost 300,
+   que en el móvil y con luz de día se quedaba en nada. */
+.lede {
+  margin: 0;
+  max-width: 540px;
+  font-weight: 400;
+  font-size: clamp(16px, 1.3vw, 18.5px);
+  line-height: 1.62;
+  color: #e2d8c8;
+  text-wrap: pretty;
+}
+
+/* ---------- La tarjeta del formulario ----------
+   Clara y nítida sobre el negro: papel casi blanco, un filo fino y ninguna
+   sombra. Lleva sus propios colores fijos porque todo lo de dentro (campos,
+   aviso de privacidad, consentimiento) lee los tokens del papel, y así se
+   leen igual aunque la banda de fuera cambie. */
+.caja {
+  --ink: #141210;
+  --ink-2: #3e3831;
+  --ink-3: #3e3831;
+  --muted: #4f4840;
+  --muted-2: #4f4840;
+  --faint: #6c645a;
+  --surface: #ffffff;
+  --arcilla: #8a6a32;
+  --arcilla-ink: #6e5327;
+  --arcilla-line: rgba(138, 106, 50, 0.4);
+  --line-2: rgba(20, 18, 16, 0.18);
+  --line-5: rgba(20, 18, 16, 0.4);
+
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: clamp(24px, 3.2vw, 40px);
+  background: #fbf9f6;
+  border: 1px solid rgba(217, 180, 124, 0.5);
+  border-radius: clamp(24px, 3vw, 36px);
+  color: var(--ink);
+  text-align: left;
+}
+
+/* Los campos: blancos, con un borde que se ve (3,7 a 1 contra el campo y 3,5
+   contra la tarjeta) y sin el hundido neumórfico. El hundido era una sombra
+   clara y otra oscura sobre el mismo crema: en el móvil el campo no tenía
+   bordes. Va acotado a esta tarjeta; el resto de formularios de la web
+   siguen como estaban. */
+.caja :global(.campo) {
+  min-height: 50px;
+  background: #ffffff;
+  border: 1px solid #8c8377;
+  border-radius: 14px;
+  box-shadow: none;
+  font-weight: 400;
+  color: #141210;
+  transition: border-color 0.2s;
+}
+
+.caja :global(.campo)::placeholder {
+  color: #6c645a;
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .caja :global(.campo):hover {
+    border-color: #5e564c;
+  }
+}
+
+/* El foco, en oro: el borde cambia de color y un anillo lo rodea. */
+.caja :global(.campo):focus-visible {
+  border-color: #8a6a32;
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.caja :global(.campo)[aria-invalid='true'] {
+  border-color: #8a6a32;
+}
+
+/* El botón, plano: tinta con letras claras, sin el filo blanco ni la luz del
+   relieve, que es la «sombra blanca» que no gustaba. Al pasar por encima se
+   vuelve bronce. */
+.caja :global(.btn),
+.caja :global(.btn):hover,
+.caja :global(.btn):active {
+  box-shadow: none;
+  outline: none;
+  filter: none;
+  transform: none;
+}
+
+.caja :global(.btn) {
+  width: 100%;
+  min-height: 54px;
+  padding: 17px 24px;
+  background: #17140f;
+  color: #fbf9f6;
+  transition: background 0.25s;
+}
+
+.caja :global(.btn):hover {
+  background: #6e5327;
+  color: #fbf9f6;
+}
+
+.caja :global(.btn):focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 3px;
+}
+
+.caja :global(.btn):disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+/* La línea de debajo del botón, legible: 400 y no 300 a este tamaño. */
+.caja :global(.nota) {
+  font-size: 13px;
+  font-weight: 400;
+  color: #4f4840;
+  text-align: center;
+}
+
+/* Dos columnas a partir de 960 px: el texto a la izquierda y alineado a la
+   izquierda, la tarjeta a la derecha. Por debajo de eso, la cuenta atrás y la
+   tarjeta no caben juntas sin apretarse. */
+@media (min-width: 960px) {
+  .portadaRejilla {
+    grid-template-columns: minmax(0, 1fr) minmax(380px, 460px);
+  }
+
+  .portadaTexto {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .portada::before {
+    top: 42%;
+    left: 28%;
+  }
+
+  .caja {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  /* En el móvil la frase no cabe en una línea: se aprieta un poco el
+     espaciado para que cada trozo quepa entero y se queden en dos líneas
+     limpias, no en tres. */
+  .fecha {
+    padding: 8px 16px;
+    border-radius: 22px;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+  }
+}
+
 .contador {
   margin: 0;
   font-weight: 300;
@@ -24,41 +255,46 @@
   color: var(--arcilla-ink);
 }
 
-.caja {
-  padding: clamp(26px, 3.4vw, 40px);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+/* ---------- Piezas ----------
+   Papel, después de la banda negra. Las tarjetas ya no son relieve crema
+   sobre crema: blancas, con un filo que se ve y texto oscuro (11,6 a 1). */
+.piezasSeccion {
+  padding: clamp(72px, 10vw, 130px) 0 clamp(64px, 8vw, 110px);
 }
 
-/* ---------- Piezas ---------- */
-.piezasSeccion {
-  padding: clamp(80px, 11vw, 140px) 0 clamp(110px, 13vw, 180px);
+.antetitulo {
+  margin: 0 0 clamp(26px, 3.6vw, 44px);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  /* El bronce oscuro y no el de los rótulos: sobre el papel, el normal se
+     queda en 4,4 a 1 y a 12 px no llega. */
+  color: #6e5327;
 }
 
 .piezas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: clamp(16px, 2vw, 22px);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(14px, 2vw, 22px);
 }
 
 .pieza {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition:
-    transform 0.28s,
-    box-shadow 0.28s;
+  padding: clamp(24px, 3vw, 36px);
+  background: #ffffff;
+  border: 1px solid rgba(20, 18, 16, 0.16);
+  border-radius: clamp(22px, 2.6vw, 32px);
 }
-
-
 
 .estado {
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--oro-b);
+  color: #6e5327;
 }
 
 .piezaTitulo {
@@ -68,6 +304,16 @@
   text-transform: uppercase;
   font-size: clamp(22px, 2.4vw, 30px);
   line-height: 1.18;
+  color: #141210;
+  text-wrap: pretty;
+}
+
+.piezaTexto {
+  margin: 0;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #3e3831;
   text-wrap: pretty;
 }
 
@@ -99,30 +345,48 @@
   text-wrap: pretty;
 }
 
-/* ---------- Objeciones ---------- */
+/* ---------- Objeciones ----------
+   Mismo papel que las piezas, así que las separa un filete y no un cambio de
+   fondo: dos bandas de papel de tonos casi iguales se leen como un error. */
+.preguntas {
+  padding: 0 0 clamp(72px, 10vw, 130px);
+}
+
+/* El filete va dentro del contenedor y no como borde suyo: así mide lo mismo
+   que el texto y no se sale hasta los márgenes. */
+.preguntas > div::before {
+  content: '';
+  display: block;
+  height: 1px;
+  margin-bottom: clamp(56px, 8vw, 100px);
+  background: rgba(20, 18, 16, 0.14);
+}
+
 .objecion {
-  border-top: 1px solid var(--line-3);
+  border-top: 1px solid rgba(20, 18, 16, 0.16);
   padding: clamp(20px, 2.4vw, 30px) 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: clamp(14px, 2vw, 36px);
+  gap: clamp(10px, 2vw, 36px);
 }
 
 .objecionP {
   margin: 0;
   font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(19px, 2vw, 24px);
+  font-weight: 500;
+  font-size: clamp(20px, 2vw, 24px);
   line-height: 1.25;
   color: var(--ink);
   text-wrap: pretty;
 }
 
+/* 400 y tinta oscura (10 a 1). En 300 y gris se leía como una nota al pie. */
 .objecionR {
   margin: 0;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 16px;
   line-height: 1.64;
-  color: var(--ink-3);
+  color: var(--ink-2);
   text-wrap: pretty;
 }
 
@@ -131,8 +395,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 10px;
-  font-weight: 300;
+  gap: 4px 10px;
+  font-weight: 400;
   font-size: 16px;
-  color: var(--ink-3);
+  color: var(--ink-2);
+}
+
+.pieLista a {
+  color: #6e5327;
 }
