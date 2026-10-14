@@ -654,3 +654,36 @@
   color: var(--muted-2);
   border-top: 1px solid var(--line-1, rgba(20, 18, 16, 0.08));
 }
+
+/* El asunto de lo que se le mandó: dice qué versión le llegó. */
+.filaAsunto {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Lo que pasó después de salir (lib/entregas.ts). */
+.chip[data-estado='entregado'] {
+  background: rgba(95, 135, 82, 0.22);
+  color: var(--bien-letra, #2f4a27);
+  font-weight: 600;
+}
+
+.chip[data-estado='retrasado'] {
+  background: rgba(217, 180, 124, 0.22);
+  color: #6e5327;
+}
+
+.chip[data-estado='rebotado'],
+.chip[data-estado='spam'] {
+  background: rgba(196, 92, 60, 0.16);
+  color: var(--peligro-letra, #8f3f26);
+  font-weight: 600;
+}
+
+.abierto {
+  font-weight: 500;
+}

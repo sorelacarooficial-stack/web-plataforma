@@ -77,6 +77,12 @@ export type RegistroCorreo = {
   campanaId?: string;
   /** La referencia del acuerdo, en los correos del acuerdo: al borrar el acuerdo se borran con él. */
   acuerdo?: string;
+  /**
+   * El identificador que le da Resend al envío. Con él, los avisos de Resend
+   * (entregado, rebotado, marcado como spam…) encuentran su línea del
+   * historial: ver lib/entregas.ts.
+   */
+  idEnvio?: string;
 };
 
 const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
@@ -131,7 +137,8 @@ export async function apuntarCorreo(r: RegistroCorreo, clave?: string) {
 
 /* ---------------------------------------------------------------- vías */
 
-async function porResend(c: Correo): Promise<void> {
+/** Lo manda por Resend y devuelve el identificador que Resend le da al envío. */
+async function porResend(c: Correo): Promise<string | undefined> {
   const de = process.env.CORREO_DE_RESEND || `Sorela Caro <hola@${new URL(WEB).hostname.replace(/^www\./, '')}>`;
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -174,6 +181,8 @@ async function porResend(c: Correo): Promise<void> {
     signal: AbortSignal.timeout(30_000),
   });
   if (!r.ok) throw new Error(`Resend ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  const j = (await r.json().catch(() => null)) as { id?: unknown } | null;
+  return typeof j?.id === 'string' ? j.id : undefined;
 }
 
 async function porAppsScript(c: Correo): Promise<void> {
@@ -427,10 +436,11 @@ export async function mandarCorreo(c: Correo, o: Opciones): Promise<Resultado> {
   }
 
   try {
-    if (via === 'resend') await porResend(c);
+    let idEnvio: string | undefined;
+    if (via === 'resend') idEnvio = await porResend(c);
     else if (via === 'smtp') await enviarSmtp({ para: c.para, asunto: c.asunto, texto: c.texto, html: c.html, responderA: c.responderA, adjuntos: c.adjuntos });
     else await porAppsScript(c);
-    await apuntarCorreo(limpio({ ...base, via, estado: 'enviado' }), o.clave);
+    await apuntarCorreo(limpio({ ...base, via, estado: 'enviado', idEnvio }), o.clave);
     return { estado: 'enviado', via };
   } catch (e) {
     const detalle = (e instanceof Error ? e.message : String(e)).slice(0, 300);

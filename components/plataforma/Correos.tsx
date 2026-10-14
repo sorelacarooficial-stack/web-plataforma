@@ -32,6 +32,14 @@ type Auto = {
   fijo?: boolean;
 };
 
+/* El correo del curso tiene tres versiones, según lo que se le abre. */
+type ModoCurso = 'precurso' | 'completo' | 'desbloqueo';
+const MODOS_CURSO: { modo: ModoCurso; texto: string }[] = [
+  { modo: 'precurso', texto: 'Con el abono (precurso)' },
+  { modo: 'completo', texto: 'Curso completo' },
+  { modo: 'desbloqueo', texto: 'Al marcarla «Pagado»' },
+];
+
 type Fila = {
   id: string;
   para: string;
@@ -41,6 +49,10 @@ type Fila = {
   via: string | null;
   detalle: string | null;
   cuando: string | null;
+  /** Lo que pasó después de salir (lib/entregas.ts). */
+  entrega: 'retrasado' | 'entregado' | 'rebotado' | 'spam' | null;
+  entregaDetalle: string | null;
+  abierto: boolean;
 };
 
 type Datos = {
@@ -65,6 +77,20 @@ function hace(iso: string | null) {
 }
 
 const ESTADO: Record<Fila['estado'], string> = { enviado: 'Enviado', fallido: 'No salió', omitido: 'No hacía falta' };
+
+/* Lo que pasó después: sustituye a «Enviado» en cuanto Resend lo cuenta. */
+const ENTREGA: Record<NonNullable<Fila['entrega']>, string> = {
+  entregado: 'Entregado',
+  retrasado: 'Retrasado',
+  rebotado: 'Rebotó',
+  spam: 'Marcado spam',
+};
+const AYUDA_ENTREGA: Record<NonNullable<Fila['entrega']>, string> = {
+  entregado: 'Ha llegado a su buzón.',
+  retrasado: 'Su servidor lo está retrasando; Resend lo sigue intentando.',
+  rebotado: 'No existe o no acepta correos. Se ha dado de baja para no insistir.',
+  spam: 'Lo marcó como spam. Se ha dado de baja para no volver a escribirle.',
+};
 
 export default function Correos() {
   const [datos, setDatos] = useState<Datos | null>(null);
@@ -92,6 +118,30 @@ export default function Correos() {
     cargar();
   }, [cargar]);
 
+  /* Al abrir la pantalla, se pregunta a Resend qué pasó con lo enviado
+     (entregado, rebotado…) y se vuelve a pintar. Una vez por visita. */
+  const [comprobando, setComprobando] = useState(false);
+  const comprobarEntregas = useCallback(
+    async (avisar = false) => {
+      setComprobando(true);
+      try {
+        const j = await (
+          await fetch('/api/correos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accion: 'comprobar-entregas' }) })
+        ).json();
+        if (j.ok) await cargar();
+        if (avisar) setAviso(j.ok ? 'Entregas al día.' : 'No he podido preguntar a Resend ahora. Prueba en un momento.');
+      } catch {
+        if (avisar) setAviso('No hay conexión con el servidor.');
+      } finally {
+        setComprobando(false);
+      }
+    },
+    [cargar]
+  );
+  useEffect(() => {
+    comprobarEntregas();
+  }, [comprobarEntregas]);
+
   useEffect(() => {
     if (!aviso) return;
     const t = setTimeout(() => setAviso(null), 6000);
@@ -111,21 +161,21 @@ export default function Correos() {
     }
   }
 
-  async function ver(id: IdAutomatizacion) {
+  async function ver(id: IdAutomatizacion, modo?: ModoCurso) {
     setOcupado(`ver:${id}`);
     try {
-      const j = await (await fetch(`/api/correos?ver=${id}`)).json();
+      const j = await (await fetch(`/api/correos?ver=${id}${modo ? `&modo=${modo}` : ''}`)).json();
       if (j.ok) setVista({ id, asunto: j.asunto, html: j.html });
     } finally {
       setOcupado(null);
     }
   }
 
-  async function probar(id: IdAutomatizacion) {
+  async function probar(id: IdAutomatizacion, modo?: ModoCurso) {
     setOcupado(`probar:${id}`);
     try {
       const j = await (
-        await fetch('/api/correos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accion: 'prueba', id }) })
+        await fetch('/api/correos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accion: 'prueba', id, modo }) })
       ).json();
       setAviso(j.ok ? `Te he mandado la prueba a ${j.para}.` : `La prueba no ha salido: ${j.detalle || 'revisa cómo se envían'}.`);
       await cargar();
@@ -257,7 +307,16 @@ export default function Correos() {
                   <span className={k.autoCuando}>
                     <b>A quién:</b> {a.quien}
                   </span>
-                  {a.id !== 'acuerdo' && <span className={k.autoBotones}>
+                  {a.id === 'acceso-formacion' && (
+                    <span className={k.autoBotones}>
+                      {MODOS_CURSO.map((m) => (
+                        <button key={m.modo} type="button" className={k.enlace} onClick={() => ver(a.id, m.modo)} disabled={ocupado === `ver:${a.id}`}>
+                          Ver: {m.texto}
+                        </button>
+                      ))}
+                    </span>
+                  )}
+                  {a.id !== 'acuerdo' && a.id !== 'acceso-formacion' && <span className={k.autoBotones}>
                     <button type="button" className={k.enlace} onClick={() => ver(a.id)} disabled={ocupado === `ver:${a.id}`}>
                       Ver correo
                     </button>
@@ -291,7 +350,9 @@ export default function Correos() {
         <header className={k.cabeceraHistorial}>
           <div className={k.titulo}>
             <h3>Lo que ha salido</h3>
-            <small className={k.nota}>Se borra solo a los {datos.dias || 30} días.</small>
+            <small className={k.nota}>
+              «Entregado» es que ha llegado a su buzón; «Enviado», que aún no se sabe. Se borra solo a los {datos.dias || 30} días.
+            </small>
           </div>
           <div className={k.herramientas}>
             <div className={k.filtro} role="group" aria-label="Filtrar">
@@ -302,6 +363,11 @@ export default function Correos() {
                 Solo los que no salieron
               </button>
             </div>
+            {datos.via === 'resend' && datos.historial.length > 0 && (
+              <button type="button" className={k.vaciar} onClick={() => comprobarEntregas(true)} disabled={comprobando}>
+                {comprobando ? 'Comprobando…' : 'Comprobar entregas'}
+              </button>
+            )}
             {datos.historial.length > 0 && (
               <button type="button" className={k.vaciar} onClick={vaciar} disabled={ocupado === 'vaciar'}>
                 {ocupado === 'vaciar' ? 'Vaciando…' : 'Vaciar historial'}
@@ -326,11 +392,17 @@ export default function Correos() {
                   exit={reducir ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, x: -14, transition: { duration: 0.2 } }}
                   transition={{ type: 'spring', stiffness: 420, damping: 36 }}
                 >
-                  <span className={k.chip} data-estado={f.estado}>
-                    {ESTADO[f.estado]}
+                  <span
+                    className={k.chip}
+                    data-estado={f.estado === 'enviado' && f.entrega ? f.entrega : f.estado}
+                    title={f.estado === 'enviado' && f.entrega ? `${AYUDA_ENTREGA[f.entrega]}${f.entregaDetalle ? ` (${f.entregaDetalle})` : ''}` : undefined}
+                  >
+                    {f.estado === 'enviado' && f.entrega ? ENTREGA[f.entrega] : ESTADO[f.estado]}
+                    {f.abierto && <span className={k.abierto}> · abierto</span>}
                   </span>
                   <span className={k.filaTexto}>
                     <span className={k.filaQue}>{ETIQUETA_CORREO[f.tipo] ?? f.tipo}</span>
+                    {f.asunto && <span className={k.filaAsunto}>«{f.asunto}»</span>}
                     <span className={k.filaPara}>{f.para}</span>
                     {f.detalle && f.estado !== 'enviado' && <span className={k.filaDetalle}>{f.detalle}</span>}
                   </span>

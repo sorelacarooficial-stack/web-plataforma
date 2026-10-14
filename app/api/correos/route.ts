@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { comprobarEntregas } from '@/lib/entregas';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos } from '@/lib/firebase-servidor';
 import { exigirAdmin } from '@/lib/permisos';
@@ -33,6 +34,7 @@ import {
  *   GET ?ver=id         → la vista previa de un correo, en HTML
  *   PATCH { id, activa }→ encender o apagar una automatización
  *   POST  { accion: 'prueba', id } → mandarle a Sorela ese correo de muestra
+ *   POST  { accion: 'comprobar-entregas' } → pregunta a Resend qué pasó con los envíos recientes
  *   DELETE ?id=…        → quitar una línea del historial
  *   DELETE ?todo=1      → vaciar el historial
  *
@@ -49,13 +51,17 @@ export const maxDuration = 300;
 const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
 
 /** Cada correo con datos de muestra, para verlo antes de encenderlo. */
-async function muestra(id: IdAutomatizacion): Promise<Plantilla | null> {
+type ModoCurso = 'precurso' | 'completo' | 'desbloqueo';
+const esModo = (x: unknown): x is ModoCurso => x === 'precurso' || x === 'completo' || x === 'desbloqueo';
+
+async function muestra(id: IdAutomatizacion, modo: ModoCurso = 'completo'): Promise<Plantilla | null> {
   const ejemplo = 'tu-correo@ejemplo.com';
   switch (id) {
     case 'bienvenida':
       return correoBienvenidaPorOrigen('María López', 'lista-comunidad');
     case 'acceso-formacion':
-      return correoAccesoFormacion('María López');
+      // Tres versiones: con el abono, el curso entero, y cuando se abre todo al pagar.
+      return correoAccesoFormacion('María López', null, modo);
     case 'acceso-comunidad':
       return correoAccesoComunidad('María López');
     case 'invitacion':
@@ -91,7 +97,8 @@ export async function GET(peticion: Request) {
   const ver = q.get('ver');
   if (ver) {
     if (!esId(ver)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
-    const m = await muestra(ver);
+    const modo = q.get('modo');
+    const m = await muestra(ver, esModo(modo) ? modo : undefined);
     if (!m) return NextResponse.json({ ok: false, motivo: 'sin-vista' }, { status: 404 });
     return NextResponse.json({ ok: true, asunto: m.asunto, html: m.html });
   }
@@ -108,6 +115,10 @@ export async function GET(peticion: Request) {
       via: v.via ?? null,
       detalle: v.detalle ?? null,
       cuando: v.cuando?.toDate?.().toISOString() ?? null,
+      // Lo que pasó después de salir (lib/entregas.ts): entregado, rebotado, spam…
+      entrega: v.entrega ?? null,
+      entregaDetalle: v.entregaDetalle ?? null,
+      abierto: Boolean(v.abierto),
     };
   };
 
@@ -163,13 +174,19 @@ export async function PATCH(peticion: Request) {
 export async function POST(peticion: Request) {
   const g = await exigirAdmin();
   if (g.error) return g.error;
-  const c = (await peticion.json().catch(() => ({}))) as { accion?: unknown; id?: unknown };
+  const c = (await peticion.json().catch(() => ({}))) as { accion?: unknown; id?: unknown; modo?: unknown };
+
+  if (c.accion === 'comprobar-entregas') {
+    // Pregunta a Resend por los envíos recientes y apunta su último estado.
+    const r = await comprobarEntregas();
+    return NextResponse.json({ ok: !r.motivo, ...r });
+  }
 
   if (c.accion === 'prueba') {
     if (!esId(c.id)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
     const para = g.sesion.correo || correoDeSorela();
     if (!para) return NextResponse.json({ ok: false, motivo: 'sin-correo' }, { status: 400 });
-    const m = await muestra(c.id);
+    const m = await muestra(c.id, esModo(c.modo) ? c.modo : undefined);
     if (!m) return NextResponse.json({ ok: false, motivo: 'sin-vista' }, { status: 400 });
     const r = await mandarCorreo({ para, asunto: `[Prueba] ${m.asunto}`, texto: m.texto, html: m.html }, { tipo: 'prueba' });
     return NextResponse.json({ ok: r.estado === 'enviado', ...r, para });
