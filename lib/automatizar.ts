@@ -155,6 +155,10 @@ export async function listaDeEspera(): Promise<{ correo: string; nombre: string 
     // Apuntada a mano sin haber pedido la información: no se le escribe
     // (art. 21 LSSI). Ver el POST de app/api/contactos.
     if (v.aMano && !v.pidioInformacion) continue;
+    /* Dejó sin marcar la casilla de novedades: recibe su correo de la lista
+       (lo que pidió), pero no la serie ni las campañas. Igual que en las
+       campañas a «contactos» (lib/campanas.ts): solo el false explícito. */
+    if (v.comercial === false) continue;
     if (tipoDeContacto(v) === 'comunidad' && !salida.has(correo)) salida.set(correo, { correo, nombre: v.nombre || null });
   }
   for (const m of miembros) salida.delete(m);
