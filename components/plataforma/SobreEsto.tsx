@@ -91,7 +91,16 @@ export default function SobreEsto({ alAbrir }: { alAbrir?: () => void }) {
               Gracias por estar aquí desde el principio. Este espacio es nuevo y lo he creado pensando en ti, para
               que lo que aprendes no se quede en un fin de semana y te acompañe cada día.
             </p>
-            <p>Es solo el comienzo: irá creciendo contigo, con tus dudas y con lo que necesites.</p>
+            <p>
+              Siempre he creído que nuestra profesión tiene que atreverse a innovar. Las clientas cambian, lo que
+              necesitan cambia, y nosotras tenemos que ir un paso por delante. Divine nació así, rompiendo con lo de
+              siempre, y este espacio nace con la misma idea: unir el conocimiento de nuestras manos con todo lo que
+              hoy nos permite la tecnología.
+            </p>
+            <p>
+              Es solo el comienzo: irá creciendo contigo, con tus dudas y con lo que necesites. Gracias por confiar
+              en mí y por querer crecer conmigo.
+            </p>
             <p>Bienvenida a casa.</p>
           </div>
 
