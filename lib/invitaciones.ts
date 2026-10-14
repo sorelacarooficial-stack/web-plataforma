@@ -168,17 +168,43 @@ export async function canjear(
        apuntar a esta cuenta: así Sorela ve «Ya tiene cuenta» y, al marcarla
        «Pagado», se le abre el curso completo a ella. Todas las lecturas antes
        de escribir, que es lo que exige una transacción. */
-    const refConv = inv2.convocatoria && inv2.inscrita ? db.collection(COLECCION_CONVOCATORIAS).doc(inv2.convocatoria) : null;
+    const refConv =
+      inv2.convocatoria && que.includes('curso') ? db.collection(COLECCION_CONVOCATORIAS).doc(inv2.convocatoria) : null;
     const conv = refConv ? await t.get(refConv) : null;
     const antes = usuario.exists ? revisarAccesos(usuario.data()?.accesos) : [];
     const accesos = revisarAccesos([
       ...antes,
       ...accesosDe(que, { convocatoria: inv2.convocatoria, completo: inv2.completo }),
     ]);
-    if (refConv && conv?.exists && conv.get(`inscritas.${inv2.inscrita}`)) {
-      t.update(refConv, {
-        [`inscritas.${inv2.inscrita}.acceso`]: { tipo: 'cuenta', uid: persona.uid, en: new Date().toISOString() },
-      });
+    if (refConv && conv?.exists) {
+      const enCuenta = { tipo: 'cuenta', uid: persona.uid, en: new Date().toISOString() };
+      /* Con inscrita elegida, se enlaza esa. Si el enlace se dio con fechas
+         pero a «otra persona», se busca por su correo en esa convocatoria y,
+         si no está, se la apunta aquí: quien tiene acceso a unas fechas tiene
+         que salir en «Inscritas» (abono si es solo el precurso, pagado si es
+         el curso completo; el importe lo pone Sorela al editarla). */
+      const mapa = (conv.get('inscritas') ?? {}) as Record<string, { correo?: string }>;
+      const porCorreo = Object.entries(mapa).find(([, x]) => String(x?.correo ?? '').toLowerCase() === persona.correo)?.[0];
+      const id = (inv2.inscrita && mapa[inv2.inscrita] ? inv2.inscrita : null) ?? porCorreo ?? null;
+      if (id) {
+        t.update(refConv, { [`inscritas.${id}.acceso`]: enCuenta });
+      } else {
+        const nuevo = db.collection('_').doc().id;
+        t.update(refConv, {
+          [`inscritas.${nuevo}`]: {
+            nombre: (persona.nombre || persona.correo.split('@')[0]).slice(0, 80),
+            correo: persona.correo,
+            telefono: '',
+            pagado: 0,
+            estado: inv2.completo ? 'pagado' : 'senal',
+            nota: '',
+            contacto: null,
+            creada: new Date().toISOString(),
+            acceso: enCuenta,
+          },
+          actualizada: FieldValue.serverTimestamp(),
+        });
+      }
     }
 
     if (usuario.exists && !nueva) {
