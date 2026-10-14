@@ -5,6 +5,8 @@ import { sesionActual } from '@/lib/sesion-servidor';
 import { tipoDeContacto, TIPOS, type Tipo } from '@/lib/origenes';
 import { PERFILES, normalizarTelefono, revisar as revisarComoLaWeb } from '@/lib/captacion';
 import { mandarInformacion } from '@/lib/enviar-informacion';
+import { contextoAtencion } from '@/lib/atencion-servidor';
+import { situacion, type DatosAtencion } from '@/lib/atencion';
 
 /**
  * Los contactos, para verlos y trabajarlos desde la plataforma.
@@ -186,20 +188,57 @@ function revisar(entrada: Record<string, unknown>, parcial: boolean): Revision {
   return { ok: true, datos };
 }
 
-export async function GET() {
+/*
+ * Cuántos contactos se mandan de una vez.
+ *
+ * Antes era un tope fijo de 500, y con 1000 personas de verdad la mitad más
+ * antigua no llegaba nunca a la pantalla: ni las pestañas la contaban ni el
+ * buscador la encontraba. Ahora la pantalla pide cuántos quiere en `tope`, de
+ * mil en mil, y el servidor solo pone el techo.
+ *
+ * Por qué mil de salida y no todos: cada contacto es una lectura de Firestore
+ * que se paga, y cada vez que se abre Clientes se leen todos los que se piden.
+ * Mil cubren hoy la lista entera con margen; si un día hay más, la pantalla
+ * enseña un botón para traer los mil siguientes y lo que ya tenía se mantiene
+ * al recargar (porque vuelve a pedir el mismo `tope`).
+ *
+ * El techo de 5000 es para que un número disparatado en la URL no se convierta
+ * en una factura: a partir de ahí haría falta buscar en el servidor y no en el
+ * navegador, que es otra cosa.
+ */
+const TOPE_DE_SALIDA = 1000;
+const TOPE_MAXIMO = 5000;
+
+export async function GET(peticion: Request) {
   if (!hayFirebase()) {
     return NextResponse.json({ ok: false, motivo: 'sin-configurar' }, { status: 503 });
   }
   const guardia = await exigirAdmin();
   if (guardia.error) return guardia.error;
 
-  const TOPE = 500;
-  const lista = await baseDeDatos()
-    .collection(COLECCIONES.contactos)
-    // Por fecha de entrada, el último arriba: es el que hay que llamar.
-    .orderBy('creado', 'desc')
-    .limit(TOPE)
-    .get();
+  const pedido = Number(new URL(peticion.url).searchParams.get('tope'));
+  const TOPE = Number.isFinite(pedido) && pedido > 0
+    ? Math.min(TOPE_MAXIMO, Math.ceil(pedido / TOPE_DE_SALIDA) * TOPE_DE_SALIDA)
+    : TOPE_DE_SALIDA;
+  const db = baseDeDatos();
+  /* El contexto de atención (bajas, cuentas, convocatorias) se lee a la vez
+     que la lista y no después: son tres lecturas que no dependen de ella, y
+     en serie la pantalla tardaría el doble en abrirse. */
+  const [lista, ctx] = await Promise.all([
+    db
+      .collection(COLECCIONES.contactos)
+      // Por fecha de entrada, el último arriba: es el que hay que llamar.
+      .orderBy('creado', 'desc')
+      .limit(TOPE)
+      .get(),
+    /* Si el contexto no se puede leer, la lista sale igual y sin situación:
+       la pantalla cae entonces en el estado guardado. Sin contactos no se
+       puede trabajar; sin la situación, sí. */
+    contextoAtencion(db).catch((e) => {
+      console.error('[contactos] no se ha podido leer el contexto de atención:', e);
+      return null;
+    }),
+  ]);
 
   const contactos = lista.docs.map((d) => {
     const v = d.data();
@@ -246,6 +285,15 @@ export async function GET() {
       // legible, así que se manda como texto ISO y se formatea en pantalla.
       creado: v.creado?.toDate?.().toISOString() ?? null,
       veces: v.veces ?? 1,
+      /*
+       * Qué toca ahora con ella, con la MISMA regla que el inicio, Pendiente y
+       * el resumen (lib/atencion.ts). Se calcula aquí porque necesita saber
+       * cosas de fuera de la ficha —si está de baja, si ya es miembro, si hay
+       * convocatoria abierta— que el navegador no tiene. Con esto, la lista de
+       * Clientes deja de decir «Esperando 9 días» de quien va sola con los
+       * correos de la lista de espera.
+       */
+      situacion: ctx ? situacion(v as DatosAtencion, ctx(v.correo)) : null,
     };
   });
 
@@ -260,6 +308,10 @@ export async function GET() {
        contadores, el buscador y los filtros de la pantalla trabajan solo sobre
        esto. Se dice para que no parezca que eso es todo lo que hay. */
     recortada: lista.size >= TOPE,
+    /* Cuántos se han pedido de verdad, para que la pantalla diga el número
+       exacto y sepa si todavía puede pedir más. */
+    tope: TOPE,
+    topeMaximo: TOPE_MAXIMO,
   });
 }
 

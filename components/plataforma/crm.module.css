@@ -881,3 +881,12 @@
 .procedencia b {
   font-weight: 500;
 }
+
+/* El menú «⋯» cerca del final de la pantalla se abre hacia arriba: hacia
+   abajo se metía debajo de la barra fija del móvil y no se veía «Borrar».
+   Lo decide Contactos.tsx al abrirlo, midiendo el sitio que queda. */
+.menu[data-arriba] {
+  top: auto;
+  bottom: calc(100% + 4px);
+  transform-origin: bottom right;
+}

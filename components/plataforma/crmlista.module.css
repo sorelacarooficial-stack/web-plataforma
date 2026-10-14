@@ -1,0 +1,633 @@
+/*
+ * La lista compacta de Clientes: una fila por persona.
+ *
+ * El tablero de tarjetas grandes servía con veinte personas; con mil, cada
+ * tarjeta ocupaba media pantalla de móvil y no había forma de recorrerlo.
+ * Aquí cada persona es una línea de unos 48 px —iniciales, nombre, de dónde
+ * entró y una pastilla con lo que toca—, y lo que pide atención se separa en
+ * pestañas en vez de en columnas.
+ *
+ * Nada de backdrop-filter ni sombras por fila: con cientos de filas cada
+ * efecto se paga en cada fotograma del scroll. Las filas son opacas y planas;
+ * la profundidad la pone el contenedor, que es uno solo.
+ *
+ * Color, medido sobre el blanco roto de la fila (#fffdf9): la letra va en
+ * tinta (#141210) o en los grises y dorados oscurecidos de la plataforma
+ * (--muted-2 #5e564c, --oro-letra #6f5323, --peligro-letra #8f3f26), todos por
+ * encima de 4,5 a 1 incluso sobre el tinte de su pastilla. El oro vivo
+ * (#8a6a32) solo rellena: no se usa para letra pequeña.
+ */
+
+/* ---------- La barra de arriba ---------- */
+
+/* Buscar, Filtros, Lista / Tablero, Añadir y Excel en una sola barra. En el
+   ordenador cabe en una línea; en el móvil se parte en dos (ver abajo). */
+.barra {
+  row-gap: 8px;
+}
+
+.barra .buscar {
+  order: 1;
+}
+
+.barra .filtrosBoton {
+  order: 2;
+}
+
+.barra .vistas {
+  order: 3;
+}
+
+.barra .botones {
+  order: 4;
+}
+
+/* ---------- Lista / Tablero ---------- */
+
+.vistas {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(20, 18, 16, 0.06);
+}
+
+.vistaBoton {
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2, #3e3831);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.vistaBoton[aria-pressed='true'] {
+  background: #fffdf9;
+  color: var(--ink, #141210);
+  box-shadow: 0 1px 3px rgba(20, 18, 16, 0.14);
+}
+
+.vistaBoton:focus-visible,
+.filtrosBoton:focus-visible,
+.chip:focus-visible,
+.pestana:focus-visible,
+.nombre:focus-visible,
+.icono:focus-visible,
+.avanzar:focus-visible,
+.mas:focus-visible {
+  outline: 2px solid #8a6a32;
+  outline-offset: 2px;
+}
+
+/* ---------- Filtros plegados ---------- */
+
+.filtrosBoton {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  /* Tan alto como el buscador, porque ahora va a su lado. */
+  height: 44px;
+  min-width: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line-4, rgba(20, 18, 16, 0.17));
+  border-radius: 999px;
+  background: #fffdf9;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink, #141210);
+  cursor: pointer;
+}
+
+.filtrosBoton[aria-expanded='true'] {
+  border-color: var(--ink, #141210);
+}
+
+.filtrosCuenta {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #141210;
+  color: #f7f2ea;
+  font-size: 11.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.filtrosPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Cada grupo de chips es UNA línea que se desliza de lado: así los filtros no
+   crecen hacia abajo cuando hay muchas procedencias. */
+.chipsFila {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 0;
+}
+
+.chipsFila::-webkit-scrollbar {
+  display: none;
+}
+
+.chipsTitulo {
+  flex: none;
+  margin-right: 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--oro-letra, #6f5323);
+  white-space: nowrap;
+}
+
+.chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line-3, rgba(20, 18, 16, 0.13));
+  border-radius: 999px;
+  background: #fffdf9;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink, #141210);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.chip:hover {
+  border-color: var(--line-5, rgba(20, 18, 16, 0.26));
+}
+
+.chip[aria-pressed='true'] {
+  background: #141210;
+  border-color: #141210;
+  color: #f7f2ea;
+}
+
+.chipNumero {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-2, #5e564c);
+}
+
+.chip[aria-pressed='true'] .chipNumero {
+  color: #e6dccb;
+}
+
+/* ---------- Pestañas ---------- */
+
+.pestanas {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--line-2, rgba(20, 18, 16, 0.1));
+}
+
+.pestanas::-webkit-scrollbar {
+  display: none;
+}
+
+/* Subrayado y no pastilla: las pestañas son el índice de la lista, no un
+   botón más, y así se distinguen de los chips de filtro de arriba. */
+.pestana {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 10px;
+  margin-bottom: -3px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted-2, #5e564c);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.pestana:hover {
+  color: var(--ink, #141210);
+}
+
+.pestana[aria-selected='true'] {
+  color: var(--ink, #141210);
+  font-weight: 500;
+  border-bottom-color: #8a6a32;
+}
+
+.pestanaNumero {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(20, 18, 16, 0.06);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--ink-2, #3e3831);
+}
+
+/* «Te necesitan» con gente dentro es lo único que pide que lo mires: su
+   número va relleno de tinta. Vacía, se queda como las demás. */
+.pestana[data-id='te-necesita'][data-hay] .pestanaNumero {
+  background: #141210;
+  color: #f7f2ea;
+}
+
+/* ---------- La lista ---------- */
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line-2, rgba(20, 18, 16, 0.1));
+  border-radius: 18px;
+  background: #fffdf9;
+}
+
+.fila {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto auto auto;
+  grid-template-areas:
+    'avatar nombre pastilla acciones mas'
+    'avatar meta   pastilla acciones mas';
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 1px;
+  min-height: 52px;
+  padding: 7px 10px 7px 14px;
+  border-top: 1px solid var(--line-1, rgba(20, 18, 16, 0.07));
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.fila:first-child {
+  border-top: 0;
+  border-radius: 17px 17px 0 0;
+}
+
+.fila:last-child {
+  border-radius: 0 0 17px 17px;
+}
+
+.fila:only-child {
+  border-radius: 17px;
+}
+
+.fila:hover {
+  background: #f8f3ea;
+}
+
+/* La fila con el menú abierto pasa por encima de las de abajo, o el menú
+   quedaría tapado por la siguiente. */
+.fila[data-menu] {
+  z-index: 5;
+}
+
+.avatar {
+  grid-area: avatar;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(20, 18, 16, 0.07);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink, #141210);
+}
+
+/* Un tinte suave por lo que busca, con la letra siempre en tinta: el color
+   ayuda a agrupar de un vistazo y no tiene que leerse. */
+.avatar[data-tipo='comunidad'] {
+  background: rgba(138, 106, 50, 0.16);
+}
+
+.avatar[data-tipo='alumna'] {
+  background: rgba(71, 102, 60, 0.14);
+}
+
+.avatar[data-tipo='clienta'] {
+  background: rgba(143, 63, 38, 0.12);
+}
+
+.nombre {
+  grid-area: nombre;
+  justify-self: start;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink, #141210);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.meta {
+  grid-area: meta;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--muted-2, #5e564c);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pastilla {
+  grid-area: pastilla;
+  justify-self: end;
+  /* En el ordenador sobra sitio entre la línea gris y la pastilla: con
+     220 px se cortaba la mitad de las situaciones («La apuntaste tú: nadie
+     más le escrib…») con medio renglón vacío al lado. 380 px dejan entera
+     la más larga que hay, con sus días. */
+  max-width: 380px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(20, 18, 16, 0.06);
+  color: var(--ink-2, #3e3831);
+}
+
+.pastilla[data-tono='urgente'] {
+  background: rgba(143, 63, 38, 0.1);
+  color: var(--peligro-letra, #8f3f26);
+}
+
+.pastilla[data-tono='necesita'] {
+  background: rgba(20, 18, 16, 0.08);
+  color: var(--ink, #141210);
+}
+
+.pastilla[data-tono='auto'] {
+  background: rgba(138, 106, 50, 0.12);
+  color: var(--oro-letra, #6f5323);
+}
+
+.pastilla[data-tono='oro'] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(138, 106, 50, 0.4);
+  color: var(--oro-letra, #6f5323);
+}
+
+.pastilla[data-tono='bien'] {
+  background: rgba(71, 102, 60, 0.12);
+  color: var(--bien-letra, #3d5a33);
+}
+
+.pastilla[data-tono='apagado'] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line-3, rgba(20, 18, 16, 0.13));
+  color: var(--muted-2, #5e564c);
+}
+
+.acciones {
+  grid-area: acciones;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.icono,
+.mas {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-2, #3e3831);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.icono:hover,
+.mas:hover,
+.mas[aria-expanded='true'] {
+  background: rgba(20, 18, 16, 0.07);
+  color: var(--ink, #141210);
+}
+
+.icono[data-canal='whatsapp']:hover {
+  background: rgba(37, 211, 102, 0.14);
+  color: #187a41;
+}
+
+.avanzar {
+  height: 28px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 999px;
+  background: #141210;
+  color: #f7f2ea;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.avanzar:hover {
+  background: #2a2620;
+}
+
+/* La versión corta de la pastilla solo se ve en el móvil. */
+.pastillaCorta {
+  display: none;
+}
+
+/* El hueco del menú: lo ancla a su botón. Tiene su propia casilla de la
+   rejilla para poder cambiarlo de sitio en el móvil. */
+.masHueco {
+  grid-area: mas;
+  position: relative;
+  display: inline-flex;
+  margin-left: -8px;
+}
+
+.vacio {
+  margin: 0;
+  padding: 28px 16px;
+  border: 1px dashed var(--line-3, rgba(20, 18, 16, 0.13));
+  border-radius: 18px;
+  font-size: 14px;
+  text-align: center;
+  color: var(--muted-2, #5e564c);
+}
+
+.mas50 {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 8px;
+}
+
+/* Entre el móvil y el ordenador ancho la columna del nombre se queda
+   estrecha: la pastilla vuelve a un tope menor para no comérsela. */
+@media (min-width: 601px) and (max-width: 1100px) {
+  .pastilla {
+    max-width: 240px;
+  }
+}
+
+/* ---------- Móvil ---------- */
+
+@media (max-width: 600px) {
+  /*
+   * La barra en dos líneas: el buscador con Filtros, y debajo Lista /
+   * Tablero con Añadir y Excel. Filtros, Añadir y Excel se quedan en icono
+   * (con su nombre para el lector de pantalla). Antes eran cinco líneas y la
+   * primera persona empezaba a 503 px de los 844 del teléfono.
+   */
+  .barra .buscar {
+    flex: 1 1 calc(100% - 54px);
+  }
+
+  .barra .botones {
+    margin-left: auto;
+  }
+
+  .textoBoton {
+    display: none;
+  }
+
+  .filtrosBoton {
+    position: relative;
+    padding: 0;
+    width: 44px;
+  }
+
+  /* El número de filtros puestos, como una chapa sobre el icono. */
+  .filtrosCuenta {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+  }
+
+  .botonCompacto.botonCompacto {
+    justify-content: center;
+    width: 44px;
+    padding: 0;
+  }
+
+  .pestana {
+    height: 36px;
+  }
+
+  /*
+   * Tres líneas por persona: el nombre solo en la primera (con el «⋯» al
+   * final), de dónde viene en la segunda y en la tercera la pastilla con los
+   * botones.
+   *
+   * Con dos líneas no había forma de que se leyera nada: en la primera la
+   * pastilla le quitaba el sitio al nombre («Laura Pére…») y en la segunda
+   * los botones a la línea gris («Página Comuni…»). Con 1000 contactos se
+   * cortaban 36 nombres de cada 50. Una línea más por fila a cambio de leer
+   * a quién tienes delante sale a cuenta.
+   */
+  .fila {
+    grid-template-columns: 30px minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'avatar nombre   nombre   mas'
+      'avatar meta     meta     meta'
+      'avatar pastilla acciones acciones';
+    column-gap: 8px;
+    row-gap: 2px;
+    padding: 8px 6px 8px 12px;
+  }
+
+  .avatar {
+    align-self: start;
+    margin-top: 2px;
+  }
+
+  .pastilla {
+    justify-self: start;
+    max-width: 100%;
+    margin-top: 2px;
+    padding: 3px 8px;
+  }
+
+  .pastillaEntera {
+    display: none;
+  }
+
+  .pastillaCorta {
+    display: inline;
+  }
+
+  .acciones {
+    gap: 0;
+  }
+
+  /* Dos píxeles menos por icono son los que le faltaban a «Formación ·
+     201 d» para no cortarse al lado de «Ya le escribí». */
+  .icono {
+    width: 28px;
+  }
+
+  .masHueco {
+    margin: -5px 0 -5px 0;
+    align-self: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fila,
+  .chip,
+  .pestana,
+  .vistaBoton,
+  .avanzar,
+  .icono,
+  .mas {
+    transition: none;
+  }
+}

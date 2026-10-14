@@ -5,8 +5,10 @@ import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import FichaPersona, { type Persona } from './FichaPersona';
 import { ETIQUETA_TIPO, TIPOS, comoLlego, origenCorto, type Tipo } from '@/lib/origenes';
 import { PERFILES } from '@/lib/captacion';
+import { botonDe, diasEsperando, textoMotivo, type Grupo, type Motivo, type Situacion } from '@/lib/atencion';
 import css from './plataforma.module.css';
 import k from './crm.module.css';
+import l from './crmlista.module.css';
 
 /**
  * Los contactos de Sorela, dentro de la plataforma.
@@ -36,7 +38,83 @@ import k from './crm.module.css';
 const ESTADOS = ['Nuevo', 'Contactado', 'En conversación', 'Cerrado', 'Descartado'] as const;
 type Estado = (typeof ESTADOS)[number];
 
-type Contacto = Persona & { estado: Estado; tipo: Tipo };
+/* `situacion` la calcula el GET con la regla de lib/atencion.ts. Puede venir
+   null si el servidor no pudo leer el contexto; entonces se tira del estado. */
+type Contacto = Persona & { estado: Estado; tipo: Tipo; situacion?: Situacion | null };
+
+/**
+ * Las pestañas de la lista, una por situación.
+ *
+ * Son las de lib/atencion.ts y no las columnas del tablero porque responden a
+ * la pregunta que de verdad se hace Sorela al entrar —«¿a quién tengo que
+ * escribir?»— y no a «¿en qué estado guardé a cada una?». Con mil personas en
+ * la lista de espera, el tablero ponía las mil en «Por atender» aunque ninguna
+ * esperase nada de ella. «Sin correos» solo sale si hay alguien así: es poca
+ * gente y una pestaña siempre vacía es ruido.
+ */
+const PESTANAS: { id: string; titulo: string; grupos: Grupo[] | null; soloSiHay?: boolean }[] = [
+  { id: 'te-necesita', titulo: 'Te necesitan', grupos: ['te-necesita'] },
+  { id: 'lista', titulo: 'Lista de espera', grupos: ['lista'] },
+  { id: 'avisar', titulo: 'Esperan aviso', grupos: ['avisar'] },
+  { id: 'hablando', titulo: 'Hablando', grupos: ['hablando'] },
+  { id: 'cerradas', titulo: 'Cerradas / Descartadas', grupos: ['cerrado', 'descartado'] },
+  { id: 'sin-correos', titulo: 'Sin correos', grupos: ['sin-correos'], soloSiHay: true },
+  { id: 'todas', titulo: 'Todas', grupos: null },
+];
+
+/** Cuántas filas se pintan de cada tanda. Mil filas de golpe atascan el móvil. */
+const TANDA = 50;
+
+/**
+ * El motivo en una o dos palabras, para la pastilla del móvil.
+ *
+ * El texto de lib/atencion.ts («La apuntaste tú: nadie más le escribirá») es
+ * el bueno para la ficha y para el ordenador, pero en una fila de 390 px se
+ * comía el nombre de la persona y acababa cortado igual. En el móvil se
+ * enseña esto y el texto entero va en el `title` y en la ficha. Vive aquí y
+ * no en lib/ porque es solo una cuestión de sitio de esta pantalla.
+ */
+const MOTIVO_MINI: Record<Motivo, string> = {
+  marcada: 'Marcada',
+  reserva: 'Pidió plaza',
+  mensaje: 'Te escribió',
+  pregunta: 'Asistente web',
+  formacion: 'Formación',
+  cita: 'Quiere cita',
+  'a-mano': 'A mano',
+  'correo-no-llego': 'Correo no llegó',
+};
+
+/** Dónde se recuerda si Sorela prefiere la lista o el tablero. */
+const CLAVE_VISTA = 'divine-crm-vista';
+
+/**
+ * El grupo de alguien: el que dice el servidor y, si no vino, uno
+ * aproximado por su estado guardado. «Nuevo» sin más datos cae en «Te
+ * necesitan», que es lo que el tablero ya decía de ellas: mejor de más que
+ * esconder a alguien que sí espera.
+ */
+function grupoDe(c: Contacto): Grupo {
+  if (c.situacion) return c.situacion.grupo;
+  if (c.estado === 'Cerrado') return 'cerrado';
+  if (c.estado === 'Descartado') return 'descartado';
+  if (c.estado === 'Nuevo') return 'te-necesita';
+  return 'hablando';
+}
+
+/**
+ * La situación después de mover el estado a mano, sin esperar al servidor.
+ *
+ * Es una aproximación de lib/atencion.ts para que la fila salte de pestaña al
+ * pulsar: escribir o cerrar quita cualquier motivo pendiente. Volver a
+ * «Nuevo» no se adivina —depende de lo que pidió y cuándo—, así que ese caso
+ * se deja igual y se recarga la lista al guardar.
+ */
+function situacionTras(s: Situacion | null | undefined, estado: Estado): Situacion | null | undefined {
+  if (!s || estado === 'Nuevo') return s;
+  const grupo: Grupo = estado === 'Cerrado' ? 'cerrado' : estado === 'Descartado' ? 'descartado' : 'hablando';
+  return { ...s, estado, grupo, motivo: null, dato: null, desde: new Date().toISOString() };
+}
 
 /* Se reutilizan los distintivos que ya tiene la plataforma en vez de inventar
    cuatro colores nuevos: el sin atender destaca, el descartado se apaga. */
@@ -606,6 +684,54 @@ export default function Contactos() {
   const [modo, setModo] = useState<Modo | null>(null);
   /** Si el servidor ha tenido que cortar la lista por su tope. */
   const [recortada, setRecortada] = useState(false);
+  /* Lista compacta o tablero. La lista es la de salida: con cientos de
+     personas, una fila por cabeza es lo único que se puede recorrer. */
+  const [vista, setVista] = useState<'lista' | 'tablero'>('lista');
+  /* La pestaña que eligió Sorela. Null es «la que toque»: «Te necesitan» si
+     hay alguien, y si no «Todas». Se decide al pintar y no al cargar para que
+     se corrija sola cuando la última persona pasa a «Hablando». */
+  const [pestanaLista, setPestanaLista] = useState<string | null>(null);
+  /* Desde qué red o buscador llegó: el segundo filtro de procedencia. */
+  const [deFuente, setDeFuente] = useState<string | null>(null);
+  const [verFiltros, setVerFiltros] = useState(false);
+  /** Cuántas filas se pintan ahora; crece de TANDA en TANDA. */
+  const [cuantas, setCuantas] = useState(TANDA);
+  /* El marcador del final de la lista, en un estado y no en una ref para que
+     el observador se monte cuando el nodo aparece de verdad. */
+  const [centinela, setCentinela] = useState<HTMLElement | null>(null);
+  /* Si el menú «⋯» abierto se despliega hacia arriba: cerca del final de la
+     pantalla, hacia abajo quedaba debajo de la barra fija del móvil. */
+  const [menuArriba, setMenuArriba] = useState(false);
+  /* Cuántas tarjetas se pintan en cada columna del tablero. Pintar las 900 de
+     golpe, cada una con su animación de posición, congelaba la página más de
+     un segundo al pasar de Lista a Tablero. */
+  const [cuantasTablero, setCuantasTablero] = useState<Record<string, number>>({});
+  /* Cuántos contactos se piden al servidor y hasta dónde deja llegar. Va
+     también en una ref porque `cargar` no cambia de identidad y tiene que
+     pedir siempre el tope de ahora, no el del primer pintado. */
+  const [tope, setTope] = useState<{ ahora: number; maximo: number } | null>(null);
+  const topePedido = useRef<number | null>(null);
+
+  /* La vista elegida se recuerda en este navegador. Va en try/catch porque en
+     una ventana privada o con los datos bloqueados localStorage lanza, y eso
+     no puede dejar la pantalla en blanco. */
+  useEffect(() => {
+    try {
+      const guardada = window.localStorage.getItem(CLAVE_VISTA);
+      if (guardada === 'tablero' || guardada === 'lista') setVista(guardada);
+    } catch {
+      /* Sin almacenamiento: se queda la lista. */
+    }
+  }, []);
+
+  function elegirVista(v: 'lista' | 'tablero') {
+    setVista(v);
+    try {
+      window.localStorage.setItem(CLAVE_VISTA, v);
+    } catch {
+      /* No se recuerda, pero cambia igual. */
+    }
+  }
 
   /* Cada carga lleva su número de turno. Aquí se recarga desde cuatro sitios
      —al entrar, al guardar, al apuntar una nota y desde «Reintentar»—, así que
@@ -618,7 +744,7 @@ export default function Contactos() {
     const mio = ++turno.current;
     setFallo(null);
     try {
-      const r = await fetch('/api/contactos');
+      const r = await fetch(topePedido.current ? `/api/contactos?tope=${topePedido.current}` : '/api/contactos');
       const c = await r.json().catch(() => ({ ok: false }));
       if (mio !== turno.current) return;
       if (!c.ok) {
@@ -634,6 +760,7 @@ export default function Contactos() {
       }
       setLista(c.contactos);
       setRecortada(Boolean(c.recortada));
+      if (typeof c.tope === 'number') setTope({ ahora: c.tope, maximo: Number(c.topeMaximo) || c.tope });
     } catch {
       if (mio !== turno.current) return;
       setFallo('No hay conexión con el servidor.');
@@ -644,6 +771,67 @@ export default function Contactos() {
   useEffect(() => {
     cargar();
   }, [cargar]);
+
+  /** Traer los mil siguientes cuando la lista viene cortada por el tope. */
+  function traerMas() {
+    if (!tope) return;
+    topePedido.current = Math.min(tope.maximo, tope.ahora + 1000);
+    cargar();
+  }
+
+  /*
+   * Cerrar el menú «⋯» como se cierra cualquier menú: con Escape o pulsando
+   * en cualquier otro sitio de la página.
+   *
+   * Antes solo lo cerraba un clic dentro de la columna de Clientes —la
+   * cabecera o la barra de abajo no contaban— y Escape no hacía nada. Además
+   * el primer clic en otra fila solo cerraba el menú sin abrir su ficha, y
+   * parecía que la fila no respondía. Ahora el clic cierra el menú y sigue su
+   * camino: si era sobre otra persona, se abre su ficha.
+   *
+   * Se escucha `pointerdown` en el documento, en fase de captura, para que
+   * ningún stopPropagation de otra parte de la plataforma se lo coma. El botón
+   * «⋯» del menú abierto queda fuera: él mismo lo cierra con su clic, y si
+   * aquí también se cerrara, su clic lo volvería a abrir.
+   */
+  useEffect(() => {
+    if (!menu) return;
+    const raiz = document.documentElement;
+    /* Mientras hay un menú abierto, los avisos flotantes se apartan (ver
+       avisos.module.css): en el móvil tapaban sus últimas opciones, que son
+       justo «Descartar» y «Borrar». */
+    raiz.setAttribute('data-menu-abierto', '');
+    const fuera = (e: PointerEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t?.closest('[role=menu]') || t?.closest('[aria-expanded=true][data-menu-de]')) return;
+      setMenu(null);
+    };
+    const tecla = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      // Se vuelve al botón que lo abrió, o el foco se quedaría en el aire.
+      document.querySelector<HTMLElement>(`[data-menu-de="${CSS.escape(menu)}"]`)?.focus();
+      setMenu(null);
+    };
+    document.addEventListener('pointerdown', fuera, true);
+    document.addEventListener('keydown', tecla);
+    return () => {
+      raiz.removeAttribute('data-menu-abierto');
+      document.removeEventListener('pointerdown', fuera, true);
+      document.removeEventListener('keydown', tecla);
+    };
+  }, [menu]);
+
+  /** Abre o cierra el menú «⋯» de una persona, mirando hacia dónde cabe. */
+  function alternarMenu(id: string, boton: HTMLElement) {
+    if (menu === id) {
+      setMenu(null);
+      return;
+    }
+    /* El menú mide unos 260 px. Si debajo del botón no caben —la barra fija
+       del móvil se lleva además unos 80—, se abre hacia arriba. */
+    setMenuArriba(window.innerHeight - boton.getBoundingClientRect().bottom < 340);
+    setMenu(id);
+  }
 
   /**
    * Cambiar en qué punto está una persona.
@@ -657,8 +845,13 @@ export default function Contactos() {
     /* Se guarda solo el estado anterior de ESA persona, no la lista entera.
        Restaurando la lista entera, un fallo aquí borraba de la pantalla los
        cambios que sí se habían guardado bien en otras filas mientras tanto. */
-    const estadoAntes = lista?.find((c) => c.id === id)?.estado;
-    setLista((l) => l?.map((c) => (c.id === id ? { ...c, estado } : c)) ?? l);
+    const antes = lista?.find((c) => c.id === id);
+    const estadoAntes = antes?.estado;
+    // La situación también se guarda, para deshacerla igual que el estado.
+    const situacionAntes = antes?.situacion;
+    setLista(
+      (l) => l?.map((c) => (c.id === id ? { ...c, estado, situacion: situacionTras(c.situacion, estado) } : c)) ?? l
+    );
     try {
       const r = await fetch('/api/contactos', {
         method: 'PATCH',
@@ -666,12 +859,18 @@ export default function Contactos() {
         body: JSON.stringify({ id, estado }),
       });
       if (!(await r.json().catch(() => ({ ok: false }))).ok) throw new Error();
+      // Volver a «Nuevo» no se puede adivinar aquí (ver situacionTras): que
+      // lo diga el servidor con la regla de verdad.
+      if (estado === 'Nuevo') cargar();
       return true;
     } catch {
       // Se deshace y se avisa: dejar la pantalla diciendo «contactado» cuando
       // no se ha guardado es peor que no haber dejado pulsar.
-      setLista((l) =>
-        l?.map((c) => (c.id === id ? { ...c, estado: estadoAntes ?? c.estado } : c)) ?? l
+      setLista(
+        (l) =>
+          l?.map((c) =>
+            c.id === id ? { ...c, estado: estadoAntes ?? c.estado, situacion: situacionAntes ?? c.situacion } : c
+          ) ?? l
       );
       setFallo('No se ha podido guardar el cambio. Vuelve a intentarlo.');
       return false;
@@ -794,7 +993,10 @@ export default function Contactos() {
 
   /** Descarga la lista tal como se ve, para abrirla en una hoja de cálculo. */
   function exportar() {
-    if (!visibles.length) return;
+    /* «Tal como se ve»: en la lista, la pestaña entera (no solo las filas ya
+       pintadas); en el tablero, todo lo que pasa los filtros. */
+    const aExportar = vista === 'lista' ? enPestana : visibles;
+    if (!aExportar.length) return;
     const cabecera = ['Fecha', 'Nombre', 'Correo', 'Teléfono', 'Ciudad', 'A qué se dedica', 'De dónde viene', 'Estado', 'Nota'];
     /*
      * Escapar un campo del CSV son DOS cosas, no una.
@@ -838,7 +1040,7 @@ export default function Contactos() {
             minute: '2-digit',
           });
     };
-    const filas = visibles.map((c) =>
+    const filas = aExportar.map((c) =>
       [fecha(c.creado), c.nombre, c.correo, c.whatsapp, c.ciudad, c.perfil, c.origen, c.estado, c.nota]
         .map(escapa)
         .join(',')
@@ -859,12 +1061,13 @@ export default function Contactos() {
       (c) =>
         (tipo === 'Todos' || c.tipo === tipo) &&
         (!deDonde || origenCorto(c.origen) === deDonde) &&
+        (!deFuente || c.fuente === deFuente) &&
         (!t ||
           c.nombre.toLowerCase().includes(t) ||
           c.correo.toLowerCase().includes(t) ||
           c.ciudad.toLowerCase().includes(t))
     );
-  }, [lista, tipo, busca, deDonde]);
+  }, [lista, tipo, busca, deDonde, deFuente]);
 
   /* Cuántas han entrado por cada sitio, de más a menos. Es la respuesta a «de
      dónde me llega la gente» sin abrir ninguna ficha. */
@@ -885,6 +1088,67 @@ export default function Contactos() {
     for (const c of lista ?? []) if (c.fuente) m.set(c.fuente, (m.get(c.fuente) ?? 0) + 1);
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [lista]);
+
+  /* Cuántas hay en cada grupo, ya con el buscador y los filtros puestos: el
+     número de cada pestaña es lo que vas a encontrar al pulsarla. */
+  const porGrupo = useMemo(() => {
+    const m = new Map<Grupo, Contacto[]>();
+    for (const c of visibles) {
+      const g = grupoDe(c);
+      const ya = m.get(g);
+      if (ya) ya.push(c);
+      else m.set(g, [c]);
+    }
+    return m;
+  }, [visibles]);
+
+  const cuentaPestana = (p: (typeof PESTANAS)[number]) =>
+    p.grupos ? p.grupos.reduce((s, g) => s + (porGrupo.get(g)?.length ?? 0), 0) : visibles.length;
+
+  const pestanaActiva =
+    PESTANAS.find((p) => p.id === pestanaLista) ??
+    PESTANAS.find((p) => p.id === ((porGrupo.get('te-necesita')?.length ?? 0) > 0 ? 'te-necesita' : 'todas'))!;
+
+  /* Las de la pestaña, en su orden. En «Te necesitan» primero quien más
+     lleva esperando, que es a quien hay que escribir antes; en las demás, la
+     última que entró arriba, como llegan del servidor. */
+  const enPestana = useMemo(() => {
+    const grupos = pestanaActiva.grupos;
+    const suyas = grupos ? visibles.filter((c) => grupos.includes(grupoDe(c))) : visibles;
+    if (pestanaActiva.id !== 'te-necesita') return suyas;
+    const desde = (c: Contacto) => {
+      const t = Date.parse(c.situacion?.desde ?? c.creado ?? '');
+      return Number.isNaN(t) ? Infinity : t;
+    };
+    return [...suyas].sort((a, b) => desde(a) - desde(b));
+  }, [visibles, pestanaActiva]);
+
+  /* Al cambiar de pestaña o de filtro se vuelve a la primera tanda: seguir
+     con 400 filas pintadas de la búsqueda anterior no tiene sentido. */
+  useEffect(() => {
+    setCuantas(TANDA);
+    setCuantasTablero({});
+  }, [pestanaActiva.id, busca, tipo, deDonde, deFuente, vista]);
+
+  const hayMas = enPestana.length > cuantas;
+
+  /* Cargar la siguiente tanda al acercarse al final, sin tener que pulsar.
+     El botón «Ver más» se queda igual por si el navegador no tiene
+     IntersectionObserver o se navega con el teclado. */
+  useEffect(() => {
+    if (!centinela || !hayMas || typeof IntersectionObserver === 'undefined') return;
+    const obs = new IntersectionObserver(
+      (entradas) => {
+        if (entradas.some((e) => e.isIntersecting)) setCuantas((n) => n + TANDA);
+      },
+      { rootMargin: '400px 0px' }
+    );
+    obs.observe(centinela);
+    return () => obs.disconnect();
+  }, [centinela, hayMas]);
+
+  /** Cuántos filtros hay puestos, para decirlo en el botón aunque estén plegados. */
+  const filtrosPuestos = (tipo !== 'Todos' ? 1 : 0) + (deDonde ? 1 : 0) + (deFuente ? 1 : 0);
 
   /* El tablero: tres columnas y nada más.
      «Hablando» junta «Contactado» y «En conversación»: para Sorela es el mismo
@@ -923,6 +1187,169 @@ export default function Contactos() {
   /** Días que lleva esperando alguien sin respuesta: lo que pide atención. */
   const espera = (c: Contacto) =>
     c.estado === 'Nuevo' && c.creado ? Math.floor((Date.now() - new Date(c.creado).getTime()) / 86400000) : 0;
+
+  /* El menú «⋯» de una persona. Lo comparten la tarjeta del tablero y la fila
+     de la lista: editar, descartar y borrar no están en la ficha, y sin él
+     la lista no tendría manera de hacerlo. */
+  function opciones(c: Contacto) {
+    return (
+      <AnimatePresence>
+        {menu === c.id && (
+          <motion.div
+            className={k.menu}
+            role="menu"
+            data-arriba={menuArriba ? '' : undefined}
+            initial={{ opacity: 0, y: menuArriba ? 6 : -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.16 }}
+          >
+            <button type="button" role="menuitem" onClick={() => { setMenu(null); setAbierta(c.id); }}>Ver ficha y notas</button>
+            <button type="button" role="menuitem" onClick={() => { setMenu(null); setAviso(null); setModo({ que: 'editar', contacto: c }); }}>Editar datos</button>
+            {c.estado === 'Contactado' && (
+              <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'En conversación'); }}>Marcar «en conversación»</button>
+            )}
+            {c.estado !== 'Nuevo' && c.estado !== 'Descartado' && (
+              <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'Nuevo'); }}>Volver a «por atender»</button>
+            )}
+            {c.estado !== 'Descartado' ? (
+              <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'Descartado'); }}>Descartar</button>
+            ) : (
+              <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'Nuevo'); }}>Recuperar</button>
+            )}
+            <button type="button" role="menuitem" className={k.peligro} onClick={() => { setMenu(null); borrar(c); }}>Borrar</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
+
+  /**
+   * La pastilla de situación de una fila: qué toca con ella, en dos o tres
+   * palabras, y un tono que solo se calienta cuando de verdad espera.
+   *
+   * Quien está en la lista de espera dice «En automático» y nunca «Esperando
+   * N días»: le llegan solos los correos de la masterclass y Sorela no tiene
+   * nada que hacer. Era justo lo que hacía que el tablero pareciera un
+   * incendio con cientos de personas tranquilas dentro.
+   */
+  function pastillaDe(c: Contacto): { texto: string; tono: string; mini?: string } {
+    const s = c.situacion;
+    switch (grupoDe(c)) {
+      case 'te-necesita': {
+        const corto = s ? textoMotivo(s)?.corto ?? 'Te necesita' : 'Sin atender';
+        /* `mini` es lo que cabe en el móvil: el motivo en una o dos palabras
+           y los días en «d». El texto entero sigue en el ordenador. */
+        const mini = s?.motivo ? MOTIVO_MINI[s.motivo] : corto;
+        const dias = s ? diasEsperando(s.desde) : espera(c);
+        return dias >= 2
+          ? { texto: `${corto} · ${dias} días`, mini: `${mini} · ${dias} d`, tono: 'urgente' }
+          : { texto: corto, mini, tono: 'necesita' };
+      }
+      case 'lista':
+        return { texto: 'En automático', tono: 'auto' };
+      case 'avisar':
+        return { texto: 'Espera aviso', tono: 'neutro' };
+      case 'hablando':
+        return { texto: c.estado === 'En conversación' ? 'En conversación' : 'Le escribiste', tono: 'oro' };
+      case 'cerrado':
+        return { texto: 'Cerrado', tono: 'bien' };
+      case 'descartado':
+        return { texto: 'Descartado', tono: 'apagado' };
+      default:
+        return { texto: 'Sin correos', tono: 'apagado' };
+    }
+  }
+
+  /**
+   * Una fila de la lista compacta: una persona, una línea (dos en el móvil).
+   *
+   * Toda la fila abre la ficha, salvo lo que ya es un botón o un enlace
+   * dentro de ella. El nombre es además un botón de verdad para quien va con
+   * el teclado. Sin animaciones de entrada ni capas translúcidas: con cientos
+   * de filas, cada efecto por fila se paga al hacer scroll.
+   */
+  function fila(c: Contacto) {
+    const g = grupoDe(c);
+    const { texto, tono, mini } = pastillaDe(c);
+    /* El botón de avanzar solo cuando alguien espera respuesta. En la lista
+       de espera, «Ya le escribí» invitaba a marcar a cientos de personas a
+       las que nadie tiene que escribir. */
+    const boton = g === 'te-necesita' ? (c.situacion ? botonDe(c.situacion) : 'Ya le escribí') : null;
+    const meta = [origenCorto(c.origen), c.ciudad, cuando(c.creado)].filter(Boolean).join(' · ');
+    return (
+      <li
+        key={c.id}
+        className={l.fila}
+        data-menu={menu === c.id ? '' : undefined}
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest('a,button,[role=menu]')) return;
+          /* Si había un menú abierto, ya lo ha cerrado el pointerdown del
+             documento; este clic abre la ficha igual. Antes se tragaba el
+             clic y parecía que la fila no respondía. */
+          setAbierta(c.id);
+        }}
+      >
+        <span className={l.avatar} data-tipo={c.tipo} aria-hidden="true">
+          {iniciales(c.nombre)}
+        </span>
+        <button type="button" className={l.nombre} onClick={() => setAbierta(c.id)}>
+          {c.nombre || 'Sin nombre'}
+        </button>
+        <span className={l.meta} title={comoLlego(c.origen)}>
+          {meta}
+        </span>
+        {/* Las dos versiones van en el HTML y el CSS elige: la entera en el
+            ordenador, la corta en el móvil. El `title` deja leer la entera
+            también ahí manteniendo el dedo o pasando el ratón. */}
+        <span className={l.pastilla} data-tono={tono} title={texto}>
+          <span className={l.pastillaEntera}>{texto}</span>
+          <span className={l.pastillaCorta}>{mini ?? texto}</span>
+        </span>
+        <span className={l.acciones}>
+          {c.whatsapp && (
+            <a className={l.icono} data-canal="whatsapp" href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp a ${c.nombre}`} title="WhatsApp">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.3-.4.8-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z" /></svg>
+            </a>
+          )}
+          {c.correo && (
+            <a className={l.icono} href={`mailto:${c.correo}`} aria-label={`Correo a ${c.nombre}`} title={c.correo}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+            </a>
+          )}
+          {boton && (
+            <button
+              type="button"
+              className={l.avanzar}
+              onClick={() => {
+                mover(c.id, 'Contactado');
+                setAviso(`${c.nombre || 'Esa persona'} pasa a «Hablando».`);
+              }}
+              aria-label={`${boton}: ${c.nombre || 'este contacto'}`}
+            >
+              {boton}
+            </button>
+          )}
+        </span>
+        {/* El «⋯» va fuera de las acciones, en su propia casilla: en el
+            móvil sube a la primera línea, al final del nombre, y deja la
+            última entera para la pastilla y los botones. */}
+        <span className={l.masHueco}>
+          <button
+            type="button"
+            className={l.mas}
+            aria-label={`Más opciones de ${c.nombre || 'este contacto'}`}
+            aria-expanded={menu === c.id}
+            data-menu-de={c.id}
+            onClick={(e) => alternarMenu(c.id, e.currentTarget)}
+          >
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>
+          </button>
+          {opciones(c)}
+        </span>
+      </li>
+    );
+  }
 
   /* Una función y no un componente: definido dentro, React lo vería como un
      componente nuevo en cada repintado y desmontaría la tarjeta a mitad de un
@@ -981,37 +1408,12 @@ export default function Contactos() {
               className={k.mas}
               aria-label={`Más opciones de ${c.nombre || 'este contacto'}`}
               aria-expanded={menu === c.id}
-              onClick={() => setMenu(menu === c.id ? null : c.id)}
+              data-menu-de={c.id}
+              onClick={(e) => alternarMenu(c.id, e.currentTarget)}
             >
               <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>
             </button>
-            <AnimatePresence>
-              {menu === c.id && (
-                <motion.div
-                  className={k.menu}
-                  role="menu"
-                  initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.16 }}
-                >
-                  <button type="button" role="menuitem" onClick={() => { setMenu(null); setAbierta(c.id); }}>Ver ficha y notas</button>
-                  <button type="button" role="menuitem" onClick={() => { setMenu(null); setAviso(null); setModo({ que: 'editar', contacto: c }); }}>Editar datos</button>
-                  {c.estado === 'Contactado' && (
-                    <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'En conversación'); }}>Marcar «en conversación»</button>
-                  )}
-                  {c.estado !== 'Nuevo' && c.estado !== 'Descartado' && (
-                    <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'Nuevo'); }}>Volver a «por atender»</button>
-                  )}
-                  {c.estado !== 'Descartado' ? (
-                    <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'Descartado'); }}>Descartar</button>
-                  ) : (
-                    <button type="button" role="menuitem" onClick={() => { setMenu(null); mover(c.id, 'Nuevo'); }}>Recuperar</button>
-                  )}
-                  <button type="button" role="menuitem" className={k.peligro} onClick={() => { setMenu(null); borrar(c); }}>Borrar</button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {opciones(c)}
           </div>
 
           {c.nota && <p className={k.nota}>«{c.nota}»</p>}
@@ -1067,10 +1469,19 @@ export default function Contactos() {
   const activos = COLUMNAS.reduce((s, col) => s + cuentaDe(col), 0);
 
   return (
-    <div className={css.columna} onClick={(e) => { if (menu && !(e.target as HTMLElement).closest('[role=menu],[aria-expanded]')) setMenu(null); }}>
+    <div className={css.columna}>
+      {/* Si la lista viene cortada, se dice cuántos hay y se ofrece traer más
+          en vez de solo avisar: con mil personas de verdad, «se muestran los
+          500 más recientes» dejaba a la otra mitad sin forma de llegar. */}
       {recortada && !fallo && (
         <p className={css.apunte} role="note">
-          Se muestran los 500 contactos más recientes: el buscador solo mira estos.
+          Se muestran los {lista.length} contactos más recientes: las pestañas y el buscador solo
+          miran estos.{' '}
+          {tope && tope.ahora < tope.maximo && (
+            <button type="button" className={css.btnLinea} onClick={traerMas}>
+              Traer los {Math.min(1000, tope.maximo - tope.ahora)} anteriores
+            </button>
+          )}
         </p>
       )}
 
@@ -1097,86 +1508,17 @@ export default function Contactos() {
         )}
       </AnimatePresence>
 
-      {/* El embudo: de un vistazo, cuántas hay en cada paso. Tocar un paso en
-          el móvil enseña esa columna. */}
-      <div className={k.embudo} role="tablist" aria-label="En qué punto están">
-        {COLUMNAS.map((col, i) => {
-          const n = cuentaDe(col);
-          return (
-            <button
-              key={col.id}
-              type="button"
-              role="tab"
-              aria-selected={columnaMovil.id === col.id}
-              className={k.paso}
-              data-columna={col.id}
-              data-activo={columnaMovil.id === col.id ? '' : undefined}
-              onClick={() => setPestana(col.id)}
-            >
-              <span className={k.pasoNumero}>
-                <motion.span key={n} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-                  {n}
-                </motion.span>
-              </span>
-              <span className={k.pasoTexto}>
-                <span className={k.pasoTitulo}>{col.titulo}</span>
-                <span className={k.pasoPista}>{col.pista}</span>
-              </span>
-              <span className={k.pasoBarra} aria-hidden="true">
-                <motion.span
-                  className={k.pasoRelleno}
-                  animate={{ width: activos ? `${(n / activos) * 100}%` : '0%' }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 30 }}
-                />
-              </span>
-              {i < COLUMNAS.length - 1 && (
-                <span className={k.flecha} aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* De dónde llegan: cuántas por cada puerta. Pulsar una filtra el tablero. */}
-      {procedencias.length > 0 && (
-        <section className={k.procedencias} aria-label="De dónde llegan">
-          <div className={k.procedenciasFila}>
-            <span className={k.procedenciasTitulo}>Por dónde entraron</span>
-            {procedencias.map(([o, n]) => (
-              <button
-                key={o}
-                type="button"
-                className={k.pastilla}
-                aria-pressed={deDonde === o}
-                onClick={() => setDeDonde(deDonde === o ? null : o)}
-              >
-                {o} <span className={k.pastillaNumero}>{n}</span>
-              </button>
-            ))}
-            {deDonde && (
-              <button type="button" className={k.quitarFiltro} onClick={() => setDeDonde(null)}>
-                Ver todas
-              </button>
-            )}
-          </div>
-          {fuentes.length > 0 && (
-            <div className={k.procedenciasFila}>
-              <span className={k.procedenciasTitulo}>Desde dónde llegaron a la web</span>
-              {fuentes.map(([f, n]) => (
-                <span key={f} className={k.pastillaFija}>
-                  {f} <span className={k.pastillaNumero}>{n}</span>
-                </span>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Una sola barra: buscar, qué busca la persona y los dos botones. */}
-      <div className={k.barra}>
-        <label className={k.buscar}>
+      {/*
+        * Una sola barra: buscar, filtros, cómo verlo y los dos botones.
+        *
+        * Antes los filtros iban en una línea aparte y, en el móvil, Lista /
+        * Tablero, Añadir y Excel ocupaban otra cada uno: la primera persona
+        * empezaba a media pantalla. Ahora en el móvil son dos líneas —el
+        * buscador con Filtros, y debajo la vista con Añadir y Excel como
+        * iconos— y en el ordenador una sola. El orden lo pone el CSS.
+        */}
+      <div className={`${k.barra} ${l.barra}`}>
+        <label className={`${k.buscar} ${l.buscar}`}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M16.5 16.5L21 21" strokeLinecap="round" /></svg>
           <input
             placeholder="Buscar por nombre, correo o ciudad"
@@ -1185,41 +1527,106 @@ export default function Contactos() {
             onChange={(e) => setBusca(e.target.value)}
           />
         </label>
-        <div className={k.segmentos} role="group" aria-label="Qué busca">
-          {/* «Quiere tratarse» (sesiones) y «Sin clasificar» solo salen si hay
-              alguien así: hoy la web solo capta para la masterclass y el resto
-              entra por un enlace a un curso o a la membresía. */}
-          {(['Todos', ...TIPOS.filter((t) => (t !== 'otro' && t !== 'clienta') || (lista ?? []).some((c) => c.tipo === t))] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setTipo(t)}
-              aria-pressed={tipo === t}
-              className={k.segmento}
-            >
-              {tipo === t && <motion.span layoutId="segmento-activo" className={k.segmentoFondo} transition={{ type: 'spring', stiffness: 500, damping: 38 }} />}
-              <span className={k.segmentoTexto}>{t === 'Todos' ? 'Todos' : ETIQUETA_TIPO[t]}</span>
-            </button>
-          ))}
+        {/* Plegados: se usan de vez en cuando y abiertos empujaban a las
+            personas media pantalla abajo. El número dice cuántos hay puestos
+            para que no se olviden aunque estén cerrados. */}
+        <button
+          type="button"
+          className={l.filtrosBoton}
+          aria-expanded={verFiltros}
+          aria-label={filtrosPuestos > 0 ? `Filtros (${filtrosPuestos} puestos)` : 'Filtros'}
+          onClick={() => setVerFiltros((v) => !v)}
+        >
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" strokeLinecap="round" /></svg>
+          <span className={l.textoBoton}>Filtros</span>
+          {filtrosPuestos > 0 && <span className={l.filtrosCuenta}>{filtrosPuestos}</span>}
+        </button>
+        <div className={l.vistas} role="group" aria-label="Cómo verlo">
+          <button type="button" className={l.vistaBoton} aria-pressed={vista === 'lista'} onClick={() => elegirVista('lista')}>
+            Lista
+          </button>
+          <button type="button" className={l.vistaBoton} aria-pressed={vista === 'tablero'} onClick={() => elegirVista('tablero')}>
+            Tablero
+          </button>
         </div>
-        <div className={k.botones}>
+        <div className={`${k.botones} ${l.botones}`}>
           <button
             type="button"
-            className={k.nuevo}
+            className={`${k.nuevo} ${l.botonCompacto}`}
+            aria-label="Añadir un contacto"
             onClick={() => {
               setAviso(null);
               setModo({ que: 'nuevo' });
             }}
           >
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" strokeLinecap="round" /></svg>
-            Añadir
+            <span className={l.textoBoton}>Añadir</span>
           </button>
-          <button type="button" className={k.excel} onClick={exportar} disabled={!visibles.length} title="Descargar en Excel">
+          <button
+            type="button"
+            className={`${k.excel} ${l.botonCompacto}`}
+            onClick={exportar}
+            disabled={!(vista === 'lista' ? enPestana : visibles).length}
+            aria-label="Descargar en Excel"
+            title="Descargar en Excel"
+          >
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            Excel
+            <span className={l.textoBoton}>Excel</span>
           </button>
         </div>
       </div>
+
+      {verFiltros && (
+        <div className={l.filtrosPanel}>
+          {/* «Quitar filtros» vive aquí y no en la barra: en la barra
+              empujaba a Lista / Tablero a otra línea en el móvil. */}
+          {filtrosPuestos > 0 && (
+            <button
+              type="button"
+              className={k.quitarFiltro}
+              style={{ alignSelf: 'flex-start' }}
+              onClick={() => {
+                setTipo('Todos');
+                setDeDonde(null);
+                setDeFuente(null);
+              }}
+            >
+              Quitar filtros
+            </button>
+          )}
+          <div className={l.chipsFila} role="group" aria-label="Qué busca">
+            <span className={l.chipsTitulo}>Qué busca</span>
+            {/* «Quiere tratarse» (sesiones) y «Sin clasificar» solo salen si hay
+                alguien así: hoy la web solo capta para la masterclass y el resto
+                entra por un enlace a un curso o a la membresía. */}
+            {(['Todos', ...TIPOS.filter((t) => (t !== 'otro' && t !== 'clienta') || lista.some((c) => c.tipo === t))] as const).map((t) => (
+              <button key={t} type="button" className={l.chip} aria-pressed={tipo === t} onClick={() => setTipo(t)}>
+                {t === 'Todos' ? 'Todos' : ETIQUETA_TIPO[t]}
+              </button>
+            ))}
+          </div>
+          {procedencias.length > 0 && (
+            <div className={l.chipsFila} role="group" aria-label="Por dónde entraron">
+              <span className={l.chipsTitulo}>Por dónde entraron</span>
+              {procedencias.map(([o, n]) => (
+                <button key={o} type="button" className={l.chip} aria-pressed={deDonde === o} onClick={() => setDeDonde(deDonde === o ? null : o)}>
+                  {o} <span className={l.chipNumero}>{n}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {fuentes.length > 0 && (
+            <div className={l.chipsFila} role="group" aria-label="Desde dónde llegaron a la web">
+              <span className={l.chipsTitulo}>Desde dónde llegaron</span>
+              {fuentes.map(([f, n]) => (
+                <button key={f} type="button" className={l.chip} aria-pressed={deFuente === f} onClick={() => setDeFuente(deFuente === f ? null : f)}>
+                  {f} <span className={l.chipNumero}>{n}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {lista.length === 0 && !fallo ? (
         <section className={css.tarjeta}>
@@ -1228,67 +1635,185 @@ export default function Contactos() {
             mientras tanto puedes apuntar tú a quien conozcas con «Añadir».
           </p>
         </section>
-      ) : (
-        <LayoutGroup>
-          <div className={k.tablero}>
-            {COLUMNAS.map((col) => {
-              const suyos = visibles.filter((c) => col.estados.includes(c.estado));
+      ) : vista === 'lista' ? (
+        <>
+          {/* Las pestañas: qué toca con cada persona, con cuántas hay. Se
+              puede deslizar en el móvil; ninguna se parte en dos líneas. */}
+          <div className={l.pestanas} role="tablist" aria-label="Qué toca con cada persona">
+            {PESTANAS.map((p) => {
+              const n = cuentaPestana(p);
+              if (p.soloSiHay && n === 0 && pestanaActiva.id !== p.id) return null;
+              const activa = pestanaActiva.id === p.id;
               return (
-                <section
-                  key={col.id}
-                  className={k.columna}
-                  data-columna={col.id}
-                  data-movil-oculta={columnaMovil.id !== col.id ? '' : undefined}
-                  data-encima={encima === col.id ? '' : undefined}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    if (encima !== col.id) setEncima(col.id);
-                  }}
-                  onDragLeave={(e) => {
-                    if (!e.currentTarget.contains(e.relatedTarget as Node)) setEncima(null);
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setEncima(null);
-                    setArrastrando(null);
-                    const id = e.dataTransfer.getData('text/plain');
-                    const c = lista.find((x) => x.id === id);
-                    if (c && !col.estados.includes(c.estado)) mover(id, col.alSoltar);
-                  }}
-                  aria-label={col.titulo}
+                <button
+                  key={p.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activa}
+                  className={l.pestana}
+                  data-id={p.id}
+                  data-hay={n > 0 ? '' : undefined}
+                  onClick={() => setPestanaLista(p.id)}
                 >
-                  <div className={k.lista}>
-                    <AnimatePresence mode="popLayout">
-                      {suyos.map((c) => tarjeta(c))}
-                    </AnimatePresence>
-                    {suyos.length === 0 && (
-                      <p className={k.vacio}>
-                        {busca || tipo !== 'Todos' || deDonde
-                          ? 'Nadie con ese filtro.'
-                          : col.id === 'atender'
-                            ? 'Todo atendido. Bien hecho.'
-                            : 'Arrastra aquí una tarjeta.'}
-                      </p>
-                    )}
-                  </div>
-                </section>
+                  {p.titulo}
+                  <span className={l.pestanaNumero}>{n}</span>
+                </button>
               );
             })}
           </div>
-        </LayoutGroup>
-      )}
 
-      {(descartados.length > 0 || raros.length > 0) && (
-        <div className={k.descartados}>
-          <button type="button" className={css.enlaceAccion} onClick={() => setVerDescartados((v) => !v)}>
-            {verDescartados ? 'Ocultar descartados' : `Ver descartados (${descartados.length + raros.length})`}
-          </button>
-          {verDescartados && (
-            <div className={k.listaDescartados}>
-              {[...descartados, ...raros].map((c) => tarjeta(c))}
+          {enPestana.length === 0 ? (
+            <p className={l.vacio}>
+              {busca || filtrosPuestos
+                ? 'Nadie con ese filtro.'
+                : pestanaActiva.id === 'te-necesita'
+                  ? 'Nadie espera respuesta tuya. Bien hecho.'
+                  : 'Aquí no hay nadie ahora.'}
+            </p>
+          ) : (
+            <>
+              <ul className={l.lista} aria-label={pestanaActiva.titulo}>
+                {enPestana.slice(0, cuantas).map((c) => fila(c))}
+              </ul>
+              {hayMas && (
+                <div ref={setCentinela} className={l.mas50}>
+                  <button type="button" className={css.btnLinea} onClick={() => setCuantas((n) => n + TANDA)}>
+                    Ver más ({enPestana.length - cuantas} más)
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          {/* El embudo: de un vistazo, cuántas hay en cada paso. Tocar un paso en
+              el móvil enseña esa columna. */}
+          <div className={k.embudo} role="tablist" aria-label="En qué punto están">
+            {COLUMNAS.map((col, i) => {
+              const n = cuentaDe(col);
+              return (
+                <button
+                  key={col.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={columnaMovil.id === col.id}
+                  className={k.paso}
+                  data-columna={col.id}
+                  data-activo={columnaMovil.id === col.id ? '' : undefined}
+                  onClick={() => setPestana(col.id)}
+                >
+                  <span className={k.pasoNumero}>
+                    <motion.span key={n} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                      {n}
+                    </motion.span>
+                  </span>
+                  <span className={k.pasoTexto}>
+                    <span className={k.pasoTitulo}>{col.titulo}</span>
+                    <span className={k.pasoPista}>{col.pista}</span>
+                  </span>
+                  <span className={k.pasoBarra} aria-hidden="true">
+                    <motion.span
+                      className={k.pasoRelleno}
+                      animate={{ width: activos ? `${(n / activos) * 100}%` : '0%' }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 30 }}
+                    />
+                  </span>
+                  {i < COLUMNAS.length - 1 && (
+                    <span className={k.flecha} aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <LayoutGroup>
+            <div className={k.tablero}>
+              {COLUMNAS.map((col) => {
+                const suyos = visibles.filter((c) => col.estados.includes(c.estado));
+                /* Por tandas, como la lista: las primeras 50 y un botón para
+                   las siguientes. Arrastrar sigue funcionando igual porque la
+                   columna de destino no necesita tener pintadas las suyas. */
+                const tantas = cuantasTablero[col.id] ?? TANDA;
+                return (
+                  <section
+                    key={col.id}
+                    className={k.columna}
+                    data-columna={col.id}
+                    data-movil-oculta={columnaMovil.id !== col.id ? '' : undefined}
+                    data-encima={encima === col.id ? '' : undefined}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (encima !== col.id) setEncima(col.id);
+                    }}
+                    onDragLeave={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget as Node)) setEncima(null);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setEncima(null);
+                      setArrastrando(null);
+                      const id = e.dataTransfer.getData('text/plain');
+                      const c = lista.find((x) => x.id === id);
+                      if (c && !col.estados.includes(c.estado)) mover(id, col.alSoltar);
+                    }}
+                    aria-label={col.titulo}
+                  >
+                    <div className={k.lista}>
+                      <AnimatePresence mode="popLayout">
+                        {suyos.slice(0, tantas).map((c) => tarjeta(c))}
+                      </AnimatePresence>
+                      {suyos.length > tantas && (
+                        <button
+                          type="button"
+                          className={css.btnLinea}
+                          onClick={() => setCuantasTablero((m) => ({ ...m, [col.id]: tantas + TANDA }))}
+                        >
+                          Ver más ({suyos.length - tantas} más)
+                        </button>
+                      )}
+                      {suyos.length === 0 && (
+                        <p className={k.vacio}>
+                          {busca || filtrosPuestos
+                            ? 'Nadie con ese filtro.'
+                            : col.id === 'atender'
+                              ? 'Todo atendido. Bien hecho.'
+                              : 'Arrastra aquí una tarjeta.'}
+                        </p>
+                      )}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          </LayoutGroup>
+
+          {(descartados.length > 0 || raros.length > 0) && (
+            <div className={k.descartados}>
+              <button type="button" className={css.enlaceAccion} onClick={() => setVerDescartados((v) => !v)}>
+                {verDescartados ? 'Ocultar descartados' : `Ver descartados (${descartados.length + raros.length})`}
+              </button>
+              {verDescartados && (
+                <div className={k.listaDescartados}>
+                  {[...descartados, ...raros].slice(0, cuantasTablero.descartados ?? TANDA).map((c) => tarjeta(c))}
+                  {descartados.length + raros.length > (cuantasTablero.descartados ?? TANDA) && (
+                    <button
+                      type="button"
+                      className={css.btnLinea}
+                      onClick={() =>
+                        setCuantasTablero((m) => ({ ...m, descartados: (m.descartados ?? TANDA) + TANDA }))
+                      }
+                    >
+                      Ver más descartados
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </>
       )}
 
       {/* La ficha se busca en la lista por su id en cada repintado: así, al

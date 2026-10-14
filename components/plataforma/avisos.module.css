@@ -175,3 +175,11 @@
     animation: none;
   }
 }
+
+/* Mientras hay un menú «⋯» abierto en Clientes, los avisos se apartan: en el
+   móvil van abajo a lo ancho y tapaban justo las últimas opciones del menú
+   («Descartar», «Borrar»). Vuelven al cerrarlo; no se pierde ninguno, porque
+   su cuenta atrás sigue y la cola no se toca. Pone la marca Contactos.tsx. */
+:global(html[data-menu-abierto]) .pila {
+  visibility: hidden;
+}
