@@ -1,0 +1,225 @@
+/* ==========================================================================
+   Pastillas de situación: dónde está cada persona (lib/atencion.ts).
+
+   Una sola hoja para el inicio, Clientes, la ficha y Automatizaciones, para
+   que «Te necesita» se vea igual en todas partes. Las clases se llaman como
+   los grupos de `GRUPOS`, así que se usan sin tabla intermedia:
+
+     <span className={`${s.pastilla} ${s[situacion.grupo]}`}>{PASTILLA_GRUPO[situacion.grupo]}</span>
+
+   El grupo se dice siempre con palabras; el color solo lo refuerza.
+
+   Colores: las variables de la plataforma con su valor de respaldo, porque
+   el rediseño de vidrio todavía no ha dejado sus tokens en esta rama. El oro
+   de la marca (#8a6a32) solo como relleno: con letra blanca da 5,0 a 1; como
+   letra pequeña sobre el papel se queda en 4,4, así que la letra dorada va en
+   el oro tostado (#6f5323, más de 6 a 1).
+
+   Sin backdrop-filter: la pastilla va dentro de una tarjeta que ya es de
+   vidrio, y en Clientes puede haber cientos de filas; desenfocar detrás de
+   cada una se nota al desplazarse. El vidrio se dice con el blanco
+   translúcido, el filete y el brillo de arriba.
+   ========================================================================== */
+
+/* Para juntar varias (grupo, «Prueba», la serie): bajan de línea antes que
+   salirse de la tarjeta a 390 px. */
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pastilla {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-height: 24px;
+  box-sizing: border-box;
+  /* El espaciado de las mayúsculas deja aire detrás de la última letra: se
+     descuenta del lado derecho para que el texto quede centrado. */
+  padding: 5px calc(11px - 0.2em) 5px 11px;
+  border-radius: 999px;
+  font-family: var(--fuente-inter, var(--fuente-jost), system-ui, sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  /* Vidrio claro: blanco translúcido, filete fino y brillo en el borde de arriba. */
+  background: var(--vidrio-claro, rgba(255, 255, 255, 0.72));
+  color: var(--muted, #6c645a);
+  box-shadow:
+    inset 0 0 0 1px var(--vidrio-filete, rgba(20, 18, 16, 0.12)),
+    inset 0 1px 0 var(--vidrio-brillo, rgba(255, 255, 255, 0.85));
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/* Te necesita: la única con relleno. Un punto crema delante para que se
+   distinga también sin color (y con `content: ''` el lector no lo lee). */
+.te-necesita {
+  background: var(--oro, #8a6a32);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 1px 2px rgba(31, 26, 22, 0.18);
+}
+
+.te-necesita::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f7f2ea;
+}
+
+/* En la lista de espera: va sola. Neutra y en gris: no pide nada. */
+.lista {
+  color: var(--muted, #6c645a);
+}
+
+/* Espera un aviso: neutra, pero en tinta. No es urgente, pero algún día toca. */
+.avisar {
+  color: var(--ink-3, #4f4840);
+}
+
+/* Hablando: oro claro, la conversación está abierta. */
+.hablando {
+  background: var(--oro-tint, #f5efe2);
+  color: var(--oro-letra, #6f5323);
+  box-shadow:
+    inset 0 0 0 1px var(--oro-line, rgba(138, 106, 50, 0.35)),
+    inset 0 1px 0 var(--vidrio-brillo, rgba(255, 255, 255, 0.85));
+}
+
+/* Cerrado, descartado y sin correos: apagadas, sin brillo. Siguen pasando de
+   4,5 a 1: apagado no es ilegible. */
+.cerrado,
+.descartado,
+.sin-correos {
+  background: rgba(20, 18, 16, 0.05);
+  color: var(--muted, #6c645a);
+  box-shadow: none;
+}
+
+/* Descartado, además, con el filete de puntos: ya no le llegan los correos. */
+.descartado {
+  outline: 1px dashed rgba(20, 18, 16, 0.28);
+  outline-offset: -1px;
+}
+
+/* Cuenta de prueba del equipo: se ve, pero no cuenta en ninguna cifra. */
+.prueba {
+  background: transparent;
+  color: var(--muted, #6c645a);
+  box-shadow: none;
+  outline: 1px dashed var(--borde-campo, #8f8579);
+  outline-offset: -1px;
+}
+
+/* «También en la lista · ha recibido 3 de 10»: una línea pequeña, en minúscula
+   de frase, al lado o debajo de la pastilla. El aro dorado dice «serie». */
+.serie {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-family: var(--fuente-inter, var(--fuente-jost), system-ui, sans-serif);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--muted, #6c645a);
+  font-variant-numeric: tabular-nums;
+}
+
+.serie::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--oro, #8a6a32);
+  border-radius: 50%;
+}
+
+/* El motivo, en el oro tostado («Pidió plaza en Vigo»). */
+.motivo {
+  font-family: var(--fuente-inter, var(--fuente-jost), system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--oro-letra, #6f5323);
+}
+
+/* «Esperando 3 días»: en rojo a partir de 2 días, y con palabras siempre. */
+.espera {
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--muted, #6c645a);
+  font-variant-numeric: tabular-nums;
+}
+
+.esperaLarga {
+  color: var(--peligro-letra, #8f3f26);
+  font-weight: 500;
+}
+
+/* Sin transparencias: el vidrio pasa a blanco opaco y nada depende de lo que
+   haya detrás. */
+@media (prefers-reduced-transparency: reduce) {
+  .pastilla,
+  .avisar,
+  .lista {
+    background: #ffffff;
+  }
+
+  .hablando {
+    background: var(--oro-tint, #f5efe2);
+  }
+
+  .cerrado,
+  .descartado,
+  .sin-correos {
+    background: #efebe4;
+  }
+
+  .te-necesita {
+    background: var(--oro, #8a6a32);
+  }
+
+  .prueba {
+    background: #ffffff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pastilla {
+    transition: none;
+  }
+}
+
+/* Alto contraste de Windows: los rellenos desaparecen, así que cada pastilla
+   lleva su borde y el punto de «Te necesita» toma el color del texto. */
+@media (forced-colors: active) {
+  .pastilla {
+    border: 1px solid CanvasText;
+  }
+
+  .te-necesita::before {
+    background: CanvasText;
+  }
+
+  .serie::before {
+    border-color: CanvasText;
+  }
+}

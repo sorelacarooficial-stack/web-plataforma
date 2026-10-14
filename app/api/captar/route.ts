@@ -61,6 +61,15 @@ function vaDemasiadoRapido(ip: string): boolean {
 const falla = (motivo: Fallo, estado: number, extra: object = {}) =>
   NextResponse.json({ ok: false, motivo, ...extra }, { status: estado });
 
+/** El origen como nombre de campo: sin tildes, en minúsculas y solo letras, cifras, «-» y «_». */
+const claveDeOrigen = (origen: string) =>
+  origen
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^[-_]+|[-_]+$/g, '') || 'web';
+
 export async function POST(peticion: Request) {
   let cuerpo: Partial<Contacto> & { llegada?: unknown };
   try {
@@ -102,6 +111,20 @@ export async function POST(peticion: Request) {
      reserva plaza en una formación: eso es otra cosa. */
   const aLista = !soloAviso(datos.origen) && !convocatoriaDeOrigen(datos.origen);
 
+  /* Qué pidió y cuándo, en cada envío (`pidio.{origen}`), y su última nota.
+     La ficha guarda solo por dónde entró la PRIMERA vez y su primera nota, así
+     que quien estaba en la lista y luego reserva plaza o escribe por el
+     formulario de contacto seguía pareciendo solo «de la lista». Con esto,
+     «Te necesita» (lib/atencion.ts) sabe que ha vuelto a pedir algo y desde
+     cuándo. La nota nueva va aparte (`ultimaNota`) y no pisa la primera.
+     El origen va limpio porque aquí es el NOMBRE de un campo: llega del
+     navegador, y uno raro (vacío, con «__» a los lados) haría fallar el guardado. */
+  const clave = claveDeOrigen(datos.origen);
+  const pedido = {
+    pidio: { [clave]: FieldValue.serverTimestamp() },
+    ...(datos.nota ? { ultimaNota: datos.nota, ultimaNotaOrigen: clave } : {}),
+  };
+
   if (hayFirebase()) {
     try {
       // El identificador del documento es el propio correo: si la misma
@@ -121,6 +144,7 @@ export async function POST(peticion: Request) {
           creado: FieldValue.serverTimestamp(),
           estado: 'Nuevo',
           ...(aLista ? { lista: true } : {}),
+          ...pedido,
           ...procedenciaDe(cuerpo.llegada),
           veces: 1,
           pruebaConsentimiento: { ...prueba, fecha: FieldValue.serverTimestamp() },
@@ -140,8 +164,17 @@ export async function POST(peticion: Request) {
            permiso, no quitarlo ni cambiar datos de nadie. Desmarcarla no
            cambia nada: la baja va por el enlace de cada correo. */
         const altaNovedades = datos.comercial === true && v.comercial !== true ? { comercial: true } : {};
+        /* `pidio` se funde con lo que ya tenía (merge junta los mapas campo a
+           campo): se añade o se pone al día solo lo de este formulario. */
         await ref.set(
-          { ...huecos, ...altaNovedades, ...(aLista ? { lista: true } : {}), actualizado: FieldValue.serverTimestamp(), veces: FieldValue.increment(1) },
+          {
+            ...huecos,
+            ...altaNovedades,
+            ...(aLista ? { lista: true } : {}),
+            ...pedido,
+            actualizado: FieldValue.serverTimestamp(),
+            veces: FieldValue.increment(1),
+          },
           { merge: true }
         );
         await ref.collection('envios').add({ ...datos, pruebaConsentimiento: prueba, cuando: FieldValue.serverTimestamp() });

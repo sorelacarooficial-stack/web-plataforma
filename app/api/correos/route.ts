@@ -24,6 +24,7 @@ import {
   correoInvitacion,
   correoResumen,
   type Plantilla,
+  type ResumenDatos,
 } from '@/lib/plantillas-automaticas';
 
 /**
@@ -77,11 +78,15 @@ async function muestra(id: IdAutomatizacion, modo: ModoCurso = 'completo'): Prom
       // Lo escribe el Apps Script con el PDF del acuerdo: aquí no hay vista previa.
       return null;
     case 'resumen-sorela': {
-      const d = await datosResumen().catch(() => ({ sinAtender: [], esperando: [], sinEnlace: [] }));
+      const d = await datosResumen().catch((): ResumenDatos => ({ teNecesitan: [], esperando: [], sinEnlace: [] }));
+      /* Con algo pendiente de verdad, se enseña lo de verdad. Si no, una
+         persona inventada que SÍ te necesitaría: alguien que te escribió. Nunca
+         alguien de la lista de espera, que es justo lo que el resumen ya no
+         cuenta. La línea de la lista sale con sus cifras reales. */
       return correoResumen(
-        d.sinAtender.length + d.esperando.length + (d.sinEnlace?.length ?? 0)
+        d.teNecesitan.length + d.esperando.length + (d.sinEnlace?.length ?? 0)
           ? d
-          : { sinAtender: [{ nombre: 'María López', dias: 3, como: 'Lista de espera de la comunidad (desde Instagram)' }], esperando: [] }
+          : { ...d, teNecesitan: [{ nombre: 'Ana Ruiz', dias: 2, motivo: 'te escribió por el formulario de contacto' }] }
       );
     }
   }

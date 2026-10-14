@@ -1,7 +1,14 @@
-/* «Sobre esto»: la carta de Sorela. Una hoja de vidrio claro sobre el fondo
-   velado, con su foto arriba. La letra va en la tinta de siempre sobre un
-   blanco casi opaco: el vidrio se nota en el borde y en lo que se ve detrás,
-   no en el texto, que tiene que leerse sin esfuerzo (más de 10 a 1). */
+/* «Sobre esto»: la carta de Sorela. En escritorio, una carta de vidrio claro
+   de 760 px con su retrato a la izquierda; en el móvil, una hoja que sube
+   desde abajo con su asa. La letra va en la tinta de siempre sobre un blanco
+   casi opaco: el vidrio se nota en el borde y en lo que se ve detrás, no en el
+   texto, que se lee a más de 10 a 1 (rótulo dorado, 6,3; firma, 6,4).
+
+   Los tokens del rediseño de vidrio (--vidrio-fondo-alto, --sombra-3,
+   --foco-…) van con su valor de respaldo: la carta se ve igual con ellos y
+   sin ellos. Solo `backdrop-filter` sin prefijo: lightningcss pone el de
+   -webkit- para Safari, y si se escriben los dos se queda con el prefijado y
+   Chrome no desenfoca. */
 
 .punto {
   width: 7px;
@@ -12,20 +19,23 @@
 }
 
 .dialogo {
-  width: min(520px, calc(100vw - 32px));
-  max-height: min(88dvh, 760px);
+  width: min(760px, calc(100vw - 48px));
+  max-width: none;
+  max-height: none;
   padding: 0;
   border: 0;
   border-radius: 30px;
   background: transparent;
   overflow: visible;
   color: var(--ink, #141210);
+  font-family: var(--fuente-inter), -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
 }
 
+/* Valores literales: el ::backdrop no hereda las variables en todos los
+   navegadores. */
 .dialogo::backdrop {
   background: rgba(20, 18, 16, 0.42);
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .dialogo[open] {
@@ -51,79 +61,143 @@
 
 .carta {
   position: relative;
-  max-height: min(88dvh, 760px);
-  overflow-y: auto;
-  padding: clamp(28px, 5vw, 40px) clamp(22px, 5vw, 40px) clamp(24px, 4vw, 34px);
+  display: flex;
+  border: 1px solid var(--vidrio-filete, rgba(255, 255, 255, 0.7));
   border-radius: inherit;
+  overflow: hidden;
   background:
-    radial-gradient(120% 70% at 50% 0%, rgba(217, 180, 124, 0.16), transparent 62%),
-    rgba(255, 253, 249, 0.92);
-  backdrop-filter: blur(28px) saturate(1.4);
-  -webkit-backdrop-filter: blur(28px) saturate(1.4);
-  border: 1px solid rgba(255, 255, 255, 0.7);
+    radial-gradient(120% 70% at 60% 0%, rgba(217, 180, 124, 0.14), transparent 62%),
+    var(--vidrio-fondo-alto, rgba(255, 253, 249, 0.9));
+  backdrop-filter: var(--vidrio-filtro, blur(28px) saturate(1.4));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 30px 80px -24px rgba(20, 18, 16, 0.45),
+    var(--sombra-3, 0 30px 80px -24px rgba(20, 18, 16, 0.45)),
     0 0 0 1px rgba(20, 18, 16, 0.06);
+}
+
+/* El retrato: la foto entera, apoyada abajo, sobre un aura dorada. */
+.retrato {
+  position: relative;
+  flex: 0 0 248px;
+  margin: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(90% 55% at 50% 42%, rgba(217, 180, 124, 0.42), rgba(217, 180, 124, 0) 70%),
+    linear-gradient(180deg, #f7f0e5, #ece1cf);
+  border-right: 1px solid rgba(20, 18, 16, 0.07);
+}
+
+.retrato img {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  height: 84%;
+  width: auto;
+  max-width: none;
+  transform: translateX(-45%);
+}
+
+.cuerpo {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Lo que se desplaza. Las esquinas de la derecha, las de la carta: así el
+   anillo de foco de abajo las sigue en vez de cortarse en ellas. */
+.lectura {
+  max-height: min(88dvh, 860px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 44px 52px 38px 46px;
+  border-radius: 0 29px 29px 0;
+}
+
+/* Se puede desplazar con el teclado: anillo dorado por dentro, siguiendo las
+   esquinas, nunca el contorno negro rectangular del navegador alrededor de
+   una carta redonda. Con contorno y no con sombra, para que se vea también en
+   alto contraste. */
+.lectura:focus {
+  outline: none;
+}
+
+.lectura:focus-visible {
+  outline: var(--foco-ancho, 2px) solid var(--foco-color, #6f5323);
+  outline-offset: -5px;
+}
+
+.asa {
+  display: none;
 }
 
 .cerrar {
   position: absolute;
   top: 14px;
   right: 14px;
+  z-index: 3;
   display: grid;
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 50%;
-  background: rgba(20, 18, 16, 0.06);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(20, 18, 16, 0.1),
+    0 4px 14px -6px rgba(20, 18, 16, 0.3);
   color: var(--ink-2, #3e3831);
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+  transition:
+    background 0.2s,
+    transform 0.15s;
 }
 
 .cerrar:hover {
-  background: rgba(20, 18, 16, 0.11);
+  background: #fff;
 }
 
 .cerrar:active {
   transform: scale(0.94);
 }
 
+.cerrar:focus {
+  outline: none;
+}
+
 .cerrar:focus-visible {
-  outline: 3px solid rgba(217, 180, 124, 0.75);
-  outline-offset: 2px;
+  outline: var(--foco-ancho, 2px) solid var(--foco-color, #6f5323);
+  outline-offset: var(--foco-separacion, 2px);
 }
 
 .cabeza {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
+  gap: 14px;
 }
 
+/* El círculo con su cara: solo en el móvil (en escritorio está el retrato). */
 .foto {
-  display: block;
-  width: 84px;
-  height: 84px;
+  display: none;
+  flex: none;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   overflow: hidden;
   box-shadow:
     0 0 0 3px #fffdf9,
     0 0 0 4px rgba(194, 154, 91, 0.55),
-    0 14px 30px -12px rgba(20, 18, 16, 0.45);
+    0 12px 26px -12px rgba(20, 18, 16, 0.45);
 }
 
 .foto img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 18%;
 }
 
 .rotulo {
-  margin: 18px 0 6px;
+  margin: 0;
   font-size: 11.5px;
   font-weight: 500;
   letter-spacing: 0.24em;
@@ -132,12 +206,12 @@
 }
 
 .titulo {
-  margin: 0;
+  margin: 12px 0 0;
   font-family: var(--fuente-inter), var(--fuente-jost), system-ui, sans-serif;
-  font-size: clamp(26px, 5.4vw, 32px);
+  font-size: 34px;
   font-weight: 300;
   letter-spacing: -0.03em;
-  line-height: 1.12;
+  line-height: 1.1;
   color: var(--ink, #141210);
 }
 
@@ -145,9 +219,9 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin: 22px 0 0;
-  padding-top: 22px;
-  border-top: 1px solid rgba(20, 18, 16, 0.08);
+  margin: 20px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--vidrio-linea, rgba(20, 18, 16, 0.08));
 }
 
 .texto p {
@@ -163,13 +237,12 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin: 24px 0 0;
+  margin: 22px 0 0;
   font-size: 15px;
   color: var(--ink-2, #3e3831);
 }
 
 .firma b {
-  margin-top: 6px;
   font-size: 19px;
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -181,18 +254,106 @@
   color: var(--muted-2, #5e564c);
 }
 
+/* Queda texto por debajo: se desvanece y asoma una flecha. */
+.desvanece {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 84px;
+  display: grid;
+  place-items: end center;
+  padding-bottom: 12px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 253, 249, 0), rgba(255, 253, 249, 0.97) 70%);
+  color: var(--oro, #8a6a32);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.hayMas .desvanece {
+  opacity: 1;
+}
+
+/* Móvil: hoja que sube desde abajo, con su asa. */
+@media (max-width: 880px) {
+  .dialogo {
+    width: 100%;
+    max-width: 100%;
+    margin: auto 0 0;
+    border-radius: 28px 28px 0 0;
+  }
+
+  .dialogo[open] {
+    animation: sube 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .carta {
+    display: block;
+    border-radius: 28px 28px 0 0;
+    border-bottom: 0;
+  }
+
+  .retrato {
+    display: none;
+  }
+
+  .asa {
+    display: block;
+    position: absolute;
+    top: 9px;
+    left: 50%;
+    z-index: 3;
+    width: 40px;
+    height: 5px;
+    margin-left: -20px;
+    border-radius: 3px;
+    background: rgba(20, 18, 16, 0.18);
+  }
+
+  .lectura {
+    max-height: 92dvh;
+    padding: 30px 22px calc(28px + env(safe-area-inset-bottom));
+    border-radius: 27px 27px 0 0;
+  }
+
+  .foto {
+    display: block;
+  }
+
+  /* Hueco para «Cerrar», que va encima, a la derecha. */
+  .cabeza {
+    padding-right: 52px;
+  }
+
+  .titulo {
+    margin-top: 16px;
+    font-size: 30px;
+  }
+
+  .cerrar {
+    top: 16px;
+    right: 14px;
+  }
+}
+
+@keyframes sube {
+  from {
+    transform: translateY(60px);
+    opacity: 0.3;
+  }
+}
+
 /* Si el sistema pide menos transparencia, la carta es opaca. */
 @media (prefers-reduced-transparency: reduce) {
   .carta {
     background: #fffdf9;
     backdrop-filter: none;
-    -webkit-backdrop-filter: none;
   }
 
   .dialogo::backdrop {
     background: rgba(20, 18, 16, 0.6);
     backdrop-filter: none;
-    -webkit-backdrop-filter: none;
   }
 }
 
@@ -206,5 +367,20 @@
   .dialogo[open],
   .dialogo[open]::backdrop {
     animation: none;
+  }
+
+  .desvanece,
+  .cerrar {
+    transition: none;
+  }
+
+  .cerrar:active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .desvanece {
+    display: none;
   }
 }

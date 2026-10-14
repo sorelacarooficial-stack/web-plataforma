@@ -29,7 +29,15 @@ import type { Campana } from './plantillas-campana';
 
 const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
 
-type Semilla = Omit<Campana, 'estado' | 'resultado' | 'audiencia' | 'serie'>;
+type Semilla = Omit<Campana, 'estado' | 'resultado' | 'audiencia' | 'serie'> & {
+  /**
+   * Solo puede salir su día, nunca al siguiente. Una programada sale su día
+   * o el siguiente (lib/campanas.ts), y estos correos, un día tarde, dicen
+   * algo falso: «Hoy a las 19:00, en directo» el sábado 7. No se guarda en
+   * Firestore: se lee de aquí por `id` (ver `esSoloSuDia`).
+   */
+  soloSuDia?: true;
+};
 
 const SEMILLAS: Semilla[] = [
   {
@@ -206,6 +214,8 @@ Gracias por haber estado en la lista estas semanas. Cada respuesta que me habéi
 
 Mañana nos vemos en directo.`,
     boton: null,
+    // «Mañana a las 19:00»: el día 6 ya sería falso.
+    soloSuDia: true,
   },
   {
     id: 'lanzamiento-10-hoy',
@@ -221,13 +231,25 @@ El botón de abajo te lleva directa a Zoom. Entra cinco minutos antes para que n
 Gracias por esperar conmigo. Nos vemos dentro.`,
     // Sin enlace hasta que Sorela pegue el de Zoom: así no sale (ver arriba).
     boton: { texto: 'Entrar a la masterclass', enlace: '' },
+    // «Hoy a las 19:00»: si el enlace se pega tarde y el cron no lo manda el 6, el 7 ya no sale.
+    soloSuDia: true,
   },
 ];
 
 export const SERIE_LANZAMIENTO = 'lanzamiento';
 
+/**
+ * Los correos de la serie que solo pueden salir su día: el 09 y el 10. Se
+ * leen por `id` y no de la campaña guardada porque la serie ya está en
+ * Firestore, y así no hay que escribir en ella; si Sorela cambia la fecha en
+ * Programados, la regla la sigue (va con el día que tenga guardado).
+ */
+export const SOLO_SU_DIA: ReadonlySet<string> = new Set(SEMILLAS.filter((s) => s.soloSuDia).map((s) => s.id));
+export const esSoloSuDia = (id: string) => SOLO_SU_DIA.has(id);
+
 export function serieLanzamiento(): Omit<Campana, 'resultado'>[] {
-  return SEMILLAS.map((s) => ({
+  // `soloSuDia` se queda fuera: no es de la campaña guardada (ver arriba).
+  return SEMILLAS.map(({ soloSuDia: _soloSuDia, ...s }) => ({
     ...s,
     asunto: s.asunto.replace('{hora}', HORA_ESPANA),
     audiencia: 'espera',

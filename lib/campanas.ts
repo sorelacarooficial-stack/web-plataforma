@@ -8,7 +8,9 @@ import { enlaceBaja, estaDeBaja, mandarCorreo } from './correos';
 import { listaDeEspera } from './automatizar';
 import { correoBienvenidaPorOrigen } from './plantillas-bienvenida';
 import { AUDIENCIAS, faltaEnlace, plantillaCampana, type Audiencia, type Campana, type EstadoCampana } from './plantillas-campana';
-import { serieLanzamiento } from './serie-lanzamiento';
+import { esSoloSuDia, serieLanzamiento } from './serie-lanzamiento';
+import { idContacto, marcarCorreoLista } from './atencion-servidor';
+import { soloAviso } from './enviar-informacion';
 
 /**
  * Los avisos y correos programados.
@@ -22,7 +24,9 @@ import { serieLanzamiento } from './serie-lanzamiento';
  *    aunque se pulse «Enviar» dos veces o el cron se repita.
  *  - Una programada solo sale su día o el siguiente. Una cuenta atrás que
  *    llega tarde dice algo falso («faltan 5 días» cuando faltan 2), así que si
- *    se pasa el plazo queda como caducada y no sale.
+ *    se pasa el plazo queda como caducada y no sale. Los correos 09 y 10 de
+ *    la serie («Mañana a las 19:00», «Hoy a las 19:00») solo salen su día:
+ *    uno de margen bastaba para que el sábado 7 llegara «Hoy a las 19:00».
  *  - Quien se dio de baja no recibe ninguna.
  */
 
@@ -115,10 +119,10 @@ export async function destinatarios(a: Audiencia): Promise<Persona[]> {
     for (const c of cs.docs) {
       const v = c.data();
       /* Quien dejó su correo en «avísame cuando haya terapeuta (o
-         convocatoria) en mi ciudad» pidió UN aviso, no publicidad: escribirle
-         una campaña sería una comunicación comercial sin consentimiento
-         (art. 21 LSSI). Con startsWith, que hay más de un aviso. */
-      if (String(v.origen ?? '').startsWith('avisar-ciudad')) continue;
+         convocatoria) en mi ciudad», en la web o en el asistente, pidió UN
+         aviso, no publicidad: escribirle una campaña sería una comunicación
+         comercial sin consentimiento (art. 21 LSSI). */
+      if (soloAviso(String(v.origen ?? ''))) continue;
       /* Apuntada a mano por Sorela sin marcar que pidió la información. */
       if (v.aMano && !v.pidioInformacion) continue;
       /* Dejó sin marcar la casilla de novedades. Los contactos anteriores a
@@ -175,6 +179,13 @@ export async function enviarCampana(id: string): Promise<InformeCampana> {
     if (x.estado === 'enviado') r.enviados++;
     else if (x.estado === 'fallido') r.fallidos++;
     else r.omitidos++;
+    /* El correo de la lista queda apuntado en su ficha (`correoLista`): es lo
+       que dice en Clientes si le llegó el del grupo de WhatsApp sin leer el
+       historial, que se borra a los 30 días. Quien no tiene ficha (una cuenta
+       sin contacto) se salta solo. */
+    if (c.plantilla === 'lista-espera') {
+      await marcarCorreoLista(idContacto(p.correo), { plantilla: 'lista-espera', estado: x.estado, por: 'campana' });
+    }
   }
 
   const previo = c.resultado;
@@ -207,7 +218,8 @@ export async function campanasDelDia(ahora = new Date()): Promise<InformeCampana
   for (const doc of programadas.docs) {
     const fecha = String(doc.get('fecha') ?? '');
     if (!fecha || fecha > hoy) continue;
-    if (sumarDias(fecha, MARGEN_DIAS) < hoy) {
+    // El 09 y el 10 de la serie, sin margen: al día siguiente ya no dicen la verdad.
+    if (sumarDias(fecha, esSoloSuDia(doc.id) ? 0 : MARGEN_DIAS) < hoy) {
       await doc.ref.update({ estado: 'caducada' });
       continue;
     }

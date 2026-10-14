@@ -246,7 +246,7 @@ export default function Asistente() {
                       abrirCaptacion({
                         titulo: m.accion!.titulo,
                         entradilla: m.accion!.entradilla,
-                        origen: 'asistente',
+                        origen: m.accion!.origen ?? 'asistente',
                       })
                     }
                   >

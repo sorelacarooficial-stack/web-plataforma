@@ -1,5 +1,4 @@
 import { cursosDe, tieneMembresia, type Acceso } from '@/lib/accesos';
-import { DIA_APERTURA, GRUPO_WHATSAPP, HORA_ESPANA } from '@/lib/apertura';
 import Noticias from './Noticias';
 import css from './proximamente.module.css';
 
@@ -186,32 +185,12 @@ export default function Proximamente({
 }
 
 /**
- * Lo que ve en «Comunidad» quien no tiene la membresía: solo que viene, nada
- * de dentro. El espacio de la comunidad no se enseña a quien no lo ha pagado.
+ * Lo que ve en «Comunidad» quien no tiene la membresía: la invitación a la
+ * masterclass en la que se presenta. Solo que viene y cuándo, nada de dentro:
+ * el espacio de la comunidad no se enseña a quien no lo ha pagado.
+ *
+ * Vive en ComunidadProximamente.tsx (es de cliente, por la cuenta atrás, y
+ * lleva su propio CSS). Se reexporta aquí para que Plataforma.tsx lo siga
+ * importando de donde siempre.
  */
-export function ComunidadProximamente({ nombre }: { nombre?: string }) {
-  const pila = (nombre || '').trim().split(/\s+/)[0];
-  return (
-    <div className={css.envoltura}>
-      <section className={css.centro}>
-        <span className={css.sello}>
-          <span className={css.selloPunto} aria-hidden="true" />
-          Próximamente
-        </span>
-        <h2 className={css.titulo}>
-          {pila ? `${pila}, la Comunidad Divine` : 'La Comunidad Divine'}
-          <em className={css.tituloEnfasis}>abre muy pronto</em>
-        </h2>
-        <p className={css.entradilla}>
-          {`El ${DIA_APERTURA} a las ${HORA_ESPANA} (hora de España) la presento en una masterclass en directo por Zoom. Ese día cuento qué hay dentro y cómo entrar.`}
-        </p>
-        <span className={css.filete} aria-hidden="true" />
-        <p className={css.pie}>
-          <a href={GRUPO_WHATSAPP} target="_blank" rel="noopener" className="btn btn-sm">
-            Entrar al grupo de WhatsApp
-          </a>
-        </p>
-      </section>
-    </div>
-  );
-}
+export { default as ComunidadProximamente } from './ComunidadProximamente';

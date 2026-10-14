@@ -3,6 +3,8 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from './firebase-servidor';
 import { COLECCION_CORREOS, darDeBaja } from './correos';
+import { idContacto, marcarCorreoMal, marcarEntregaLista } from './atencion-servidor';
+import { ASUNTO_LISTA } from './plantillas-bienvenida';
 
 /**
  * Qué pasó con cada correo DESPUÉS de salir: si llegó, si rebotó, si alguien
@@ -90,16 +92,25 @@ async function buscar(e: Evento): Promise<FirebaseFirestore.DocumentReference | 
   return candidatas[0]?.ref ?? null;
 }
 
-/** Apunta un evento en su línea del historial. Devuelve si encontró la línea. */
+/**
+ * Apunta un evento en su línea del historial. Devuelve si encontró la línea.
+ *
+ * Si la línea cambia, lo apunta también en la ficha de la persona, que es lo
+ * que lee Clientes sin abrir el historial (que se borra a los 30 días):
+ *   · `correoLista.entrega`, si la línea es el correo de la lista de espera;
+ *   · `correoMal`, si un correo suyo, el que sea, rebotó o lo marcó como spam.
+ *     Así sale en «Te necesita: no le llegó su correo» aunque el rebote la
+ *     haya dado de baja: hay que buscarla por otra vía.
+ */
 export async function apuntarEvento(e: Evento): Promise<boolean> {
   if (!hayFirebase()) return false;
   const ref = await buscar(e);
   if (!ref) return false;
   const cuando = e.cuando && !Number.isNaN(e.cuando.getTime()) ? Timestamp.fromDate(e.cuando) : FieldValue.serverTimestamp();
 
-  await baseDeDatos().runTransaction(async (t) => {
+  const linea = await baseDeDatos().runTransaction(async (t) => {
     const d = await t.get(ref);
-    if (!d.exists) return;
+    if (!d.exists) return null;
     const cambios: Record<string, unknown> = {};
     if (e.idEnvio && !d.get('idEnvio')) cambios.idEnvio = e.idEnvio;
     if (e.que === 'abierto' || e.que === 'clic') {
@@ -119,7 +130,26 @@ export async function apuntarEvento(e: Evento): Promise<boolean> {
       }
     }
     if (Object.keys(cambios).length) t.update(ref, cambios);
+    return {
+      entrega: typeof cambios.entrega === 'string' ? (cambios.entrega as Entrega) : null,
+      para: String(d.get('para') ?? ''),
+      contactoId: typeof d.get('contactoId') === 'string' ? (d.get('contactoId') as string) : null,
+      asunto: String(d.get('asunto') ?? ''),
+    };
   });
+
+  /* Solo cuando la línea ha cambiado: la consulta de los envíos recientes
+     repasa los mismos 300 cada vez que se abre Correos, y volver a escribir lo
+     mismo en cada ficha costaría una escritura por correo y por visita. Las
+     líneas sin `contactoId` (campañas, registro antiguo) se buscan por correo,
+     que es el id de la ficha; si no hay ficha, no se crea (`update`). */
+  if (linea?.entrega) {
+    const contactoId = linea.contactoId || (linea.para ? idContacto(linea.para) : null);
+    if (linea.asunto.startsWith(ASUNTO_LISTA)) await marcarEntregaLista(contactoId, linea.entrega);
+    if (linea.entrega === 'rebotado' || linea.entrega === 'spam') {
+      await marcarCorreoMal(contactoId, { entrega: linea.entrega, cuando: e.cuando ?? null });
+    }
+  }
 
   if (e.baja && e.para) {
     await darDeBaja(e.para.trim().toLowerCase()).catch((x) => console.error('[entregas] no se ha podido dar de baja', x));

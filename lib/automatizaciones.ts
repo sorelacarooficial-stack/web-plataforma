@@ -12,7 +12,7 @@ export const AUTOMATIZACIONES = [
   {
     id: 'bienvenida',
     nombre: 'Gracias por apuntarte · grupo de WhatsApp',
-    cuando: 'Alguien deja sus datos en cualquier formulario de la web: el mismo correo para todas (lista de espera de la masterclass + botón del grupo de WhatsApp). Solo «Reservar plaza» en una formación lleva su confirmación.',
+    cuando: 'Alguien deja sus datos en la web (la lista de espera, la portada, el formulario de contacto, el asistente o «Apúntate» en formaciones): el mismo correo para todas, con la lista de espera de la masterclass y el botón del grupo de WhatsApp. «Reservar plaza» en una formación lleva su confirmación, y quien solo pide que la avises cuando haya terapeuta en su ciudad no recibe nada (te llega a ti el aviso).',
     quien: 'La persona que lo ha rellenado',
     porDefecto: true,
     /** Estos no se apagan desde aquí: van por su propio camino. */
@@ -42,7 +42,7 @@ export const AUTOMATIZACIONES = [
   {
     id: 'registro',
     nombre: 'Gracias por apuntarte (al crearse la cuenta)',
-    cuando: 'Alguien se crea una cuenta sola, sin enlace. Recibe el mismo correo de la lista de espera y el grupo de WhatsApp.',
+    cuando: 'Alguien se crea una cuenta sola, sin enlace. Recibe el mismo correo de la lista de espera y el grupo de WhatsApp, salvo que ya le hubiera llegado al dejar sus datos en la web.',
     quien: 'La persona que se registra',
     porDefecto: true,
   },
@@ -57,7 +57,8 @@ export const AUTOMATIZACIONES = [
   {
     id: 'resumen-sorela',
     nombre: 'Tu resumen de la mañana',
-    cuando: 'Cada mañana, solo si hay algo pendiente: contactos sin atender y registros esperando acceso.',
+    cuando:
+      'Cada mañana, solo si algo depende de ti: alguien te ha escrito o pedido algo, una cuenta espera acceso o a un correo programado le falta el enlace. La lista de espera no cuenta: sigue sola.',
     quien: 'Tú',
     porDefecto: true,
   },

@@ -4,9 +4,11 @@ import type { Contacto } from './captacion';
 import { enviar, hayCorreo } from './correo';
 import { correoAviso, correoBienvenida } from './plantillas-correo';
 import { correoAvisoContacto, correoBienvenidaPorOrigen, correoReservaPlaza } from './plantillas-bienvenida';
-import type { Reserva } from './reserva-convocatoria';
-import { correoDeSorela, hayResend, mandarCorreo } from './correos';
+import { convocatoriaDeOrigen, type Reserva } from './reserva-convocatoria';
+import { correoDeSorela, hayResend, mandarCorreo, type Resultado } from './correos';
 import { diaDe } from './metricas';
+import { marcarCorreoLista } from './atencion-servidor';
+import type { PorCorreoLista } from './atencion';
 
 /**
  * Mandar la información de la Técnica Divine a una persona.
@@ -126,16 +128,54 @@ async function correoPorSmtp(datos: Contacto & { origen: string }): Promise<bool
  * pidió UN aviso, no información ni publicidad: la casilla y la capa le dicen
  * eso. El correo de bienvenida habla de la técnica y de la Comunidad, así que
  * a esta persona no se le manda; Sorela recibe el aviso interno igual.
+ *
+ * `terapeutas` es lo mismo desde el asistente («te aviso en cuanto haya una
+ * terapeuta en tu zona»). Hasta ahora no llegaba nunca: el asistente lo
+ * guardaba todo como `asistente`.
  */
-export const soloAviso = (origen: string | undefined) => String(origen ?? '').startsWith('avisar-ciudad');
+export const soloAviso = (origen: string | undefined) => {
+  const o = String(origen ?? '').trim().toLowerCase();
+  return o.startsWith('avisar-ciudad') || o === 'terapeutas';
+};
+
+/* Una vez al día como mucho por persona: quien escanea el QR dos veces, o a
+   quien Sorela le pulsa dos veces «Mandarle el correo de la lista», no recibe
+   dos. La reserva de plaza comparte la clave: es su bienvenida de ese día. */
+const claveBienvenida = (contactoId: string) => `bienvenida:${contactoId.slice(0, 80)}:${diaDe()}`;
+
+/**
+ * El correo de la lista de espera («Tu sitio en la Comunidad Divine» + el
+ * grupo de WhatsApp), y apuntado en su ficha (`correoLista`) para que
+ * Clientes sepa si le llegó sin leer el historial.
+ *
+ * Lo usan `mandarInformacion` y el reenvío a mano de la ficha («Mandarle el
+ * correo de la lista», `por: 'a-mano'`), que es lo que arregla a quien le
+ * llegó la bienvenida antigua, sin el grupo.
+ */
+export async function mandarCorreoLista(
+  p: { correo: string; nombre: string | null; contactoId?: string },
+  por: PorCorreoLista
+): Promise<Resultado> {
+  const contactoId = p.contactoId ?? p.correo.replace(/\//g, '_');
+  const r = await mandarCorreo(
+    { para: p.correo, ...correoBienvenidaPorOrigen(p.nombre, 'lista-comunidad') },
+    { tipo: 'bienvenida', clave: claveBienvenida(contactoId), contactoId }
+  );
+  await marcarCorreoLista(contactoId, { plantilla: 'lista-espera', estado: r.estado, por });
+  return r;
+}
 
 /**
  * Manda la información y dice qué ha pasado.
  *
  * Sin correo no hay a dónde mandarla: se devuelve que no salió, que es la
  * verdad, en vez de dar por bueno un envío que no ha ocurrido.
+ *
+ * `lista`: si la persona entra en la lista de espera. Por defecto, todas
+ * menos quien reserva plaza en una fecha (los avisos de ciudad no llegan a
+ * mirarlo). Solo cambia cómo la llama el aviso a Sorela.
  */
-export async function mandarInformacion(datos: Contacto & { origen: string; reserva?: Reserva | null }): Promise<Envio> {
+export async function mandarInformacion(datos: Contacto & { origen: string; reserva?: Reserva | null; lista?: boolean }): Promise<Envio> {
   if (!datos.correo) return NADA;
 
   if (soloAviso(datos.origen)) {
@@ -144,34 +184,35 @@ export async function mandarInformacion(datos: Contacto & { origen: string; rese
     // correo, así que por esa vía no se llama.
     const sorela = correoDeSorela();
     if (hayResend() && sorela) {
-      const a = correoAvisoContacto(datos, datos.origen, false);
-      const texto = a.texto.replace(
-        'OJO: no ha salido su correo. Escríbele tú.',
-        'Ha pedido solo un aviso cuando haya algo en su ciudad: no se le manda la información ni entra en las campañas. Escríbele tú cuando toque.'
-      );
-      await mandarCorreo({ para: sorela, asunto: a.asunto, texto, responderA: datos.correo }, { tipo: 'aviso-interno' });
+      const a = correoAvisoContacto(datos, datos.origen, 'no-lleva');
+      await mandarCorreo({ para: sorela, asunto: a.asunto, texto: a.texto, responderA: datos.correo }, { tipo: 'aviso-interno' });
     }
     return NADA;
   }
+
+  const contactoId = datos.correo.replace(/\//g, '_');
+  const lista = datos.lista ?? !convocatoriaDeOrigen(datos.origen);
 
   /* Con Resend todo sale desde el dominio y con el diseño de la web, y el
      Apps Script no se llama: si se llamara, mandaría además su propio correo
      desde Gmail y la persona recibiría dos. La copia en la hoja de Google deja
      de hacerse; Firestore sigue siendo donde se guarda el contacto. */
   if (hayResend()) {
-    const contactoId = datos.correo.replace(/\//g, '_');
-    const r = await mandarCorreo(
-      /* Un solo correo, venga de donde venga: gracias por apuntarte a la lista
-         de espera + el grupo de WhatsApp. Solo la reserva de plaza en una
-         formación lleva el suyo, que confirma esa fecha. */
-      { para: datos.correo, ...(datos.reserva ? correoReservaPlaza(datos.nombre, datos.reserva) : correoBienvenidaPorOrigen(datos.nombre, 'lista-comunidad')) },
-      // Una vez al día como mucho: quien escanea el QR dos veces no recibe dos.
-      { tipo: 'bienvenida', clave: `bienvenida:${contactoId.slice(0, 80)}:${diaDe()}`, contactoId }
-    );
+    /* Un solo correo, venga de donde venga: gracias por apuntarte a la lista
+       de espera + el grupo de WhatsApp. Solo la reserva de plaza en una
+       formación lleva el suyo, que confirma esa fecha. */
+    const r = datos.reserva
+      ? await mandarCorreo(
+          { para: datos.correo, ...correoReservaPlaza(datos.nombre, datos.reserva) },
+          { tipo: 'bienvenida', clave: claveBienvenida(contactoId), contactoId }
+        )
+      : await mandarCorreoLista({ correo: datos.correo, nombre: datos.nombre, contactoId }, 'bienvenida');
+    // La reserva también queda en la ficha; no pisa un correo de la lista que ya le llegó (ver marcarCorreoLista).
+    if (datos.reserva) await marcarCorreoLista(contactoId, { plantilla: 'reserva', estado: r.estado, por: 'bienvenida' });
     const salio = r.estado !== 'fallido';
     const sorela = correoDeSorela();
     if (sorela) {
-      const a = correoAvisoContacto(datos, datos.origen, salio);
+      const a = correoAvisoContacto(datos, datos.origen, salio ? 'mandado' : 'no-salio', lista);
       const r = datos.reserva;
       const asunto = r ? `Reserva de plaza · ${r.ciudad}: ${datos.nombre}` : a.asunto;
       const texto = r
@@ -187,5 +228,9 @@ export async function mandarInformacion(datos: Contacto & { origen: string; rese
   // por las dos vías acabaría con la misma persona recibiendo el correo dos
   // veces el día que el script conteste tarde pero sí haya enviado.
   const correo = google.correo || (!hayAppsScript() && (await correoPorSmtp(datos)));
+  /* Por Gmail o SMTP sale la bienvenida antigua, sin el grupo de WhatsApp:
+     se apunta como tal, y en Clientes sale «no le llegó su correo» (le llegó
+     el antiguo) en vez de darlo por bueno. */
+  await marcarCorreoLista(contactoId, { plantilla: 'informacion', estado: correo ? 'enviado' : 'fallido', por: 'bienvenida' });
   return { correo, guardado: google.guardado, via: google.correo ? 'apps-script' : correo ? 'smtp' : undefined };
 }

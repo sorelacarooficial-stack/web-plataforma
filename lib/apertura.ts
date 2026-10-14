@@ -41,8 +41,14 @@ export const ZONAS = [
 
 const instante = new Date(APERTURA);
 
-/** «19:00» en esa zona. h23 para que la medianoche sea 00:00 y no 24:00. */
-function horaEn(zona: string): string {
+/**
+ * «19:00» en esa zona. h23 para que la medianoche sea 00:00 y no 24:00.
+ *
+ * Exportada para «tu hora» de la Comunidad (ComunidadProximamente.tsx): la
+ * hora de quien mira, si no vive en ninguno de los cuatro países, sale de la
+ * misma cuenta y no de una copia.
+ */
+export function horaEn(zona: string): string {
   return new Intl.DateTimeFormat('es-ES', {
     timeZone: zona,
     hour: '2-digit',

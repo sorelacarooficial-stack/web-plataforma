@@ -307,12 +307,18 @@ export async function POST(peticion: Request) {
   try {
     const ficha = baseDeDatos().collection(COLECCIONES.contactos).doc(correo.replace(/\//g, '_'));
     const yaEstaba = (await ficha.get()).exists;
+    const origen = invitacion ? 'invitacion' : QUIERE[quiere].origen;
 
     await ficha.set(
       {
         /* Nombre y origen solo si la ficha es nueva: el registro es público y
            no puede reescribir la ficha de otra persona. */
-        ...(yaEstaba ? {} : { nombre, correo, origen: invitacion ? 'invitacion' : QUIERE[quiere].origen }),
+        ...(yaEstaba ? {} : { nombre, correo, origen }),
+        /* Lo que pidió y cuándo, como en /api/captar: si ya tenía ficha, su
+           origen no cambia, y sin esto no quedaría constancia de que además
+           se ha creado una cuenta (lib/atencion.ts lo lee). `merge` funde el
+           mapa con lo que ya hubiera. */
+        pidio: { [origen]: FieldValue.serverTimestamp() },
         /* Que se ha creado la cuenta ella misma. Lo usa la lista para
            distinguirla de quien solo ha dejado su contacto: una ya está
            dentro esperando, la otra todavía no ha dado ese paso. */
@@ -334,8 +340,12 @@ export async function POST(peticion: Request) {
         ...(yaEstaba
           ? {}
           : { estado: 'Nuevo', veces: 1, creado: FieldValue.serverTimestamp(), ...procedenciaDe(cuerpo.llegada) }),
-        /* Con enlace de invitación es que ya ha pagado: en el CRM, cerrada. */
-        ...(invitacion ? { estado: 'Cerrado' } : {}),
+        /* Con enlace de invitación es que ya ha pagado: en el CRM, cerrada.
+           Con la fecha del cambio, como el PATCH de Clientes: lo que hubiera
+           pedido antes (el formulario de formación, por ejemplo) ya está
+           resuelto, y no sale en «Te necesitan» una alumna que acaba de pagar.
+           Sigue en la lista de espera: la masterclass es también para ella. */
+        ...(invitacion ? { estado: 'Cerrado', estadoCambiado: FieldValue.serverTimestamp() } : {}),
       },
       { merge: true }
     );

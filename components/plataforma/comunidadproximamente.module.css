@@ -1,0 +1,1022 @@
+/* ==========================================================================
+   «Comunidad» sin membresía: la invitación a la masterclass
+   (ComunidadProximamente.tsx)
+
+   Estilo «vidrio claro»: superficies translúcidas con desenfoque, filete de
+   luz arriba, sombras suaves. Primario oscuro #1f1a16 con letra crema;
+   secundario de vidrio. Una sola letra, Inter: títulos en 300 con -0,03em,
+   rótulos en mayúsculas a 11-12 px en 500, texto en 400, cifras tabulares.
+   Nada en 300 por debajo de 20 px.
+
+   Contraste medido sobre lo que hay detrás de cada letra (aura y vidrio
+   incluidos), a 1440 y a 390: el peor es 4,97 a 1 («MASTERCLASS EN DIRECTO
+   POR ZOOM», oro-letra sobre lo más dorado del aura); los rótulos del reloj,
+   de 5,8 a 6,2; el título del evento en oro-letra sólido, 5,6-6,0; el resto,
+   de 5,3 a 18.
+
+   Los tokens del rediseño de vidrio (--vidrio-…, --foco-…, --boton-…) se
+   usan con su valor de respaldo: esta pantalla se ve igual con ellos y sin
+   ellos. El relleno de cada superficie es propio (está medido contra el
+   aura), por eso va en las variables --cd-… de .escena.
+
+   Solo `backdrop-filter` y `mask-image` sin prefijo: lightningcss pone el de
+   -webkit- para Safari, y si se escriben los dos se queda con el prefijado y
+   Chrome no desenfoca (hallazgo del rediseño de vidrio).
+   ========================================================================== */
+
+/* La escena ocupa todo el ancho: el aura vive aquí y se funde con el papel en
+   los bordes (máscara). Recorta en horizontal porque el aura «respira» con
+   scale(1.05) y una transformación sí cuenta para el desplazamiento lateral;
+   en vertical no recorta, que el aura sube por detrás del saludo. */
+.escena {
+  --cd-vidrio: rgba(255, 255, 255, 0.46);
+  --cd-vidrio-fuerte: rgba(255, 255, 255, 0.62);
+  --cd-sombra:
+    var(--vidrio-brillo, inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.45)),
+    0 0 0 1px var(--vidrio-linea, rgba(20, 18, 16, 0.06)),
+    0 2px 6px -2px rgba(70, 50, 20, 0.08),
+    0 24px 48px -28px rgba(70, 50, 20, 0.34);
+  --cd-sombra-sm:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 0 1px rgba(20, 18, 16, 0.07),
+    0 10px 24px -14px rgba(70, 50, 20, 0.3);
+  --cd-desenfoque: var(--vidrio-filtro, blur(26px) saturate(1.6));
+  --cd-curva: var(--curva, cubic-bezier(0.22, 1, 0.36, 1));
+  --cd-oro-letra: var(--oro-letra, #6f5323);
+
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  overflow-x: clip;
+  font-family: var(--fuente-inter), -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  color: var(--ink, #141210);
+}
+
+.aura {
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  top: 200px;
+  height: 640px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  background:
+    radial-gradient(400px 220px at 50% 48%, rgba(217, 180, 124, 0.5), rgba(217, 180, 124, 0)),
+    radial-gradient(310px 190px at calc(50% - 230px) 42%, rgba(243, 227, 195, 0.95), rgba(243, 227, 195, 0)),
+    radial-gradient(260px 140px at calc(50% + 230px) 42%, rgba(194, 154, 91, 0.22), rgba(194, 154, 91, 0)),
+    radial-gradient(570px 330px at 50% 52%, rgba(255, 250, 240, 0.7), rgba(255, 250, 240, 0));
+  filter: blur(24px);
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  animation: respira 11s ease-in-out infinite;
+}
+
+@keyframes respira {
+  0%,
+  100% {
+    transform: translateY(-50%) scale(1);
+    opacity: 0.92;
+  }
+  50% {
+    transform: translateY(-50%) scale(1.05);
+    opacity: 1;
+  }
+}
+
+/* Un anillo finísimo alrededor del reloj, como el bisel de un reloj. */
+.orbita {
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 200px;
+  width: min(980px, 100%);
+  height: 270px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(138, 106, 50, 0.15);
+  pointer-events: none;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+
+.orbita::after {
+  content: '';
+  position: absolute;
+  inset: 26px 13%;
+  border-radius: 50%;
+  border: 1px solid rgba(138, 106, 50, 0.09);
+}
+
+.comunidad {
+  position: relative;
+  width: 100%;
+  max-width: 940px;
+  margin: 0 auto;
+  padding: clamp(6px, 2vh, 22px) 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* ---------- La invitación ---------- */
+.invitacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 34px;
+  margin: 0;
+  padding: 0 16px 0 12px;
+  /* Transparente: en alto contraste se pinta y la píldora conserva su borde. */
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--cd-vidrio);
+  backdrop-filter: var(--cd-desenfoque);
+  box-shadow: var(--cd-sombra-sm);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.003em;
+  color: var(--ink-3, #4f4840);
+}
+
+.invitacion svg {
+  flex: none;
+  color: var(--oro, #8a6a32);
+}
+
+.invitacion b {
+  font-weight: 600;
+  color: var(--ink, #141210);
+}
+
+.saludo {
+  margin: 16px 0 0;
+  font-size: clamp(26px, 2.4vw, 34px);
+  font-weight: 300;
+  letter-spacing: -0.028em;
+  line-height: 1.18;
+  color: var(--ink-2, #3e3831);
+  text-wrap: balance;
+}
+
+.saludo b {
+  font-weight: 600;
+  color: var(--ink, #141210);
+  white-space: nowrap;
+}
+
+.saludoSolo {
+  margin-top: 0;
+}
+
+/* ---------- El reloj: el único protagonista ---------- */
+.reloj {
+  position: relative;
+  container-type: inline-size;
+  width: min(720px, 100%);
+  margin: 24px 0 0;
+  border: 1px solid transparent;
+  border-radius: 36px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3));
+  backdrop-filter: var(--cd-desenfoque);
+  box-shadow: var(--cd-sombra);
+}
+
+/* El brillo de arriba: media luna de luz, como el cristal de un reloj. */
+.reloj::before {
+  content: '';
+  position: absolute;
+  inset: 1px 1px 50% 1px;
+  border-radius: 35px 35px 60% 60% / 35px 35px 28px 28px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.relojCifras {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 26px 10px 22px;
+}
+
+.unidad {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.unidad + .unidad::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12%;
+  bottom: 12%;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(20, 18, 16, 0), rgba(20, 18, 16, 0.13), rgba(20, 18, 16, 0));
+}
+
+/* 80 px en 300 como tope; en estrecho baja con el ancho del propio reloj. El
+   primer font-size es para quien no entiende las unidades de contenedor. */
+.numero {
+  display: block;
+  font-size: 46px;
+  font-size: clamp(38px, 13cqi, 80px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  margin-right: -0.04em;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  color: var(--ink, #141210);
+  animation: cambia 0.38s var(--cd-curva);
+}
+
+@keyframes cambia {
+  from {
+    opacity: 0.35;
+    transform: translateY(0.07em);
+  }
+}
+
+.rotuloReloj {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  margin-right: -0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--muted-2, #5e564c);
+}
+
+.corto {
+  display: none;
+}
+
+.latido {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--oro, #8a6a32);
+  animation: segundero 1s steps(1, end) infinite;
+}
+
+@keyframes segundero {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* Reloj de menos de ~420 px: DÍAS · HORAS · MIN · SEG. */
+@container (max-width: 420px) {
+  .relojCifras {
+    padding: 20px 4px 17px;
+  }
+
+  .unidad {
+    gap: 10px;
+  }
+
+  .rotuloReloj {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    margin-right: -0.16em;
+  }
+
+  .largo {
+    display: none;
+  }
+
+  .corto {
+    display: inline;
+  }
+
+  .latido {
+    display: none;
+  }
+}
+
+/* ---------- Es ahora / ya ha abierto (en lugar del reloj) ---------- */
+.ahora {
+  position: relative;
+  width: min(720px, 100%);
+  margin: 24px 0 0;
+  padding: 30px 28px;
+  border: 1px solid transparent;
+  border-radius: 36px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.36));
+  backdrop-filter: var(--cd-desenfoque);
+  box-shadow: var(--cd-sombra);
+}
+
+.enDirecto {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  margin-right: -0.24em;
+  text-transform: uppercase;
+  color: var(--cd-oro-letra);
+}
+
+.pulso {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--oro, #8a6a32);
+}
+
+.pulso::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1px solid rgba(138, 106, 50, 0.5);
+  animation: onda 1.8s var(--cd-curva) infinite;
+}
+
+@keyframes onda {
+  from {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.ahoraTitulo {
+  margin: 14px 0 0;
+  font-size: clamp(30px, 3vw, 40px);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--ink, #141210);
+}
+
+.ahoraTexto {
+  margin: 10px auto 0;
+  max-width: 44ch;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink-2, #3e3831);
+  text-wrap: balance;
+}
+
+.ahoraTexto b {
+  font-weight: 600;
+  color: var(--ink, #141210);
+}
+
+/* ---------- La masterclass ---------- */
+.evento {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin: 32px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--cd-oro-letra);
+}
+
+.evento::before,
+.evento::after {
+  content: '';
+  width: 32px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(138, 106, 50, 0), rgba(138, 106, 50, 0.7));
+}
+
+.evento::after {
+  transform: scaleX(-1);
+}
+
+/* Letra sólida en oro-letra: ni degradado ni destello (el oro de la marca,
+   #8a6a32, se queda en 4,4 sobre lo más dorado del aura). */
+.masterclass {
+  margin: 10px 0 0;
+  font-size: clamp(40px, 3.9vw, 56px);
+  font-weight: 300;
+  letter-spacing: -0.032em;
+  line-height: 1.06;
+  color: var(--cd-oro-letra);
+  text-wrap: balance;
+}
+
+.fecha {
+  margin: 12px 0 0;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  color: var(--ink-2, #3e3831);
+}
+
+.fecha b {
+  font-weight: 600;
+  color: var(--ink, #141210);
+}
+
+.horas {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+}
+
+.horas li {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--cd-vidrio);
+  backdrop-filter: var(--cd-desenfoque);
+  box-shadow: var(--cd-sombra-sm);
+}
+
+.pais {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-3, #4f4840);
+}
+
+.hora {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink, #141210);
+}
+
+/* La hora de quien mira: punto de oro y filete dorado. */
+.horas li.tuya {
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 0 0 1px rgba(138, 106, 50, 0.5),
+    0 10px 24px -14px rgba(70, 50, 20, 0.36);
+}
+
+.horas li.tuya .pais::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--oro, #8a6a32);
+  box-shadow: 0 0 0 3px rgba(138, 106, 50, 0.16);
+}
+
+.tuHora {
+  margin: 12px 0 0;
+  font-size: 14.5px;
+  color: var(--ink-3, #4f4840);
+}
+
+.tuHora b {
+  font-weight: 600;
+  color: var(--ink, #141210);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- La voz de Sorela ---------- */
+.nota {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 520px;
+  margin: 24px 0 0;
+  text-align: left;
+}
+
+.notaFoto {
+  flex: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 2px #fffdf9,
+    0 0 0 3px rgba(138, 106, 50, 0.45),
+    0 10px 22px -10px rgba(20, 18, 16, 0.45);
+}
+
+.notaFoto img,
+.palabrasFoto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nota p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-2, #3e3831);
+  text-wrap: pretty;
+}
+
+.junto {
+  white-space: nowrap;
+}
+
+.nota cite {
+  display: block;
+  margin-top: 3px;
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-2, #5e564c);
+}
+
+/* ---------- Botones píldora ---------- */
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin: 22px 0 0;
+}
+
+.accionesSolo {
+  margin-top: 26px;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 28px;
+  /* Transparente: en alto contraste se pinta y el botón conserva su borde. */
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.2s var(--cd-curva),
+    box-shadow 0.25s,
+    background 0.25s;
+}
+
+/* El foco, con contorno y no con sombra: el contorno sobrevive al alto
+   contraste de Windows, la sombra no. Mismo anillo que el resto de la
+   plataforma (oro tostado, 4,8 a 7 a 1). */
+.boton:focus-visible,
+.palabras:focus-visible {
+  outline: var(--foco-ancho, 2px) solid var(--foco-color, #6f5323);
+  outline-offset: var(--foco-separacion, 2px);
+}
+
+.boton:active {
+  transform: scale(0.98);
+}
+
+/* Es un <a>: el color se repite en :hover para que no lo pise el de los
+   enlaces de la web. */
+.botonPrimario,
+.botonPrimario:hover {
+  color: var(--letra-sobre-tinta, #f7f2ea);
+}
+
+.botonPrimario {
+  background: var(--boton-primario-fondo, linear-gradient(180deg, #2b241e, #1f1a16));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 0 1px rgba(20, 18, 16, 0.9),
+    0 14px 30px -14px rgba(20, 18, 16, 0.7);
+}
+
+.botonPrimario svg {
+  color: #d9b47c;
+}
+
+.botonPrimario:hover {
+  transform: translateY(-1px);
+  background: var(--boton-primario-fondo-hover, linear-gradient(180deg, #342b24, #241e19));
+}
+
+.botonVidrio {
+  background: var(--cd-vidrio-fuerte);
+  backdrop-filter: var(--cd-desenfoque);
+  color: var(--ink, #141210);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 0 1px var(--vidrio-linea-fuerte, rgba(20, 18, 16, 0.14)),
+    0 10px 24px -14px rgba(70, 50, 20, 0.35);
+}
+
+.botonVidrio svg {
+  color: var(--oro, #8a6a32);
+}
+
+.botonVidrio:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.pieNota {
+  margin: 16px 0 0;
+  max-width: 640px;
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--muted-2, #5e564c);
+  text-wrap: balance;
+}
+
+.pieNota span {
+  display: block;
+}
+
+/* «Unas palabras de Sorela»: el acceso a «Sobre esto» en la propia pantalla.
+   Solo en móvil; en escritorio está en la lateral con su punto dorado. */
+.palabras {
+  display: none;
+}
+
+/* ---------- Entrada escalonada ---------- */
+/* .reloj lleva .entra y su propia animación de cifras va en .numero: no chocan. */
+.entra {
+  animation: aparece 0.9s var(--cd-curva) backwards;
+}
+
+.entra1 {
+  animation-delay: 0.05s;
+}
+
+.entra2 {
+  animation-delay: 0.15s;
+}
+
+.entra3 {
+  animation-delay: 0.28s;
+}
+
+.entra4 {
+  animation-delay: 0.4s;
+}
+
+.entra5 {
+  animation-delay: 0.5s;
+}
+
+@keyframes aparece {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(6px);
+  }
+}
+
+/* Portátil de 13″ (1280×720): los botones se ven sin bajar. */
+@media (min-width: 881px) and (max-height: 820px) {
+  .comunidad {
+    padding-top: 4px;
+  }
+
+  .saludo {
+    margin-top: 12px;
+    font-size: 28px;
+  }
+
+  .reloj,
+  .ahora {
+    margin-top: 18px;
+  }
+
+  .relojCifras {
+    padding: 20px 10px 17px;
+  }
+
+  .numero {
+    font-size: clamp(38px, 10.5cqi, 68px);
+  }
+
+  .unidad {
+    gap: 10px;
+  }
+
+  .evento {
+    margin-top: 24px;
+  }
+
+  .masterclass {
+    margin-top: 6px;
+    font-size: clamp(36px, 3.3vw, 46px);
+  }
+
+  .fecha {
+    margin-top: 8px;
+    font-size: 16px;
+  }
+
+  .horas {
+    margin-top: 12px;
+  }
+
+  .horas li {
+    min-height: 40px;
+  }
+
+  .nota {
+    margin-top: 16px;
+  }
+
+  .notaFoto {
+    width: 44px;
+    height: 44px;
+  }
+
+  .acciones {
+    margin-top: 16px;
+  }
+
+  .boton {
+    min-height: 50px;
+  }
+
+  .pieNota {
+    margin-top: 12px;
+  }
+
+  .aura,
+  .orbita {
+    top: 178px;
+  }
+}
+
+@media (max-width: 880px) {
+  .comunidad {
+    padding-top: 6px;
+  }
+
+  .aura {
+    top: 210px;
+    height: 520px;
+    filter: blur(20px);
+    background:
+      radial-gradient(260px 170px at 50% 46%, rgba(217, 180, 124, 0.5), rgba(217, 180, 124, 0)),
+      radial-gradient(200px 150px at 26% 40%, rgba(243, 227, 195, 0.95), rgba(243, 227, 195, 0)),
+      radial-gradient(360px 260px at 50% 52%, rgba(255, 250, 240, 0.7), rgba(255, 250, 240, 0));
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+
+  .orbita {
+    display: none;
+  }
+
+  .invitacion {
+    font-size: 13.5px;
+    min-height: 32px;
+  }
+
+  .saludo {
+    margin-top: 14px;
+    font-size: 24px;
+  }
+
+  .reloj,
+  .ahora {
+    margin-top: 20px;
+    border-radius: 28px;
+  }
+
+  .reloj::before {
+    border-radius: 27px 27px 50% 50% / 27px 27px 20px 20px;
+  }
+
+  .ahora {
+    padding: 24px 18px;
+  }
+
+  .ahoraTitulo {
+    font-size: 30px;
+  }
+
+  .ahoraTexto {
+    font-size: 16px;
+  }
+
+  .evento {
+    margin-top: 32px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    margin-right: -0.2em;
+  }
+
+  .evento::before,
+  .evento::after {
+    display: none;
+  }
+
+  .masterclass {
+    font-size: 36px;
+    max-width: 10ch;
+  }
+
+  .fecha {
+    font-size: 16px;
+  }
+
+  .horas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .horas li {
+    justify-content: space-between;
+    min-width: 0;
+    padding: 0 16px;
+  }
+
+  .nota {
+    margin-top: 26px;
+    gap: 14px;
+  }
+
+  .notaFoto {
+    width: 46px;
+    height: 46px;
+  }
+
+  .brAncho {
+    display: none;
+  }
+
+  .nota p {
+    font-size: 15.5px;
+  }
+
+  .acciones {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .boton {
+    width: 100%;
+  }
+
+  .palabras {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 22px 0 0;
+    min-height: 44px;
+    padding: 4px 14px 4px 4px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: var(--cd-vidrio-fuerte);
+    backdrop-filter: var(--cd-desenfoque);
+    box-shadow: var(--cd-sombra-sm);
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--ink-2, #3e3831);
+    cursor: pointer;
+  }
+
+  .palabrasFoto {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(138, 106, 50, 0.35);
+  }
+
+  .palabras svg {
+    color: var(--oro, #8a6a32);
+  }
+}
+
+/* Móviles de 320-360 px. */
+@media (max-width: 360px) {
+  .horas li {
+    padding: 0 12px;
+    gap: 6px;
+  }
+
+  .pais {
+    font-size: 13px;
+  }
+
+  .hora {
+    font-size: 15px;
+  }
+
+  .boton {
+    padding: 0 18px;
+  }
+
+  .saludo {
+    font-size: 23px;
+  }
+
+  .masterclass {
+    font-size: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura,
+  .latido,
+  .entra,
+  .numero,
+  .pulso::after {
+    animation: none;
+  }
+
+  .boton {
+    transition: none;
+  }
+
+  .boton:active,
+  .botonPrimario:hover,
+  .botonVidrio:hover {
+    transform: none;
+  }
+}
+
+/* Menos transparencia: superficies opacas y sin desenfoque. */
+@media (prefers-reduced-transparency: reduce) {
+  .reloj,
+  .ahora,
+  .horas li,
+  .botonVidrio,
+  .invitacion,
+  .palabras {
+    backdrop-filter: none;
+    background: #fffdf9;
+  }
+
+  .horas li.tuya {
+    background: #fffdf9;
+  }
+}
+
+/* Sin backdrop-filter (navegadores viejos): el vidrio, casi opaco, para que
+   lo de detrás no se lea a través de las píldoras. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .invitacion,
+  .horas li,
+  .botonVidrio,
+  .palabras {
+    background: rgba(255, 253, 249, 0.92);
+  }
+}
+
+/* Alto contraste (Windows): fuera los adornos; los bordes transparentes se
+   pintan solos y cada píldora y botón conserva su contorno. */
+@media (forced-colors: active) {
+  .aura,
+  .orbita,
+  .reloj::before,
+  .unidad + .unidad::before {
+    display: none;
+  }
+
+  .latido,
+  .pulso {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .masterclass,
+  .evento,
+  .enDirecto,
+  .rotuloReloj {
+    color: CanvasText;
+  }
+}

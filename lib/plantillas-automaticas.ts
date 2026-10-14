@@ -1,4 +1,5 @@
 import { DIA_APERTURA, HORA_ESPANA } from './apertura';
+import { cuandoSale } from './atencion';
 import { botonCorreo, envoltorio, escapar } from './plantillas-correo';
 import { FORMAS_DE_SUMAR, NIVELES, SUMAN_AL_MES, formatoPuntos, type FuenteMes } from './puntos-tipos';
 
@@ -243,16 +244,53 @@ export function correoRegistro(nombre: string | null, pide: 'comunidad' | 'curso
 /* ------------------------------------------------------------ resumen */
 
 export type ResumenDatos = {
-  sinAtender: { nombre: string; dias: number; como: string }[];
+  /**
+   * Quien te necesita (la regla de lib/atencion.ts): te ha escrito o pedido
+   * algo después de la última vez que hiciste algo con ella. `motivo` ya va
+   * en minúscula, para ir detrás del nombre. Nadie está aquí solo por estar
+   * en la lista de espera: esa sigue sola con sus correos.
+   */
+  teNecesitan: { nombre: string; dias: number; motivo: string }[];
   esperando: { nombre: string; correo: string; pide: string }[];
   /** Programados de los próximos días con el botón sin enlace: no saldrán. */
   sinEnlace?: { asunto: string; fecha: string }[];
+  /**
+   * Cómo va la lista de espera, para una línea en gris al final. Es un dato,
+   * no algo pendiente: nunca hace que el resumen salga.
+   */
+  lista?: {
+    personas: number;
+    /** Cuántas entraron ayer. */
+    ayer: number;
+    /** Los correos que tiene la serie. */
+    total: number;
+    /** El correo de la serie que ha salido hoy, si ha salido. */
+    hoySale: { n: number; asunto: string; personas: number } | null;
+    /** El siguiente que está programado. */
+    proximo: { n: number; fecha: string } | null;
+  };
 };
+
+const personas = (n: number) => `${n} ${n === 1 ? 'persona' : 'personas'}`;
+
+/** La línea de la lista de espera: que sigue sola, a cuántas y qué correo toca. */
+function lineaLista(l: NonNullable<ResumenDatos['lista']>): string {
+  const partes = [
+    `La lista de espera sigue sola: ${personas(l.personas)}${l.ayer ? ` (${l.ayer} ${l.ayer === 1 ? 'nueva' : 'nuevas'} ayer)` : ''}.`,
+  ];
+  if (l.hoySale) partes.push(`Hoy ha salido el correo ${l.hoySale.n} de ${l.total}, «${l.hoySale.asunto}», a ${personas(l.hoySale.personas)}.`);
+  // «Desde las»: el envío de cada mañana llega con unos minutos de retraso (ver cuandoSale).
+  if (l.proximo) partes.push(`${l.hoySale ? 'El siguiente' : `El próximo, el ${l.proximo.n} de ${l.total},`} sale el ${cuandoSale(l.proximo.fecha).texto}.`);
+  else if (l.total) partes.push('Ya no queda ningún correo de la serie por salir.');
+  return partes.join(' ');
+}
 
 export function correoResumen(d: ResumenDatos): Plantilla {
   const sinEnlace = d.sinEnlace ?? [];
-  const n = d.sinAtender.length + d.esperando.length + sinEnlace.length;
-  const lineasA = d.sinAtender.map((c) => `· ${c.nombre} — ${c.dias === 0 ? 'hoy' : c.dias === 1 ? 'desde ayer' : `${c.dias} días esperando`} — ${c.como}`);
+  const n = d.teNecesitan.length + d.esperando.length + sinEnlace.length;
+  const lineasA = d.teNecesitan.map(
+    (c) => `· ${c.nombre}${c.motivo ? ` — ${c.motivo}` : ''} — ${c.dias === 0 ? 'hoy' : c.dias === 1 ? 'desde ayer' : `hace ${c.dias} días`}`
+  );
   const lineasB = d.esperando.map((c) => `· ${c.nombre} (${c.correo}) — ${c.pide}`);
   const fechaCorta = (f: string) =>
     new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${f}T12:00:00Z`));
@@ -267,12 +305,14 @@ export function correoResumen(d: ResumenDatos): Plantilla {
       sinEnlace.length ? `Correos que NO saldrán porque al botón le falta el enlace (pégalo en Avisos y correos):` : false,
       ...lineasC,
       sinEnlace.length ? '' : false,
-      d.sinAtender.length ? `Por atender en Clientes (${d.sinAtender.length}):` : false,
+      d.teNecesitan.length ? `Te necesitan (${d.teNecesitan.length}), en Clientes:` : false,
       ...lineasA,
-      d.sinAtender.length ? '' : false,
+      d.teNecesitan.length ? '' : false,
       d.esperando.length ? `Cuentas esperando acceso (${d.esperando.length}):` : false,
       ...lineasB,
-      '',
+      d.esperando.length ? '' : false,
+      d.lista ? lineaLista(d.lista) : false,
+      d.lista ? '' : false,
       PLATAFORMA,
     ]
       .filter((l): l is string => typeof l === 'string')
@@ -280,8 +320,9 @@ export function correoResumen(d: ResumenDatos): Plantilla {
     html: envoltorio(
       'Buenos días, Sorela.',
       `${sinEnlace.length ? `<p style="margin:0 0 8px;color:#a24a2e"><strong>No saldrán: al botón le falta el enlace</strong></p><p style="margin:0 0 8px;font-size:14px">Pégalo en Avisos y correos → Editar.</p>${lista(lineasC)}` : ''}
-       ${d.sinAtender.length ? `<p style="margin:0 0 8px"><strong>Por atender en Clientes (${d.sinAtender.length})</strong></p>${lista(lineasA)}` : ''}
+       ${d.teNecesitan.length ? `<p style="margin:0 0 8px"><strong>Te necesitan (${d.teNecesitan.length}), en Clientes</strong></p>${lista(lineasA)}` : ''}
        ${d.esperando.length ? `<p style="margin:0 0 8px"><strong>Cuentas esperando acceso (${d.esperando.length})</strong></p>${lista(lineasB)}` : ''}
+       ${d.lista ? p(escapar(lineaLista(d.lista)), ';font-size:14px;color:#6c645a') : ''}
        ${boton(PLATAFORMA, 'Abrir la plataforma')}`,
       undefined,
       '',

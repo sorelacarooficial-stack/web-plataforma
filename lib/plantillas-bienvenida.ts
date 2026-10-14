@@ -1,5 +1,5 @@
 import { APERTURA, APERTURA_POR_PAISES, DIA_APERTURA, GRUPO_WHATSAPP, HORAS_APERTURA, HORA_ESPANA } from './apertura';
-import { comoLlego, ETIQUETA_TIPO, tipoDeOrigen, type Tipo } from './origenes';
+import { comoLlego, ETIQUETA_TIPO, tipoDeContacto, tipoDeOrigen, type Tipo } from './origenes';
 import { botonCorreo, envoltorio, escapar } from './plantillas-correo';
 
 /**
@@ -79,6 +79,13 @@ const TEXTOS: Record<Tipo, { asunto: string; saludo: string; parrafos: (string |
     ],
   },
 };
+
+/**
+ * El asunto del correo de la lista de espera, sin el nombre detrás. Con él
+ * sabe lib/entregas.ts que una línea del historial es ESE correo, salga por
+ * la bienvenida, el registro o una campaña con la plantilla de la lista.
+ */
+export const ASUNTO_LISTA = TEXTOS.comunidad.asunto;
 
 const TITULARES: Record<Tipo, string> = {
   clienta: 'La Técnica Divine',
@@ -272,13 +279,30 @@ export function correoReservaPlaza(
   return { asunto: `${titulo}${n ? `, ${n}` : ''} · ${r.ciudad}`, texto, html };
 }
 
-/** El aviso interno: alguien ha dejado sus datos. Para que Sorela escriba el mismo día. */
+/** Lo que pasó con el correo de la persona, para la última línea del aviso. */
+const SU_CORREO = {
+  // «Le hemos mandado», no «le ha llegado»: que llegó solo se sabe cuando el servicio de correo lo confirma.
+  mandado: 'Le hemos mandado su correo con la información.',
+  'no-salio': 'OJO: no ha salido su correo. Escríbele tú.',
+  'no-lleva':
+    'Ha pedido solo un aviso cuando haya algo en su ciudad: no se le manda la información ni entra en las campañas. Escríbele tú cuando toque.',
+} as const;
+
+/**
+ * El aviso interno: alguien ha dejado sus datos. Para que Sorela escriba el mismo día.
+ *
+ * El tipo es el de Clientes (`tipoDeContacto`, que mira `lista`), no el que
+ * sale solo del formulario: desde octubre, quien deja sus datos en la portada
+ * entra en la lista de espera, y el aviso la llamaba «Quiere tratarse».
+ */
 export function correoAvisoContacto(
   d: { nombre: string; correo: string; whatsapp?: string; ciudad?: string; perfil?: string; nota?: string },
   origen: string,
-  llegoSuCorreo: boolean
+  suCorreo: keyof typeof SU_CORREO,
+  /** Si entra en la lista de espera de la masterclass. */
+  lista = false
 ) {
-  const tipo = tipoDeOrigen(origen);
+  const tipo = tipoDeContacto({ origen, lista });
   const tel = (d.whatsapp || '').replace(/\D/g, '');
   const lineas = [
     `${d.nombre || '(sin nombre)'} — ${ETIQUETA_TIPO[tipo]}`,
@@ -291,7 +315,7 @@ export function correoAvisoContacto(
     '',
     `De dónde viene: ${comoLlego(origen)}`,
     '',
-    llegoSuCorreo ? 'Ya le ha llegado su correo con la información.' : 'OJO: no ha salido su correo. Escríbele tú.',
+    SU_CORREO[suCorreo],
     '',
     `Su ficha: ${WEB}/plataforma`,
   ].filter((l, i, a) => l !== '' || a[i - 1] !== '');
