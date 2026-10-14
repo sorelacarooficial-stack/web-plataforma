@@ -15,6 +15,9 @@ export const MARCA = {
   imagenes: {
     equipo: `${B}sorela-corrigiendo.jpg?alt=media&token=7a580123-d7fb-4df1-8181-1b9f62130398`,
     consulta: `${B}sorela-alumna.jpg?alt=media&token=6bbb3e92-1fbd-4202-a002-6c02a8830b45`,
+    /* Sorela con su equipo, siete mujeres juntas y todas las caras enteras:
+       la de todo lo que habla de la Comunidad. */
+    comunidad: `${B}comunidad-grupo.jpg?alt=media&token=5e45156c-29eb-4b11-a515-9945bf5636b7`,
   },
   instagram: 'https://instagram.com/sorelacaro_',
   whatsapp: 'https://wa.me/34686154556',
@@ -25,5 +28,6 @@ export type ImagenCorreo = keyof typeof MARCA.imagenes | 'ninguna';
 export const IMAGENES_CORREO: Record<ImagenCorreo, string> = {
   equipo: 'Sorela enseñando a una alumna',
   consulta: 'Sorela en consulta',
+  comunidad: 'Sorela con su equipo (Comunidad)',
   ninguna: 'Sin imagen',
 };

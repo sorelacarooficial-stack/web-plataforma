@@ -2,7 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "crons": [
-    { "path": "/api/cron/correos", "schedule": "30 6 * * *" },
-    { "path": "/api/cron/correos?pasada=extra", "schedule": "20 8 * * *" }
+    { "path": "/api/cron/correos", "schedule": "30 6 * * *" }
   ]
 }

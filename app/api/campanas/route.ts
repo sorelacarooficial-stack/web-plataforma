@@ -50,7 +50,7 @@ function revisar(c: Record<string, unknown>, parcial = false) {
     if (!datos.cuerpo) errores.cuerpo = 'Escribe el texto del correo.';
   }
   if (hay('etiqueta')) datos.etiqueta = texto(c.etiqueta, 60).trim();
-  if (hay('imagen')) datos.imagen = c.imagen === 'consulta' || c.imagen === 'ninguna' ? c.imagen : 'equipo';
+  if (hay('imagen')) datos.imagen = ['consulta', 'comunidad', 'ninguna'].includes(String(c.imagen)) ? c.imagen : 'equipo';
   if (hay('audiencia')) {
     if (!(String(c.audiencia) in AUDIENCIAS)) errores.audiencia = 'Elige a quién va.';
     else datos.audiencia = c.audiencia as Audiencia;

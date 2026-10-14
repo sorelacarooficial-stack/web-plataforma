@@ -354,7 +354,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
                     <IconoCandado tam={22} />
                   </span>
                   <strong>Clase bloqueada</strong>
-                  <span>Se desbloquea una vez completada la parte práctica.</span>
+                  <span>Disponible una vez terminada la clase presencial.</span>
                 </div>
               </div>
             ) : esVideoPropio(actual.video) ? (
@@ -566,7 +566,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
                       </span>
                       <span className={a.claseProgreso}>
                         {l.bloqueada ? (
-                          <span className={a.chipBloqueo}>Tras la práctica</span>
+                          <span className={a.chipBloqueo}>Tras la presencial</span>
                         ) : p?.completada ? (
                           <span className={a.hecha} aria-label="Completada">
                             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -597,12 +597,12 @@ export default function Aula({ correo }: { correo?: string | null }) {
           {/* Con el abono y todo bloqueado, «0 de 8 completadas» no dice nada: cuántas le esperan. */}
           <p className={a.cuenta}>
             {soloPrecurso && abiertas.length === 0
-              ? `${ordenadas.length} ${ordenadas.length === 1 ? 'clase esperando' : 'clases esperando'} a la parte práctica`
+              ? `${ordenadas.length} ${ordenadas.length === 1 ? 'clase esperando' : 'clases esperando'} a la clase presencial`
               : `${hechas} de ${ordenadas.length} ${ordenadas.length === 1 ? 'clase completada' : 'clases completadas'}`}
           </p>
           {soloPrecurso && abiertas.length === 0 && (
             <p className={a.avisoBloqueo}>
-              <IconoCandado tam={13} /> Tus clases se desbloquean una vez completada la parte práctica. Mientras, ya
+              <IconoCandado tam={13} /> Tus clases estarán disponibles una vez terminada la clase presencial. Mientras, ya
               puedes leer el material.
             </p>
           )}
@@ -638,7 +638,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
                     </span>
                     {/* El candado no se lee: que el lector sepa que está bloqueada (o hecha). */}
                     {(hecha || l.bloqueada) && (
-                      <span className="sr-only">{hecha ? ', completada' : ', bloqueada hasta completar la parte práctica'}</span>
+                      <span className="sr-only">{hecha ? ', completada' : ', disponible al terminar la clase presencial'}</span>
                     )}
                   </button>
                 </li>

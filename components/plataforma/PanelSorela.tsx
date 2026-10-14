@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PENDIENTE_BETA, type Vista } from '@/lib/plataforma';
+import type { Vista } from '@/lib/plataforma';
 import { APERTURA, DIA_APERTURA, HORA_ESPANA } from '@/lib/apertura';
 import { ETIQUETA_TIPO, TIPOS, type Tipo } from '@/lib/origenes';
 import css from './plataforma.module.css';
@@ -11,9 +11,10 @@ import p from './panel.module.css';
 /**
  * El panel de Sorela: lo primero que ve al entrar.
  *
- * Tres preguntas, en este orden: ¿a quién tengo que escribir hoy? (la
- * asistente), ¿cómo va la cosa? (las cifras y el gráfico) y ¿quién ha llegado?
- * (los últimos contactos, con los botones para escribirles sin salir de aquí).
+ * En este orden: ¿a quién tengo que escribir hoy? (la asistente), las cifras,
+ * ¿qué tengo pendiente de responder o de hacer? y ¿qué ha pasado? (Pendiente y
+ * Novedades), ¿quién ha llegado? (los últimos contactos, con los botones para
+ * escribirles sin salir de aquí) y, al final, los gráficos.
  *
  * La asistente usa IA (lib/ia-panel.ts). Si la clave no está puesta, el resto
  * del panel funciona igual y la tarjeta lo explica.
@@ -323,6 +324,198 @@ function Procedencia({ contactos }: { contactos: Contacto[] }) {
 }
 
 /* ==========================================================================
+   Pendiente y novedades
+   ========================================================================== */
+
+type Pendiente = { id: string; titulo: string; detalle: string; ir: Vista; urgente?: boolean };
+type Novedad = { id: string; tipo: string; titulo: string; texto: string; cuando: string; ir: Vista };
+
+/* Iconos de línea, uno por cosa. Trazos de 1.7 en una caja de 24. */
+const TRAZO: Record<string, string> = {
+  buzon: 'M3 6.5A1.5 1.5 0 0 1 4.5 5h15A1.5 1.5 0 0 1 21 6.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5zM3.5 7l8.5 6 8.5-6',
+  persona: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0',
+  personaMas: 'M10 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM3 20a7 7 0 0 1 12.5-4.3M18 14v6M15 17h6',
+  estrella: 'M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z',
+  charla: 'M4 5.5h16v10H9l-5 4z',
+  agenda: 'M4 6.5h16v13H4zM4 10.5h16M8.5 4v4M15.5 4v4',
+  llave: 'M14.5 9.5a4.5 4.5 0 1 1-1.3-3.2 4.5 4.5 0 0 1 1.3 3.2zM13.2 12.8L20 19.5M17 16.5l2-2',
+  moneda: 'M12 20.5a8.5 8.5 0 1 0 0-17 8.5 8.5 0 0 0 0 17zM14.8 9a3 3 0 0 0-2.8-1.5c-1.6 0-2.8.9-2.8 2.2 0 3 5.8 1.6 5.8 4.6 0 1.3-1.3 2.2-3 2.2A3.2 3.2 0 0 1 9 15M12 6v1.5M12 16.5V18',
+  reloj: 'M12 20.5a8.5 8.5 0 1 0 0-17 8.5 8.5 0 0 0 0 17zM12 7.5V12l3 2',
+  enlace: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
+  aviso: 'M12 4l9 15.5H3zM12 10v4.5M12 17.2v.3',
+  firma: 'M6 3.5h9l4 4v13H6zM14.5 3.5V8H19M9 16.5c1.5-2 2.5-2 3 0s1.5 2 3 0',
+  hecho: 'M5 12.5l4.5 4.5L19 7.5',
+};
+
+const ICONO_PENDIENTE: Record<string, string> = {
+  buzon: 'buzon',
+  contactos: 'persona',
+  quieren: 'estrella',
+  comunidad: 'charla',
+  agenda: 'agenda',
+  'sin-acceso': 'llave',
+  esperando: 'personaMas',
+  'sin-pagar': 'moneda',
+  caducan: 'reloj',
+  campanas: 'enlace',
+  correos: 'aviso',
+};
+
+const ICONO_NOVEDAD: Record<string, string> = {
+  contacto: 'persona',
+  registro: 'personaMas',
+  invitacion: 'llave',
+  acuerdo: 'firma',
+  cita: 'agenda',
+  comunidad: 'charla',
+  quiere: 'estrella',
+};
+
+function Glifo({ que }: { que: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={TRAZO[que] ?? TRAZO.aviso} />
+    </svg>
+  );
+}
+
+const Flecha = () => (
+  <svg className={p.flecha} viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 6l6 6-6 6" />
+  </svg>
+);
+
+function FilaPendiente({ x, ir }: { x: Pendiente; ir: (v: Vista) => void }) {
+  return (
+    <li>
+      <button type="button" className={p.item} data-urgente={x.urgente ? '' : undefined} onClick={() => ir(x.ir)}>
+        <span className={p.icono}>
+          <Glifo que={ICONO_PENDIENTE[x.id] ?? 'aviso'} />
+        </span>
+        <span className={p.itemTexto}>
+          <span className={p.itemTitulo}>{x.titulo}</span>
+          <span className={p.itemDetalle}>{x.detalle}</span>
+        </span>
+        <Flecha />
+      </button>
+    </li>
+  );
+}
+
+function Pendientes({ ir }: { ir: (v: Vista) => void }) {
+  const [datos, setDatos] = useState<{ responder: Pendiente[]; hacer: Pendiente[] } | null>(null);
+  const [fallo, setFallo] = useState(false);
+
+  useEffect(() => {
+    let vivo = true;
+    fetch('/api/panel/pendientes')
+      .then((r) => r.json())
+      .then((j) => {
+        if (!vivo) return;
+        if (j.ok) setDatos({ responder: j.responder, hacer: j.hacer });
+        else setFallo(true);
+      })
+      .catch(() => vivo && setFallo(true));
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  const total = datos ? datos.responder.length + datos.hacer.length : 0;
+
+  return (
+    <section className={css.tarjeta} style={{ gap: 0 }}>
+      <div className={p.cabezaTarjeta}>
+        <h2 className={css.rotuloSeccion}>Pendiente</h2>
+        {datos && total > 0 && <span className={p.cuenta}>{total} {total === 1 ? 'cosa' : 'cosas'}</span>}
+      </div>
+      {fallo ? (
+        <p className={css.vacioTexto}>No he podido mirar lo pendiente. Recarga en un momento.</p>
+      ) : !datos ? (
+        <p className={css.vacioTexto}>Mirando lo que tienes pendiente…</p>
+      ) : total === 0 ? (
+        <p className={p.alDia}>
+          <span className={p.icono}>
+            <Glifo que="hecho" />
+          </span>
+          Todo al día. No hay nada esperando una respuesta tuya.
+        </p>
+      ) : (
+        <>
+          {datos.responder.length > 0 && (
+            <>
+              <p className={p.grupo}>Por responder</p>
+              <ul className={p.lista}>
+                {datos.responder.map((x) => (
+                  <FilaPendiente key={x.id} x={x} ir={ir} />
+                ))}
+              </ul>
+            </>
+          )}
+          {datos.hacer.length > 0 && (
+            <>
+              <p className={p.grupo}>Por hacer</p>
+              <ul className={p.lista}>
+                {datos.hacer.map((x) => (
+                  <FilaPendiente key={x.id} x={x} ir={ir} />
+                ))}
+              </ul>
+            </>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
+function Novedades({ ir }: { ir: (v: Vista) => void }) {
+  const [lista, setLista] = useState<Novedad[] | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    const desde = new Date(Date.now() - 7 * DIA).toISOString();
+    fetch(`/api/novedades?desde=${encodeURIComponent(desde)}`)
+      .then((r) => r.json())
+      .then((j) => vivo && setLista(j.ok ? j.novedades : []))
+      .catch(() => vivo && setLista([]));
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  return (
+    <section className={css.tarjeta} style={{ gap: 0 }}>
+      <div className={p.cabezaTarjeta}>
+        <h2 className={css.rotuloSeccion}>Novedades</h2>
+        <span className={p.cuenta}>últimos 7 días</span>
+      </div>
+      {lista === null ? (
+        <p className={css.vacioTexto}>Cargando…</p>
+      ) : lista.length === 0 ? (
+        <p className={css.vacioTexto}>Esta semana no ha pasado nada nuevo.</p>
+      ) : (
+        <ul className={p.lista}>
+          {lista.slice(0, 7).map((n) => (
+            <li key={n.id}>
+              <button type="button" className={p.item} onClick={() => ir(n.ir)}>
+                <span className={p.icono}>
+                  <Glifo que={ICONO_NOVEDAD[n.tipo] ?? 'aviso'} />
+                </span>
+                <span className={p.itemTexto}>
+                  <span className={p.itemTitulo}>{n.titulo}</span>
+                  <span className={p.itemDetalle}>{n.texto}</span>
+                  <span className={p.cuando}>{haceCuanto(n.cuando)}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/* ==========================================================================
    El panel
    ========================================================================== */
 
@@ -368,7 +561,6 @@ export function PanelSorela({ ir }: { ir: (v: Vista) => void }) {
   const semana = l.filter((c) => c.creado && ahora - new Date(c.creado).getTime() < 7 * DIA).length;
   const sinAtender = l.filter((c) => c.estado === 'Nuevo').length;
   const faltan = Math.max(0, Math.ceil((new Date(APERTURA).getTime() - ahora) / DIA));
-  const hechas = PENDIENTE_BETA.filter((x) => x.listo).length;
 
   const kpis = [
     { label: 'Sin atender', valor: lista === null ? '·' : String(sinAtender), nota: 'contactos que nadie ha tocado', urgente: sinAtender > 0 },
@@ -453,8 +645,8 @@ export function PanelSorela({ ir }: { ir: (v: Vista) => void }) {
       )}
 
       <div className={p.dosColumnas}>
-        <Entradas contactos={l} />
-        <Procedencia contactos={l} />
+        <Pendientes ir={ir} />
+        <Novedades ir={ir} />
       </div>
 
       <section className={css.tarjeta} style={{ gap: 4 }}>
@@ -535,32 +727,10 @@ export function PanelSorela({ ir }: { ir: (v: Vista) => void }) {
         )}
       </section>
 
-      <section className={css.tarjeta} style={{ gap: 4 }}>
-        <div className={p.faltaCabeza}>
-          <h2 className={css.rotuloSeccion}>Lo que falta para abrir</h2>
-          <span className={p.faltaCuenta}>
-            {hechas} de {PENDIENTE_BETA.length}
-          </span>
-        </div>
-        <span className={p.progreso} aria-hidden="true">
-          <motion.span
-            className={p.progresoRelleno}
-            initial={{ width: 0 }}
-            animate={{ width: `${(hechas / PENDIENTE_BETA.length) * 100}%` }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          />
-        </span>
-        {PENDIENTE_BETA.map((x) => (
-          <div key={x.que} className={css.fila} style={{ padding: '13px 0' }}>
-            <span style={{ fontSize: 14.5, fontWeight: 300, color: x.listo ? 'var(--muted)' : 'var(--ink-4)' }}>
-              {x.que}
-            </span>
-            <span className={`${css.estado} ${x.listo ? css.estadoOro : css.estadoApagado}`}>
-              {x.listo ? 'Hecho' : 'Pendiente'}
-            </span>
-          </div>
-        ))}
-      </section>
+      <div className={p.dosColumnas}>
+        <Entradas contactos={l} />
+        <Procedencia contactos={l} />
+      </div>
 
       <AnimatePresence>
         {borrador && (

@@ -13,7 +13,7 @@
  *      Vive aquí.
  *   2. El acceso al curso en el aula: las clases y el material de ese curso.
  *      Es un acceso de tipo «curso» en la ficha de la persona (lib/accesos.ts)
- *      y lo da el botón «Crear acceso al curso» de cada inscrita.
+ *      y se da en Cuentas › Dar acceso, eligiendo a la inscrita.
  *   3. La membresía de la Comunidad Divine: se paga al mes y NO se da nunca
  *      desde una convocatoria. Ni aquí ni en el servidor hay forma de hacerlo.
  */
@@ -30,7 +30,7 @@ export type CursoConvocable = {
   nombre: string;
   /**
    * El nombre EXACTO del acceso de tipo «curso» que se le da a una inscrita
-   * con «Crear acceso al curso». Tiene que coincidir con el de las clases y el
+   * desde Cuentas › Dar acceso. Tiene que coincidir con el de las clases y el
    * material (lib/accesos.ts, CURSO_DIVINE) o la alumna entraría al aula y no
    * vería nada.
    */

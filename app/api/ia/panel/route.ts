@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
-import { tipoDeOrigen, TIPOS, type Tipo } from '@/lib/origenes';
+import { tipoDeContacto } from '@/lib/origenes';
 import {
   hayIA,
   nombreDePila,
@@ -48,7 +48,7 @@ function aContactoIA(id: string, v: FirebaseFirestore.DocumentData): ContactoIA 
   return {
     id,
     nombre: nombreDePila(String(v.nombre ?? '')),
-    tipo: TIPOS.includes(v.tipoManual) ? (v.tipoManual as Tipo) : tipoDeOrigen(v.origen),
+    tipo: tipoDeContacto(v),
     origen: String(v.origen ?? 'web'),
     ciudad: String(v.ciudad ?? ''),
     perfil: String(v.perfil ?? ''),

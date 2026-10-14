@@ -46,7 +46,7 @@ const primeraVez = (enlaceClave?: string | null) =>
 
 /**
  * El correo del acceso al curso, según lo que se abre:
- *   · 'precurso'  → ha dejado el abono: el precurso, los dosieres y sus fechas (los vídeos, tras la parte práctica).
+ *   · 'precurso'  → ha dejado el abono: el precurso, los dosieres y sus fechas (los vídeos, al terminar la clase presencial).
  *   · 'completo'  → el curso entero de una vez.
  *   · 'desbloqueo'→ tenía el precurso y ya ha pagado el resto.
  * El curso NO incluye la Comunidad Divine (es la membresía, aparte): aquí no
@@ -63,7 +63,7 @@ export function correoAccesoFormacion(
       ? {
           asunto: 'Tu precurso de la Formación Técnica Divine',
           abre: 'Ya tienes en mi plataforma el <strong>precurso</strong> y los dosieres de la Formación Técnica Divine, y las fechas de tu clase presencial en tu agenda.',
-          sigue: 'Léelos con calma antes de venir: son la base de lo que haremos con las manos. Las clases en vídeo se desbloquean una vez completada la parte práctica.',
+          sigue: 'Léelos con calma antes de venir: son la base de lo que haremos con las manos. Las clases en vídeo estarán disponibles una vez terminada la clase presencial.',
           boton: 'Leer mi precurso',
           titulo: 'Tu precurso está listo',
           previa: 'Ya puedes leer tu precurso.',
@@ -182,7 +182,7 @@ export function correoAccesoComunidad(nombre: string | null, enlaceClave?: strin
        ${p('Lo primero: preséntate en la comunidad. Cuéntanos quién eres y desde dónde trabajas.')}`,
       undefined,
       '',
-      { titulo: 'Bienvenida a la Comunidad Divine', etiqueta: 'Comunidad Divine', imagen: 'consulta', previa: 'Ya formas parte de la comunidad.' }
+      { titulo: 'Bienvenida a la Comunidad Divine', etiqueta: 'Comunidad Divine', imagen: 'comunidad', previa: 'Ya formas parte de la comunidad.' }
     ),
   };
 }
@@ -235,7 +235,7 @@ export function correoRegistro(nombre: string | null, pide: 'comunidad' | 'curso
        ${p('Si tienes cualquier duda, respóndeme a este correo.')}`,
       undefined,
       '',
-      { titulo: 'Tu cuenta está creada', etiqueta: 'Plataforma Técnica Divine', imagen: 'consulta', previa: 'Ya tienes tu cuenta en mi plataforma.' }
+      { titulo: 'Tu cuenta está creada', etiqueta: 'Plataforma Técnica Divine', imagen: 'equipo', previa: 'Ya tienes tu cuenta en mi plataforma.' }
     ),
   };
 }

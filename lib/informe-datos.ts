@@ -2,7 +2,7 @@ import 'server-only';
 import { FieldPath } from 'firebase-admin/firestore';
 import { baseDeDatos, COLECCIONES } from './firebase-servidor';
 import { COLECCION_DIAS, COLECCION_VIDEOS, diaDe } from './metricas';
-import { ETIQUETA_TIPO, TIPOS, origenCorto, tipoDeOrigen, type Tipo } from './origenes';
+import { ETIQUETA_TIPO, TIPOS, origenCorto, tipoDeContacto, type Tipo } from './origenes';
 import { COLECCION_CORREOS, correosEnviadosTotal } from './correos';
 import { listaDeEspera } from './automatizar';
 import { APERTURA } from './apertura';
@@ -322,7 +322,7 @@ function historiaDe(contactos: Doc[], usuarios: Doc[], acuerdos: Doc[], correos:
     if (f && (!primero || f < primero)) primero = f;
     anotar(porOrigen, origenCorto(v.origen));
     anotar(porFuente, typeof v.fuente === 'string' ? v.fuente : 'Sin dato (antes del 12 oct)');
-    anotar(porTipo, ETIQUETA_TIPO[TIPOS.includes(v.tipoManual) ? (v.tipoManual as Tipo) : tipoDeOrigen(v.origen)]);
+    anotar(porTipo, ETIQUETA_TIPO[tipoDeContacto(v)]);
   }
   const cuentas = usuarios.filter((d) => d.get('rol') !== 'sorela' && !esDePrueba(d.data()));
   for (const d of cuentas) contar(diaDeCampo(d.data()), 'cuentas');
@@ -458,7 +458,7 @@ export async function datosDelInforme(periodo: Periodo): Promise<DatosInforme> {
     const v = d.data();
     const dia = diaDeCampo(v);
     if (dia && (!primero || dia < primero)) primero = dia;
-    const tipo: Tipo = TIPOS.includes(v.tipoManual) ? (v.tipoManual as Tipo) : tipoDeOrigen(v.origen);
+    const tipo: Tipo = tipoDeContacto(v);
     if (tipo === 'comunidad') apuntarEspera(v.correo, dia);
     const estado = (ESTADOS as readonly string[]).includes(v.estado) ? String(v.estado) : 'Nuevo';
     anotar(porEstado, estado);

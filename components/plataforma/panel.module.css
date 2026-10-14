@@ -671,35 +671,131 @@
   }
 }
 
-/* ---------- Lo que falta ---------- */
+/* ---------- Pendiente y novedades ---------- */
 
-.faltaCabeza {
+.cabezaTarjeta {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
+  gap: 10px;
 }
 
-.faltaCuenta {
-  font-size: 13.5px;
+.cuenta {
+  font-size: 13px;
   font-weight: 500;
   color: var(--muted-2);
   font-variant-numeric: tabular-nums;
 }
 
-.progreso {
-  display: block;
-  height: 6px;
-  margin: 10px 0 6px;
-  border-radius: 999px;
-  background: var(--line-2);
-  overflow: hidden;
+.grupo {
+  margin: 14px 0 2px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8a6a36;
 }
 
-.progresoRelleno {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #b98d4c, #e2c38f);
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 13px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--line-2);
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.lista > li:last-child .item {
+  border-bottom: 0;
+}
+
+.item:hover,
+.item:focus-visible {
+  background: rgba(185, 141, 76, 0.07);
+  outline: none;
+}
+
+.icono {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  color: #6b4f24;
+  background: #f4ead8;
+  box-shadow: inset 0 0 0 1px rgba(154, 118, 64, 0.22);
+}
+
+.item[data-urgente] .icono {
+  color: #fff;
+  background: #c4573a;
+  box-shadow: none;
+}
+
+.itemTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.itemTitulo {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.itemDetalle {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted-2);
+  overflow-wrap: anywhere;
+}
+
+.flecha {
+  color: var(--muted-2);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.item:hover .flecha {
+  transform: translateX(3px);
+  color: #8a6a36;
+}
+
+.alDia {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0 4px;
+  font-size: 14.5px;
+  color: var(--muted-2);
+}
+
+.alDia .icono {
+  color: #fff;
+  background: #6f8a5e;
+  box-shadow: none;
+}
+
+.cuando {
+  font-size: 12px;
+  color: var(--muted-2);
+  white-space: nowrap;
 }
 
 /* ---------- El borrador ---------- */

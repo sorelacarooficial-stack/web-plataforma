@@ -148,6 +148,18 @@ export function tipoDeOrigen(origen: string | undefined | null): Tipo {
   return 'otro';
 }
 
+/**
+ * El tipo de un contacto guardado: el que le puso Sorela a mano; si no, el
+ * de la lista de espera si está apuntada (desde octubre, quien deja sus datos
+ * en la portada entra en la lista de la masterclass, y llamarla «Quiere
+ * tratarse» era falso); si no, el que sale de su origen.
+ */
+export function tipoDeContacto(v: { tipoManual?: unknown; lista?: unknown; origen?: unknown }): Tipo {
+  if (TIPOS.includes(v.tipoManual as Tipo)) return v.tipoManual as Tipo;
+  if (v.lista === true) return 'comunidad';
+  return tipoDeOrigen(typeof v.origen === 'string' ? v.origen : null);
+}
+
 /** Cómo llegó, en una frase. Si el origen no está en la tabla, se devuelve tal cual. */
 export function comoLlego(origen: string | undefined | null): string {
   const o = (origen || '').toLowerCase().trim();

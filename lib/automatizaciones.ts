@@ -21,7 +21,7 @@ export const AUTOMATIZACIONES = [
   {
     id: 'acceso-formacion',
     nombre: 'Ya tienes la formación',
-    cuando: 'Entra con su enlace del curso (con solo el abono le dice que tiene el precurso y los dosieres; los vídeos, tras la parte práctica), y otra vez cuando se le abre el curso completo al marcarla «Pagado».',
+    cuando: 'Entra con su enlace del curso (con solo el abono le dice que tiene el precurso y los dosieres; los vídeos, al terminar la clase presencial), y otra vez cuando se le abre el curso completo al marcarla «Pagado».',
     quien: 'La alumna',
     porDefecto: true,
   },

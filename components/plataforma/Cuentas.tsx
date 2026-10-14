@@ -196,29 +196,20 @@ export default function Cuentas() {
   }, [cargar]);
 
   /**
-   * Dar o quitar la comunidad a alguien que ya tiene cuenta.
+   * Quitar la comunidad o el curso. Darlos ya no se hace aquí: el acceso se
+   * da solo en «Dar acceso» (arriba), con un enlace, para que haya un único
+   * sitio y no tres.
    *
    * Se manda la lista entera de accesos y no «quítale la membresía»: el
    * servidor guarda lo que le llega, así que mandar el conjunto completo evita
-   * que dos cambios a la vez desde dos sitios se pisen a medias y dejen a esa
-   * persona con un acceso que nadie le dio.
+   * que dos cambios a la vez desde dos sitios se pisen a medias.
    */
-  async function cambiarMembresia(c: Cuenta, dar: boolean) {
-    await guardarAccesos(
-      c,
-      dar
-        ? [...c.accesos.filter((a) => a.tipo !== 'membresia'), { tipo: 'membresia' as const }]
-        : c.accesos.filter((a) => a.tipo !== 'membresia')
-    );
+  async function quitarMembresia(c: Cuenta) {
+    await guardarAccesos(c, c.accesos.filter((a) => a.tipo !== 'membresia'));
   }
 
-  /**
-   * Dar o quitar la formación. Sirve sobre todo para quien se registró sola:
-   * paga, se hace la cuenta, y Sorela le abre las clases con un clic.
-   */
-  async function cambiarFormacion(c: Cuenta, dar: boolean) {
-    const otros = c.accesos.filter((a) => !(a.tipo === 'curso' && clave(a.nombre) === clave(CURSO_DIVINE)));
-    await guardarAccesos(c, dar ? [...otros, { tipo: 'curso' as const, nombre: CURSO_DIVINE }] : otros);
+  async function quitarFormacion(c: Cuenta) {
+    await guardarAccesos(c, c.accesos.filter((a) => !(a.tipo === 'curso' && clave(a.nombre) === clave(CURSO_DIVINE))));
   }
 
   /** Tenía el abono (material sí, vídeos bloqueados) y ha pagado el resto: se le abre todo. */
@@ -415,7 +406,7 @@ export default function Cuentas() {
           pantalla importe: aquí se decide quién entra y quién no. Antes este
           aviso decía que la cuenta nueva «todavía no podrá entrar» y nombraba
           una variable del código; ya no es verdad ni hace falta. */}
-      {/* La forma normal de dar acceso: un enlace de un solo uso. */}
+      {/* El ÚNICO sitio donde se da acceso: un enlace de un solo uso. */}
       <Invitaciones />
 
       {fallo && (
@@ -575,41 +566,9 @@ export default function Cuentas() {
                 </span>
 
                 <span className={css.acciones}>
-                  {/* Dar o quitar la comunidad es lo que más se va a tocar de
-                      esta pantalla: se paga al mes y la gente entra y sale. Por
-                      eso está aquí y no escondido en una ficha aparte. */}
-                  {!c.protegida && (
-                    <button
-                      type="button"
-                      className={tieneMembresia(c.accesos) ? css.btnLinea : css.btnComunidad}
-                      onClick={() => cambiarMembresia(c, !tieneMembresia(c.accesos))}
-                    >
-                      {tieneMembresia(c.accesos) ? 'Quitar membresía' : 'Dar membresía'}
-                    </button>
-                  )}
-                  {!c.protegida && (() => {
-                    const formacion = cursosDe(c.accesos).find((a) => clave(a.nombre) === clave(CURSO_DIVINE));
-                    const conFormacion = Boolean(formacion);
-                    return (
-                      <>
-                      {formacion?.completo === false && (
-                        <button type="button" className={css.btn} onClick={() => abrirCompleto(c)}>
-                          Abrir curso completo
-                        </button>
-                      )}
-                      {/* Sin el dorado de la membresía: dorado es la Comunidad.
-                          Con el mismo botón dorado, «Dar formación» y «Dar
-                          comunidad» parecían la misma cosa. */}
-                      <button
-                        type="button"
-                        className={css.btnLinea}
-                        onClick={() => cambiarFormacion(c, !conFormacion)}
-                      >
-                        {conFormacion ? 'Quitar curso' : 'Dar acceso al curso'}
-                      </button>
-                      </>
-                    );
-                  })()}
+                  {/* Aquí ya no se DA nada: el acceso se da solo arriba, en
+                      «Dar acceso». Lo que se puede hacer con lo que ya tiene
+                      (abrirle los vídeos, quitar algo) está en «Gestionar». */}
                   {/* El rol se enseña, no se elige. Ver quitarAdmin(). */}
                   <span
                     className={`${css.estado} ${rolActual === 'sorela' ? css.estadoTinta : css.estadoNeutro}`}
@@ -636,7 +595,25 @@ export default function Cuentas() {
                       </button>
                       {gestion === c.uid && (
                         <span className={css.gestionarMenu} role="menu">
-                          {c.accesos.length > 0 && (
+                          {cursosDe(c.accesos).some((x) => clave(x.nombre) === clave(CURSO_DIVINE) && x.completo === false) && (
+                            <button type="button" role="menuitem" onClick={() => { setGestion(null); abrirCompleto(c); }}>
+                              <strong>Abrirle los vídeos del curso</strong>
+                              <small>Ha pagado el resto: ve el curso completo y le llega un correo.</small>
+                            </button>
+                          )}
+                          {tieneMembresia(c.accesos) && (
+                            <button type="button" role="menuitem" onClick={() => { setGestion(null); quitarMembresia(c); }}>
+                              <strong>Quitar la membresía</strong>
+                              <small>Deja de ver la Comunidad. Su curso, si lo tiene, sigue.</small>
+                            </button>
+                          )}
+                          {cursosDe(c.accesos).some((x) => clave(x.nombre) === clave(CURSO_DIVINE)) && (
+                            <button type="button" role="menuitem" onClick={() => { setGestion(null); quitarFormacion(c); }}>
+                              <strong>Quitar el curso</strong>
+                              <small>Deja de ver las clases y el material. La membresía, si la tiene, sigue.</small>
+                            </button>
+                          )}
+                          {c.accesos.length > 1 && (
                             <button type="button" role="menuitem" onClick={() => { setGestion(null); quitarTodo(c); }}>
                               <strong>Quitar todo el acceso</strong>
                               <small>Pierde el curso y la membresía de la Comunidad. Su cuenta sigue.</small>

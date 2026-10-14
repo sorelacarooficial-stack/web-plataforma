@@ -54,8 +54,8 @@ import s from './convocatorias.module.css';
  *
  *   1. La formación presencial que se paga → la convocatoria: plazas y pagos.
  *   2. El acceso al curso en el aula (precurso, clases y material) → se crea
- *      en UN solo sitio, Cuentas › Enlaces de invitación. El botón de cada
- *      inscrita lleva allí con ella ya elegida. Apuntar a alguien NO lo da.
+ *      en UN solo sitio, Cuentas › Dar acceso (aquí solo se ve en qué punto
+ *      está). Apuntar a alguien NO lo da.
  *      Marcarla «Pagado» le abre el curso completo si solo tenía el precurso.
  *   3. La membresía de la Comunidad Divine → NO se da desde aquí, nunca.
  *
@@ -422,43 +422,6 @@ const sinError = (e: Record<string, string>, ...campos: string[]) => {
   for (const c of [...campos, 'general']) delete r[c];
   return r;
 };
-
-/* ==========================================================================
-   Las tres cosas, dichas una vez arriba
-   ========================================================================== */
-function TresCosas({ curso }: { curso: string }) {
-  return (
-    <ul className={s.tres} aria-label="Qué es cada cosa">
-      <li data-que="pago">
-        <span className={s.tresIcono}>
-          <Icono d={I.pago} size={17} />
-        </span>
-        <span>
-          <b>Formación presencial</b>
-          <span>Lo que se paga: las plazas y los pagos. Es esta pantalla.</span>
-        </span>
-      </li>
-      <li data-que="curso">
-        <span className={s.tresIcono}>
-          <Icono d={I.aula} size={17} />
-        </span>
-        <span>
-          <b>Acceso al curso · {curso}</b>
-          <span>Con el abono, el material; al marcarla «Pagado», también los vídeos. Su enlace se crea en Cuentas (el botón de cada inscrita te lleva).</span>
-        </span>
-      </li>
-      <li data-que="membresia">
-        <span className={s.tresIcono}>
-          <Icono d={I.membresia} size={17} />
-        </span>
-        <span>
-          <b>Membresía · Comunidad Divine</b>
-          <span>Se paga cada mes y aquí no se da nunca. Si alguien la contrata, se le da en Cuentas.</span>
-        </span>
-      </li>
-    </ul>
-  );
-}
 
 /* ==========================================================================
    Formulario de la convocatoria
@@ -1063,40 +1026,21 @@ function BarraPlazas({ c }: { c: Convocatoria }) {
 }
 
 /**
- * Lleva a Cuentas › Enlaces de invitación con esta inscrita ya elegida: es el
- * único sitio donde se crean los accesos (curso y membresía).
+ * El acceso al curso de una inscrita, solo para verlo: se da en Cuentas ›
+ * Dar acceso, el único sitio donde se da. Si ya tiene un enlace sin usar, se
+ * puede volver a ver para copiarlo.
  */
-function irACrearEnlace(conv: string, inscrita: string) {
-  const q = new URLSearchParams({ v: 'cuentas', conv, inscrita });
-  window.history.pushState(null, '', `${window.location.pathname}?${q}`);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
-
-/** El acceso al curso de una inscrita: dónde está y el botón que toca. */
-function AccesoFila({ i, ocupado, alCrear, alVer }: { i: Inscrita; ocupado: boolean; alCrear: () => void; alVer: () => void }) {
+function AccesoFila({ i, alVer }: { i: Inscrita; alVer: () => void }) {
   const e = i.acceso.estado;
   return (
     <span className={s.accesoFila} data-estado={e}>
-      {e !== 'sin-crear' && (
-        <span className={s.accesoChip} data-estado={e}>
-          <Icono d={e === 'ya-tiene-cuenta' ? I.hecho : I.aula} size={13} />
-          {ETIQUETA_ACCESO_CURSO[e]}
-        </span>
-      )}
-      {e === 'sin-crear' && (
-        <button type="button" className={s.botonAcceso} onClick={alCrear} disabled={ocupado} aria-label={`Crear acceso al curso para ${i.nombre}`}>
-          <Icono d={I.aula} size={15} />
-          {ocupado ? 'Creando…' : 'Crear acceso al curso'}
-        </button>
-      )}
+      <span className={s.accesoChip} data-estado={e}>
+        <Icono d={e === 'ya-tiene-cuenta' ? I.hecho : I.aula} size={13} />
+        {ETIQUETA_ACCESO_CURSO[e]}
+      </span>
       {e === 'enlace-sin-usar' && i.acceso.enlace && (
         <button type="button" className={s.enlaceTexto} onClick={alVer}>
           Ver enlace
-        </button>
-      )}
-      {(e === 'enlace-caducado' || e === 'enlace-anulado') && (
-        <button type="button" className={s.enlaceTexto} onClick={alCrear} disabled={ocupado}>
-          {ocupado ? 'Creando…' : 'Crear otro'}
         </button>
       )}
     </span>
@@ -1107,7 +1051,6 @@ function TarjetaConvocatoria({
   c,
   hoy,
   abierta,
-  ocupada,
   alAbrir,
   alEditar,
   alBorrar,
@@ -1115,13 +1058,11 @@ function TarjetaConvocatoria({
   alApuntar,
   alEditarInscrita,
   alBorrarInscrita,
-  alCrearAcceso,
   alVerEnlace,
 }: {
   c: Convocatoria;
   hoy: string;
   abierta: boolean;
-  ocupada: string | null;
   alAbrir: () => void;
   alEditar: () => void;
   alBorrar: () => void;
@@ -1129,7 +1070,6 @@ function TarjetaConvocatoria({
   alApuntar: () => void;
   alEditarInscrita: (i: Inscrita) => void;
   alBorrarInscrita: (i: Inscrita) => void;
-  alCrearAcceso: (i: Inscrita) => void;
   alVerEnlace: (i: Inscrita) => void;
 }) {
   const reducir = useReducedMotion();
@@ -1325,7 +1265,7 @@ function TarjetaConvocatoria({
                       <span className={s.inscritaImporte}>{dinero(i.pagado, c.moneda)}</span>
                       <PildoraPago estado={i.estado} />
                     </span>
-                    <AccesoFila i={i} ocupado={ocupada === i.id} alCrear={() => alCrearAcceso(i)} alVer={() => alVerEnlace(i)} />
+                    <AccesoFila i={i} alVer={() => alVerEnlace(i)} />
                     <span className={s.inscritaAcciones}>
                       <button type="button" className={s.botonIcono} onClick={() => alEditarInscrita(i)} aria-label={`Editar a ${i.nombre}`}>
                         <Icono d={I.lapiz} size={16} />
@@ -1457,9 +1397,6 @@ export default function Convocatorias() {
     return false;
   };
 
-  /** «Crear acceso al curso»: a Cuentas, con ella ya elegida (el único sitio donde se crea). */
-  const crearAcceso = (c: Convocatoria, i: Inscrita) => irACrearEnlace(c.id, i.id);
-
   const verEnlace = (c: Convocatoria, i: Inscrita) => {
     if (i.acceso.enlace) setHojaAcceso({ tipo: 'enlace', conv: c, inscrita: i, enlace: i.acceso.enlace, nuevo: false, correo: i.correo || null });
   };
@@ -1493,8 +1430,6 @@ export default function Convocatorias() {
           </div>
         )}
       </div>
-
-      <TresCosas curso={CURSO_POR_DEFECTO.nombre} />
 
       {estado === 'cargando' && (
         <div className={s.esqueletos} aria-busy="true" aria-label="Cargando convocatorias">
@@ -1565,7 +1500,6 @@ export default function Convocatorias() {
                     c={c}
                     hoy={hoy}
                     abierta={estaAbierta(c.id)}
-                    ocupada={null}
                     alAbrir={() => setAbiertas((a) => ({ ...a, [c.id]: !estaAbierta(c.id) }))}
                     alEditar={() => setFormConv({ borrador: aBorrador(c), ocupadas: c.inscritas.length })}
                     alBorrar={() => borrarConvocatoria(c)}
@@ -1573,7 +1507,6 @@ export default function Convocatorias() {
                     alApuntar={() => setFormIns({ conv: c.id, borrador: nuevaInscrita() })}
                     alEditarInscrita={(i) => abrirInscrita(c, i)}
                     alBorrarInscrita={(i) => borrarInscrita(c, i)}
-                    alCrearAcceso={(i) => crearAcceso(c, i)}
                     alVerEnlace={(i) => verEnlace(c, i)}
                   />
                 ))}
@@ -1617,9 +1550,9 @@ export default function Convocatorias() {
               setAbiertas((a) => ({ ...a, [c.id]: true }));
               avisar(
                 avisoServidor === 'enlace-anulado'
-                  ? 'Guardado. Como ha cambiado su correo, su enlace de acceso anterior ya no vale: crea otro.'
+                  ? 'Guardado. Como ha cambiado su correo, su enlace de acceso anterior ya no vale: crea otro en Cuentas › Dar acceso.'
                   : esNueva
-                    ? `${nombre} apuntada. Para que vea el precurso, pulsa «Crear acceso al curso».`
+                    ? `${nombre} apuntada. Para que vea el precurso, dale acceso en Cuentas › Dar acceso.`
                     : 'Guardado.',
                 'hecho'
               );

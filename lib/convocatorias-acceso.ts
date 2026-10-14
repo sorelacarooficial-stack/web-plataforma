@@ -12,7 +12,7 @@ import type { AccesoInscrita, Convocatoria } from './convocatorias-tipos';
 /**
  * El acceso al curso de las inscritas de una convocatoria: leerlo y anularlo.
  *
- * Los enlaces se CREAN en un solo sitio, Cuentas › Enlaces de invitación
+ * Los enlaces se CREAN en un solo sitio, Cuentas › Dar acceso
  * (app/api/invitaciones), eligiendo la convocatoria y la inscrita. Allí se
  * guarda en la inscrita (`acceso`) el enlace, y al usarlo pasa a apuntar a su
  * cuenta (lib/invitaciones.ts › canjear). Con eso su fila dice «Enlace sin

@@ -296,7 +296,7 @@ export async function POST(peticion: Request) {
    * duplicarla o de reventar. Y si esto falla no se deshace nada: la cuenta es
    * válida y perder el seguimiento es mucho menos grave que perder el acceso.
    */
-  /* «No quiero novedades por correo»: se apunta en la lista de bajas, la
+  /* Si desmarca «Quiero recibir las novedades» (llega sinNovedades): se apunta en la lista de bajas, la
      misma que usa el enlace de baja de cada correo, así que ninguna campaña
      le llega. Los correos del servicio (acceso, avisos de su cuenta) no
      llevan baja y siguen saliendo. */

@@ -4,7 +4,7 @@ import { CURSO_DIVINE, revisarAccesos, type Acceso } from './accesos';
 import { correoBienvenidaPorOrigen } from './plantillas-bienvenida';
 import { baseDeDatos, COLECCIONES, hayFirebase } from './firebase-servidor';
 import { diaDe } from './metricas';
-import { comoLlego, tipoDeOrigen } from './origenes';
+import { comoLlego, tipoDeContacto } from './origenes';
 import { correoDeSorela, estaActiva, mandarCorreo, type Resultado } from './correos';
 import {
   correoAccesoComunidad,
@@ -155,8 +155,7 @@ export async function listaDeEspera(): Promise<{ correo: string; nombre: string 
     // Apuntada a mano sin haber pedido la información: no se le escribe
     // (art. 21 LSSI). Ver el POST de app/api/contactos.
     if (v.aMano && !v.pidioInformacion) continue;
-    const tipo = ['clienta', 'alumna', 'comunidad', 'otro'].includes(v.tipoManual) ? v.tipoManual : tipoDeOrigen(v.origen);
-    if ((tipo === 'comunidad' || v.lista === true) && !salida.has(correo)) salida.set(correo, { correo, nombre: v.nombre || null });
+    if (tipoDeContacto(v) === 'comunidad' && !salida.has(correo)) salida.set(correo, { correo, nombre: v.nombre || null });
   }
   for (const m of miembros) salida.delete(m);
   return [...salida.values()];

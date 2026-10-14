@@ -112,7 +112,7 @@ export function correoBienvenidaPorOrigen(nombre: string | null, origen: string 
      ${botonCorreo(WHATSAPP, 'Escríbeme por WhatsApp')}`,
     undefined,
     '',
-    { titulo: TITULARES[tipo], etiqueta: 'Técnica Divine', imagen: tipo === 'clienta' ? 'consulta' : 'equipo', previa: t.saludo }
+    { titulo: TITULARES[tipo], etiqueta: 'Técnica Divine', imagen: 'equipo', previa: t.saludo }
   );
   return { asunto: `${t.asunto}${n ? `, ${n}` : ''}`, texto, html };
 }

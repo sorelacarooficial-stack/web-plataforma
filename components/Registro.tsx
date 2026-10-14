@@ -76,7 +76,9 @@ export default function Registro({ invitacion }: { invitacion?: string }) {
   const [clave, setClave] = useState('');
   const [quiere, setQuiere] = useState<'comunidad' | 'curso'>('comunidad');
   const [acepta, setAcepta] = useState(false);
-  const [sinNovedades, setSinNovedades] = useState(false);
+  /* Marcada de entrada: es la forma sencilla de negarse que pide el art. 21.2
+     LSSI, dicha en positivo. Quien la desmarca no recibe novedades. */
+  const [novedades, setNovedades] = useState(true);
   /* El señuelo antirrobots: no se ve, no se tabula y nadie lo rellena a mano.
      Si llega con algo, el servidor contesta que sí y no crea nada. */
   const [empresa, setEmpresa] = useState('');
@@ -143,7 +145,7 @@ export default function Registro({ invitacion }: { invitacion?: string }) {
           clave,
           quiere,
           consentimiento: acepta,
-          sinNovedades,
+          sinNovedades: !novedades,
           empresa,
           invitacion: inv ? invitacion : undefined,
           llegada: llegada() ?? undefined,
@@ -392,11 +394,11 @@ export default function Registro({ invitacion }: { invitacion?: string }) {
           <label className={css.condiciones}>
             <input
               type="checkbox"
-              checked={sinNovedades}
-              onChange={(e) => setSinNovedades(e.target.checked)}
+              checked={novedades}
+              onChange={(e) => setNovedades(e.target.checked)}
               className={css.casilla}
             />
-            <span>No quiero novedades de las formaciones por correo.</span>
+            <span>Quiero recibir por correo las novedades de las formaciones.</span>
           </label>
           <InfoPrivacidad capa={CAPA_CUENTA} />
 

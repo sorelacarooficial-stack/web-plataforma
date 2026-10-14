@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
-import { tipoDeOrigen, TIPOS, type Tipo } from '@/lib/origenes';
+import { tipoDeContacto, TIPOS, type Tipo } from '@/lib/origenes';
 import { PERFILES, normalizarTelefono, revisar as revisarComoLaWeb } from '@/lib/captacion';
 import { mandarInformacion } from '@/lib/enviar-informacion';
 
@@ -233,7 +233,7 @@ export async function GET() {
        * recibir, así que quien entra por ahí se clasifica como posible clienta,
        * y de vez en cuando es una esteticista que quiere formarse.
        */
-      tipo: TIPOS.includes(v.tipoManual) ? (v.tipoManual as Tipo) : tipoDeOrigen(v.origen),
+      tipo: tipoDeContacto(v),
       reclasificado: TIPOS.includes(v.tipoManual),
       // Lo que Sorela ha ido apuntando de esa persona, lo más nuevo primero.
       seguimiento: Array.isArray(v.seguimiento)

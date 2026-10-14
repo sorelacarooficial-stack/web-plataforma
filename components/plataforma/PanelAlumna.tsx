@@ -416,7 +416,7 @@ function progresoDe(x: Contexto): { rutas: Ruta[]; mision: Mision } {
     titulo: 'Formación presencial',
     texto: presencialHecha
       ? x.soloPrecurso
-        ? 'Hecha. En cuanto se cierre la parte práctica, se desbloquean aquí tus clases en vídeo.'
+        ? 'Hecha. Tus clases en vídeo estarán disponibles aquí una vez terminada la clase presencial.'
         : 'Hecha: tu formación ya está abierta entera.'
       : cuando
         ? `${mayus(HOY.format(cuando))} · ${HORA.format(cuando)}${x.presencial?.lugar ? ` · ${x.presencial.lugar}` : ''}${(x.presencial?.dias ?? 1) > 1 ? ` · ${x.presencial?.dias} días` : ''}.${x.soloPrecurso ? ' Al completarla se desbloquean tus clases en vídeo.' : ''}`
@@ -436,7 +436,7 @@ function progresoDe(x: Contexto): { rutas: Ruta[]; mision: Mision } {
     texto: !x.hayClases
       ? 'Todavía no hay clases publicadas. En cuanto Sorela las publique, aparecen aquí.'
       : todasBloqueadas
-        ? `${x.bloqueadas === 1 ? 'Tu clase se desbloquea' : `Tus ${x.bloqueadas} clases se desbloquean`} una vez completada la parte práctica. Mientras, ya puedes leer el precurso y los dosieres.`
+        ? `${x.bloqueadas === 1 ? 'Tu clase estará disponible' : `Tus ${x.bloqueadas} clases estarán disponibles`} una vez terminada la clase presencial. Mientras, ya puedes leer el precurso y los dosieres.`
         : clasesHechas
           ? 'Las has terminado todas. Repasa cuando quieras: las manos se afinan repitiendo.'
           : `Cada clase que terminas suma +${PUNTOS.clase}. Llevas ${x.hechas} de ${x.abiertas}.`,
@@ -1200,7 +1200,7 @@ export default function PanelAlumna({
           )}
           <p className={p.frase}>
             {soloPrecurso && cursoBloqueado
-              ? 'Tu formación empieza con el precurso y los dosieres: ya puedes leerlos. Las clases en vídeo del curso se desbloquean una vez completada la parte práctica.'
+              ? 'Tu formación empieza con el precurso y los dosieres: ya puedes leerlos. Las clases en vídeo del curso estarán disponibles una vez terminada la clase presencial.'
               : cuentan.length === 0
               ? 'Tu espacio está abierto. En cuanto Sorela publique tus clases, aparecen aquí.'
               : hechas === 0
@@ -1354,7 +1354,7 @@ export default function PanelAlumna({
                         {l.bloqueada ? (
                           <>
                             <Candado size={14} />
-                            <span className={p.soloLector}>Bloqueada hasta completar la parte práctica</span>
+                            <span className={p.soloLector}>Disponible al terminar la clase presencial</span>
                           </>
                         ) : pr?.completada ? '✓' : `${v}%`}
                       </span>

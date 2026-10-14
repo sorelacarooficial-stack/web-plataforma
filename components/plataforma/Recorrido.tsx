@@ -97,7 +97,7 @@ function pasosDe(o: { grupos: string[]; miembro: boolean; bloqueadas: boolean; c
       rotulo: 'Clases',
       titulo: 'Tus clases y tu material',
       texto: o.bloqueadas
-        ? 'El precurso y los dosieres ya están abiertos: léelos con calma. Las clases en vídeo del curso se desbloquean una vez completada la parte práctica.'
+        ? 'El precurso y los dosieres ya están abiertos: léelos con calma. Las clases en vídeo del curso estarán disponibles una vez terminada la clase presencial.'
         : `Tus clases en orden, con su material. Sigue donde lo dejaste: cada clase que terminas suma +${PUNTOS.clase} puntos.`,
     });
   if (hay('comunidad'))

@@ -127,6 +127,35 @@ export async function listar(carpeta: Carpeta, pagina = 0) {
   });
 }
 
+/**
+ * Lo que está sin leer en la bandeja de entrada, para el inicio de Sorela:
+ * cuántos son y los últimos (quién y de qué), sin abrirlos ni marcarlos.
+ */
+export async function sinLeer(max = 4) {
+  return conBuzon(async (c) => {
+    const lock = await c.getMailboxLock('INBOX');
+    try {
+      const uids = ((await c.search({ seen: false }, { uid: true })) || []) as number[];
+      const ultimos: { uid: number; de: Persona; asunto: string; fecha: string | null }[] = [];
+      const elegidos = uids.slice(-max);
+      if (elegidos.length) {
+        for await (const m of c.fetch(elegidos.join(','), { uid: true, envelope: true, internalDate: true }, { uid: true })) {
+          const f = m.envelope?.date ?? m.internalDate;
+          ultimos.push({
+            uid: m.uid,
+            de: persona(m.envelope?.from?.[0]),
+            asunto: m.envelope?.subject || '(sin asunto)',
+            fecha: f ? new Date(f as Date).toISOString() : null,
+          });
+        }
+      }
+      return { total: uids.length, ultimos: ultimos.reverse() };
+    } finally {
+      lock.release();
+    }
+  });
+}
+
 const direcciones = (a?: AddressObject | AddressObject[]): Persona[] =>
   (Array.isArray(a) ? a : a ? [a] : []).flatMap((x) => x.value.map((v) => persona(v)));
 
