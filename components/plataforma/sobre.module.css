@@ -1,3 +1,7 @@
+/* Los colores van fijos y no con var(--ink…): la carta vive dentro del menú
+   lateral, que es oscuro y redefine esas variables a tonos claros; con ellas
+   el texto salía casi invisible. */
+
 /* «Sobre esto»: la carta de Sorela. En escritorio, una carta de vidrio claro
    de 760 px con su retrato a la izquierda; en el móvil, una hoja que sube
    desde abajo con su asa. La letra va en la tinta de siempre sobre un blanco
@@ -27,7 +31,7 @@
   border-radius: 30px;
   background: transparent;
   overflow: visible;
-  color: var(--ink, #141210);
+  color: #141210;
   font-family: var(--fuente-inter), -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -145,7 +149,7 @@
   box-shadow:
     inset 0 0 0 1px rgba(20, 18, 16, 0.1),
     0 4px 14px -6px rgba(20, 18, 16, 0.3);
-  color: var(--ink-2, #3e3831);
+  color: #3e3831;
   cursor: pointer;
   transition:
     background 0.2s,
@@ -202,7 +206,7 @@
   font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--oro-letra, #6f5323);
+  color: #6f5323;
 }
 
 .titulo {
@@ -212,7 +216,7 @@
   font-weight: 300;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  color: var(--ink, #141210);
+  color: #141210;
 }
 
 .texto {
@@ -229,7 +233,7 @@
   font-size: 16px;
   font-weight: 400;
   line-height: 1.62;
-  color: var(--ink-2, #3e3831);
+  color: #3e3831;
   text-wrap: pretty;
 }
 
@@ -239,19 +243,19 @@
   gap: 2px;
   margin: 22px 0 0;
   font-size: 15px;
-  color: var(--ink-2, #3e3831);
+  color: #3e3831;
 }
 
 .firma b {
   font-size: 19px;
   font-weight: 500;
   letter-spacing: -0.01em;
-  color: var(--ink, #141210);
+  color: #141210;
 }
 
 .firma span {
   font-size: 13px;
-  color: var(--muted-2, #5e564c);
+  color: #5e564c;
 }
 
 /* Queda texto por debajo: se desvanece y asoma una flecha. */
@@ -266,7 +270,7 @@
   padding-bottom: 12px;
   pointer-events: none;
   background: linear-gradient(180deg, rgba(255, 253, 249, 0), rgba(255, 253, 249, 0.97) 70%);
-  color: var(--oro, #8a6a32);
+  color: #8a6a32;
   opacity: 0;
   transition: opacity 0.25s;
 }
