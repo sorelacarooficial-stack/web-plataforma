@@ -46,6 +46,7 @@ import rc from './recorrido.module.css';
 import FichasMapa from './FichasMapa';
 import { MarcadorPuntos } from './Puntos';
 import PanelAlumna from './PanelAlumna';
+import SobreEsto from './SobreEsto';
 import BlogAdmin from './BlogAdmin';
 import Contactos from './Contactos';
 import Acuerdos from './Acuerdos';
@@ -419,6 +420,8 @@ export default function Plataforma({
                 {!recorridoHecho && <span className={rc.verRecorridoPremio}>+{PUNTOS.recorrido + PUNTOS.logro} pts</span>}
               </button>
             )}
+            {/* La carta de Sorela: para todas, también para ella. */}
+            <SobreEsto alAbrir={() => setMenuAbierto(false)} />
             <button type="button" className={css.salir} onClick={salir} disabled={saliendo}>
               {saliendo ? 'Saliendo…' : 'Salir'}
             </button>

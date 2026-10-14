@@ -51,6 +51,20 @@ const jost = localFont({
  * La misma cadena está escrita en app/robots.ts y app/sitemap.ts; las tres
  * tienen que cambiar juntas el día que cambie el dominio.
  */
+/* Inter, la de los artefactos de los vídeos: más limpia y más femenina en
+   fino. De momento solo la usa la plataforma (en .pantalla de
+   components/plataforma/plataforma.module.css); la web sigue con las de arriba.
+   Es variable: un solo archivo da del 100 al 900. */
+const inter = localFont({
+  src: [
+    { path: './fuentes/inter-normal-latin.woff2', weight: '100 900', style: 'normal' },
+    { path: './fuentes/inter-italic-latin.woff2', weight: '100 900', style: 'italic' },
+  ],
+  display: 'swap',
+  variable: '--fuente-inter',
+  fallback: ['-apple-system', 'BlinkMacSystemFont', 'Helvetica Neue', 'Arial', 'sans-serif'],
+});
+
 const SITIO = 'https://www.sorelacarodivine.com';
 
 export const metadata: Metadata = {
@@ -163,7 +177,7 @@ export default function RootLayout({
     <html
       lang="es"
       data-tema="claro"
-      className={`${cormorant.variable} ${jost.variable}`}
+      className={`${cormorant.variable} ${jost.variable} ${inter.variable}`}
       suppressHydrationWarning
     >
       <head>

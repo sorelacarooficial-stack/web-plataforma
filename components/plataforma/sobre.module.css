@@ -1,0 +1,210 @@
+/* «Sobre esto»: la carta de Sorela. Una hoja de vidrio claro sobre el fondo
+   velado, con su foto arriba. La letra va en la tinta de siempre sobre un
+   blanco casi opaco: el vidrio se nota en el borde y en lo que se ve detrás,
+   no en el texto, que tiene que leerse sin esfuerzo (más de 10 a 1). */
+
+.punto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c29a5b;
+  box-shadow: 0 0 0 3px rgba(194, 154, 91, 0.22);
+}
+
+.dialogo {
+  width: min(520px, calc(100vw - 32px));
+  max-height: min(88dvh, 760px);
+  padding: 0;
+  border: 0;
+  border-radius: 30px;
+  background: transparent;
+  overflow: visible;
+  color: var(--ink, #141210);
+}
+
+.dialogo::backdrop {
+  background: rgba(20, 18, 16, 0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dialogo[open] {
+  animation: entra 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dialogo[open]::backdrop {
+  animation: velo 0.38s ease;
+}
+
+@keyframes entra {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+}
+
+@keyframes velo {
+  from {
+    opacity: 0;
+  }
+}
+
+.carta {
+  position: relative;
+  max-height: min(88dvh, 760px);
+  overflow-y: auto;
+  padding: clamp(28px, 5vw, 40px) clamp(22px, 5vw, 40px) clamp(24px, 4vw, 34px);
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(217, 180, 124, 0.16), transparent 62%),
+    rgba(255, 253, 249, 0.92);
+  backdrop-filter: blur(28px) saturate(1.4);
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 30px 80px -24px rgba(20, 18, 16, 0.45),
+    0 0 0 1px rgba(20, 18, 16, 0.06);
+}
+
+.cerrar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(20, 18, 16, 0.06);
+  color: var(--ink-2, #3e3831);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.cerrar:hover {
+  background: rgba(20, 18, 16, 0.11);
+}
+
+.cerrar:active {
+  transform: scale(0.94);
+}
+
+.cerrar:focus-visible {
+  outline: 3px solid rgba(217, 180, 124, 0.75);
+  outline-offset: 2px;
+}
+
+.cabeza {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.foto {
+  display: block;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 3px #fffdf9,
+    0 0 0 4px rgba(194, 154, 91, 0.55),
+    0 14px 30px -12px rgba(20, 18, 16, 0.45);
+}
+
+.foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
+}
+
+.rotulo {
+  margin: 18px 0 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--oro-letra, #6f5323);
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fuente-inter), var(--fuente-jost), system-ui, sans-serif;
+  font-size: clamp(26px, 5.4vw, 32px);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  color: var(--ink, #141210);
+}
+
+.texto {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 22px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid rgba(20, 18, 16, 0.08);
+}
+
+.texto p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.62;
+  color: var(--ink-2, #3e3831);
+  text-wrap: pretty;
+}
+
+.firma {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 24px 0 0;
+  font-size: 15px;
+  color: var(--ink-2, #3e3831);
+}
+
+.firma b {
+  margin-top: 6px;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink, #141210);
+}
+
+.firma span {
+  font-size: 13px;
+  color: var(--muted-2, #5e564c);
+}
+
+/* Si el sistema pide menos transparencia, la carta es opaca. */
+@media (prefers-reduced-transparency: reduce) {
+  .carta {
+    background: #fffdf9;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .dialogo::backdrop {
+    background: rgba(20, 18, 16, 0.6);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .carta {
+    background: #fffdf9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogo[open],
+  .dialogo[open]::backdrop {
+    animation: none;
+  }
+}

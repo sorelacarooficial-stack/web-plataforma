@@ -155,7 +155,7 @@ export type EstadoPago = (typeof ESTADOS_PAGO)[number];
 
 export const ETIQUETA_PAGO: Record<EstadoPago, string> = {
   pagado: 'Pagado',
-  senal: 'Señal',
+  senal: 'Abono',
   pendiente: 'Pendiente',
 };
 

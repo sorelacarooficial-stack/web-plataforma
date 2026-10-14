@@ -650,17 +650,40 @@ type BorradorInscrita = {
   id?: string;
   nombre: string;
   correo: string;
+  /** No se pregunta: viene de Clientes si se eligió de ahí, y al editar se conserva. */
   telefono: string;
   pagado: string;
   estado: EstadoPago;
-  /** Si Sorela ha elegido el estado a mano: entonces ya no se propone solo. */
-  estadoTocado: boolean;
+  /** Tampoco se pregunta: si ya tenía una nota de antes, se conserva tal cual. */
   nota: string;
   contacto: string | null;
 };
 
-const nuevaInscrita = (): BorradorInscrita => ({ nombre: '', correo: '', telefono: '', pagado: '', estado: 'pendiente', estadoTocado: false, nota: '', contacto: null });
+const nuevaInscrita = (): BorradorInscrita => ({ nombre: '', correo: '', telefono: '', pagado: '', estado: 'pendiente', nota: '', contacto: null });
 
+/* Lo que ha pagado, en las palabras de Sorela. Es lo que decide su acceso
+   (con el abono, los PDF; con todo, también los vídeos) y lo que se cobra. */
+const PAGOS: { id: EstadoPago; texto: string }[] = [
+  { id: 'pendiente', texto: 'Nada todavía' },
+  { id: 'senal', texto: 'El abono' },
+  { id: 'pagado', texto: 'Todo' },
+];
+
+const FORMA_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+/**
+ * Apuntar a alguien: solo lo imprescindible, sin nada opcional.
+ *
+ *   · Nombre: al escribirlo salen las de Clientes que encajan; al elegir una
+ *     se rellena el resto solo. Si no está, se escribe y ya.
+ *   · Correo: obligatorio. Sin él no se le puede dar acceso al curso, que es
+ *     lo siguiente que se hace con una inscrita.
+ *   · Qué ha pagado: nada, el abono o todo. El importe solo se pregunta
+ *     cuando hace falta (el abono; y en «todo» viene puesto el precio).
+ *
+ * El móvil y la nota ya no se piden: el móvil está en su ficha de Clientes y
+ * no hace falta para apuntarla ni para darle acceso; la nota era opcional.
+ */
 function FormInscrita({
   convocatoria,
   inicial,
@@ -681,27 +704,40 @@ function FormInscrita({
   const [b, setB] = useState(inicial);
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [guardando, setGuardando] = useState(false);
-  const [busca, setBusca] = useState('');
-  const [buscando, setBuscando] = useState(!inicial.id);
+  /* Las de Clientes salen mientras escribe el nombre y se cierran al elegir. */
+  const [sugerir, setSugerir] = useState(false);
   const { precio, moneda } = convocatoria;
-  const idLista = useId();
+  const id = useId();
 
   useEffect(() => {
-    if (buscando) pedirContactos();
-  }, [buscando, pedirContactos]);
+    pedirContactos();
+  }, [pedirContactos]);
 
   const poner = <K extends keyof BorradorInscrita>(k: K, v: BorradorInscrita[K]) => {
     setB((x) => ({ ...x, [k]: v }));
     setErrores((e) => sinError(e, k as string));
   };
 
-  /* Al escribir lo pagado se propone el estado (todo = Pagado, algo = Señal,
-     nada = Pendiente), hasta que Sorela elige uno a mano. */
-  const ponerPagado = (texto: string) => {
-    setB((x) => {
-      const c = aCentimos(texto);
-      return { ...x, pagado: texto, estado: x.estadoTocado || c === null ? x.estado : estadoSugerido(c, precio) };
-    });
+  /* Nada = 0. Todo = el precio de la plaza, ya escrito (se cambia si hubo
+     descuento). El abono, lo que diga Sorela: se deja en blanco para que no
+     se cuele el precio entero como abono. */
+  const ponerEstado = (estado: EstadoPago) => {
+    setB((x) => ({
+      ...x,
+      estado,
+      pagado:
+        estado === 'pendiente'
+          ? ''
+          : estado === 'pagado'
+            ? precio !== null && precio > 0
+              ? aTextoImporte(precio)
+              : x.estado === 'pagado'
+                ? x.pagado
+                : ''
+            : x.estado === 'senal'
+              ? x.pagado
+              : '',
+    }));
     setErrores((e) => sinError(e, 'pagado'));
   };
 
@@ -711,34 +747,39 @@ function FormInscrita({
     for (const i of convocatoria.inscritas) {
       if (i.id === b.id) continue;
       if (i.contacto) ids.add(`c:${i.contacto}`);
-      if (i.correo) ids.add(`m:${i.correo}`);
+      if (i.correo) ids.add(`m:${i.correo.toLowerCase()}`);
     }
     return ids;
   }, [convocatoria.inscritas, b.id]);
 
   const resultados = useMemo(() => {
-    if (!Array.isArray(contactos)) return [];
-    const q = plano(busca.trim());
-    // Sin buscar, quienes pidieron información para formarse: son las que se apuntan.
-    const lista = q ? contactos.filter((c) => plano(`${c.nombre} ${c.correo} ${c.whatsapp} ${c.ciudad}`).includes(q)) : contactos.filter((c) => c.tipo === 'alumna');
-    return lista.slice(0, 6);
-  }, [contactos, busca]);
+    if (!sugerir || !Array.isArray(contactos)) return [];
+    const q = plano(b.nombre.trim());
+    if (q.length < 2) return [];
+    return contactos.filter((c) => plano(`${c.nombre} ${c.correo} ${c.whatsapp}`).includes(q)).slice(0, 5);
+  }, [contactos, b.nombre, sugerir]);
 
   const elegir = (c: Contacto) => {
-    setB((x) => ({ ...x, nombre: c.nombre || x.nombre, correo: c.correo || '', telefono: c.whatsapp || '', contacto: c.id }));
+    setB((x) => ({ ...x, nombre: c.nombre || x.nombre, correo: c.correo || x.correo, telefono: c.whatsapp || '', contacto: c.id }));
     setErrores({});
-    setBuscando(false);
-    setBusca('');
+    setSugerir(false);
   };
 
   const guardar = async () => {
-    const pagado = aCentimos(b.pagado);
     const e: Record<string, string> = {};
+    const correo = b.correo.trim().toLowerCase();
+    const pagado = b.estado === 'pendiente' ? 0 : aCentimos(b.pagado);
     if (b.nombre.trim().length < 2) e.nombre = 'Escribe su nombre.';
-    if (pagado === null) e.pagado = 'Escríbelo solo con números, por ejemplo 450.';
+    if (!correo) e.correo = 'Escribe su correo: con él se le da acceso al curso.';
+    else if (!FORMA_CORREO.test(correo)) e.correo = 'Ese correo no tiene forma de correo.';
+    else if (yaDentro.has(`m:${correo}`)) e.correo = 'Ya está apuntada en estas fechas.';
+    if (b.estado !== 'pendiente') {
+      if (pagado === null || pagado <= 0) e.pagado = b.estado === 'senal' ? 'Escribe cuánto ha dejado, solo con números: 400.' : 'Escribe cuánto ha pagado, solo con números: 900.';
+      else if (b.estado === 'senal' && precio !== null && precio > 0 && pagado >= precio) e.pagado = 'Eso ya es la plaza entera: elige «Todo».';
+    }
     if (Object.keys(e).length) return setErrores(e);
     setGuardando(true);
-    const cuerpo = { convocatoria: convocatoria.id, id: b.id, nombre: b.nombre, correo: b.correo, telefono: b.telefono, pagado, estado: b.estado, nota: b.nota, contacto: b.contacto };
+    const cuerpo = { convocatoria: convocatoria.id, id: b.id, nombre: b.nombre, correo, telefono: b.telefono, pagado, estado: b.estado, nota: b.nota, contacto: b.contacto };
     const r = await pedir('/api/convocatorias/inscritas', { method: b.id ? 'PATCH' : 'POST', body: JSON.stringify(cuerpo) });
     setGuardando(false);
     if (r.ok) return alGuardar(r.datos.convocatoria as Convocatoria, b.nombre.trim(), r.datos.aviso as string | undefined);
@@ -746,7 +787,8 @@ function FormInscrita({
   };
 
   const pagadoCent = aCentimos(b.pagado) ?? 0;
-  const falta = b.estado === 'pagado' || precio === null ? 0 : Math.max(precio - pagadoCent, 0);
+  const falta = precio === null ? 0 : Math.max(precio - pagadoCent, 0);
+  const describeNombre = errores.nombre ? `${id}-ne` : undefined;
 
   return (
     <Hoja
@@ -771,135 +813,101 @@ function FormInscrita({
       }
     >
       <div className={s.rejillaForm}>
-        {/* ---------- Elegir de Clientes (o escribir a mano) ---------- */}
+        {/* ---------- Nombre, con las de Clientes debajo mientras escribe ---------- */}
         <div className={s.campo} data-ancho="entero">
-          {b.contacto && !buscando ? (
+          <label htmlFor={`${id}-n`} className={s.rotuloCampo}>
+            Nombre
+          </label>
+          <input
+            id={`${id}-n`}
+            data-enfocar
+            className={s.entrada}
+            value={b.nombre}
+            onChange={(e) => {
+              poner('nombre', e.target.value);
+              setSugerir(true);
+            }}
+            placeholder="Nombre y apellido"
+            maxLength={80}
+            autoComplete="off"
+            aria-invalid={errores.nombre ? true : undefined}
+            aria-describedby={describeNombre}
+          />
+          <div aria-live="polite">
+            {resultados.length > 0 && (
+              <ul className={s.listaResultados} aria-label="Coinciden en Clientes">
+                {resultados.map((c) => {
+                  const dentro = yaDentro.has(`c:${c.id}`) || (!!c.correo && yaDentro.has(`m:${c.correo.toLowerCase()}`));
+                  return (
+                    <li key={c.id}>
+                      <button type="button" className={s.resultado} onClick={() => elegir(c)} disabled={dentro}>
+                        <span className={s.avatar} aria-hidden="true">
+                          {iniciales(c.nombre)}
+                        </span>
+                        <span className={s.resultadoTexto}>
+                          <b>{c.nombre || 'Sin nombre'}</b>
+                          <span>{c.correo || 'Sin correo'}</span>
+                        </span>
+                        <span className={s.resultadoAccion}>{dentro ? 'Ya está apuntada' : 'Elegir'}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+          {b.contacto && (
             <div className={s.enlazada}>
               <span className={s.enlazadaIcono}>
                 <Icono d={I.enlace} size={15} />
               </span>
               <span className={s.enlazadaTexto}>
-                Datos copiados de <b>Clientes</b>. Si los cambias aquí, su contacto no se toca.
+                Elegida de <b>Clientes</b>.
               </span>
               <button type="button" className={s.enlaceTexto} onClick={() => poner('contacto', null)}>
-                Quitar enlace
+                Quitar
               </button>
             </div>
-          ) : buscando ? (
-            <div className={s.buscador}>
-              <label className={s.rotuloCampo} htmlFor={`${idLista}-q`}>
-                Buscar en Clientes <small>(opcional)</small>
-              </label>
-              <div className={s.cajaBusqueda}>
-                <Icono d={I.lupa} size={16} />
-                <input id={`${idLista}-q`} data-enfocar type="search" className={s.entradaBusqueda} value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Nombre, correo o teléfono" autoComplete="off" aria-controls={`${idLista}-r`} />
-              </div>
-              <div id={`${idLista}-r`} className={s.resultados} aria-live="polite">
-                {contactos === 'cargando' || contactos === null ? (
-                  <p className={s.resultadosNota}>Cargando tus contactos…</p>
-                ) : contactos === 'error' ? (
-                  <p className={s.resultadosNota}>No he podido cargar Clientes. Escríbela a mano abajo.</p>
-                ) : resultados.length === 0 ? (
-                  <p className={s.resultadosNota}>{busca.trim() ? 'Nadie así en Clientes. Escríbela a mano abajo.' : 'Escribe para buscar entre tus contactos.'}</p>
-                ) : (
-                  <>
-                    {!busca.trim() && <p className={s.resultadosNota}>Quienes te pidieron información para formarse:</p>}
-                    <ul className={s.listaResultados}>
-                      {resultados.map((c) => {
-                        const dentro = yaDentro.has(`c:${c.id}`) || (!!c.correo && yaDentro.has(`m:${c.correo}`));
-                        return (
-                          <li key={c.id}>
-                            <button type="button" className={s.resultado} onClick={() => elegir(c)} disabled={dentro}>
-                              <span className={s.avatar} aria-hidden="true">
-                                {iniciales(c.nombre)}
-                              </span>
-                              <span className={s.resultadoTexto}>
-                                <b>{c.nombre || 'Sin nombre'}</b>
-                                <span>{[c.correo, c.whatsapp, c.ciudad].filter(Boolean).join(' · ') || 'Sin datos de contacto'}</span>
-                              </span>
-                              <span className={s.resultadoAccion}>{dentro ? 'Ya está apuntada' : 'Elegir'}</span>
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </>
-                )}
-              </div>
-              <button type="button" className={s.enlaceTexto} onClick={() => setBuscando(false)}>
-                No está en Clientes: la escribo a mano
-              </button>
-            </div>
-          ) : (
-            <button type="button" className={s.botonBuscar} onClick={() => setBuscando(true)}>
-              <Icono d={I.lupa} size={16} />
-              Elegir de Clientes
-            </button>
+          )}
+          {errores.nombre && (
+            <em id={`${id}-ne`} className={s.error}>
+              {errores.nombre}
+            </em>
           )}
         </div>
 
-        {/* ---------- Sus datos ---------- */}
-        <Campo etiqueta="Nombre" error={errores.nombre} ancho="entero">
-          {(p) => <input {...p} {...(!buscando ? { 'data-enfocar': true } : {})} className={s.entrada} value={b.nombre} onChange={(e) => poner('nombre', e.target.value)} placeholder="Nombre y apellido" maxLength={80} autoComplete="off" />}
-        </Campo>
-        <Campo etiqueta="Correo" opcional="opcional" error={errores.correo} ayuda="Con él se le puede crear el acceso al curso.">
+        <Campo etiqueta="Correo" error={errores.correo} ancho="entero">
           {(p) => <input {...p} type="email" inputMode="email" className={s.entrada} value={b.correo} onChange={(e) => poner('correo', e.target.value)} placeholder="nombre@correo.com" maxLength={160} autoComplete="off" />}
         </Campo>
-        <Campo etiqueta="Móvil" opcional="opcional" error={errores.telefono}>
-          {(p) => <input {...p} type="tel" inputMode="tel" className={s.entrada} value={b.telefono} onChange={(e) => poner('telefono', e.target.value)} placeholder="+34 600 000 000" maxLength={32} autoComplete="off" />}
-        </Campo>
 
-        {/* ---------- El pago de la formación presencial ---------- */}
-        <Campo
-          etiqueta="Ha pagado"
-          error={errores.pagado}
-          ayuda={
-            precio === null ? (
-              'Precio por definir: cuando lo pongas, calculo lo que le falta.'
-            ) : (
-              <>
-                La plaza cuesta {dinero(precio, moneda)}
-                {falta > 0 ? (
-                  <>
-                    {' '}
-                    · le faltan <b>{dinero(falta, moneda)}</b>
-                  </>
-                ) : null}
-                .
-              </>
-            )
-          }
-        >
-          {(p) => (
-            <div className={s.importe}>
-              <input {...p} inputMode="decimal" className={s.entrada} value={b.pagado} onChange={(e) => ponerPagado(e.target.value)} placeholder="0" autoComplete="off" />
-              <span className={s.monedaFija}>{simbolo(moneda)}</span>
-            </div>
-          )}
-        </Campo>
-        <div className={s.campo}>
-          <span className={s.rotuloCampo}>Estado del pago</span>
-          <Segmentado nombre="estado-pago" etiqueta="Estado del pago" valor={b.estado} alCambiar={(v) => setB((x) => ({ ...x, estado: v, estadoTocado: true }))} opciones={ESTADOS_PAGO.map((e) => ({ id: e, texto: ETIQUETA_PAGO[e] }))} />
-          {precio !== null && precio > 0 && (
-            <span className={s.atajos}>
-              <button type="button" className={s.atajo} onClick={() => setB((x) => ({ ...x, pagado: aTextoImporte(precio), estado: 'pagado', estadoTocado: false }))}>
-                Ha pagado todo
-              </button>
-              <button type="button" className={s.atajo} onClick={() => setB((x) => ({ ...x, pagado: '', estado: 'pendiente', estadoTocado: false }))}>
-                Nada todavía
-              </button>
-            </span>
-          )}
+        {/* ---------- Lo que ha pagado: tres respuestas, y el importe solo si hace falta ---------- */}
+        <div className={s.campo} data-ancho="entero">
+          <span className={s.rotuloCampo}>¿Qué ha pagado?</span>
+          <Segmentado nombre="estado-pago" etiqueta="Qué ha pagado" valor={b.estado} alCambiar={ponerEstado} opciones={PAGOS} />
         </div>
-
-        <Campo etiqueta="Nota" opcional="opcional" ancho="entero" error={errores.nota}>
-          {(p) => <textarea {...p} className={s.entrada} rows={2} value={b.nota} onChange={(e) => poner('nota', e.target.value)} placeholder="Pagó la señal por Bizum, viene con una compañera…" maxLength={500} />}
-        </Campo>
-
-        <p className={s.notaAcceso} data-ancho="entero">
-          <Icono d={I.aula} size={15} />
-          Apuntarla no le da acceso a nada en la plataforma. Su enlace al curso se crea después, en Cuentas (su botón te lleva). Al marcarla «Pagado» se le abre el curso completo.
-        </p>
+        {b.estado !== 'pendiente' && (
+          <Campo
+            etiqueta={b.estado === 'senal' ? '¿Cuánto ha dejado?' : '¿Cuánto ha pagado?'}
+            error={errores.pagado}
+            ancho="entero"
+            ayuda={
+              precio === null
+                ? 'El precio de la plaza está por definir.'
+                : b.estado === 'pagado'
+                  ? `La plaza entera, ${dinero(precio, moneda)}. Cámbialo si le hiciste descuento.`
+                  : falta > 0 && pagadoCent > 0
+                    ? `La plaza cuesta ${dinero(precio, moneda)}: le faltarán ${dinero(falta, moneda)}.`
+                    : `La plaza cuesta ${dinero(precio, moneda)}.`
+            }
+          >
+            {(p) => (
+              <div className={s.importe}>
+                <input {...p} inputMode="decimal" className={s.entrada} value={b.pagado} onChange={(e) => poner('pagado', e.target.value)} placeholder={b.estado === 'senal' ? '400' : '0'} autoComplete="off" />
+                <span className={s.monedaFija}>{simbolo(moneda)}</span>
+              </div>
+            )}
+          </Campo>
+        )}
 
         {errores.general && (
           <p className={s.errorGeneral} role="alert" data-ancho="entero">
@@ -1006,7 +1014,7 @@ function BarraPlazas({ c }: { c: Convocatoria }) {
     <div
       className={s.barra}
       role="img"
-      aria-label={`${r.ocupadas} de ${total} plazas ocupadas: ${plural(r.porEstado.pagado, 'pagada', 'pagadas')}, ${r.porEstado.senal} con señal, ${plural(r.porEstado.pendiente, 'pendiente', 'pendientes')} y ${plural(r.libres ?? 0, 'libre', 'libres')}.`}
+      aria-label={`${r.ocupadas} de ${total} plazas ocupadas: ${plural(r.porEstado.pagado, 'pagada', 'pagadas')}, ${r.porEstado.senal} con abono, ${plural(r.porEstado.pendiente, 'pendiente', 'pendientes')} y ${plural(r.libres ?? 0, 'libre', 'libres')}.`}
     >
       {ESTADOS_PAGO.map(
         (e) =>
@@ -1184,7 +1192,7 @@ function TarjetaConvocatoria({
           )}
           <span className={s.leyenda}>
             <span data-estado="pagado">{plural(r.porEstado.pagado, 'pagada', 'pagadas')}</span>
-            <span data-estado="senal">{r.porEstado.senal} con señal</span>
+            <span data-estado="senal">{r.porEstado.senal} con abono</span>
             <span data-estado="pendiente">{plural(r.porEstado.pendiente, 'pendiente', 'pendientes')}</span>
             {c.plazas !== null && <span data-estado="libre">{llena ? 'Completa' : plural(r.libres ?? 0, 'libre', 'libres')}</span>}
           </span>
@@ -1247,7 +1255,7 @@ function TarjetaConvocatoria({
           >
             {c.inscritas.length === 0 ? (
               <p className={s.inscritasVacio}>
-                Nadie apuntada todavía. Pulsa <b>Apuntar a alguien</b> y elígela de Clientes o escríbela a mano.
+                Nadie apuntada todavía. Pulsa <b>Apuntar a alguien</b>.
               </p>
             ) : (
               <ul className={s.inscritas}>
@@ -1404,7 +1412,7 @@ export default function Convocatorias() {
   const abrirInscrita = (c: Convocatoria, i: Inscrita) =>
     setFormIns({
       conv: c.id,
-      borrador: { id: i.id, nombre: i.nombre, correo: i.correo, telefono: i.telefono, pagado: i.pagado ? aTextoImporte(i.pagado) : '', estado: i.estado, estadoTocado: true, nota: i.nota, contacto: i.contacto },
+      borrador: { id: i.id, nombre: i.nombre, correo: i.correo, telefono: i.telefono, pagado: i.pagado ? aTextoImporte(i.pagado) : '', estado: i.estado, nota: i.nota, contacto: i.contacto },
     });
 
   const convDeForm = formIns ? lista.find((c) => c.id === formIns.conv) : undefined;
