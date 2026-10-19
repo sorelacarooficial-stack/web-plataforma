@@ -14,7 +14,9 @@ import { createHash } from 'node:crypto';
  *
  * Variables en Vercel:
  *   META_DATASET_ID   → el conjunto de datos «Comunidad Divine» (968080569683493)
- *   META_CAPI_TOKEN   → el token generado en Administrador de eventos
+ *   META_CAPI_TOKEN   → el token de la API de conversiones. Si no está, vale
+ *                       META_ADS_TOKEN: el token de un usuario del sistema con
+ *                       el conjunto de datos asignado sirve para las dos cosas.
  *   META_TEST_CODE    → opcional: el código de «Probar eventos», solo para probar
  *
  * Si faltan, no hace nada. Nunca rompe el registro: falla en silencio (con
@@ -27,7 +29,8 @@ const TOPE_MS = 3000;
 const sha = (t: string) => createHash('sha256').update(t).digest('hex');
 const limpio = (t: unknown) => String(t ?? '').trim().toLowerCase();
 
-export const hayMeta = () => Boolean(process.env.META_DATASET_ID && process.env.META_CAPI_TOKEN);
+const token = () => process.env.META_CAPI_TOKEN || process.env.META_ADS_TOKEN || '';
+export const hayMeta = () => Boolean(process.env.META_DATASET_ID && token());
 
 export type Registro = {
   correo: string;
@@ -99,7 +102,7 @@ export async function avisarRegistro(r: Registro): Promise<boolean> {
   const reloj = setTimeout(() => ctrl.abort(), TOPE_MS);
   try {
     const res = await fetch(
-      `https://graph.facebook.com/${VERSION}/${process.env.META_DATASET_ID}/events?access_token=${encodeURIComponent(process.env.META_CAPI_TOKEN!)}`,
+      `https://graph.facebook.com/${VERSION}/${process.env.META_DATASET_ID}/events?access_token=${encodeURIComponent(token())}`,
       { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo), signal: ctrl.signal }
     );
     if (!res.ok) {

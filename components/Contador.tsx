@@ -111,8 +111,8 @@ export default function Contador({
         {restante
           ? `Faltan ${restante.dias} ${restante.dias === 1 ? 'día' : 'días'} y ${
               restante.horas
-            } ${restante.horas === 1 ? 'hora' : 'horas'} para la apertura.`
-          : 'Calculando cuánto falta para la apertura.'}
+            } ${restante.horas === 1 ? 'hora' : 'horas'} para la masterclass.`
+          : 'Calculando cuánto falta para la masterclass.'}
       </p>
 
       <Husos />

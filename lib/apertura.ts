@@ -37,6 +37,7 @@ export const ZONAS = [
   { lugar: 'Argentina', zona: 'America/Argentina/Buenos_Aires' },
   { lugar: 'Venezuela', zona: 'America/Caracas' },
   { lugar: 'Colombia', zona: 'America/Bogota' },
+  { lugar: 'México', zona: 'America/Mexico_City' },
 ] as const;
 
 const instante = new Date(APERTURA);

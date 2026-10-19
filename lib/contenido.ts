@@ -274,20 +274,20 @@ export const FAQS_CURSO: Pregunta[] = [
 
 export const OBJECIONES: Pregunta[] = [
   {
-    q: '¿Cuándo abre?',
-    a: `El ${DIA_APERTURA}, con una masterclass en directo por Zoom: ${APERTURA_POR_PAISES}. El enlace llega por correo a quien esté en la lista.`,
+    q: '¿Cuánto cuesta?',
+    a: 'Nada. La masterclass es gratuita: no pido tarjeta ni hay nada que reservar pagando.',
   },
   {
-    q: '¿Qué incluye?',
-    a: 'Lo cuento ese día, en la masterclass. Prefiero enseñártelo en directo y con calma que resumirlo en una lista.',
+    q: '¿Cuándo es y cuánto dura?',
+    a: `El ${DIA_APERTURA}, en directo por Zoom: ${APERTURA_POR_PAISES}. Dura una hora.`,
+  },
+  {
+    q: '¿Es para mí si no me he formado contigo?',
+    a: 'Sí. Es para cualquier terapeuta o esteticista que trabaje con las manos, hayas hecho mi formación o no.',
   },
   {
     q: '¿Me compromete a algo apuntarme?',
-    a: 'A nada. No pido tarjeta, no hay reserva que pagar y puedes salirte con un correo.',
-  },
-  {
-    q: '¿Tengo que estar certificada ya?',
-    a: 'Para entrar el día que abra, sí. Para estar en la lista, no: si tienes plaza en una formación, apúntate igual.',
+    a: 'A nada. Te llega el enlace por correo y puedes darte de baja con un clic.',
   },
 ];
 
@@ -332,21 +332,21 @@ export type PiezaComunidad = {
 export const PIEZAS_MASTERCLASS: PiezaComunidad[] = [
   {
     titulo: `${FECHA_APERTURA}, ${HORA_ESPANA}`,
-    texto: `${APERTURA_POR_PAISES}.`,
-    estado: 'En directo',
+    texto: `${APERTURA_POR_PAISES}. Dura una hora.`,
+    estado: 'En directo · 1 hora',
     color: 'var(--arcilla)',
   },
   {
-    titulo: 'Por Zoom',
-    texto: 'Desde el móvil o el ordenador. El enlace llega por correo a quien esté en la lista.',
+    titulo: 'Gratis, por Zoom',
+    texto: 'Desde el móvil o el ordenador. Te apuntas aquí y el enlace te llega por correo.',
     estado: 'Online',
     color: 'var(--salvia)',
   },
   {
-    titulo: 'De qué hablo',
+    titulo: 'Qué vas a aprender',
     texto:
-      'Mi técnica y el alto impacto de lo digital en las terapeutas. Y al final, qué es la Comunidad Divine, que hasta ese día no cuento en ningún otro sitio.',
-    estado: 'Solo ese día',
+      'Qué observar antes de empezar, cómo interpretar lo que ves y cómo decidir qué necesita cada cuerpo. Con casos reales de cabina y la Técnica Divine explicada paso a paso.',
+    estado: 'La nueva era de las manos',
     color: 'var(--oro)',
   },
 ];

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import Contador from '@/components/Contador';
 import ListaEspera from '@/components/ListaEspera';
 import { OBJECIONES, PIEZAS_MASTERCLASS } from '@/lib/contenido';
@@ -18,10 +17,11 @@ import css from './comunidad.module.css';
  * se actualiza sola.
  */
 export const metadata: Metadata = {
-  title: { absolute: 'La Comunidad Divine para terapeutas ya certificadas' },
-  // Sin lo que incluye: se presenta en la masterclass de la apertura (lib/contenido.ts).
+  /* Lo mismo que dicen los anuncios de Meta («Antes de tocar»): quien hace
+     clic tiene que reconocer en la página lo que acaba de ver. */
+  title: { absolute: 'Antes de tocar · Masterclass gratuita para terapeutas y esteticistas' },
   description:
-    'Lista de espera de la Comunidad Divine. Si quieres formar parte, apúntate: el día de la apertura hago una masterclass en directo por Zoom y te mando el enlace.',
+    'Masterclass gratuita en directo con Sorela Caro: qué observar, qué interpretar y cómo decidir antes de tocar. Una hora por Zoom. Apúntate y te mando el enlace.',
 };
 
 /**
@@ -49,19 +49,20 @@ export default function Comunidad() {
                 elige dónde partir deja «19:00 (HORA DE» arriba y «ESPAÑA)»
                 sola abajo. Así parte siempre por la coma. */}
             <p className={css.fecha}>
-              <span>Abre el {DIA_APERTURA},</span> <span>{HORA_ESPANA} (hora de España)</span>
+              <span>Masterclass gratuita · {DIA_APERTURA},</span> <span>{HORA_ESPANA} (hora de España)</span>
             </p>
             {/* En primera persona, y titular distinto del que lleva el inicio:
                 si las dos páginas encabezan igual, la segunda parece un error.
                 Antes ponía «La membresía de Sorela», que habla de ella en
                 tercera persona como si lo contara otro; aquí quien escribe es
                 ella y quien lee es una terapeuta a la que conoce. */}
-            <h1 className={`${css.titulo} degradado-claro`}>Estoy preparando algo especial para ti.</h1>
+            <h1 className={`${css.titulo} degradado-claro`}>Antes de tocar.</h1>
             {/* Es una lista de espera y nada más: se dice así, sin describir la
                 comunidad. Lo de dentro se cuenta el día de la masterclass. */}
             <p className={css.lede}>
-              Esta es la lista de espera de la Comunidad Divine. Si quieres formar parte, apúntate:
-              el {DIA_APERTURA} hago una masterclass en directo por Zoom y te mando el enlace.
+              La nueva era de las manos: una hora en directo, gratis, para terapeutas y esteticistas.
+              Te enseño qué observar antes de empezar, cómo interpretar lo que ves y cómo decidir qué
+              necesita cada cuerpo. Apúntate y te mando el enlace de Zoom.
             </p>
             <Contador sobre="oscuro" />
           </div>
@@ -81,7 +82,7 @@ export default function Comunidad() {
         <div className="wrap">
           {/* h2 y no un rótulo: las piezas llevan h3, y sin esto colgaban del
               h2 del formulario («Apúntate a la lista»). */}
-          <h2 className={`titulo-sm ${css.seccionTitulo}`}>La masterclass de la apertura</h2>
+          <h2 className={`titulo-sm ${css.seccionTitulo}`}>La masterclass</h2>
           <div className={css.piezas}>
             {PIEZAS_MASTERCLASS.map((m) => (
               <article key={m.titulo} className={css.pieza}>
@@ -102,7 +103,7 @@ export default function Comunidad() {
           arriba y la página se veía torcida. */}
       <section className={css.preguntas}>
         <div className="wrap">
-          <h2 className={`titulo-sm ${css.seccionTitulo}`}>Preguntas de la lista</h2>
+          <h2 className={`titulo-sm ${css.seccionTitulo}`}>Preguntas</h2>
           <div className="columna">
             {OBJECIONES.map((o) => (
               <div key={o.q} className={css.objecion}>
@@ -111,12 +112,6 @@ export default function Comunidad() {
               </div>
             ))}
           </div>
-          <p className={css.pieLista}>
-            ¿Aún no te has formado?{' '}
-            <Link href="/formaciones" className="enlace-fino">
-              Empieza por la formación
-            </Link>
-          </p>
         </div>
       </section>
     </main>

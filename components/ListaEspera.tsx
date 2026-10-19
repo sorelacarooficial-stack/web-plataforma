@@ -16,9 +16,10 @@ type Errores = Partial<Record<keyof Contacto, string>>;
    en esta web habla ella, así que «con Sorela» sonaría a que la está nombrando
    un tercero. */
 const PUNTOS = [
+  'Soy terapeuta o esteticista',
   'Ya me formé contigo',
-  'Tengo plaza en una formación',
-  'Todavía no me he formado',
+  'Me estoy formando',
+  'Otra cosa',
 ] as const;
 
 const VACIO = { nombre: '', correo: '', ciudad: '', perfil: PUNTOS[0] as string, nota: '' };
@@ -142,7 +143,7 @@ export default function ListaEspera() {
 
   return (
     <form className="columna" style={{ gap: 12 }} onSubmit={enviar} noValidate>
-      <h2 className={css.titulo}>Apúntate a la lista</h2>
+      <h2 className={css.titulo}>Reserva tu plaza gratis</h2>
 
       <input
         {...campo('nombre')}
@@ -182,8 +183,8 @@ export default function ListaEspera() {
       <textarea
         {...campo('nota')}
         rows={3}
-        placeholder="¿Qué necesitarías tener ahí dentro?"
-        aria-label="Qué necesitarías tener ahí dentro"
+        placeholder="Opcional: ¿qué te gustaría que respondiera en la clase?"
+        aria-label="Qué te gustaría que respondiera en la clase"
       />
 
       {/* Señuelo antirrobots: fuera de la vista y del orden de tabulación. */}
@@ -232,9 +233,9 @@ export default function ListaEspera() {
         style={{ marginTop: 6, justifyContent: 'center' }}
         disabled={enviando}
       >
-        {enviando ? 'Un momento…' : 'Apuntarme a la lista'}
+        {enviando ? 'Un momento…' : 'Quiero mi plaza gratis'}
       </button>
-      <p className="nota">Apuntarte no te compromete a nada y no te cobra nada.</p>
+      <p className="nota">Es gratis y no te compromete a nada.</p>
     </form>
   );
 }
