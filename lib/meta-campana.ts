@@ -12,13 +12,19 @@ import { baseDeDatos, COLECCIONES, hayFirebase } from './firebase-servidor';
  * manda para decidir es el de la web: es gente con nombre y correo.
  *
  * Variables en Vercel:
- *   META_ADS_TOKEN     → token de un usuario del sistema con permiso ads_read
- *   META_CAMPANA_ID    → 120254915227270427 (MC 6 nov · Registros web · CAPI)
- * Sin ellas, el resumen sale solo con los registros de la web.
+ *   META_ADS_TOKEN     → token de un usuario del sistema con permiso ads_read.
+ *                        Si no está, se usa META_CAPI_TOKEN: es el mismo usuario
+ *                        del sistema, con «Ver rendimiento» sobre Sorela Publi.
+ *   META_CAMPANA_ID    → opcional; por defecto la campaña de la masterclass.
+ * Sin token, el resumen sale solo con los registros de la web.
  */
 
 export const CAMPANA_UTM = 'mc_6nov';
 const VERSION = 'v21.0';
+/** MC 6 nov · Registros web · CAPI, en la cuenta Sorela Publi. */
+const CAMPANA_MASTERCLASS = '120254915227270427';
+const tokenAds = () => process.env.META_ADS_TOKEN || process.env.META_CAPI_TOKEN || '';
+const campanaId = () => process.env.META_CAMPANA_ID || CAMPANA_MASTERCLASS;
 /** Coste por registro a partir del cual algo se está pagando caro. */
 export const CPL_OBJETIVO = 1.2;
 const FIN = new Date('2026-11-06T18:00:00+01:00');
@@ -55,7 +61,7 @@ const diaMadrid = (d: Date) => d.toLocaleDateString('sv-SE', { timeZone: 'Europe
 async function graph(ruta: string, q: Record<string, string>) {
   const url = new URL(`https://graph.facebook.com/${VERSION}/${ruta}`);
   for (const [k, v] of Object.entries(q)) url.searchParams.set(k, v);
-  url.searchParams.set('access_token', process.env.META_ADS_TOKEN!);
+  url.searchParams.set('access_token', tokenAds());
   const r = await fetch(url, { cache: 'no-store' });
   const j = await r.json();
   if (!r.ok) throw new Error(j?.error?.message ?? `Meta ${r.status}`);
@@ -83,7 +89,7 @@ async function registrosWeb() {
 }
 
 export async function resumenCampana(): Promise<Resumen> {
-  const hayMeta = Boolean(process.env.META_ADS_TOKEN && process.env.META_CAMPANA_ID);
+  const hayMeta = Boolean(tokenAds());
   const web = await registrosWeb().catch(() => []);
   const hoy = diaMadrid(new Date());
   const ayer = diaMadrid(new Date(Date.now() - 864e5));
@@ -109,7 +115,7 @@ export async function resumenCampana(): Promise<Resumen> {
 
   const gastoDia = new Map<string, number>();
   if (hayMeta) {
-    const id = process.env.META_CAMPANA_ID!;
+    const id = campanaId();
     const campos = 'spend,impressions,reach,inline_link_clicks,actions,frequency';
     try {
       const [total, conjuntos, anuncios, dias] = await Promise.all([
@@ -135,7 +141,12 @@ export async function resumenCampana(): Promise<Resumen> {
       });
       for (const d of dias) gastoDia.set(String(d.date_start), n(d.spend));
     } catch (e) {
-      r.error = e instanceof Error ? e.message : String(e);
+      const m = e instanceof Error ? e.message : String(e);
+      /* El token de la API de conversiones puede no tener permiso de lectura de
+         anuncios: se dice claro qué hacer en vez de enseñar el error de Meta. */
+      r.error = /permission|permiso|(#10)|(#200)|ads_read/i.test(m)
+        ? 'El token no tiene permiso para leer el gasto. Hace falta un token con ads_read en META_ADS_TOKEN.'
+        : m;
     }
   }
 
@@ -154,7 +165,7 @@ const eur = (v: number) => `${v.toFixed(2).replace('.', ',')} €`;
 /** Qué haría yo hoy, por reglas: las mismas cada día, sin adivinar. */
 function ideas(r: Resumen): string[] {
   const s: string[] = [];
-  if (!r.hayMeta) return ['Falta conectar el gasto de Meta (META_ADS_TOKEN y META_CAMPANA_ID en Vercel). Mientras, solo se ven los registros.'];
+  if (!r.hayMeta) return ['Falta el token de Meta en Vercel (META_CAPI_TOKEN o META_ADS_TOKEN). Mientras, solo se ven los registros.'];
   if (r.gasto === 0) return ['La campaña aún no ha gastado: revisa que esté activa en el Administrador de anuncios.'];
 
   for (const a of r.anuncios) {
