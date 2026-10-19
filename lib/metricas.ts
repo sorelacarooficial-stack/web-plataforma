@@ -38,6 +38,8 @@ export function horaDe(fecha = new Date()): string {
 export function origenDe(referente: string, utm: string, propio: string): string {
   const u = utm.trim().toLowerCase();
   if (u) {
+    // Los enlaces de los anuncios llevan utm_source=meta (lib/meta-campana.ts).
+    if (u === 'meta' || u === 'meta_ads') return 'Anuncios de Meta';
     if (u.includes('insta') || u === 'ig') return 'Instagram';
     if (u.includes('whats') || u === 'wa') return 'WhatsApp';
     if (u.includes('face') || u === 'fb') return 'Facebook';
