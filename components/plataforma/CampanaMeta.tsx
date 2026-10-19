@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import m from './metricas.module.css';
+import c2 from './campana-meta.module.css';
 
 /**
  * La campaña de Meta de la masterclass, arriba del todo en Métricas: cuánto se
@@ -9,7 +10,15 @@ import m from './metricas.module.css';
  * cada una y qué anuncio funciona. Lee /api/metricas/campana.
  *
  * Se enseña mientras dura la campaña, aunque aún no haya gastado nada.
+ *
+ * Lo que sale de Meta (gasto, alcance, clics, registros que cuenta Meta) va en
+ * azul, con la etiqueta «Meta»; lo que sale de la web (registros reales) va en
+ * el oro de siempre. Así se ve de un vistazo qué número es de quién.
+ *
+ * Se refresca sola cada 5 minutos mientras la pantalla está abierta.
  */
+
+const CADA = 5 * 60_000;
 
 type Fila = { nombre: string; gasto: number; impresiones: number; clics: number; leadsMeta: number; registros?: number };
 type Resumen = {
@@ -36,12 +45,18 @@ export default function CampanaMeta() {
 
   useEffect(() => {
     let vivo = true;
-    fetch('/api/metricas/campana', { cache: 'no-store' })
-      .then((x) => (x.ok ? x.json() : null))
-      .then((j) => vivo && setR(j))
-      .catch(() => null);
+    const leer = () =>
+      fetch('/api/metricas/campana', { cache: 'no-store' })
+        .then((x) => (x.ok ? x.json() : null))
+        .then((j) => vivo && j && setR(j))
+        .catch(() => null);
+    leer();
+    const reloj = setInterval(() => {
+      if (document.visibilityState === 'visible') leer();
+    }, CADA);
     return () => {
       vivo = false;
+      clearInterval(reloj);
     };
   }, []);
 
@@ -49,10 +64,10 @@ export default function CampanaMeta() {
   if (!r || (r.diasQuedan === 0 && r.gasto === 0 && r.registros === 0)) return null;
 
   const cifras = [
-    { label: 'Gastado', valor: eur(r.gasto), nota: r.hayMeta ? `${num(r.alcance)} personas alcanzadas` : 'falta conectar Meta' },
-    { label: 'Registros', valor: num(r.registros), nota: `hoy ${r.registrosHoy} · ayer ${r.registrosAyer}` },
-    { label: 'Por registro', valor: r.coste !== null ? eur(r.coste) : '—', nota: 'gasto ÷ registros reales' },
-    { label: 'Clics', valor: num(r.clics), nota: r.ctr !== null ? `${r.ctr.toFixed(2).replace('.', ',')} % de quien lo ve` : '' },
+    { label: 'Gastado', meta: true, valor: eur(r.gasto), nota: r.hayMeta ? `${num(r.alcance)} personas alcanzadas` : 'falta conectar Meta' },
+    { label: 'Registros', meta: false, valor: num(r.registros), nota: `en la web · hoy ${r.registrosHoy} · ayer ${r.registrosAyer}` },
+    { label: 'Por registro', meta: false, valor: r.coste !== null ? eur(r.coste) : '—', nota: 'gasto ÷ registros reales' },
+    { label: 'Clics', meta: true, valor: num(r.clics), nota: r.ctr !== null ? `${r.ctr.toFixed(2).replace('.', ',')} % de quien lo ve` : '' },
   ];
   const anuncios = [...r.anuncios].sort((a, b) => b.registros - a.registros || b.gasto - a.gasto);
 
@@ -60,13 +75,17 @@ export default function CampanaMeta() {
     <section className={m.tarjeta}>
       <header className={m.cabecera}>
         <h3>Campaña de la masterclass</h3>
-        <span className={m.nota}>Anuncios de Meta · quedan {r.diasQuedan} días</span>
+        <span className={m.nota}>
+          <em className={c2.chip}>Meta</em> en azul · <span className={c2.web}>web</span> en oro · quedan {r.diasQuedan} días
+        </span>
       </header>
 
       <div className={m.cifras}>
         {cifras.map((c) => (
-          <article key={c.label} className={m.cifra}>
-            <span className={m.cifraEtiqueta}>{c.label}</span>
+          <article key={c.label} className={`${m.cifra} ${c.meta ? c2.meta : ''}`}>
+            <span className={m.cifraEtiqueta}>
+              {c.label} {c.meta && <em className={c2.chip}>Meta</em>}
+            </span>
             <strong className={m.cifraValor}>{c.valor}</strong>
             <span className={m.cifraNota}>{c.nota}</span>
           </article>
@@ -81,7 +100,7 @@ export default function CampanaMeta() {
               <li key={a.nombre}>
                 <span className={m.barraEtiqueta}>{a.nombre}</span>
                 <span className={m.barraValor}>
-                  {a.registros} <em>· {eur(a.gasto)}{a.registros ? ` · ${eur(a.gasto / a.registros)} c/u` : ''}</em>
+                  {a.registros} <em className={c2.azul}>· {eur(a.gasto)} en Meta{a.registros ? ` · ${eur(a.gasto / a.registros)} c/u` : ''}</em>
                 </span>
                 <span className={m.barraPista}>
                   <span style={{ width: `${(a.registros / max) * 100}%` }} />
@@ -101,7 +120,7 @@ export default function CampanaMeta() {
             </li>
           ))}
         </ul>
-        {r.error && <p className={m.nota}>No se ha podido leer Meta: {r.error}</p>}
+        {r.error && <p className={`${m.nota} ${c2.aviso}`}>No se ha podido leer Meta: {r.error}</p>}
       </div>
     </section>
   );

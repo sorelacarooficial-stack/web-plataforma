@@ -1,0 +1,37 @@
+/* Lo que viene de Meta, en azul: el de la marca de Meta, apagado para que
+   conviva con el oro y la crema del panel sin gritar. */
+.meta {
+  background: linear-gradient(180deg, #eef3fb, #e6edf8);
+  box-shadow: inset 0 0 0 1px rgba(24, 119, 242, 0.14);
+}
+
+.meta strong {
+  color: #1559c2;
+}
+
+.chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: #1877f2;
+  vertical-align: 1px;
+}
+
+.azul {
+  color: #1559c2;
+}
+
+.web {
+  color: var(--oro-letra, #6f5323);
+  font-weight: 600;
+}
+
+.aviso {
+  color: #1559c2;
+}
