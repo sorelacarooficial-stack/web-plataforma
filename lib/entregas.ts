@@ -4,7 +4,7 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from './firebase-servidor';
 import { COLECCION_CORREOS, darDeBaja } from './correos';
 import { idContacto, marcarCorreoMal, marcarEntregaLista } from './atencion-servidor';
-import { ASUNTO_LISTA } from './plantillas-bienvenida';
+import { ASUNTOS_LISTA } from './plantillas-bienvenida';
 
 /**
  * Qué pasó con cada correo DESPUÉS de salir: si llegó, si rebotó, si alguien
@@ -145,7 +145,7 @@ export async function apuntarEvento(e: Evento): Promise<boolean> {
      que es el id de la ficha; si no hay ficha, no se crea (`update`). */
   if (linea?.entrega) {
     const contactoId = linea.contactoId || (linea.para ? idContacto(linea.para) : null);
-    if (linea.asunto.startsWith(ASUNTO_LISTA)) await marcarEntregaLista(contactoId, linea.entrega);
+    if (ASUNTOS_LISTA.some((a) => linea.asunto.startsWith(a))) await marcarEntregaLista(contactoId, linea.entrega);
     if (linea.entrega === 'rebotado' || linea.entrega === 'spam') {
       await marcarCorreoMal(contactoId, { entrega: linea.entrega, cuando: e.cuando ?? null });
     }
