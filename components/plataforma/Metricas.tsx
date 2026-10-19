@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, LayoutGroup, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { nombreDePagina as pagina } from '@/lib/informe-paginas';
 import m from './metricas.module.css';
+import CampanaMeta from './CampanaMeta';
 
 /**
  * Las métricas de Sorela: quién la ve, desde dónde, con qué, qué vídeos se
@@ -470,6 +471,9 @@ export default function Metricas() {
           números a medida que entre gente en la web.
         </div>
       )}
+
+      {/* ---------- La campaña de Meta (solo mientras la hay) ---------- */}
+      <CampanaMeta />
 
       {/* ---------- Las cifras ---------- */}
       <section className={m.cifras}>

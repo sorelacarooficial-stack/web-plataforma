@@ -39,7 +39,7 @@ import css from './comunidadproximamente.module.css';
  */
 
 /** Lo que dura el directo y el evento del calendario. A confirmar con Sorela. */
-const DURACION_MIN = 90;
+const DURACION_MIN = 60;
 
 /** El título de la masterclass, el mismo de los correos de la lista de espera. */
 const MASTERCLASS = 'La nueva era de las manos';

@@ -8,11 +8,12 @@ import { origenDe } from './metricas';
  *
  *   fuente   → «Instagram», «Google», «WhatsApp», «Directo»…
  *   campana  → el utm_campaign, si el enlace lo traía
+ *   anuncio  → el utm_content: qué anuncio de Meta trajo a la persona
  *   entrada  → la primera página que vio
  *   pagina   → la página donde rellenó el formulario
  */
 
-export type Procedencia = { fuente: string; campana?: string; entrada?: string; pagina?: string };
+export type Procedencia = { fuente: string; campana?: string; anuncio?: string; entrada?: string; pagina?: string };
 
 const PROPIO = (() => {
   try {
@@ -33,11 +34,13 @@ export function procedenciaDe(llegada: unknown): Procedencia | null {
   const l = llegada as Record<string, unknown>;
   const fuente = origenDe(texto(l.ref, 300), texto(l.utm, 60), PROPIO) || 'Directo';
   const campana = texto(l.campana, 60);
+  const anuncio = texto(l.anuncio, 80);
   const entrada = ruta(l.entrada);
   const pagina = ruta(l.pagina);
   return {
     fuente,
     ...(campana ? { campana } : {}),
+    ...(anuncio ? { anuncio } : {}),
     ...(entrada ? { entrada } : {}),
     ...(pagina ? { pagina } : {}),
   };
