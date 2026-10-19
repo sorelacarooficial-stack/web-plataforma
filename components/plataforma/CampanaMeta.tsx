@@ -8,8 +8,7 @@ import m from './metricas.module.css';
  * ha gastado, cuánta gente se ha apuntado desde los anuncios, cuánto cuesta
  * cada una y qué anuncio funciona. Lee /api/metricas/campana.
  *
- * Solo se enseña mientras hay campaña: si no hay gasto ni registros, no ocupa
- * sitio.
+ * Se enseña mientras dura la campaña, aunque aún no haya gastado nada.
  */
 
 type Fila = { nombre: string; gasto: number; impresiones: number; clics: number; leadsMeta: number; registros?: number };
@@ -46,7 +45,8 @@ export default function CampanaMeta() {
     };
   }, []);
 
-  if (!r || (r.gasto === 0 && r.registros === 0 && r.hayMeta)) return null;
+  // Se enseña hasta que termina la campaña (diasQuedan llega a 0 el 6 de noviembre).
+  if (!r || (r.diasQuedan === 0 && r.gasto === 0 && r.registros === 0)) return null;
 
   const cifras = [
     { label: 'Gastado', valor: eur(r.gasto), nota: r.hayMeta ? `${num(r.alcance)} personas alcanzadas` : 'falta conectar Meta' },
