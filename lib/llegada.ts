@@ -19,6 +19,13 @@ export type Llegada = {
   utm: string;
   /** utm_campaign, si el enlace lo traía. */
   campana: string;
+  /** utm_content: qué anuncio en concreto (lo rellena Meta con el nombre del anuncio). */
+  anuncio: string;
+  /** El fbclid que añade Meta al enlace de un anuncio. Con él la API de
+      conversiones dice a Meta «este registro vino de tu clic», sin cookies. */
+  fbclid: string;
+  /** Cuándo llegó (ms), para el fbc que pide Meta. */
+  cuando: number;
   /** La primera página que vio. */
   entrada: string;
   /** La página en la que rellenó el formulario. */
@@ -34,6 +41,9 @@ function apuntar() {
     ref: document.referrer.slice(0, 300),
     utm: (q.get('utm_source') || q.get('origen') || '').slice(0, 60),
     campana: (q.get('utm_campaign') || '').slice(0, 60),
+    anuncio: (q.get('utm_content') || '').slice(0, 80),
+    fbclid: (q.get('fbclid') || '').slice(0, 500),
+    cuando: Date.now(),
     entrada: location.pathname.slice(0, 120),
   };
 }

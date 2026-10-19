@@ -7,6 +7,7 @@ import { convocatoriaDeOrigen, reservarPlaza, type Reserva } from '@/lib/reserva
 import { procedenciaDe } from '@/lib/llegada-servidor';
 import { apuntarCorreo } from '@/lib/correos';
 import { REVISADA } from '@/lib/privacidad';
+import { avisarRegistro } from '@/lib/meta-capi';
 
 /**
  * Recibe el formulario de captación, guarda el contacto y manda los correos.
@@ -232,6 +233,26 @@ export async function POST(peticion: Request) {
 
   if (!correoEnviado) {
     console.warn('[captar] Contacto guardado pero sin correo de bienvenida.');
+  }
+
+  /* ---------- 3. Avisar a Meta (API de conversiones) ----------
+     Solo los registros de la lista de espera, que es lo que optimizan los
+     anuncios de la masterclass. Desde el servidor y con los datos cifrados:
+     sin píxel ni cookies (ver lib/meta-capi.ts). Si Meta falla, el registro
+     sigue bien: tiene un tope de 3 s y nunca lanza error. */
+  if (aLista) {
+    const l = (cuerpo.llegada ?? {}) as Record<string, unknown>;
+    await avisarRegistro({
+      correo: datos.correo,
+      nombre: datos.nombre,
+      whatsapp: datos.whatsapp,
+      fbclid: typeof l.fbclid === 'string' ? l.fbclid : null,
+      llegadaMs: typeof l.cuando === 'number' ? l.cuando : null,
+      ip: ip,
+      navegador: peticion.headers.get('user-agent'),
+      url: typeof l.pagina === 'string' && l.pagina.startsWith('/') ? `https://sorelacarodivine.com${l.pagina}` : null,
+      origen: datos.origen,
+    });
   }
 
   // correoEnviado viaja al navegador para que el mensaje de confirmación no

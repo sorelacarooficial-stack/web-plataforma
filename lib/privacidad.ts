@@ -35,7 +35,7 @@ export const CORREO_PRIVACIDAD = 'sorelacarooficial@gmail.com';
  * acuerdo de confidencialidad guarda esta fecha como la versión de la política
  * que se le enseñó a quien firma.
  */
-export const REVISADA = '13 de octubre de 2026';
+export const REVISADA = '19 de octubre de 2026';
 
 export type Tratamiento = {
   /** Para qué formulario o parte de la web. */
@@ -274,6 +274,13 @@ export const ENCARGADOS: Encargado[] = [
     garantia: DPF_Y_CCT,
   },
   {
+    quien: 'Meta Platforms Ireland (API de conversiones)',
+    para:
+      'Medir qué anuncios de Sorela traen registros a la lista de espera. Cuando te apuntas, el servidor de la web le comunica a Meta que ha habido un registro, con tu correo, tu teléfono y tu nombre cifrados (SHA‑256, Meta no los recibe en claro) y, si llegaste desde un anuncio, el identificador de ese clic. No se instala ningún píxel ni cookie en tu navegador.',
+    donde: 'Irlanda y Estados Unidos.',
+    garantia: DPF_Y_CCT,
+  },
+  {
     quien: 'Arsys',
     para: 'El buzón de correo de la web, donde llegan los mensajes que escribes.',
     donde: 'España.',
@@ -414,7 +421,7 @@ export type PrimeraCapa = { finalidad: string; base: string; destinatarios?: str
 
 /** Quién recibe los datos en casi todos los formularios. */
 export const DESTINATARIOS_GENERAL =
-  'No se ceden a nadie salvo obligación legal. Google, Resend y Vercel los guardan y envían por encargo de Sorela; algunos están en EE. UU., con las garantías del RGPD.';
+  'No se ceden a nadie salvo obligación legal. Google, Resend y Vercel los guardan y envían por encargo de Sorela, y a Meta se le comunica el registro cifrado para medir los anuncios; algunos están en EE. UU., con las garantías del RGPD.';
 
 /** Lo que se dice de la casilla opcional, igual en todos los formularios que la tienen. */
 const NOVEDADES =
