@@ -38,6 +38,11 @@
 
 .portadaRejilla {
   display: grid;
+  /* minmax(0, 1fr) y no «auto»: una columna «auto» crece hasta lo que pida su
+     contenido más ancho que no se puede partir, y en móviles estrechos la
+     píldora de la fecha empujaba toda la columna (cuenta atrás y formulario
+     incluidos) fuera de la pantalla por la derecha. */
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(44px, 6vw, 88px);
   align-items: center;
 }
@@ -46,6 +51,7 @@
    formulario es lo único alineado a la izquierda, porque un formulario
    centrado se lee peor. */
 .portadaTexto {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -341,8 +347,15 @@
     letter-spacing: 0.14em;
   }
 
+  .fecha {
+    max-width: 100%;
+  }
+
+  /* Cada trozo en su línea y, si aun así no cabe (móviles de 360-375 px), se
+     parte por dentro antes que salirse de la pantalla. */
   .fecha > span {
     display: block;
+    white-space: normal;
   }
 }
 
