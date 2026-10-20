@@ -178,7 +178,7 @@ export default function FormularioContacto() {
               aria-invalid={errores.consentimiento ? true : undefined}
             />
             <span>
-              Tengo 14 años o más y acepto que Sorela Caro use mis datos para contestarme y guardar mi sitio en la lista de espera de la masterclass.{' '}
+              Tengo 18 años o más y acepto que Sorela Caro use mis datos para contestarme y guardar mi sitio en la lista de espera de la masterclass.{' '}
               <Link href="/legal/privacidad" target="_blank">
                 Cómo se tratan
               </Link>

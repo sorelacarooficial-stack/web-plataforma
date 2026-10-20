@@ -27,13 +27,13 @@ type Estado = 'quieto' | 'enviando' | 'hecho' | 'fallo';
 const AVISOS = {
   terapeuta: {
     origen: 'avisar-ciudad',
-    casilla: 'Tengo 14 años o más y acepto que Sorela Caro use mis datos para avisarme cuando haya una terapeuta cerca.',
+    casilla: 'Tengo 18 años o más y acepto que Sorela Caro use mis datos para avisarme cuando haya una terapeuta cerca.',
     hecho: 'Gracias, te apunto. Cuando haya una terapeuta certificada en tu zona, te lo digo.',
     capa: CAPA_CITA,
   },
   convocatoria: {
     origen: 'avisar-ciudad-formacion',
-    casilla: 'Tengo 14 años o más y acepto que Sorela Caro use mis datos para avisarme cuando haya una formación cerca.',
+    casilla: 'Tengo 18 años o más y acepto que Sorela Caro use mis datos para avisarme cuando haya una formación cerca.',
     hecho: 'Gracias, te apunto. Cuando haya una convocatoria en tu zona, te lo digo.',
     capa: CAPA_AVISO_CONVOCATORIA,
   },

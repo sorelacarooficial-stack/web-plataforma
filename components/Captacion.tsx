@@ -290,7 +290,7 @@ export default function Captacion({
           {/* La misma ventana sirve a la lista de espera y a quien pide
               información (portada, formaciones, asistente): la casilla dice
               para qué es en cada caso. */}
-          Tengo 14 años o más y acepto que Sorela Caro use mis datos para{' '}
+          Tengo 18 años o más y acepto que Sorela Caro use mis datos para{' '}
           {/^formacion-conv-/.test(origen)
             ? 'reservar mi plaza en esta formación y escribirme sobre ella.'
             : 'guardar mi sitio en la lista de espera de la masterclass y escribirme hasta ese día.'}{' '}

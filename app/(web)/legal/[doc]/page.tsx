@@ -350,11 +350,9 @@ function Privacidad({ id }: { id: Identidad | null }) {
 
       <Apartado id="menores" titulo="Menores y datos de salud">
         <P>
-          Los formularios de la web son para personas de 14 años o más, la edad a partir de la cual
-          la ley española permite dar el consentimiento propio (art. 7 LOPDGDD). Si tienes menos, no
-          envíes tus datos: tiene que hacerlo tu madre, tu padre o quien tenga tu tutela. La
-          plataforma, el acuerdo de confidencialidad y las formaciones son solo para mayores de
-          edad.
+          La web, sus formularios, la masterclass, la plataforma, el acuerdo de confidencialidad y
+          las formaciones son solo para personas de 18 años o más. Si eres menor de edad, no envíes
+          tus datos. Si descubro que alguien menor se ha registrado, borro sus datos.
         </P>
         <P>
           No necesito datos de salud para nada de lo que hago aquí. Por favor, no los incluyas en los
