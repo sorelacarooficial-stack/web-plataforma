@@ -62,8 +62,10 @@ const TEXTOS: Record<Tipo, { asunto: string; saludo: string; parrafos: (string |
   comunidad: {
     // Sin prometer correos («te escribiré con ideas…»): no gustaba, y lo que
     // se le pide a quien se apunta es una sola cosa, entrar en el grupo.
-    asunto: 'Tu sitio en la Comunidad Divine',
-    saludo: 'Gracias por apuntarte a la lista de espera.',
+    // Habla de la clase gratuita, que es lo que prometen los anuncios: quien
+    // llega de Meta no sabe qué es la Comunidad Divine.
+    asunto: 'Tu plaza en la clase gratuita «Antes de tocar»',
+    saludo: 'Gracias por apuntarte a la clase gratuita «Antes de tocar». Una hora en directo, para terapeutas y esteticistas.',
     parrafos: [
       'CIERRE',
       'El siguiente paso es entrar en el grupo de WhatsApp de la lista de espera. Ahí te espero hasta el día de la masterclass.',
@@ -86,6 +88,8 @@ const TEXTOS: Record<Tipo, { asunto: string; saludo: string; parrafos: (string |
  * la bienvenida, el registro o una campaña con la plantilla de la lista.
  */
 export const ASUNTO_LISTA = TEXTOS.comunidad.asunto;
+/** Los asuntos que ha tenido este correo: el historial guarda el que salió en su día. */
+export const ASUNTOS_LISTA = [ASUNTO_LISTA, 'Tu sitio en la Comunidad Divine'];
 
 const TITULARES: Record<Tipo, string> = {
   clienta: 'La Técnica Divine',
@@ -156,7 +160,7 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
   /* La tarjeta: la fecha, el tema y las horas de cada país (el único sitio
      donde salen). Línea dorada fina arriba para marcar lo importante. */
   const horas = HORAS_APERTURA.map(
-    (h, i) => `<td width="25%" align="center" style="padding:14px 2px 2px;${i ? 'border-left:1px solid rgba(243,227,195,.12);' : ''}">
+    (h, i) => `<td width="${(100 / HORAS_APERTURA.length).toFixed(0)}%" align="center" style="padding:14px 2px 2px;${i ? 'border-left:1px solid rgba(243,227,195,.12);' : ''}">
         <span style="display:block;font-family:${sans};font-size:17px;font-weight:600;letter-spacing:-.01em;color:${i ? '#f3e3c3' : '#e3c48f'}">${escapar(h.hora)}</span>
         <span style="display:block;margin-top:3px;font-family:${sans};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#a89c8b">${escapar(h.lugar)}</span>
       </td>`
@@ -183,8 +187,8 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
       </tr></table>
     </td></tr>`;
   const pasos = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 26px;border-top:1px solid #ece3d3;border-bottom:1px solid #ece3d3">
-    ${paso(ICONO.sitio, 'Tu sitio está guardado', 'Estás en la lista de espera.', 'Hecho', true)}
-    ${paso(ICONO.grupo, 'Entra en el grupo de WhatsApp', 'Ahí aviso de todo lo de la masterclass.', 'Ahora')}
+    ${paso(ICONO.sitio, 'Tu plaza está guardada', 'Ya estás apuntada a la masterclass gratuita.', 'Hecho', true)}
+    ${paso(ICONO.grupo, 'Entra en el grupo de WhatsApp', 'Ahí aviso de todo lo de la masterclass y respondo dudas.', 'Ahora')}
     ${paso(ICONO.directo, `Conéctate el ${escapar(dia)} de ${escapar(mes)}`, 'Desde el móvil o el ordenador. El enlace te llega por correo ese día.', escapar(`${dia} ${mes.slice(0, 3)}`))}
   </table>`;
 
@@ -198,16 +202,16 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
      </td></tr></table>`,
     undefined,
     '',
-    { titulo: 'Tu sitio está guardado', etiqueta: 'Comunidad Divine · Lista de espera', previa: 'Siguiente paso: entra en el grupo de WhatsApp.' }
+    { titulo: 'Tu plaza está guardada', etiqueta: 'Clase gratuita · Antes de tocar', previa: 'Viernes 6 de noviembre, en directo. Siguiente paso: entra en el grupo de WhatsApp.' }
   );
   const texto = [
     n ? `Hola ${n},` : 'Hola,',
     '',
     saludo,
     '',
-    `${TITULO_MASTERCLASS}. Masterclass en directo por Zoom: ${semana} ${dia} de ${mes}. ${APERTURA_POR_PAISES}.`,
+    `Antes de tocar · ${TITULO_MASTERCLASS}. Clase gratuita en directo por Zoom, una hora: ${semana} ${dia} de ${mes}. ${APERTURA_POR_PAISES}.`,
     '',
-    'Ahora, entra en el grupo de WhatsApp de la lista de espera. Ahí aviso de todo lo de la masterclass:',
+    'Ahora, entra en el grupo de WhatsApp de la masterclass. Ahí aviso de todo y respondo dudas:',
     GRUPO_WHATSAPP,
     '',
     'El enlace para conectarte te llega por correo ese día.',
