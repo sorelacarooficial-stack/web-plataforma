@@ -45,7 +45,7 @@
 .texto {
   margin: 0;
   max-width: 34ch;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 400;
   font-size: 13.5px;
   line-height: 1.5;

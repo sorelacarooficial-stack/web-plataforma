@@ -6,9 +6,8 @@
 
 .portada :global(.lede) {
   margin: 0 auto;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 300;
+  letter-spacing: -0.015em;
+  font-weight: 400;
   color: var(--crema);
 }
 
@@ -38,16 +37,17 @@
 }
 
 .pasoNum {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(20px, 2vw, 26px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(17.2px, 1.7vw, 22.4px);
 }
 
 .pasoTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 400;
-  font-size: clamp(28px, 3.6vw, 46px);
+  font-size: clamp(24.1px, 3.1vw, 39.6px);
   line-height: 1.08;
+  letter-spacing: -0.02em;
 }
 
 /* ---------- Banda con foto ---------- */
@@ -101,9 +101,9 @@
 
 .notaTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 500;
-  font-size: clamp(21px, 2.1vw, 27px);
+  font-size: clamp(18.1px, 1.8vw, 23.2px);
 }
 
 /* ---------- Ven si / no vengas si ---------- */
@@ -116,12 +116,13 @@
 
 .filtroTexto {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 500;
-  font-size: clamp(22px, 2.2vw, 30px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(18.9px, 1.9vw, 25.8px);
   line-height: 1.25;
   color: var(--crema);
   text-wrap: pretty;
+  letter-spacing: -0.02em;
 }
 
 /* ---------- Cierre ---------- */
@@ -138,14 +139,13 @@
 }
 
 .cierreTitulo {
-  --alto-linea: 0.96em;
+  --alto-linea: 1.04em;
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: clamp(38px, 7vw, 110px);
-  line-height: 0.96;
-  letter-spacing: -0.02em;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(32.7px, 6vw, 94.6px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
   text-wrap: balance;
 }
 

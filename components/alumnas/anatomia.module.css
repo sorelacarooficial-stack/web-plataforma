@@ -102,8 +102,8 @@
 }
 
 .nombre {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(16px, 1.9vw, 19px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(13.8px, 1.6vw, 16.3px);
   line-height: 1.25;
   color: var(--muted);
 }
@@ -141,9 +141,9 @@
 
 .pieTitulo {
   margin: 0 0 6px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 400;
-  font-size: clamp(20px, 2.6vw, 26px);
+  font-size: clamp(17.2px, 2.2vw, 22.4px);
   color: var(--ink);
 }
 

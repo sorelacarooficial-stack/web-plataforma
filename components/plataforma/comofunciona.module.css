@@ -26,7 +26,7 @@
   background: rgba(12, 10, 9, 0.58);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
 }
 
 .ventana {
@@ -166,11 +166,11 @@
 
 .titulo {
   margin: -6px 0 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 6vw, 34px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(24.1px, 5.2vw, 29.2px);
+  font-weight: 400;
   line-height: 1.05;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   color: #f7f2ea;
   outline: none;
 }
@@ -425,9 +425,9 @@
 
 .nivelNombre {
   margin: 2px 0 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 26px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 22.4px;
+  font-weight: 500;
   line-height: 1.05;
   color: #f7f2ea;
 }

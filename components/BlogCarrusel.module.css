@@ -152,17 +152,18 @@
 }
 
 .tarjetaTitulo {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 2.8vw, 36px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(24.1px, 2.4vw, 31px);
+  font-weight: 400;
   line-height: 1.04;
   color: #fff;
   text-wrap: balance;
+  letter-spacing: -0.02em;
 }
 
 .resumen {
   font-size: 14px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.55;
   color: rgba(255, 255, 255, 0.82);
   display: -webkit-box;
@@ -194,15 +195,16 @@
   gap: 12px;
   padding: clamp(22px, 2.6vw, 30px);
   font-size: 14px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.55;
   color: rgba(239, 230, 216, 0.8);
 }
 
 .finalTitulo {
-  font-family: var(--fuente-cormorant), serif;
-  font-size: clamp(30px, 3vw, 40px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(25.8px, 2.6vw, 34.4px);
+  font-weight: 400;
   line-height: 1;
   color: #f7f0e4;
+  letter-spacing: -0.02em;
 }

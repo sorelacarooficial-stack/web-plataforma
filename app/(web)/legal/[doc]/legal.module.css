@@ -10,7 +10,7 @@
 
 .p {
   margin: 0;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 16.5px;
   line-height: 1.65;
   color: var(--ink-3);
@@ -201,8 +201,8 @@
   height: 28px;
   border-radius: 50%;
   border: 1px solid var(--arcilla-line);
-  font-family: var(--fuente-cormorant), Georgia, serif;
-  font-size: 15px;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 12.9px;
   font-weight: 500;
   color: var(--arcilla-ink);
 }
@@ -389,9 +389,9 @@
 
 .destacadoTitulo {
   margin: 0 0 6px;
-  font-family: var(--fuente-cormorant), Georgia, serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 500;
-  font-size: 22px;
+  font-size: 18.9px;
   line-height: 1.2;
   color: var(--ink);
 }

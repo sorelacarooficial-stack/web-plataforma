@@ -28,7 +28,7 @@
 }
 
 .cifra {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
   letter-spacing: -0.01em;
@@ -36,7 +36,7 @@
 
 .rotulo {
   margin: 0;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 11.5px;
   font-weight: 500;
   letter-spacing: 0.12em;
@@ -82,7 +82,7 @@
 
 .nivelNumero {
   flex: none;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 11.5px;
   font-weight: 500;
   letter-spacing: 0.1em;
@@ -100,15 +100,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 20px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 17.2px;
+  font-weight: 500;
   line-height: 1.1;
 }
 
 .nivelCifras {
   flex: none;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 13px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -422,7 +422,7 @@
 .desgloseValor {
   min-width: 52px;
   text-align: right;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 15px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -522,7 +522,7 @@
 }
 
 .accionPuntos {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 15px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -637,7 +637,7 @@
   display: inline-flex;
   align-items: baseline;
   gap: 4px;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 16px;
   font-weight: 500;
   line-height: 1;
@@ -679,7 +679,7 @@
   border-radius: 999px;
   background: #17140f;
   border: 1px solid rgba(217, 180, 124, 0.6);
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 13.5px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -740,21 +740,22 @@
   align-items: baseline;
   gap: 8px;
   margin: 2px 0 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 44px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 37.8px;
+  font-weight: 400;
   line-height: 1;
   color: #f7f2ea;
+  letter-spacing: -0.02em;
 }
 
 .panelTotal .cifra {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-variant-numeric: lining-nums tabular-nums;
   font-feature-settings: 'lnum' 1, 'tnum' 1;
 }
 
 .panelTotal small {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 14px;
   font-weight: 400;
   color: #cfc6b8;
@@ -821,9 +822,9 @@
   height: 34px;
   border-radius: 50%;
   border: 1px solid rgba(217, 180, 124, 0.6);
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 20px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 17.2px;
+  font-weight: 500;
   line-height: 1;
   color: #ecd2a2;
 }

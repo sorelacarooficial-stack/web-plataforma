@@ -39,7 +39,7 @@
   flex-direction: column;
   gap: clamp(16px, 2vw, 22px);
   min-width: 0;
-  font-family: var(--fuente-jost), 'Jost', sans-serif;
+  font-family: var(--fuente-inter), 'Jost', sans-serif;
   color: var(--ink);
 }
 
@@ -384,11 +384,12 @@
 
 .vacioTitulo {
   margin: 4px 0 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(24px, 3vw, 30px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(20.6px, 2.6vw, 25.8px);
+  font-weight: 400;
   line-height: 1.1;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .vacioTexto {
@@ -472,9 +473,9 @@
 
 .hojaDias {
   padding: 6px 4px 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 27px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 23.2px;
+  font-weight: 500;
   line-height: 1;
   font-variant-numeric: lining-nums;
   color: var(--ink);
@@ -512,12 +513,13 @@
 
 .tarjetaCiudad {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(26px, 3vw, 34px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(22.4px, 2.6vw, 29.2px);
+  font-weight: 400;
   line-height: 1.05;
   color: var(--ink);
   overflow-wrap: anywhere;
+  letter-spacing: -0.02em;
 }
 
 .tarjetaFechas {
@@ -654,17 +656,18 @@
 }
 
 .cifraValor {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 3.2vw, 36px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(24.1px, 2.8vw, 31px);
+  font-weight: 400;
   line-height: 1;
   font-variant-numeric: lining-nums tabular-nums;
   color: var(--ink);
   overflow-wrap: anywhere;
+  letter-spacing: -0.02em;
 }
 
 .cifraValor small {
-  font-family: var(--fuente-jost), 'Jost', sans-serif;
+  font-family: var(--fuente-inter), 'Jost', sans-serif;
   font-size: 15px;
   font-weight: 400;
   color: var(--muted-2);
@@ -913,9 +916,9 @@
   border-radius: 50%;
   background: #efe6d6;
   color: var(--c-bronce-oscuro);
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 16px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 13.8px;
+  font-weight: 500;
 }
 
 .inscritaQuien {
@@ -1113,7 +1116,7 @@
 
 .hoja {
   position: relative;
-  font-family: var(--fuente-jost), 'Jost', sans-serif;
+  font-family: var(--fuente-inter), 'Jost', sans-serif;
   color: var(--ink);
   display: flex;
   flex-direction: column;
@@ -1178,11 +1181,12 @@
 
 .hojaTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 28px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 24.1px;
+  font-weight: 400;
   line-height: 1.1;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .hojaSubtitulo {

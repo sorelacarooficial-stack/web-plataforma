@@ -56,7 +56,9 @@ export default function Comunidad() {
                 Antes ponía «La membresía de Sorela», que habla de ella en
                 tercera persona como si lo contara otro; aquí quien escribe es
                 ella y quien lee es una terapeuta a la que conoce. */}
-            <h1 className={`${css.titulo} degradado-claro`}>Antes de tocar.</h1>
+            <h1 className={`${css.titulo} degradado-claro`}>
+              Antes de <strong>tocar</strong>.
+            </h1>
             {/* Es una lista de espera y nada más: se dice así, sin describir la
                 comunidad. Lo de dentro se cuenta el día de la masterclass. */}
             <p className={css.lede}>

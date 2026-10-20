@@ -82,11 +82,11 @@
 
 .saludo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(36px, 4.4vw, 60px);
-  font-weight: 600;
-  line-height: 0.98;
-  letter-spacing: -0.015em;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(31px, 3.8vw, 51.6px);
+  font-weight: 300;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
   color: #f7f0e4;
 }
 
@@ -287,9 +287,9 @@
 }
 
 .misionTexto strong {
-  font-family: var(--fuente-cormorant), serif;
-  font-size: 21px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 18.1px;
+  font-weight: 500;
   line-height: 1.15;
   color: #f7f0e4;
 }
@@ -505,7 +505,7 @@
 }
 
 .anilloNumero {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 22px;
   font-weight: 500;
   fill: #f7f0e4;
@@ -527,7 +527,7 @@
 
 .datos b {
   margin-right: 4px;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: #f0d4a6;
@@ -575,10 +575,11 @@
 
 .cabecera h3 {
   margin: 0;
-  font-family: var(--fuente-cormorant), serif;
-  font-size: clamp(24px, 2.4vw, 30px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(20.6px, 2.1vw, 25.8px);
+  font-weight: 400;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .oscura .cabecera h3 {
@@ -847,9 +848,9 @@
 }
 
 .claseVivo strong {
-  font-family: var(--fuente-cormorant), serif;
-  font-size: 20px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 17.2px;
+  font-weight: 500;
   color: #f7f0e4;
 }
 
@@ -931,22 +932,23 @@
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(32px, 3.2vw, 40px);
-  font-weight: 600;
-  line-height: 1;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(27.5px, 2.8vw, 34.4px);
+  font-weight: 400;
+  line-height: 1.04;
   color: #f7f2ea;
+  letter-spacing: -0.02em;
 }
 
 .nivelTotal > span,
 .nivelTotal > span > span {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-variant-numeric: lining-nums tabular-nums;
   font-feature-settings: 'lnum' 1, 'tnum' 1;
 }
 
 .nivelTotal small {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 13px;
   font-weight: 400;
   color: #cfc6b8;
@@ -1063,10 +1065,10 @@
   height: 40px;
   border: 1px solid rgba(217, 180, 124, 0.6);
   border-radius: 50%;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 23px;
-  font-weight: 600;
-  line-height: 1;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 19.8px;
+  font-weight: 500;
+  line-height: 1.04;
   color: #ecd2a2;
 }
 
@@ -1134,10 +1136,11 @@
 
 .caminoCabecera h3 {
   margin: 0;
-  font-family: var(--fuente-cormorant), serif;
-  font-size: clamp(24px, 2.4vw, 30px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(20.6px, 2.1vw, 25.8px);
+  font-weight: 400;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .caminoResumen {
@@ -1456,9 +1459,9 @@
 
 .detalleTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), serif;
-  font-size: 23px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 19.8px;
+  font-weight: 500;
   line-height: 1.1;
   color: var(--ink);
 }

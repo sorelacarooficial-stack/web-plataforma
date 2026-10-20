@@ -72,8 +72,7 @@
   padding: 4px 0;
   font-size: clamp(13px, 1.05vw, 16px);
   font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
   color: var(--crema);
   white-space: nowrap;
   transition: opacity 0.2s;

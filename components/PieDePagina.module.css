@@ -26,17 +26,18 @@
 
 .nombre {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(22px, 2.4vw, 30px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(18.9px, 2.1vw, 25.8px);
   line-height: 1.15;
   color: var(--inverse-ink);
+  letter-spacing: -0.02em;
 }
 
 .firma {
   font-size: 0.62em;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  font-family: var(--fuente-jost), sans-serif;
+  font-family: var(--fuente-inter), sans-serif;
   color: var(--accent-inverse);
 }
 
@@ -54,7 +55,7 @@
   /* 44 px es el mínimo cómodo para el dedo; antes eran 19 px de alto. */
   min-height: 44px;
   font-size: 14px;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--on-inverse-2);
   transition: color 0.2s;
 }

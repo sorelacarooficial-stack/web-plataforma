@@ -274,7 +274,7 @@ export function Medalla({ puesto, size = 28, title, className }: { puesto: 1 | 2
         fontWeight="600"
         fill={m[3]}
         // Cifras de caja alta: con las de estilo antiguo de la Cormorant, el 1 parece una I.
-        style={{ fontFamily: "var(--fuente-cormorant), 'Cormorant Garamond', Georgia, serif", fontVariantNumeric: 'lining-nums' }}
+        style={{ fontFamily: 'var(--fuente-inter), sans-serif', fontVariantNumeric: 'lining-nums' }}
       >
         {puesto}
       </text>

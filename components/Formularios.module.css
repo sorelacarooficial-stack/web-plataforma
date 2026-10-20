@@ -8,7 +8,7 @@
 
 .confirmacion {
   margin: 0;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 16px;
   line-height: 1.62;
   color: var(--ink-3);
@@ -43,15 +43,16 @@
 
 .exitoTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 400;
-  font-size: clamp(24px, 2.8vw, 34px);
+  font-size: clamp(20.6px, 2.4vw, 29.2px);
   line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .exitoTexto {
   margin: 0;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 16px;
   line-height: 1.62;
   color: var(--ink-3);
@@ -67,10 +68,11 @@
 
 .titulo {
   margin: 0 0 4px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 400;
-  font-size: clamp(23px, 2.6vw, 32px);
+  font-size: clamp(19.8px, 2.2vw, 27.5px);
   line-height: 1.12;
+  letter-spacing: -0.02em;
 }
 
 /* ==========================================================================

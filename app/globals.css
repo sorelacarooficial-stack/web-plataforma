@@ -107,6 +107,12 @@
 
   --cabecera: clamp(66px, 7vw, 86px);
 
+  /* Una sola familia, Inter, la de los artefactos y los vídeos. Los dos
+     nombres antiguos se quedan apuntando a ella para que nada se rompa si
+     algún estilo aún los usa. */
+  --fuente-cormorant: var(--fuente-inter);
+  --fuente-jost: var(--fuente-inter);
+
   /* El sistema de las landings, en claro: el lienzo es el blanco cálido de la
      web, la «crema» pasa a ser la tinta y el degradado de los titulares va de
      tinta a bronce. Las bandas que deben seguir siendo oscuras (membresía,
@@ -260,7 +266,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   overflow-x: hidden;
 }
 
@@ -277,7 +283,7 @@ select,
 button,
 input,
 textarea {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
 }
 
 img {
@@ -467,7 +473,7 @@ img {
    Tipografía
    ========================================================================== */
 .serif {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
 }
 
 .titulo-xl,
@@ -475,10 +481,19 @@ img {
 .titulo-md,
 .titulo-sm,
 .titulo-xs {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 300;
   margin: 0;
   text-wrap: balance;
+}
+
+/* Lo que va en negrita dentro de un titular, como en los artefactos: el
+   titular en fino y la palabra que importa en 600. */
+.titulo-xl strong,
+.titulo-lg strong,
+.titulo-md strong,
+.titulo-cierre strong {
+  font-weight: 600;
 }
 
 /*
@@ -500,40 +515,45 @@ img {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  /* Inter baja más que Cormorant: sin esto el degradado corta la g y la p. */
+  padding-bottom: 0.12em;
 }
 
 /* h1 de página interior: en mayúsculas y enorme, como en las landings. */
 .titulo-xl {
-  --alto-linea: 0.92em;
-  font-size: clamp(44px, 8.4vw, 132px);
-  line-height: 0.92;
-  letter-spacing: -0.025em;
-  text-transform: uppercase;
+  --alto-linea: 1.04em;
+  font-size: clamp(40px, 7.2vw, 112px);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
 }
 
 /* h2 de sección y cierres grandes */
 .titulo-lg {
   --alto-linea: 1.02em;
-  font-size: clamp(34px, 5.2vw, 72px);
-  line-height: 1.02;
-  letter-spacing: -0.02em;
+  font-size: clamp(30px, 4.5vw, 62px);
+  line-height: 1.04;
+  letter-spacing: -0.04em;
 }
 
 .titulo-md {
   --alto-linea: 1.06em;
-  font-size: clamp(30px, 4.2vw, 54px);
-  line-height: 1.06;
-  letter-spacing: -0.015em;
+  font-size: clamp(27px, 3.6vw, 46px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
 }
 
 .titulo-sm {
-  font-size: clamp(26px, 3.4vw, 40px);
-  line-height: 1.1;
+  font-size: clamp(24px, 2.9vw, 34px);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  font-weight: 400;
 }
 
 .titulo-xs {
-  font-size: clamp(24px, 2.8vw, 34px);
-  line-height: 1.12;
+  font-size: clamp(21px, 2.4vw, 29px);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  font-weight: 400;
 }
 
 .antetitulo {
@@ -548,7 +568,7 @@ img {
 .lede {
   margin: 0;
   max-width: 620px;
-  font-weight: 300;
+  font-weight: 400;
   font-size: clamp(16px, 1.35vw, 19px);
   line-height: 1.6;
   color: var(--ink-2);
@@ -557,7 +577,7 @@ img {
 
 .texto {
   margin: 0;
-  font-weight: 300;
+  font-weight: 400;
   font-size: clamp(16px, 1.15vw, 18px);
   line-height: 1.64;
   color: var(--ink-3);
@@ -566,7 +586,7 @@ img {
 
 .texto-fijo {
   margin: 0;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 16.5px;
   line-height: 1.62;
   color: var(--ink-3);
@@ -851,7 +871,7 @@ img {
      un campo de menos de 16px, y el zoom descoloca la página entera. Con casi
      todo el tráfico llegando por un QR desde el móvil, eso es abandono. */
   font-size: 16px;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ink);
 }
 
@@ -874,7 +894,7 @@ textarea.campo {
   border-radius: 999px;
   /* Mismo motivo que en .campo: por debajo de 16px, iPhone hace zoom. */
   font-size: 16px;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ink);
   min-width: 0;
 }
@@ -892,7 +912,7 @@ textarea.campo {
 .nota {
   margin: 0;
   font-size: 12.5px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.55;
   color: var(--muted);
 }
@@ -920,10 +940,11 @@ textarea.campo {
 
 .tarjeta h3 {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 500;
-  font-size: clamp(22px, 2.2vw, 29px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(18.9px, 1.9vw, 24.9px);
   line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 
 .dato {
@@ -934,10 +955,11 @@ textarea.campo {
 }
 
 .dato-cifra {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(24px, 2.6vw, 32px);
-  line-height: 1;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(20.6px, 2.2vw, 27.5px);
+  line-height: 1.04;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .dato-pie {
@@ -1031,6 +1053,8 @@ textarea.campo {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  /* Inter baja más que Cormorant: sin esto el degradado corta la g y la p. */
+  padding-bottom: 0.12em;
 }
 
 .panel-oscuro {
@@ -1095,9 +1119,8 @@ textarea.campo {
 .portada-landing .lede {
   margin: 0 auto;
   max-width: 640px;
-  font-weight: 300;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: 400;
+  letter-spacing: -0.015em;
   color: var(--crema);
 }
 
@@ -1110,20 +1133,21 @@ textarea.campo {
 }
 
 .titulo-cierre {
-  --alto-linea: 0.96em;
+  --alto-linea: 1.04em;
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: clamp(38px, 7vw, 110px);
-  line-height: 0.96;
-  letter-spacing: -0.02em;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(32.7px, 6vw, 94.6px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
   text-wrap: balance;
   background-image: var(--degradado-titulo);
   background-size: 100% var(--alto-linea);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  /* Inter baja más que Cormorant: sin esto el degradado corta la g y la p. */
+  padding-bottom: 0.12em;
 }
 
 /* La caja oscura con borde fino de las landings, que se enciende en dorado

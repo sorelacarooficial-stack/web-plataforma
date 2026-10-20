@@ -93,27 +93,29 @@
 
 /* ---------- Título ---------- */
 .titulo {
-  --alto-linea: 0.95em;
+  --alto-linea: 1.04em;
   margin: 0;
-  font-family: var(--fuente-cormorant), Georgia, serif;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: clamp(40px, 6.4vw, 96px);
-  line-height: 0.95;
-  letter-spacing: -0.025em;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(34.4px, 5.5vw, 82.6px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
   text-wrap: balance;
   background-image: var(--degradado-titulo);
   background-size: 100% var(--alto-linea);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  /* Inter baja más que Cormorant: sin esto el degradado corta la g y la p. */
+  padding-bottom: 0.12em;
 }
 
 /* La segunda línea, en cursiva y un punto más clara: la frase respira y el
    peso cae en el nombre de quien entra. */
 .tituloEnfasis {
   display: block;
-  font-style: italic;
+  font-style: normal;
+  font-weight: 600;
   color: var(--oro);
 }
 
@@ -175,9 +177,9 @@
 }
 
 .itemTitulo {
-  font-family: var(--fuente-cormorant), Georgia, serif;
-  font-size: 22px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 18.9px;
+  font-weight: 500;
   line-height: 1.2;
   color: var(--ink);
 }

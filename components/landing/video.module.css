@@ -15,7 +15,7 @@
   background: #000;
   overflow: hidden;
   color: #fff;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
 }
 
 .caja[data-ocultos] {

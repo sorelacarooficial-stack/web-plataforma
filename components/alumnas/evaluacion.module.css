@@ -23,8 +23,8 @@
 
 .enunciado {
   margin: 0 0 14px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 21px;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 18.1px;
   line-height: 1.22;
   color: var(--ink);
   text-wrap: pretty;
@@ -43,7 +43,7 @@
   background: var(--bg);
   font-family: inherit;
   font-size: 14px;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ink-3);
   cursor: pointer;
   transition:
@@ -81,7 +81,7 @@
   padding-left: 14px;
   border-left: 2px solid var(--arcilla-line);
   font-size: 14px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.6;
   color: var(--muted-2);
   text-wrap: pretty;

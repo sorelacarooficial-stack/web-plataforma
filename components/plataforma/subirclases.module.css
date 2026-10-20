@@ -26,7 +26,7 @@
   box-shadow:
     0 1px 2px rgba(60, 45, 25, 0.05),
     0 14px 34px -24px rgba(60, 45, 25, 0.35);
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   color: #141210;
   min-width: 0;
 }
@@ -42,8 +42,8 @@
 .vacioTitulo,
 .hechoTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 500;
   line-height: 1.15;
   color: #141210;
   text-wrap: balance;
@@ -246,9 +246,9 @@
 
 .zonaTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(21px, 2.2vw, 24px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(18.1px, 1.9vw, 20.6px);
+  font-weight: 500;
   line-height: 1.2;
   color: #141210;
   text-wrap: balance;
@@ -432,14 +432,15 @@
   display: inline-flex;
   justify-content: flex-end;
   min-width: 58px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 28px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 24.1px;
+  font-weight: 400;
   line-height: 1;
   color: #141210;
   /* Cifras de caja alta y del mismo ancho: las de estilo antiguo de
      Cormorant bailan arriba y abajo mientras el número cambia. */
   font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .video[data-fase='subida'] .pct,
@@ -1038,7 +1039,7 @@ textarea.caja {
   overflow: hidden;
   background: #141210;
   box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7);
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
 }
 
 .visorCabeza {

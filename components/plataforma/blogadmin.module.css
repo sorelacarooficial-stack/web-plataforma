@@ -23,10 +23,11 @@
 
 .listaTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), serif;
-  font-size: clamp(26px, 2.6vw, 34px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(22.4px, 2.2vw, 29.2px);
+  font-weight: 400;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .ayuda {
@@ -87,11 +88,12 @@
 
 /* Más específico que «.vacio p», sin !important. */
 .vacio .vacioTitulo {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 28px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 24.1px;
+  font-weight: 400;
   line-height: 1.1;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .rejilla {
@@ -165,9 +167,9 @@
 }
 
 .tarjetaTexto strong {
-  font-family: var(--fuente-cormorant), serif;
-  font-size: 22px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 18.9px;
+  font-weight: 500;
   line-height: 1.1;
   color: var(--ink);
 }
@@ -368,13 +370,14 @@
   border: 0;
   border-bottom: 1px solid var(--borde-campo, #8f8579);
   background: transparent;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(30px, 3vw, 42px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(25.8px, 2.6vw, 36.1px);
+  font-weight: 400;
   line-height: 1.1;
   color: var(--ink);
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
+  letter-spacing: -0.02em;
 }
 
 .titulo::placeholder {
@@ -447,16 +450,16 @@
 }
 
 .subtitulo {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 18.9px;
+  font-weight: 500;
   line-height: 1.25;
 }
 
 .cita {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-style: italic;
-  font-size: 20px;
+  font-size: 17.2px;
   font-weight: 500;
   line-height: 1.4;
 }
@@ -775,19 +778,20 @@
 
 .previaTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), serif;
-  font-size: clamp(30px, 3vw, 44px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(25.8px, 2.6vw, 37.8px);
+  font-weight: 400;
   line-height: 1;
   color: var(--ink);
   text-wrap: balance;
+  letter-spacing: -0.02em;
 }
 
 .previaResumen {
   margin: 0;
-  font-family: var(--fuente-cormorant), serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-style: italic;
-  font-size: 20px;
+  font-size: 17.2px;
   font-weight: 500;
   line-height: 1.4;
   color: var(--oro-letra, #6f5323);

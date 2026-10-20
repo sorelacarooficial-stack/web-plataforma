@@ -58,17 +58,18 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  /* Inter baja más que Cormorant: sin esto el degradado corta la g y la p. */
+  padding-bottom: 0.12em;
 }
 
 .gigante {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  text-transform: uppercase;
-  line-height: 0.9;
-  letter-spacing: -0.02em;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 300;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
   text-align: center;
-  font-size: clamp(3rem, 12vw, 160px);
+  font-size: clamp(2.6rem, 10.3vw, 137.6px);
 }
 
 /* ==========================================================================
@@ -151,15 +152,14 @@
 .heroTitulo {
   margin: 0;
   width: 100%;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  text-transform: uppercase;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 500;
   letter-spacing: -0.03em;
-  line-height: 0.86;
+  line-height: 1.04;
   white-space: nowrap;
   text-align: center;
   /* El tamaño se pasa desde la página: cada titular tiene su largo. */
-  font-size: var(--hero-talla, 15vw);
+  font-size: var(--hero-talla, 12.9vw);
 }
 
 .heroPie {
@@ -184,8 +184,7 @@
   max-width: 170px;
   color: var(--crema);
   font-weight: 300;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: -0.015em;
   line-height: 1.35;
   font-size: clamp(0.75rem, 1.4vw, 1.4rem);
 }
@@ -592,11 +591,12 @@
 .itemNum {
   flex: 0 0 auto;
   min-width: 1.4em;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  line-height: 0.82;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 300;
+  line-height: 1.04;
   color: var(--negro);
-  font-size: clamp(3rem, 10vw, 140px);
+  font-size: clamp(2.6rem, 8.6vw, 120.4px);
+  letter-spacing: -0.035em;
 }
 
 .itemCuerpo {
@@ -609,15 +609,14 @@
 .itemNombre {
   margin: 0;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.015em;
   font-size: clamp(1rem, 2.2vw, 2rem);
 }
 
 .itemTexto {
   margin: 0;
   max-width: 42rem;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.6;
   opacity: 0.66;
   font-size: clamp(0.9rem, 1.6vw, 1.2rem);
@@ -659,7 +658,7 @@
   margin: 24px auto 0;
   text-align: center;
   color: var(--crema-2);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.65;
   font-size: clamp(0.95rem, 1.6vw, 1.15rem);
 }
@@ -737,10 +736,11 @@
 }
 
 .cartaNum {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  line-height: 0.8;
-  font-size: clamp(3rem, 8vw, 110px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 300;
+  line-height: 1.04;
+  font-size: clamp(2.6rem, 6.9vw, 94.6px);
+  letter-spacing: -0.035em;
 }
 
 .cartaCategoria {
@@ -756,7 +756,6 @@
   margin: 0;
   color: var(--crema);
   font-weight: 500;
-  text-transform: uppercase;
   font-size: clamp(1rem, 2.4vw, 2rem);
   line-height: 1.1;
 }
@@ -884,8 +883,8 @@
   position: relative;
   margin: 0;
   color: var(--crema);
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(1.3rem, 3vw, 2.2rem);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(1.1rem, 2.6vw, 1.9rem);
 }
 
 .videoFino {
@@ -956,7 +955,7 @@
   position: relative;
   padding-left: 22px;
   color: var(--crema);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.6;
   font-size: clamp(0.95rem, 1.4vw, 1.08rem);
 }
@@ -1042,17 +1041,17 @@
 
 .cierreLema {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-style: italic;
   color: var(--oro-b);
-  font-size: clamp(1.5rem, 3.6vw, 2.6rem);
+  font-size: clamp(1.3rem, 3.1vw, 2.2rem);
 }
 
 .cierreTexto {
   margin: 0;
   max-width: 560px;
   color: var(--crema-2);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.7;
   font-size: clamp(0.95rem, 1.6vw, 1.15rem);
 }
@@ -1140,7 +1139,7 @@
   max-width: 600px;
   margin: 24px auto 40px;
   color: var(--muted);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.7;
   font-size: clamp(0.98rem, 1.6vw, 1.15rem);
 }
@@ -1183,7 +1182,7 @@
 .tresTexto {
   margin: 0;
   color: var(--crema-2);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.65;
   font-size: clamp(0.95rem, 1.4vw, 1.05rem);
 }

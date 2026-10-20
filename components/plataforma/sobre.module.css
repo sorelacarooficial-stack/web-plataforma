@@ -211,7 +211,7 @@
 
 .titulo {
   margin: 12px 0 0;
-  font-family: var(--fuente-inter), var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), var(--fuente-inter), system-ui, sans-serif;
   font-size: 34px;
   font-weight: 300;
   letter-spacing: -0.03em;

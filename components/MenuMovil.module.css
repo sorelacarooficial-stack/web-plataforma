@@ -75,12 +75,13 @@
   .enlace {
     padding: 16px 0;
     border-bottom: 1px solid var(--line-2);
-    font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-    font-size: clamp(28px, 8vw, 38px);
+    font-family: var(--fuente-inter), system-ui, sans-serif;
+    font-size: clamp(24.1px, 6.9vw, 32.7px);
     line-height: 1.15;
     color: var(--ink);
     animation: divineUp 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
-  }
+  letter-spacing: -0.02em;
+}
 
   .enlace:hover,
   .enlaceActivo {

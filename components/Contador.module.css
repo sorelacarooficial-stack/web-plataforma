@@ -52,11 +52,11 @@
 }
 
 .cifra {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: clamp(34px, 4.4vw, 52px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(29.2px, 3.8vw, 44.7px);
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
   color: var(--tinta-pieza);
   /* Cifras de ancho fijo: sin esto el bloque da un salto cada vez que el
      segundo pasa de 1 a 8, y el movimiento se ve desde la otra punta. */
@@ -122,9 +122,10 @@
 
 .abierta {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(22px, 2.6vw, 30px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(18.9px, 2.2vw, 25.8px);
   color: var(--tinta-oro);
+  letter-spacing: -0.02em;
 }
 
 /* ==========================================================================

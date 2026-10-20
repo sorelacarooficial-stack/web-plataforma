@@ -245,14 +245,13 @@
 
 /* El titular de cada pantalla, enorme y en el dorado de las landings. */
 .titulo {
-  --alto-linea: 0.92em;
+  --alto-linea: 1.04em;
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: clamp(38px, 5.4vw, 84px);
-  line-height: 0.92;
-  letter-spacing: -0.025em;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(32.7px, 4.6vw, 72.2px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
   text-wrap: balance;
   background-image: var(--degradado-titulo);
   background-size: 100% var(--alto-linea);
@@ -260,6 +259,8 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: platEntra 0.7s cubic-bezier(0.25, 0.1, 0.25, 1) backwards;
+  /* Inter baja más que Cormorant: sin esto el degradado corta la g y la p. */
+  padding-bottom: 0.12em;
 }
 
 @keyframes platEntra {
@@ -358,19 +359,20 @@
 
 .h2 {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: clamp(23px, 2.4vw, 30px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(19.8px, 2.1vw, 25.8px);
   line-height: 1.12;
   color: var(--ink);
   text-wrap: pretty;
+  letter-spacing: -0.02em;
 }
 
 .h3 {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: clamp(21px, 2.1vw, 26px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(18.1px, 1.8vw, 22.4px);
   line-height: 1.14;
   color: var(--ink);
   text-wrap: pretty;
@@ -584,9 +586,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 15px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 12.9px;
+  font-weight: 500;
   color: var(--oro-letra);
 }
 
@@ -688,14 +690,17 @@
 }
 
 .kpiValor {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: clamp(40px, 4.4vw, 64px);
-  line-height: 0.9;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(34.4px, 3.8vw, 55px);
+  line-height: 1.04;
   background-image: var(--degradado-titulo);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  letter-spacing: -0.035em;
+  /* Inter baja más que Cormorant: sin esto el degradado corta la g y la p. */
+  padding-bottom: 0.12em;
 }
 
 .kpiNota {
@@ -831,9 +836,9 @@
 }
 
 .cursoTitulo {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: 22px;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 18.9px;
   line-height: 1.14;
   color: var(--ink);
 }
@@ -997,9 +1002,9 @@
 
 .postTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: clamp(21px, 2.1vw, 27px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(18.1px, 1.8vw, 23.2px);
   line-height: 1.14;
   color: var(--ink);
   text-wrap: pretty;
@@ -1059,8 +1064,8 @@
 .rankingPos {
   flex: 0 0 auto;
   width: 18px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 16px;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 13.8px;
   color: var(--oro-letra);
 }
 
@@ -1198,9 +1203,9 @@
 }
 
 .diaNum {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 20px;
-  line-height: 1;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 17.2px;
+  line-height: 1.04;
   color: var(--ink);
 }
 
@@ -1913,9 +1918,9 @@
 }
 
 .totalVivoCifra {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 27px;
-  line-height: 1;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 23.2px;
+  line-height: 1.04;
   color: var(--ink);
 }
 
@@ -1964,7 +1969,7 @@
   border-radius: 6px;
   background: #ffffff;
   color: #1a1613;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 13.5px;
   /* 400 y no 300: impresa en una láser de oficina, la Jost fina se queda en
      gris y se come las comas de los importes. */
@@ -1983,10 +1988,11 @@
 
 .hojaTitulo {
   display: block;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 28px;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 24.1px;
   line-height: 1.1;
   color: #1a1613;
+  letter-spacing: -0.02em;
 }
 
 .hojaDerecha {
@@ -2553,9 +2559,9 @@
 }
 
 .claseNumero {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-variant-numeric: lining-nums;
-  font-size: 11.5px;
+  font-size: 9.9px;
   letter-spacing: 0.1em;
   color: var(--oro-letra);
 }
@@ -2819,10 +2825,10 @@
    negrita inventada por el navegador sale con los bordes empastados. */
 .kpiValor {
   margin-top: 4px;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 500;
   font-size: clamp(36px, 3.4vw, 52px);
-  line-height: 1;
+  line-height: 1.04;
   letter-spacing: -0.03em;
   color: var(--ink);
   background: none;
@@ -2854,7 +2860,7 @@
 
 .diaNum,
 .rankingPos {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 500;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -2941,7 +2947,7 @@
 }
 
 .totalVivoCifra {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 500;
   font-size: 28px;
   letter-spacing: -0.03em;
@@ -2949,7 +2955,7 @@
 }
 
 .claseNumero {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
@@ -3107,9 +3113,9 @@
 
 .dialogoBorrar h3 {
   margin: 0 0 12px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 26px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 22.4px;
+  font-weight: 500;
   line-height: 1.15;
   color: var(--ink);
 }
@@ -3439,9 +3445,9 @@
 
 .vacioTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: clamp(22px, 2.2vw, 26px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(18.9px, 1.9vw, 22.4px);
   line-height: 1.15;
   color: var(--ink);
   text-wrap: balance;
