@@ -61,26 +61,29 @@
 
 .titulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 500;
-  font-size: clamp(36px, 5.6vw, 64px);
-  line-height: 1;
-  letter-spacing: -0.015em;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(31px, 4.8vw, 55px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
   color: var(--crema);
 }
 
 .titulo em {
-  font-style: italic;
+  font-style: normal;
+  font-weight: 600;
   background: linear-gradient(180deg, var(--oro-b), var(--oro-c));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  /* Inter baja más que Cormorant: sin esto el degradado corta la g y la p. */
+  padding-bottom: 0.12em;
 }
 
 .entradilla {
   margin: 0;
   font-size: 15px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.6;
   color: var(--crema-2);
   text-wrap: pretty;
@@ -244,10 +247,11 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(155deg, #2a2521 0%, #17140f 62%, #241f1a 100%);
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 120px;
-  line-height: 1;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 103.2px;
+  line-height: 1.04;
   color: rgba(217, 180, 124, 0.35);
+  letter-spacing: -0.035em;
 }
 
 .imagen {
@@ -470,17 +474,18 @@
   position: absolute;
   left: 0;
   top: -10px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 54px;
-  line-height: 1;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 46.4px;
+  line-height: 1.04;
   color: var(--oro-b);
+  letter-spacing: -0.035em;
 }
 
 .frase {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-style: italic;
-  font-size: 16.5px;
+  font-size: 14.2px;
   line-height: 1.36;
   color: var(--crema);
   text-wrap: pretty;

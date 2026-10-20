@@ -179,9 +179,9 @@
 
 .ficha h3 {
   margin: 0 26px 4px 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 500;
-  font-size: 21px;
+  font-size: 18.1px;
   line-height: 1.1;
 }
 
@@ -265,9 +265,9 @@
   place-items: center;
   background: #f1e7d4;
   box-shadow: 0 0 0 1px rgba(138, 106, 50, 0.35);
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 16px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 13.8px;
+  font-weight: 500;
   color: #6e5327;
 }
 

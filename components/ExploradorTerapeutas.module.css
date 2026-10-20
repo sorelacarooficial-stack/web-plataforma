@@ -174,12 +174,13 @@
 
 .listadoTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: clamp(28px, 3.2vw, 40px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(24.1px, 2.8vw, 34.4px);
   line-height: 1.08;
   color: var(--ink);
   text-wrap: balance;
+  letter-spacing: -0.02em;
 }
 
 .quitar {
@@ -251,12 +252,13 @@
 
 .vacioTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: clamp(26px, 3vw, 36px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(22.4px, 2.6vw, 31px);
   line-height: 1.1;
   color: var(--ink);
   text-wrap: balance;
+  letter-spacing: -0.02em;
 }
 
 .vacioTexto {
@@ -352,9 +354,9 @@
   display: grid;
   place-items: center;
   background: var(--arcilla-tint);
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 23px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 19.8px;
+  font-weight: 500;
   color: var(--arcilla-ink);
 }
 
@@ -367,9 +369,9 @@
 
 .nombre {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: clamp(23px, 2vw, 27px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(19.8px, 1.7vw, 23.2px);
   line-height: 1.08;
   color: var(--ink);
   text-wrap: balance;
@@ -489,11 +491,12 @@
 
 .avisoTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: clamp(26px, 3vw, 36px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(22.4px, 2.6vw, 31px);
   line-height: 1.1;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .avisoTexto p {

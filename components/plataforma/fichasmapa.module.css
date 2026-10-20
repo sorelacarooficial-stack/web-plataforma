@@ -16,7 +16,7 @@
   flex-direction: column;
   gap: 20px;
   max-width: 980px;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
 }
 
 .intro {
@@ -197,9 +197,9 @@
   overflow: hidden;
   background: #f6f1e7;
   box-shadow: 0 0 0 1px rgba(138, 106, 50, 0.35);
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 20px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 17.2px;
+  font-weight: 500;
   color: #6f5323;
 }
 
@@ -422,11 +422,12 @@
 
 .vacioTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 28px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 24.1px;
+  font-weight: 400;
   line-height: 1.15;
   color: #141210;
+  letter-spacing: -0.02em;
 }
 
 .vacioTexto {

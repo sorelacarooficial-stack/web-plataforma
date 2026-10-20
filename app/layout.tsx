@@ -5,43 +5,6 @@ import Medidor from '@/components/Medidor';
 import './globals.css';
 
 /**
- * Las fuentes viven en el repositorio (app/fuentes) y no se descargan de
- * Google al compilar.
- *
- * Por qué: con next/font/google, cada compilación va a buscar los archivos a
- * fonts.gstatic.com. Si ese día Google no responde —o la red por la que sale
- * el servidor de compilación no llega—, la compilación entera falla por una
- * tipografía. Aquí ya pasó. Teniéndolas dentro, el resultado es idéntico
- * (next/font también las sirve desde el propio dominio) y la compilación deja
- * de depender de nadie.
- *
- * Son las variables, así que un solo archivo cubre de 300 a 600: pesan 101 KB
- * los tres juntos, menos que los siete estáticos que hacían falta antes. Solo
- * el subconjunto latino, que cubre todo el español —tildes, eñes, signos de
- * apertura y comillas angulares—; el cirílico y el vietnamita sobraban.
- *
- * Para actualizarlas: scripts/traer-fuentes.mjs.
- */
-const cormorant = localFont({
-  src: [
-    { path: './fuentes/cormorant-garamond-normal-latin.woff2', weight: '300 600', style: 'normal' },
-    { path: './fuentes/cormorant-garamond-italic-latin.woff2', weight: '300 600', style: 'italic' },
-  ],
-  display: 'swap',
-  variable: '--fuente-cormorant',
-  // Si la fuente tarda, el texto se ve con esta antes. Se declaran las métricas
-  // para que al cambiar no dé el salto de maquetación.
-  fallback: ['Georgia', 'Times New Roman', 'serif'],
-});
-
-const jost = localFont({
-  src: [{ path: './fuentes/jost-normal-latin.woff2', weight: '300 500', style: 'normal' }],
-  display: 'swap',
-  variable: '--fuente-jost',
-  fallback: ['Helvetica Neue', 'Arial', 'sans-serif'],
-});
-
-/**
  * Dominio de producción, CON www.
  *
  * Vercel expone el suyo en VERCEL_PROJECT_PRODUCTION_URL, pero se fija aquí
@@ -51,10 +14,15 @@ const jost = localFont({
  * La misma cadena está escrita en app/robots.ts y app/sitemap.ts; las tres
  * tienen que cambiar juntas el día que cambie el dominio.
  */
-/* Inter, la de los artefactos de los vídeos: más limpia y más femenina en
-   fino. De momento solo la usa la plataforma (en .pantalla de
-   components/plataforma/plataforma.module.css); la web sigue con las de arriba.
-   Es variable: un solo archivo da del 100 al 900. */
+/**
+ * Inter, la de los artefactos y los vídeos de los anuncios, para toda la web y
+ * la plataforma. Vive en el repositorio (app/fuentes) y no se descarga de
+ * Google al compilar: con next/font/google, si ese día Google no responde, la
+ * compilación entera falla por una tipografía. Aquí ya pasó.
+ *
+ * Es variable: un solo archivo da del 100 al 900. Solo el subconjunto latino,
+ * que cubre todo el español. Para actualizarla: scripts/traer-fuentes.mjs.
+ */
 const inter = localFont({
   src: [
     { path: './fuentes/inter-normal-latin.woff2', weight: '100 900', style: 'normal' },
@@ -177,7 +145,7 @@ export default function RootLayout({
     <html
       lang="es"
       data-tema="claro"
-      className={`${cormorant.variable} ${jost.variable} ${inter.variable}`}
+      className={inter.variable}
       suppressHydrationWarning
     >
       <head>

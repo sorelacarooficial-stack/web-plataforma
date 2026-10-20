@@ -43,7 +43,7 @@
   overflow: hidden;
   background: #fffdf9;
   color: #141210;
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.5;
   box-shadow:
@@ -347,11 +347,11 @@
 .titulo,
 .hechoTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(30px, 3.6vw, 38px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(25.8px, 3.1vw, 32.7px);
+  font-weight: 400;
   line-height: 1.08;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.02em;
   color: #141210;
   outline: none;
 }
@@ -742,10 +742,11 @@
 }
 
 .fotoIniciales {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 46px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 39.6px;
+  font-weight: 400;
   color: #6f5323;
+  letter-spacing: -0.02em;
 }
 
 .fotoCamara {
@@ -892,9 +893,9 @@
 
 .permisoTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 24px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 20.6px;
+  font-weight: 500;
   line-height: 1.15;
   color: #141210;
 }
@@ -1207,19 +1208,20 @@
 .hechoCifra {
   font-size: 56px;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.04;
   font-variant-numeric: tabular-nums;
   background: linear-gradient(180deg, #8a6a32 10%, #6f5323 90%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  /* Inter baja más que Cormorant: sin esto el degradado corta la g y la p. */
+  padding-bottom: 0.12em;
 }
 
 .hechoUnidad {
   font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
   color: #6f5323;
 }
 
@@ -1241,9 +1243,9 @@
 
 .hechoFichaTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 26px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 22.4px;
+  font-weight: 500;
   line-height: 1.15;
   color: #141210;
 }

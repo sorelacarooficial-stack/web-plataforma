@@ -63,9 +63,9 @@
 
 .rotulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 23px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 19.8px;
+  font-weight: 500;
   line-height: 1.15;
   color: var(--ink);
 }
@@ -183,11 +183,12 @@
 
 .titulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), Georgia, serif;
-  font-size: clamp(24px, 2.6vw, 34px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(20.6px, 2.2vw, 29.2px);
+  font-weight: 400;
   line-height: 1.1;
   color: #f7f2ea;
+  letter-spacing: -0.02em;
 }
 
 .descripcion {
@@ -610,9 +611,9 @@
 
 .vacioTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 24px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 20.6px;
+  font-weight: 500;
   line-height: 1.15;
   color: var(--ink);
 }
@@ -876,10 +877,11 @@
 }
 
 .bloqueoTexto strong {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(22px, 3vw, 28px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(18.9px, 2.6vw, 24.1px);
+  font-weight: 400;
   line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .bloqueoTexto span:last-child {

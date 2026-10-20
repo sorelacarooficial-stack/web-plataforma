@@ -93,11 +93,12 @@
 
 .asistenteTitulo {
   margin: 4px 0 0;
-  font-family: var(--fuente-cormorant), Georgia, serif;
-  font-weight: 600;
-  font-size: clamp(24px, 2.6vw, 32px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(20.6px, 2.2vw, 27.5px);
   line-height: 1.05;
   color: var(--a-ink);
+  letter-spacing: -0.02em;
 }
 
 .asistenteTexto {
@@ -205,8 +206,8 @@
 
 .saludo {
   margin: 0;
-  font-family: var(--fuente-cormorant), Georgia, serif;
-  font-size: clamp(19px, 1.8vw, 23px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(16.3px, 1.5vw, 19.8px);
   line-height: 1.35;
   color: var(--a-ink);
 }

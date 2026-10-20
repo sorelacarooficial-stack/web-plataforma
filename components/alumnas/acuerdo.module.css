@@ -273,11 +273,11 @@
 
 .titulo {
   margin: 0 0 6px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 500;
-  font-size: clamp(30px, 6vw, 40px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(25.8px, 5.2vw, 34.4px);
   line-height: 1.04;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.02em;
   color: var(--tinta);
 }
 
@@ -404,8 +404,8 @@
 
 .vistaTexto {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 18px;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 15.5px;
   line-height: 1.6;
   color: var(--tinta-2);
   text-wrap: pretty;
@@ -604,8 +604,8 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 24px;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 20.6px;
   color: var(--tenue);
   pointer-events: none;
 }
@@ -815,11 +815,12 @@
 
 .graciasTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 500;
-  font-size: clamp(34px, 7vw, 48px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(29.2px, 6vw, 41.3px);
   line-height: 1.02;
   color: var(--tinta);
+  letter-spacing: -0.02em;
 }
 
 .graciasTexto {
@@ -881,9 +882,9 @@
 }
 
 .referencia strong {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 28px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 24.1px;
+  font-weight: 400;
   letter-spacing: 0.06em;
   color: var(--tinta);
 }

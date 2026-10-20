@@ -54,8 +54,8 @@
 }
 
 .num {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 21px;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 18.1px;
   line-height: 1;
 }
 
@@ -92,7 +92,7 @@
 .resumen {
   margin: 0 0 6px;
   font-size: 13px;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--muted-2);
 }
 
@@ -112,7 +112,7 @@
   position: relative;
   padding-left: 34px;
   font-size: 15px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.5;
   color: var(--ink-3);
 }

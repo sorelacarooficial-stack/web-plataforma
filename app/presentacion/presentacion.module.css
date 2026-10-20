@@ -41,10 +41,10 @@
 
 .cifraDato {
   display: block;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 500;
   line-height: 1;
-  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  font-size: clamp(2.2rem, 5.2vw, 4rem);
 }
 
 .cifraTexto {

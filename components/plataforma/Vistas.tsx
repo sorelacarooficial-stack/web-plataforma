@@ -280,7 +280,7 @@ export function Comunidad({ rol, ir, iniciales = 'D', conComunidad = false }: Pr
           <p style={{ margin: 0, fontSize: 10.5, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent-inverse)' }}>
             Próxima clase
           </p>
-          <p style={{ margin: 0, fontFamily: 'var(--fuente-cormorant), serif', fontSize: 20, lineHeight: 1.15, color: 'var(--inverse-ink)' }}>
+          <p style={{ margin: 0, fontFamily: 'var(--fuente-inter), sans-serif', fontSize: 18, letterSpacing: '-0.02em', lineHeight: 1.15, color: 'var(--inverse-ink)' }}>
             Sin fecha todavía
           </p>
           <p style={{ margin: 0, fontSize: 13, fontWeight: 300, color: 'var(--on-inverse-2)' }}>

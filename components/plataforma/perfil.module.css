@@ -46,9 +46,9 @@
 }
 
 .vacioTitulo {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 24px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 20.6px;
+  font-weight: 500;
   line-height: 1.15;
   color: var(--ink);
 }
@@ -152,10 +152,11 @@
   border: 4px solid #fffdf9;
   background: linear-gradient(160deg, #f5efe2, #e8dcc4);
   color: #6f5323;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 38px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 32.7px;
+  font-weight: 400;
   box-shadow: 0 10px 26px -12px rgba(20, 18, 16, 0.45);
+  letter-spacing: -0.02em;
 }
 
 .avatar[data-sorela] {
@@ -180,11 +181,12 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 12px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 3vw, 36px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(24.1px, 2.6vw, 31px);
+  font-weight: 400;
   line-height: 1.1;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .sub {
@@ -772,9 +774,9 @@
 
 .editorCabeza h2 {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 26px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 22.4px;
+  font-weight: 500;
   line-height: 1.15;
   color: var(--ink);
 }
@@ -1059,9 +1061,9 @@
 }
 
 .ultimaTitulo {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 20px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 17.2px;
+  font-weight: 500;
   line-height: 1.2;
   color: var(--ink);
   overflow: hidden;

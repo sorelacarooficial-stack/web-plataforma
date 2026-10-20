@@ -110,7 +110,7 @@
 /* En 500, como las cifras del resto del panel: la Jost llega hasta ahí y lo
    de encima es negrita inventada por el navegador. */
 .cifraValor {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: clamp(30px, 3.4vw, 42px);
   font-weight: 500;
   line-height: 1;
@@ -149,11 +149,12 @@
 
 .cabecera h3 {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(22px, 2.2vw, 28px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(18.9px, 1.9vw, 24.1px);
+  font-weight: 400;
   line-height: 1.1;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .cabecera p {
@@ -313,11 +314,12 @@
 
 .titulo h3 {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(22px, 2.2vw, 28px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(18.9px, 1.9vw, 24.1px);
+  font-weight: 400;
   line-height: 1.1;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 /* «Se borra solo a los 30 días»: en pequeño, como pidió, pero legible

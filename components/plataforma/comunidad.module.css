@@ -76,9 +76,9 @@
 }
 
 .vacioTitulo {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 24px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 20.6px;
+  font-weight: 500;
   line-height: 1.15;
   color: var(--ink);
 }
@@ -160,8 +160,8 @@
   border-radius: 999px;
   background: var(--oro-tint);
   color: #6f5323;
-  font-family: var(--fuente-cormorant), serif;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 500;
   box-shadow: 0 0 0 2px #fffdf9;
 }
 
@@ -534,9 +534,9 @@
 }
 
 .campoTitulo {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 24px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 20.6px;
+  font-weight: 500;
   line-height: 1.2;
 }
 
@@ -891,9 +891,9 @@
 
 .titulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), serif;
-  font-size: clamp(22px, 2.2vw, 27px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(18.9px, 1.9vw, 23.2px);
+  font-weight: 500;
   line-height: 1.12;
   color: var(--ink);
 }
@@ -1184,9 +1184,9 @@
 
 .claseTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), serif;
-  font-size: 24px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 20.6px;
+  font-weight: 500;
   line-height: 1.12;
   color: #f7f0e4;
 }
@@ -1515,11 +1515,12 @@
 
 .bienvenidaTitulo {
   margin: 4px 0 0;
-  font-family: var(--fuente-cormorant), serif;
-  font-size: clamp(28px, 3vw, 38px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(24.1px, 2.6vw, 32.7px);
+  font-weight: 400;
   line-height: 1.05;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .bienvenidaCuerpo {
@@ -1714,9 +1715,9 @@
 
 .firma {
   margin: 8px 0 0;
-  font-family: var(--fuente-cormorant), serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-style: italic;
-  font-size: 26px;
+  font-size: 22.4px;
   color: var(--oro);
 }
 
@@ -2002,9 +2003,9 @@
 
 .hojaTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 24px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 20.6px;
+  font-weight: 500;
   line-height: 1.1;
   color: var(--ink);
 }
@@ -2364,11 +2365,12 @@
 
 .rkTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 4.4vw, 36px);
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: clamp(24.1px, 3.8vw, 31px);
+  font-weight: 400;
   line-height: 1.05;
   color: #f7f0e4;
+  letter-spacing: -0.02em;
 }
 
 /* Recibe el foco al llegar desde «Ver el ranking completo» (el botón desaparece):
@@ -2555,10 +2557,10 @@
 }
 
 .podioPuntos {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 20.6px;
+  font-weight: 500;
+  line-height: 1.04;
   font-variant-numeric: lining-nums tabular-nums;
   color: var(--metal);
 }
@@ -2568,7 +2570,7 @@
 }
 
 .podioPuntos small {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 11.5px;
   font-weight: 500;
   color: rgba(239, 230, 216, 0.78);
@@ -2681,12 +2683,13 @@
 }
 
 .podioNumero {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 30px;
-  font-weight: 600;
-  line-height: 1;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 25.8px;
+  font-weight: 400;
+  line-height: 1.04;
   font-variant-numeric: lining-nums;
   color: var(--metal);
+  letter-spacing: -0.02em;
 }
 
 .podioCol[data-puesto='1'] .podioNumero {
@@ -2735,9 +2738,9 @@
 }
 
 .rkDetalleQuien b {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 18.9px;
+  font-weight: 500;
   line-height: 1.1;
   color: #f7f0e4;
 }
@@ -2961,9 +2964,9 @@
 
 .tuTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 23px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 19.8px;
+  font-weight: 500;
   line-height: 1.1;
   color: var(--ink);
 }
@@ -2973,16 +2976,17 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 34px;
-  font-weight: 600;
-  line-height: 0.95;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 29.2px;
+  font-weight: 400;
+  line-height: 1.04;
   font-variant-numeric: lining-nums tabular-nums;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .tuPuntos small {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--muted-2);
@@ -3302,16 +3306,16 @@
 .filaPuntos {
   flex: none;
   margin-left: auto;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 21px;
-  font-weight: 600;
-  line-height: 1;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 18.1px;
+  font-weight: 500;
+  line-height: 1.04;
   font-variant-numeric: lining-nums tabular-nums;
   color: var(--ink);
 }
 
 .filaPuntos small {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-size: 11.5px;
   font-weight: 500;
   color: var(--muted-2);
@@ -3393,9 +3397,9 @@
 
 .anteriorTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 21px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 18.1px;
+  font-weight: 500;
   line-height: 1.15;
   color: var(--ink);
 }
@@ -3536,9 +3540,9 @@
 
 .resumenTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 23px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 19.8px;
+  font-weight: 500;
   line-height: 1.1;
   color: var(--ink);
 }

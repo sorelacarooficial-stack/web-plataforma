@@ -83,9 +83,9 @@
 /* El nombre del cuaderno, en la Cormorant de los títulos de tarjeta, como en
    el resto del aula. */
 .tarjetaTitulo {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 21px;
-  font-weight: 600;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 18.1px;
+  font-weight: 500;
   line-height: 1.15;
   color: #141210;
 }

@@ -46,11 +46,12 @@
    el trazo fino de la Cormorant se quedaba en un hilo. */
 .mes {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: clamp(24px, 2.8vw, 32px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(20.6px, 2.4vw, 27.5px);
   line-height: 1;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .anio {
@@ -233,7 +234,7 @@
 }
 
 .numero {
-  font-family: var(--fuente-jost), system-ui, sans-serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   font-size: 15px;

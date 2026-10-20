@@ -58,11 +58,12 @@
 
 .otrasTitulo {
   margin: 0 0 18px;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: clamp(26px, 3vw, 36px);
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(22.4px, 2.6vw, 31px);
   line-height: 1.1;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .chips {

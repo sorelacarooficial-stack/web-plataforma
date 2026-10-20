@@ -12,18 +12,18 @@
 
 .titulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 400;
-  font-size: clamp(27px, 3.4vw, 36px);
+  font-size: clamp(23.2px, 2.9vw, 31px);
   line-height: 1.08;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.02em;
   color: var(--ink);
   text-wrap: pretty;
 }
 
 .entradilla {
   margin: 0;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 15.5px;
   line-height: 1.6;
   color: var(--ink-3);
@@ -82,7 +82,7 @@
   min-height: 44px;
   gap: 10px;
   font-size: 13.5px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.5;
   color: var(--ink-3);
   cursor: pointer;
@@ -116,7 +116,7 @@
 .nota {
   margin: 0;
   font-size: 12.5px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.55;
   color: var(--muted);
 }
@@ -151,16 +151,17 @@
 
 .exitoTitulo {
   margin: 0;
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
   font-weight: 400;
-  font-size: clamp(26px, 3.4vw, 38px);
+  font-size: clamp(22.4px, 2.9vw, 32.7px);
   line-height: 1.08;
   color: var(--ink);
+  letter-spacing: -0.02em;
 }
 
 .exitoTexto {
   margin: 0;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 15.5px;
   line-height: 1.6;
   color: var(--ink-3);
@@ -261,8 +262,8 @@
 }
 
 .grupoTexto b {
-  font-family: var(--fuente-cormorant), 'Cormorant Garamond', serif;
-  font-size: 21px;
+  font-family: var(--fuente-inter), system-ui, sans-serif;
+  font-size: 18.1px;
   font-weight: 500;
   line-height: 1.1;
 }
