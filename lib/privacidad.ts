@@ -35,7 +35,7 @@ export const CORREO_PRIVACIDAD = 'sorelacarooficial@gmail.com';
  * acuerdo de confidencialidad guarda esta fecha como la versión de la política
  * que se le enseñó a quien firma.
  */
-export const REVISADA = '19 de octubre de 2026';
+export const REVISADA = '20 de octubre de 2026';
 
 export type Tratamiento = {
   /** Para qué formulario o parte de la web. */
