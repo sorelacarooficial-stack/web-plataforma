@@ -9,6 +9,7 @@ import { correoDeSorela, hayResend, mandarCorreo, type Resultado } from './corre
 import { diaDe } from './metricas';
 import { marcarCorreoLista } from './atencion-servidor';
 import type { PorCorreoLista } from './atencion';
+import { enlaceGrupo } from './grupo-whatsapp';
 
 /**
  * Mandar la información de la Técnica Divine a una persona.
@@ -158,7 +159,7 @@ export async function mandarCorreoLista(
 ): Promise<Resultado> {
   const contactoId = p.contactoId ?? p.correo.replace(/\//g, '_');
   const r = await mandarCorreo(
-    { para: p.correo, ...correoBienvenidaPorOrigen(p.nombre, 'lista-comunidad') },
+    { para: p.correo, ...correoBienvenidaPorOrigen(p.nombre, 'lista-comunidad', enlaceGrupo('correo', p.correo)) },
     { tipo: 'bienvenida', clave: claveBienvenida(contactoId), contactoId }
   );
   await marcarCorreoLista(contactoId, { plantilla: 'lista-espera', estado: r.estado, por });

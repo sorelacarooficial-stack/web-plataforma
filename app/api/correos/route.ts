@@ -17,7 +17,7 @@ import {
   viaDeEnvio,
 } from '@/lib/correos';
 import { datosResumen, listaDeEspera } from '@/lib/automatizar';
-import { correoBienvenidaPorOrigen } from '@/lib/plantillas-bienvenida';
+import { correoBienvenidaPorOrigen, correoRecordatorioGrupo } from '@/lib/plantillas-bienvenida';
 import {
   correoAccesoComunidad,
   correoAccesoFormacion,
@@ -74,6 +74,8 @@ async function muestra(id: IdAutomatizacion, modo: ModoCurso = 'completo'): Prom
       });
     case 'registro':
       return correoBienvenidaPorOrigen('María López', 'lista-comunidad');
+    case 'recordatorio-grupo':
+      return correoRecordatorioGrupo('María López', `${WEB}/grupo?o=recordatorio`, `${WEB}/baja`);
     case 'acuerdo':
       // Lo escribe el Apps Script con el PDF del acuerdo: aquí no hay vista previa.
       return null;

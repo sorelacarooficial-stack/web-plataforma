@@ -1,10 +1,10 @@
 import 'server-only';
 import { APERTURA } from './apertura';
 import { CURSO_DIVINE, revisarAccesos, tieneMembresia, type Acceso } from './accesos';
-import { correoBienvenidaPorOrigen } from './plantillas-bienvenida';
+import { correoBienvenidaPorOrigen, correoRecordatorioGrupo } from './plantillas-bienvenida';
 import { baseDeDatos, COLECCIONES, hayFirebase } from './firebase-servidor';
 import { diaDe } from './metricas';
-import { correoDeSorela, estaActiva, mandarCorreo, type Resultado } from './correos';
+import { correoDeSorela, enlaceBaja, estaActiva, mandarCorreo, type Resultado } from './correos';
 import {
   asuntoLimpio,
   convocatoriaCorta,
@@ -31,6 +31,7 @@ import {
   correoResumen,
   type ResumenDatos,
 } from './plantillas-automaticas';
+import { enlaceGrupo, marcarRecordada, pendientesDeRecordatorio } from './grupo-whatsapp';
 
 /**
  * Lo que dispara cada correo automático. Las rutas llaman a estas funciones
@@ -143,7 +144,7 @@ export async function alRegistrarse(p: { uid: string; correo: string; nombre: st
     const previo = ficha.get('correoLista') as Partial<CorreoLista> | undefined;
     if (previo?.plantilla === 'lista-espera' && previo.estado === 'enviado') return;
     // El mismo correo que desde los formularios de la web: lista de espera + grupo de WhatsApp.
-    const r = await mandarCorreo({ para: p.correo, ...correoBienvenidaPorOrigen(p.nombre, 'lista-comunidad') }, {
+    const r = await mandarCorreo({ para: p.correo, ...correoBienvenidaPorOrigen(p.nombre, 'lista-comunidad', enlaceGrupo('correo', p.correo)) }, {
       tipo: 'registro',
       clave: `registro:${p.uid}`,
       uid: p.uid,
@@ -340,6 +341,24 @@ export async function tareasDelDia(ahora = new Date()): Promise<InformeDia> {
   // Los avisos y la serie del lanzamiento que tocan hoy (lib/campanas.ts).
   const { campanasDelDia } = await import('./campanas');
   for (const r of await campanasDelDia(ahora)) hechas.push({ ...r, id: `campana:${r.id}` });
+
+  /* Quien se apuntó y no ha pulsado el botón del grupo: un recordatorio, una
+     vez (lib/grupo-whatsapp.ts). Antes del resumen, para que salga hoy mismo. */
+  if (await estaActiva('recordatorio-grupo')) {
+    const r = { id: 'recordatorio-grupo', enviados: 0, fallidos: 0, omitidos: 0 };
+    for (const p of await pendientesDeRecordatorio(ahora.getTime()).catch(() => [])) {
+      const x = await mandarCorreo(
+        { para: p.correo, ...correoRecordatorioGrupo(p.nombre, enlaceGrupo('recordatorio', p.correo), enlaceBaja(p.correo)), baja: enlaceBaja(p.correo) },
+        { tipo: 'recordatorio-grupo', clave: `recordatorio-grupo:${p.id}`, contactoId: p.id }
+      );
+      // Se marca también si se omite (baja, ya enviado): así no se vuelve a intentar.
+      if (x.estado !== 'fallido') await marcarRecordada(p.id).catch(() => null);
+      if (x.estado === 'enviado') r.enviados++;
+      else if (x.estado === 'fallido') r.fallidos++;
+      else r.omitidos++;
+    }
+    hechas.push(r);
+  }
 
   const para = correoDeSorela();
   if (para && (await estaActiva('resumen-sorela'))) {

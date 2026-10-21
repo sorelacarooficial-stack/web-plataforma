@@ -34,6 +34,12 @@ cada cambio importante** (una línea por decisión, con la fecha).
   anuncios ni correos de captación).
 - Formularios solo para mayores de 18 años (2026-10-20, PR #6).
 - El enlace de Zoom se pide a Sorela el 5 nov (recordatorio programado).
+- Grupo de WhatsApp: los botones pasan por `/grupo`, que cuenta el clic
+  (y en la ficha `grupoClic` si el enlace va firmado para la persona) y
+  redirige. Solo las apuntadas con `grupoMedido` cuentan en el embudo y
+  reciben el recordatorio «Te falta un paso» (cron de la mañana, una vez,
+  entre 1 y 10 días). Las personas dentro del grupo las apunta Sorela a mano
+  en Métricas. (2026-10-21)
 - La serie de correos vive en Firestore (Programados): cambiar
   `lib/serie-lanzamiento.ts` no cambia lo ya guardado.
 
@@ -42,8 +48,9 @@ cada cambio importante** (una línea por decisión, con la fecha).
 - Cuenta Sorela Publi `4080934555473731`, página `405378099553859`, IG
   `@sorelacaro_`, conjunto de datos «Comunidad Divine» `968080569683493`.
 - Campaña `120254915227270427` «MC 6 nov · Registros web · CAPI»
-  (OUTCOME_LEADS, termina 6 nov 18:00). 10 €/día: A España 5 €, B Latam
-  (CO/AR/VE/MX) 3 €, C Caliente 2 €. Excluye a las ya registradas.
+  (OUTCOME_LEADS, termina 6 nov 18:00). 10 €/día. Desde 2026-10-21: A España
+  4 €, B Latam (CO/AR/VE/MX) 4 €, C Caliente 2 € (Latam a 0,43 €/registro
+  frente a 3,86 € en España). Excluye a las ya registradas.
 - Sin píxel ni cookies: API de conversiones desde el servidor
   (`lib/meta-capi.ts`, evento Lead con datos cifrados).
 - UTM de los anuncios: `utm_source=meta&utm_campaign=mc_6nov&utm_content=<anuncio>`.

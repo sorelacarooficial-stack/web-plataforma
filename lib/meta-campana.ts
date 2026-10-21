@@ -1,5 +1,6 @@
 import 'server-only';
 import { baseDeDatos, COLECCIONES, hayFirebase } from './firebase-servidor';
+import { embudoGrupo, type EmbudoGrupo } from './grupo-whatsapp';
 
 /**
  * La campaña de Meta de la masterclass, en números: lo que se ha gastado
@@ -47,6 +48,8 @@ export type Resumen = {
   porDia: { dia: string; registros: number; gasto: number }[];
   diasQuedan: number;
   ideas: string[];
+  /** Registradas → pulsan el botón del grupo → están dentro (lib/grupo-whatsapp.ts). */
+  grupo: EmbudoGrupo | null;
   error?: string;
 };
 
@@ -111,6 +114,7 @@ export async function resumenCampana(): Promise<Resumen> {
     porDia: [],
     diasQuedan: Math.max(0, Math.ceil((FIN.getTime() - Date.now()) / 864e5)),
     ideas: [],
+    grupo: await embudoGrupo().catch(() => null),
   };
 
   const gastoDia = new Map<string, number>();
@@ -201,6 +205,11 @@ export function correoResumen(r: Resumen) {
     `Personas alcanzadas: ${r.alcance.toLocaleString('es-ES')} · clics: ${r.clics.toLocaleString('es-ES')}${r.ctr !== null ? ` (${r.ctr.toFixed(2).replace('.', ',')} %)` : ''}`,
     `Quedan ${r.diasQuedan} días para la masterclass.`,
   ];
+  const g = r.grupo;
+  const lineaGrupo = g
+    ? `Grupo de WhatsApp: ${g.pulsaron} de ${g.medidas} apuntadas (desde que se mide) han pulsado el botón${g.enGrupo !== null ? ` · ${g.enGrupo} personas dentro del grupo` : ''} · ${g.recordadas} recordatorios enviados.`
+    : null;
+  if (lineaGrupo) lineas.push(lineaGrupo);
   const anuncios = r.anuncios
     .sort((a, b) => b.registros - a.registros || b.gasto - a.gasto)
     .map((a) => `· ${a.nombre}: ${a.registros} registros, ${eur(a.gasto)}`);
@@ -224,6 +233,7 @@ export function correoResumen(r: Resumen) {
 <h1 style="font-family:Georgia,serif;font-weight:400;font-size:28px;margin:0 0 18px">Así va la campaña</h1>
 <table role="presentation" cellspacing="8" style="width:100%;border-collapse:separate"><tr>${cifra('Gastado', eur(r.gasto))}${cifra('Registros', String(r.registros))}${cifra('Por registro', r.coste !== null ? eur(r.coste) : '—')}</tr></table>
 <p style="color:#6c645a;font-size:14px;margin:6px 0 18px">Ayer entraron ${r.registrosAyer}. Alcance ${r.alcance.toLocaleString('es-ES')} personas, ${r.clics.toLocaleString('es-ES')} clics${r.ctr !== null ? ` (${r.ctr.toFixed(2).replace('.', ',')} %)` : ''}. Quedan ${r.diasQuedan} días.</p>
+${lineaGrupo ? `<p style="font-size:14px;margin:0 0 18px;padding:12px 14px;border-radius:12px;background:#f4efe7">${esc(lineaGrupo)}</p>` : ''}
 ${anuncios.length ? `<h2 style="font-size:16px;margin:0 0 8px">Por anuncio</h2><ul style="padding-left:18px;margin:0 0 18px;font-size:14px">${anuncios.map((a) => `<li>${esc(a.slice(2))}</li>`).join('')}</ul>` : ''}
 <h2 style="font-size:16px;margin:0 0 8px">Qué haría hoy</h2>
 <ul style="padding-left:18px;margin:0;font-size:14px">${r.ideas.map((i) => `<li style="margin-bottom:6px">${esc(i)}</li>`).join('')}</ul>

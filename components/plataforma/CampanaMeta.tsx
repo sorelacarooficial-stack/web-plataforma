@@ -34,8 +34,23 @@ type Resumen = {
   anuncios: (Fila & { registros: number })[];
   diasQuedan: number;
   ideas: string[];
+  grupo: Grupo | null;
   error?: string;
 };
+
+type Grupo = {
+  registradas: number;
+  medidas: number;
+  pulsaron: number;
+  clics: number;
+  clicsPorOrigen: Record<'web' | 'correo' | 'recordatorio' | 'plataforma', number>;
+  sinPulsar: number;
+  recordadas: number;
+  enGrupo: number | null;
+  enGrupoCuando: string | null;
+};
+
+const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)} %` : '—');
 
 const eur = (v: number) => v.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
 const num = (v: number) => v.toLocaleString('es-ES');
@@ -122,6 +137,81 @@ export default function CampanaMeta() {
         </ul>
         {r.error && <p className={`${m.nota} ${c2.aviso}`}>No se ha podido leer Meta: {r.error}</p>}
       </div>
+
+      {r.grupo && <EmbudoGrupo g={r.grupo} alGuardar={(enGrupo) => setR({ ...r, grupo: { ...r.grupo!, enGrupo } })} />}
     </section>
+  );
+}
+
+/**
+ * Registradas → pulsan el botón del grupo → están dentro. El último número lo
+ * apunta Sorela mirando el grupo: WhatsApp no deja leerlo desde fuera.
+ */
+function EmbudoGrupo({ g, alGuardar }: { g: Grupo; alGuardar: (n: number) => void }) {
+  const [valor, setValor] = useState(g.enGrupo === null ? '' : String(g.enGrupo));
+  const [estado, setEstado] = useState<'quieto' | 'guardando' | 'hecho' | 'fallo'>('quieto');
+
+  async function guardar(e: React.FormEvent) {
+    e.preventDefault();
+    const n = Number(valor);
+    if (!Number.isInteger(n) || n < 0) return setEstado('fallo');
+    setEstado('guardando');
+    const r = await fetch('/api/metricas/grupo', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ personas: n }),
+    }).catch(() => null);
+    if (r?.ok) {
+      alGuardar(n);
+      setEstado('hecho');
+    } else setEstado('fallo');
+  }
+
+  const pasos = [
+    { label: 'Apuntadas', valor: g.registradas, nota: 'a la lista de la masterclass' },
+    { label: 'Pulsan el botón', valor: g.pulsaron, nota: `${pct(g.pulsaron, g.medidas)} de las ${num(g.medidas)} apuntadas desde que se mide` },
+    { label: 'En el grupo', valor: g.enGrupo, nota: g.enGrupo === null ? 'apúntalo abajo' : `${pct(g.enGrupo, g.registradas)} de las apuntadas` },
+  ];
+
+  return (
+    <div>
+      <p className={m.subtitulo}>Grupo de WhatsApp</p>
+      <div className={m.cifras} style={{ marginTop: 10 }}>
+        {pasos.map((p) => (
+          <article key={p.label} className={m.cifra}>
+            <span className={m.cifraEtiqueta}>{p.label}</span>
+            <strong className={m.cifraValor}>{p.valor === null ? '—' : num(p.valor)}</strong>
+            <span className={m.cifraNota}>{p.nota}</span>
+          </article>
+        ))}
+      </div>
+      <p className={m.nota} style={{ marginTop: 10 }}>
+        {num(g.clics)} clics en total (web {g.clicsPorOrigen.web} · correo {g.clicsPorOrigen.correo} · recordatorio{' '}
+        {g.clicsPorOrigen.recordatorio}). {g.sinPulsar} llevan más de un día sin pulsar; {g.recordadas} ya han recibido el
+        recordatorio. De quien se apuntó antes de medir los clics no se sabe si pulsó, así que no cuenta aquí ni recibe el recordatorio.
+      </p>
+      <form onSubmit={guardar} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 }}>
+        <label htmlFor="en-grupo" className={m.nota}>
+          Personas en el grupo ahora:
+        </label>
+        <input
+          id="en-grupo"
+          type="number"
+          min={0}
+          inputMode="numeric"
+          value={valor}
+          onChange={(e) => {
+            setValor(e.target.value);
+            setEstado('quieto');
+          }}
+          style={{ width: 90, padding: '6px 10px', borderRadius: 10, border: '1px solid var(--line-4)', font: 'inherit' }}
+        />
+        <button type="submit" className="btn btn-sm" disabled={estado === 'guardando'}>
+          {estado === 'guardando' ? 'Guardando…' : 'Guardar'}
+        </button>
+        {estado === 'hecho' && <span className={m.nota}>Guardado.</span>}
+        {estado === 'fallo' && <span className={m.nota}>No se ha podido guardar. Escribe un número entero.</span>}
+      </form>
+    </div>
   );
 }
