@@ -98,7 +98,12 @@ const TITULARES: Record<Tipo, string> = {
   otro: 'Gracias por escribirme',
 };
 
-export function correoBienvenidaPorOrigen(nombre: string | null, origen: string | null) {
+/**
+ * `grupo`: el enlace al grupo de WhatsApp. Lo pasa quien envía, ya firmado para
+ * esa persona (lib/grupo-whatsapp.ts, `enlaceGrupo`), para contar quién pulsa.
+ * Sin él, el enlace directo del grupo.
+ */
+export function correoBienvenidaPorOrigen(nombre: string | null, origen: string | null, grupo: string = GRUPO_WHATSAPP) {
   const tipo = tipoDeOrigen(origen);
   const t = TEXTOS[tipo];
   const n = pila(nombre);
@@ -116,7 +121,7 @@ export function correoBienvenidaPorOrigen(nombre: string | null, origen: string 
     '',
     'Te escribo porque dejaste tus datos en mi web. Si no quieres recibir más correos míos, respóndeme a este mismo y te doy de baja.',
   ].join('\n');
-  if (tipo === 'comunidad') return correoListaEspera(n, t.asunto, t.saludo);
+  if (tipo === 'comunidad') return correoListaEspera(n, t.asunto, t.saludo, grupo);
   const html = envoltorio(
     escapar(n ? `Hola ${n},` : 'Hola,'),
     `${parrafos.map((p) => `<p style="margin:0 0 18px">${escapar(p)}</p>`).join('\n')}
@@ -146,7 +151,7 @@ const TITULO_MASTERCLASS = 'La nueva era de las manos';
 const IMAGEN_TITULO =
   'https://firebasestorage.googleapis.com/v0/b/sorela-12c46.firebasestorage.app/o/correo%2Fmasterclass-titulo.gif?alt=media&token=3c07b7c9-9651-4935-9a15-48e1e0a57c68';
 
-function correoListaEspera(n: string, asunto: string, saludo: string) {
+function correoListaEspera(n: string, asunto: string, saludo: string, grupo: string) {
   const serif = "'Cormorant Garamond',Georgia,'Times New Roman',serif";
   const sans = "'Helvetica Neue',Helvetica,Arial,sans-serif";
   const fecha = new Date(APERTURA);
@@ -198,7 +203,7 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
      ${entrada}
      ${pasos}
      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 26px"><tr><td align="center" style="border-radius:999px;background:#17140f">
-       <a href="${escapar(GRUPO_WHATSAPP)}" style="display:block;padding:16px 18px;font-family:${sans};font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#f3e3c3;text-decoration:none;border-radius:999px;white-space:nowrap">Entrar al grupo de WhatsApp</a>
+       <a href="${escapar(grupo)}" style="display:block;padding:16px 18px;font-family:${sans};font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#f3e3c3;text-decoration:none;border-radius:999px;white-space:nowrap">Entrar al grupo de WhatsApp</a>
      </td></tr></table>`,
     undefined,
     '',
@@ -212,7 +217,7 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
     `Antes de tocar · ${TITULO_MASTERCLASS}. Clase gratuita en directo por Zoom, una hora: ${semana} ${dia} de ${mes}. ${APERTURA_POR_PAISES}.`,
     '',
     'Ahora, entra en el grupo de WhatsApp de la masterclass. Ahí aviso de todo y respondo dudas:',
-    GRUPO_WHATSAPP,
+    grupo,
     '',
     'El enlace para conectarte te llega por correo ese día.',
     '',
@@ -223,6 +228,41 @@ function correoListaEspera(n: string, asunto: string, saludo: string) {
     'Te escribo porque dejaste tus datos en mi web. Si no quieres recibir más correos míos, respóndeme a este mismo y te doy de baja.',
   ].join('\n');
   return { asunto: `${asunto}${n ? `, ${n}` : ''}`, texto, html };
+}
+
+/**
+ * El recordatorio para quien se apuntó y, un día después, no ha pulsado el
+ * botón del grupo de WhatsApp (lib/grupo-whatsapp.ts). Corto, un solo botón,
+ * sin repetir toda la bienvenida.
+ */
+export function correoRecordatorioGrupo(nombre: string | null, grupo: string, baja?: string) {
+  const n = pila(nombre);
+  const fecha = `${DIA_APERTURA} a las ${HORA_ESPANA}`;
+  const parrafos = [
+    `Tu plaza para la clase gratuita «Antes de tocar» del ${fecha} (hora de España) está guardada.`,
+    'Te falta un paso: entrar en el grupo de WhatsApp. Ahí aviso de todo lo de la clase, comparto material antes del directo y respondo dudas.',
+    'Es un toque: pulsa el botón y, dentro de WhatsApp, dale a «Unirse».',
+  ];
+  const html = envoltorio(
+    escapar(n ? `Hola ${n},` : 'Hola,'),
+    `${parrafos.map((p) => `<p style="margin:0 0 18px">${escapar(p)}</p>`).join('\n')}
+     ${botonCorreo(grupo, 'Entrar al grupo de WhatsApp')}`,
+    baja,
+    '',
+    { titulo: 'Te falta un paso', etiqueta: 'Clase gratuita · Antes de tocar', previa: 'Entra en el grupo de WhatsApp de la masterclass.' }
+  );
+  const texto = [
+    n ? `Hola ${n},` : 'Hola,',
+    '',
+    parrafos.join('\n\n'),
+    '',
+    grupo,
+    '',
+    'Sorela Caro',
+    'Creadora de la Técnica Divine',
+    WEB,
+  ].join('\n');
+  return { asunto: n ? `${n}, te falta un paso para la clase del ${DIA_APERTURA}` : `Te falta un paso para la clase del ${DIA_APERTURA}`, texto, html };
 }
 
 /**

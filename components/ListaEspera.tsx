@@ -7,7 +7,8 @@ import css from './Formularios.module.css';
 import InfoPrivacidad from '@/components/InfoPrivacidad';
 import { CAPA_INFORMACION } from '@/lib/privacidad';
 import { conLlegada } from '@/lib/llegada';
-import { FECHA_APERTURA, GRUPO_WHATSAPP } from '@/lib/apertura';
+import { FECHA_APERTURA } from '@/lib/apertura';
+import BotonGrupo from './BotonGrupo';
 
 type Estado = 'quieto' | 'enviando' | 'hecho' | 'fallo';
 type Errores = Partial<Record<keyof Contacto, string>>;
@@ -43,6 +44,7 @@ export default function ListaEspera() {
   const [errores, setErrores] = useState<Errores>({});
   const [estado, setEstado] = useState<Estado>('quieto');
   const [conCorreo, setConCorreo] = useState(true);
+  const [grupo, setGrupo] = useState<string | null>(null);
 
   const campo = (k: keyof typeof VACIO) => ({
     id: `${id}-${k}`,
@@ -77,6 +79,7 @@ export default function ListaEspera() {
       const cuerpo = await r.json().catch(() => ({ ok: false }));
       if (cuerpo.ok) {
         setConCorreo(cuerpo.correoEnviado !== false);
+        setGrupo(typeof cuerpo.grupo === 'string' ? cuerpo.grupo : null);
         setEstado('hecho');
         return;
       }
@@ -104,9 +107,7 @@ export default function ListaEspera() {
           {conCorreo ? 'Te acabo de mandar un correo para confirmártelo. ' : ''}
           {`El siguiente paso es entrar en el grupo de WhatsApp de la lista de espera: ahí te espero hasta la masterclass del ${FECHA_APERTURA}.`}
         </p>
-        <a href={GRUPO_WHATSAPP} target="_blank" rel="noopener" className="btn btn-sm" style={{ alignSelf: 'flex-start' }}>
-          Unirme al grupo de WhatsApp
-        </a>
+        <BotonGrupo enlace={grupo} />
         <button
           type="button"
           className={css.deshacer}

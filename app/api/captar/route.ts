@@ -7,6 +7,7 @@ import { convocatoriaDeOrigen, reservarPlaza, type Reserva } from '@/lib/reserva
 import { procedenciaDe } from '@/lib/llegada-servidor';
 import { apuntarCorreo } from '@/lib/correos';
 import { REVISADA } from '@/lib/privacidad';
+import { enlaceGrupo } from '@/lib/grupo-whatsapp';
 import { avisarRegistro } from '@/lib/meta-capi';
 
 /**
@@ -144,7 +145,10 @@ export async function POST(peticion: Request) {
           actualizado: FieldValue.serverTimestamp(),
           creado: FieldValue.serverTimestamp(),
           estado: 'Nuevo',
-          ...(aLista ? { lista: true } : {}),
+          /* `grupoMedido`: su botón del grupo de WhatsApp ya cuenta el clic. Solo a
+             estas se les manda el recordatorio (lib/grupo-whatsapp.ts): a las de
+             antes no se sabe si entraron. */
+          ...(aLista ? { lista: true, grupoMedido: true } : {}),
           ...pedido,
           ...procedenciaDe(cuerpo.llegada),
           veces: 1,
@@ -256,6 +260,7 @@ export async function POST(peticion: Request) {
   }
 
   // correoEnviado viaja al navegador para que el mensaje de confirmación no
-  // prometa un correo que no ha salido.
-  return NextResponse.json({ ok: true, correoEnviado });
+  // prometa un correo que no ha salido. `grupo` es su enlace personal al grupo
+  // de WhatsApp: así el clic del botón queda en su ficha (lib/grupo-whatsapp.ts).
+  return NextResponse.json({ ok: true, correoEnviado, ...(aLista ? { grupo: enlaceGrupo('web', datos.correo) } : {}) });
 }

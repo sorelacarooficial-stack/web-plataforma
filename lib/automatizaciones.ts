@@ -55,6 +55,13 @@ export const AUTOMATIZACIONES = [
     fijo: true,
   },
   {
+    id: 'recordatorio-grupo',
+    nombre: 'Te falta un paso · grupo de WhatsApp',
+    cuando: 'Cada mañana, a quien se apuntó a la masterclass hace entre 1 y 10 días y todavía no ha pulsado el botón del grupo de WhatsApp. Una sola vez por persona.',
+    quien: 'Las apuntadas que no han entrado al grupo',
+    porDefecto: true,
+  },
+  {
     id: 'resumen-sorela',
     nombre: 'Tu resumen de la mañana',
     cuando:

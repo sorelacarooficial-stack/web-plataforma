@@ -265,7 +265,7 @@ export default function ComunidadProximamente({ nombre }: { nombre?: string }) {
   const abrirCarta = () => window.dispatchEvent(new Event('divine:sobre'));
 
   const grupo = (
-    <a className={`${css.boton} ${css.botonPrimario}`} href={GRUPO_WHATSAPP} target="_blank" rel="noopener noreferrer">
+    <a className={`${css.boton} ${css.botonPrimario}`} href="/grupo?o=plataforma" target="_blank" rel="noopener noreferrer">
       <IconoWhatsapp />
       Entrar al grupo de WhatsApp
     </a>

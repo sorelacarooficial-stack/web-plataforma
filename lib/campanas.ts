@@ -11,6 +11,7 @@ import { AUDIENCIAS, faltaEnlace, plantillaCampana, type Audiencia, type Campana
 import { esSoloSuDia, serieLanzamiento } from './serie-lanzamiento';
 import { idContacto, marcarCorreoLista } from './atencion-servidor';
 import { soloAviso } from './enviar-informacion';
+import { enlaceGrupo } from './grupo-whatsapp';
 
 /**
  * Los avisos y correos programados.
@@ -170,7 +171,7 @@ export async function enviarCampana(id: string): Promise<InformeCampana> {
     const baja = enlaceBaja(p.correo);
     const contenido =
       c.plantilla === 'lista-espera'
-        ? correoBienvenidaPorOrigen(p.nombre, 'lista-comunidad')
+        ? correoBienvenidaPorOrigen(p.nombre, 'lista-comunidad', enlaceGrupo('correo', p.correo))
         : plantillaCampana(c, p.nombre, baja);
     const x = await mandarCorreo(
       { para: p.correo, ...contenido, baja },
