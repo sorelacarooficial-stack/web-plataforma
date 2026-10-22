@@ -40,6 +40,9 @@ cada cambio importante** (una línea por decisión, con la fecha).
   reciben el recordatorio «Te falta un paso» (cron de la mañana, una vez,
   entre 1 y 10 días). Las personas dentro del grupo las apunta Sorela a mano
   en Métricas. (2026-10-21)
+- Los correos van a la lista de espera de la web, NO al grupo de WhatsApp:
+  quien está solo en el grupo no recibe nada (ni el Zoom del 6 nov). El
+  enlace de Zoom hay que ponerlo también en el grupo.
 - La serie de correos vive en Firestore (Programados): cambiar
   `lib/serie-lanzamiento.ts` no cambia lo ya guardado.
 
@@ -48,9 +51,10 @@ cada cambio importante** (una línea por decisión, con la fecha).
 - Cuenta Sorela Publi `4080934555473731`, página `405378099553859`, IG
   `@sorelacaro_`, conjunto de datos «Comunidad Divine» `968080569683493`.
 - Campaña `120254915227270427` «MC 6 nov · Registros web · CAPI»
-  (OUTCOME_LEADS, termina 6 nov 18:00). 10 €/día. Desde 2026-10-21: A España
-  4 €, B Latam (CO/AR/VE/MX) 4 €, C Caliente 2 € (Latam a 0,43 €/registro
-  frente a 3,86 € en España). Excluye a las ya registradas.
+  (OUTCOME_LEADS, termina 6 nov 18:00). 10 €/día. Desde 2026-10-22: A España
+  3 €, B Latam (CO/AR/VE/MX) 5 €, C Caliente 2 € (a 22 oct: Latam 0,35 €/registro,
+  España 4,11 €). Sin Audience Network (daba clics sin registros): solo
+  Facebook, Instagram y Threads. Excluye a las ya registradas.
 - Sin píxel ni cookies: API de conversiones desde el servidor
   (`lib/meta-capi.ts`, evento Lead con datos cifrados).
 - UTM de los anuncios: `utm_source=meta&utm_campaign=mc_6nov&utm_content=<anuncio>`.
