@@ -8,6 +8,8 @@ import { hoyISO } from '@/lib/convocatorias-tipos';
 import { COLECCION_CORREOS } from '@/lib/correos';
 import { hayBuzon, sinLeer } from '@/lib/buzon';
 import type { Vista } from '@/lib/plataforma';
+import { situacion, textoMotivo, type DatosAtencion } from '@/lib/atencion';
+import { contextoAtencion } from '@/lib/atencion-servidor';
 
 /**
  * Lo que Sorela tiene pendiente, para su inicio.
@@ -109,22 +111,32 @@ export async function GET() {
     });
   }
 
+  /* Solo quien te necesita de verdad (lib/atencion.ts): te escribió, preguntó,
+     pidió plaza, la formación o una cita. Las apuntadas a la masterclass no
+     cuentan: van solas con los correos y el grupo. Antes entraba todo lo que
+     estaba en «Nuevo» y salían 157 «sin atender» que no esperaban nada. */
   const contactos = valor<FirebaseFirestore.QuerySnapshot>(1);
-  if (contactos) {
+  const ctx = contactos ? await contextoAtencion(db).catch(() => null) : null;
+  if (contactos && ctx) {
     const sinAtender = contactos.docs
       .map((d) => d.data())
-      .filter((v) => !v.estado || v.estado === 'Nuevo')
-      .map((v) => ({ nombre: quien(v.nombre, v.correo), dias: Math.floor((ahora - (fechaDe(v.creado)?.getTime() ?? ahora)) / DIA) }))
+      .map((v) => ({ v, s: situacion(v as DatosAtencion, ctx(v.correo)) }))
+      .filter(({ s }) => s.grupo === 'te-necesita')
+      .map(({ v, s }) => ({
+        nombre: quien(v.nombre, v.correo),
+        porque: textoMotivo(s)?.corto ?? 'Te necesita',
+        dias: Math.floor((ahora - (s.desde ? new Date(s.desde).getTime() : fechaDe(v.creado)?.getTime() ?? ahora)) / DIA),
+      }))
       .sort((a, b) => b.dias - a.dias);
     if (sinAtender.length) {
       const viejo = sinAtender[0];
       responder.push({
         id: 'contactos',
-        titulo: plural(sinAtender.length, 'contacto sin atender', 'contactos sin atender'),
+        titulo: plural(sinAtender.length, 'persona te necesita', 'personas te necesitan'),
         detalle:
           viejo.dias >= 1
-            ? `${primerNombre(viejo.nombre)} lleva ${plural(viejo.dias, 'día', 'días')} esperando`
-            : nombres(sinAtender.map((x) => primerNombre(x.nombre))),
+            ? `${primerNombre(viejo.nombre)}: ${viejo.porque.toLowerCase()} hace ${plural(viejo.dias, 'día', 'días')}`
+            : nombres(sinAtender.map((x) => `${primerNombre(x.nombre)} (${x.porque.toLowerCase()})`)),
         ir: 'leads',
         urgente: viejo.dias >= 2,
       });

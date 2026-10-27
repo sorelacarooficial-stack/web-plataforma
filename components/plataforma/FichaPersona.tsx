@@ -46,6 +46,8 @@ export type Persona = {
   campana?: string | null;
   pagina?: string | null;
   registrada?: boolean;
+  /** El grupo de WhatsApp de la masterclass: si pulsó el botón, si se le recordó y si Sorela la marcó dentro. */
+  grupo?: { pulso: boolean; medido: boolean; recordada: boolean; dentro: boolean };
 };
 
 /* Mismos nombres y mismo orden que la lista y que la API. Si aquí se colara
@@ -145,14 +147,14 @@ function nombrePila(nombre: string): string {
 const PIDIO: Record<Tipo, string> = {
   clienta: 'me has dejado tus datos en la web pidiendo información sobre las sesiones',
   alumna: 'me has dejado tus datos en la web pidiendo información sobre las formaciones',
-  comunidad: 'me has dejado tus datos para entrar en la Comunidad Divine',
+  comunidad: 'te has apuntado a la masterclass gratuita «Antes de tocar» del 6 de noviembre',
   otro: 'me has dejado tus datos en la web',
 };
 
 const ASUNTO: Record<Tipo, string> = {
   clienta: 'Tu consulta sobre las sesiones de Técnica Divine',
   alumna: 'Tu consulta sobre las formaciones de Técnica Divine',
-  comunidad: 'Tu solicitud para la Comunidad Divine',
+  comunidad: 'Tu plaza en la masterclass «Antes de tocar»',
   otro: 'Tu mensaje desde la web de Técnica Divine',
 };
 
@@ -176,6 +178,7 @@ export default function FichaPersona({
   onCerrar,
   onCambiarEstado,
   onApuntar,
+  onMarcarGrupo,
 }: {
   persona: Persona | null;
   onCerrar: () => void;
@@ -189,6 +192,8 @@ export default function FichaPersona({
    */
   onCambiarEstado: (id: string, estado: string) => Promise<boolean> | void;
   onApuntar: (id: string, texto: string) => Promise<void>;
+  /** Marca a mano si está dentro del grupo de WhatsApp. Sin él, la casilla no sale. */
+  onMarcarGrupo?: (id: string, dentro: boolean) => Promise<boolean> | void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   /* Dónde empezó el gesto del ratón. Hace falta para no confundir «soltar el
@@ -634,6 +639,30 @@ export default function FichaPersona({
             De dónde viene no cambia nunca; esto sí: es por dónde va la conversación.
           </p>
         </section>
+
+        {persona.grupo && onMarcarGrupo && (
+          <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <h3 className={css.rotuloSeccion}>Grupo de WhatsApp</h3>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={persona.grupo.dentro}
+                onChange={(e) => onMarcarGrupo(persona.id, e.target.checked)}
+              />
+              <span>Está en el grupo</span>
+            </label>
+            <p className={css.apunte}>
+              {persona.grupo.pulso
+                ? 'Pulsó el botón para entrar al grupo.'
+                : persona.grupo.medido
+                  ? persona.grupo.recordada
+                    ? 'No ha pulsado el botón del grupo; ya se le mandó el recordatorio.'
+                    : 'Todavía no ha pulsado el botón del grupo.'
+                  : 'Se apuntó antes de medir los clics: no se sabe si pulsó.'}{' '}
+              WhatsApp no deja ver quién está dentro, así que la casilla la marcas tú.
+            </p>
+          </section>
+        )}
 
         <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <h3 className={css.rotuloSeccion}>Seguimiento</h3>

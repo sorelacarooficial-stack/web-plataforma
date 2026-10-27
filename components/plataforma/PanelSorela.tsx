@@ -30,6 +30,8 @@ type Contacto = {
   tipo: Tipo;
   estado: string;
   creado: string | null;
+  /** Qué toca con ella (lib/atencion.ts): solo `te-necesita` es trabajo de Sorela. */
+  situacion?: { grupo: string } | null;
 };
 
 type Prioridad = { id: string; porque: string; accion: string };
@@ -559,14 +561,22 @@ export function PanelSorela({ ir }: { ir: (v: Vista) => void }) {
   const l = useMemo(() => lista ?? [], [lista]);
   const ahora = Date.now();
   const semana = l.filter((c) => c.creado && ahora - new Date(c.creado).getTime() < 7 * DIA).length;
-  const sinAtender = l.filter((c) => c.estado === 'Nuevo').length;
+  /* «Te necesitan» es lo que de verdad espera a Sorela: te escribió, preguntó,
+     pidió la formación o una cita (lib/atencion.ts). Las apuntadas a la
+     masterclass no: van solas con los correos y el grupo. Antes se contaba
+     todo lo que estaba en «Nuevo» y salían 157 «sin atender» que no lo eran.
+     Sin situación (si el servidor no la pudo calcular), «Nuevo» cuenta como
+     que te necesita: mejor de más que esconder a alguien. */
+  const grupo = (c: Contacto) => c.situacion?.grupo ?? (c.estado === 'Nuevo' ? 'te-necesita' : 'otro');
+  const teNecesitan = l.filter((c) => grupo(c) === 'te-necesita').length;
+  const enMasterclass = l.filter((c) => grupo(c) === 'lista').length;
   const faltan = Math.max(0, Math.ceil((new Date(APERTURA).getTime() - ahora) / DIA));
 
   const kpis = [
-    { label: 'Sin atender', valor: lista === null ? '·' : String(sinAtender), nota: 'contactos que nadie ha tocado', urgente: sinAtender > 0 },
-    { label: 'Esta semana', valor: lista === null ? '·' : String(semana), nota: 'han dejado sus datos en la web' },
-    { label: 'En total', valor: lista === null ? '·' : String(l.length), nota: 'desde que la web capta' },
-    { label: 'Abre la Comunidad', valor: faltan === 0 ? 'Hoy' : `${faltan} días`, nota: `${DIA_APERTURA}, ${HORA_ESPANA}` },
+    { label: 'Te necesitan', valor: lista === null ? '·' : String(teNecesitan), nota: teNecesitan ? 'te escribieron o pidieron algo' : 'nadie espera respuesta', urgente: teNecesitan > 0 },
+    { label: 'En la masterclass', valor: lista === null ? '·' : String(enMasterclass), nota: 'van solas: correos y grupo' },
+    { label: 'Esta semana', valor: lista === null ? '·' : String(semana), nota: `nuevas · ${l.length} en total` },
+    { label: 'Masterclass', valor: faltan === 0 ? 'Hoy' : `${faltan} días`, nota: `${DIA_APERTURA}, ${HORA_ESPANA}` },
   ];
 
   const redactar = useCallback(async (id: string, canal: 'whatsapp' | 'correo') => {
@@ -687,7 +697,9 @@ export function PanelSorela({ ir }: { ir: (v: Vista) => void }) {
                     {c.creado && ` · ${haceCuanto(c.creado)}`}
                   </span>
                 </span>
-                <span className={`${css.estado} ${CLASE_ESTADO[c.estado] ?? ''}`}>{c.estado}</span>
+                <span className={`${css.estado} ${CLASE_ESTADO[c.estado] ?? ''}`}>
+                  {grupo(c) === 'lista' ? 'Masterclass' : c.estado}
+                </span>
                 <span className={p.acciones}>
                   {c.whatsapp && (
                     <a className={p.accion} href={enlaceWhatsapp(c.whatsapp)} target="_blank" rel="noreferrer" aria-label={`WhatsApp a ${c.nombre}`} title="WhatsApp">
@@ -715,7 +727,9 @@ export function PanelSorela({ ir }: { ir: (v: Vista) => void }) {
                       )}
                     </button>
                   )}
-                  {c.estado === 'Nuevo' && (
+                  {/* «Atendido» solo para quien espera respuesta: a las de la
+                      masterclass no hay que escribirles una a una. */}
+                  {c.estado === 'Nuevo' && grupo(c) === 'te-necesita' && (
                     <button type="button" className={p.accionTexto} onClick={() => marcar(c.id, 'Contactado')}>
                       Atendido
                     </button>

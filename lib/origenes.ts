@@ -25,7 +25,7 @@ export type Tipo = (typeof TIPOS)[number];
 export const ETIQUETA_TIPO: Record<Tipo, string> = {
   clienta: 'Quiere tratarse',
   alumna: 'Quiere formarse',
-  comunidad: 'Lista de espera · masterclass',
+  comunidad: 'Masterclass',
   otro: 'Sin clasificar',
 };
 
@@ -33,7 +33,7 @@ export const ETIQUETA_TIPO: Record<Tipo, string> = {
 export const QUE_QUIERE: Record<Tipo, string> = {
   clienta: 'Quiere que le traten. Busca una sesión, no aprender la técnica.',
   alumna: 'Quiere formarse en la Técnica Divine.',
-  comunidad: 'Se apuntó a la lista de espera: va a la masterclass de apertura de la Comunidad Divine.',
+  comunidad: 'Se apuntó a la masterclass gratuita «Antes de tocar» del 6 de noviembre. Le llegan solos los correos y el enlace de Zoom.',
   otro: 'No se sabe qué busca: hay que preguntárselo.',
 };
 
@@ -49,7 +49,7 @@ export const COMO_LLEGO: Record<string, string> = {
   'formacion-base': 'Formación Base',
   'formacion-avanzado': 'Nivel Avanzado',
   comunidad: 'Página de la Comunidad Divine',
-  'lista-comunidad': 'Lista de espera de la comunidad',
+  'lista-comunidad': 'Formulario de la masterclass «Antes de tocar»',
   metodo: 'Página del método',
   sobre: 'Página «Sobre Sorela»',
   contacto: 'Formulario de contacto',
@@ -89,7 +89,7 @@ export const COMO_LLEGO: Record<string, string> = {
 export function origenCorto(origen: string | undefined | null): string {
   const o = (origen || '').toLowerCase().trim();
   if (!o) return 'Sin dato';
-  if (o.startsWith('lista-comunidad')) return 'Lista de espera';
+  if (o.startsWith('lista-comunidad')) return 'Masterclass';
   if (o === 'comunidad') return 'Página Comunidad';
   if (o === 'comunidad-plataforma') return 'Desde la plataforma';
   if (o.endsWith('-registro')) return 'Se registró';

@@ -43,6 +43,13 @@ cada cambio importante** (una línea por decisión, con la fecha).
 - Los correos van a la lista de espera de la web, NO al grupo de WhatsApp:
   quien está solo en el grupo no recibe nada (ni el Zoom del 6 nov). El
   enlace de Zoom hay que ponerlo también en el grupo.
+- CRM: «Te necesitan» = solo quien escribió, preguntó o pidió algo
+  (`situacion().grupo === 'te-necesita'`, lib/atencion.ts). Las apuntadas a la
+  masterclass van en «Masterclass · van solas» y no llevan «Ya le escribí».
+  En la ficha hay una casilla manual «Está en el grupo» (`enGrupo`): WhatsApp
+  no deja leer quién está dentro. (2026-10-27)
+- A las apuntadas nunca se les habla de la Comunidad Divine, tampoco en el
+  mensaje de WhatsApp que propone la ficha: solo de la masterclass.
 - La serie de correos vive en Firestore (Programados): cambiar
   `lib/serie-lanzamiento.ts` no cambia lo ya guardado.
 

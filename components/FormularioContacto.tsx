@@ -11,7 +11,7 @@ import { conLlegada } from '@/lib/llegada';
 
 const MOTIVOS = [
   'Quiero formarme',
-  'Lista de espera de la comunidad',
+  'Quiero ir a la masterclass gratuita',
   'Soy clienta y busco terapeuta',
   'Colaboración',
 ];

@@ -294,6 +294,17 @@ export async function GET(peticion: Request) {
        * correos de la lista de espera.
        */
       situacion: ctx ? situacion(v as DatosAtencion, ctx(v.correo)) : null,
+      /* El grupo de WhatsApp de la masterclass (lib/grupo-whatsapp.ts):
+         si pulsó el botón, si se le mandó el recordatorio y si Sorela la ha
+         marcado a mano como dentro. WhatsApp no deja leer quién está. */
+      grupo: {
+        pulso: Boolean(v.grupoClic?.primero),
+        medido: Boolean(v.grupoMedido),
+        recordada: Boolean(v.recordatorioGrupo),
+        dentro: v.enGrupo === true,
+      },
+      // Si le llegó el correo de la lista (bienvenida de la masterclass).
+      correoLista: typeof v.correoLista?.estado === 'string' ? (v.correoLista.estado as string) : null,
     };
   });
 
@@ -340,6 +351,7 @@ export async function PATCH(peticion: Request) {
     estado?: string;
     nota?: string;
     tipo?: string;
+    enGrupo?: boolean;
     datos?: Record<string, unknown>;
   };
   try {
@@ -369,6 +381,17 @@ export async function PATCH(peticion: Request) {
    * formarse. Machacando el origen se perdería para siempre por dónde llegó,
    * que es lo que dice cómo llamarla.
    */
+  /* Marcar a mano si está dentro del grupo de WhatsApp. No cambia su estado
+     ni la saca de la lista: es solo una marca para el seguimiento. */
+  if (typeof cuerpo.enGrupo === 'boolean') {
+    try {
+      await ref.update({ enGrupo: cuerpo.enGrupo, enGrupoCambiado: FieldValue.serverTimestamp() });
+    } catch {
+      return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true, id, enGrupo: cuerpo.enGrupo });
+  }
+
   if (typeof tipo === 'string') {
     if (!TIPOS.includes(tipo as Tipo)) {
       return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });

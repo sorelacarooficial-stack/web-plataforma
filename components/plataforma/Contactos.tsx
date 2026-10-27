@@ -54,7 +54,7 @@ type Contacto = Persona & { estado: Estado; tipo: Tipo; situacion?: Situacion | 
  */
 const PESTANAS: { id: string; titulo: string; grupos: Grupo[] | null; soloSiHay?: boolean }[] = [
   { id: 'te-necesita', titulo: 'Te necesitan', grupos: ['te-necesita'] },
-  { id: 'lista', titulo: 'Lista de espera', grupos: ['lista'] },
+  { id: 'lista', titulo: 'Masterclass', grupos: ['lista'] },
   { id: 'avisar', titulo: 'Esperan aviso', grupos: ['avisar'] },
   { id: 'hablando', titulo: 'Hablando', grupos: ['hablando'] },
   { id: 'cerradas', titulo: 'Cerradas / Descartadas', grupos: ['cerrado', 'descartado'] },
@@ -877,6 +877,22 @@ export default function Contactos() {
     }
   }
 
+  /** Marca a mano si está dentro del grupo de WhatsApp (WhatsApp no deja leerlo). */
+  async function marcarGrupo(id: string, dentro: boolean) {
+    const poner = (v: boolean) =>
+      setLista((l) => l?.map((c) => (c.id === id && c.grupo ? { ...c, grupo: { ...c.grupo, dentro: v } } : c)) ?? l);
+    poner(dentro);
+    const r = await fetch('/api/contactos', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, enGrupo: dentro }),
+    }).catch(() => null);
+    if (r?.ok) return true;
+    poner(!dentro);
+    setFallo('No se ha podido guardar si está en el grupo. Vuelve a intentarlo.');
+    return false;
+  }
+
   /** Apunta algo de una persona. Se recarga para que la ficha lo enseñe ya. */
   async function apuntar(id: string, texto: string) {
     const r = await fetch('/api/contactos', {
@@ -1155,10 +1171,16 @@ export default function Contactos() {
      momento —ya le ha escrito y está esperando o charlando—, y separarlos en
      dos columnas era obligarla a decidir algo que no le sirve. El estado fino
      se sigue guardando y se ve como una etiqueta pequeña en la tarjeta. */
-  const COLUMNAS: { id: string; titulo: string; pista: string; estados: Estado[]; alSoltar: Estado }[] = [
-    { id: 'atender', titulo: 'Por atender', pista: 'Nadie les ha escrito', estados: ['Nuevo'], alSoltar: 'Nuevo' },
-    { id: 'hablando', titulo: 'Hablando', pista: 'Ya les has escrito', estados: ['Contactado', 'En conversación'], alSoltar: 'Contactado' },
-    { id: 'cerrado', titulo: 'Cerrado', pista: 'Compraron o reservaron', estados: ['Cerrado'], alSoltar: 'Cerrado' },
+  /* «Te necesitan» y «Masterclass» comparten el estado «Nuevo» y se separan
+     por la situación (lib/atencion.ts): la primera es quien espera respuesta
+     de Sorela; la segunda, las apuntadas a la masterclass, que van solas con
+     los correos y el grupo. Antes iban juntas en «Por atender» y el tablero
+     decía «157 sin atender» de gente a la que no había que escribir. */
+  const COLUMNAS: { id: string; titulo: string; pista: string; es: (c: Contacto) => boolean; alSoltar: Estado }[] = [
+    { id: 'atender', titulo: 'Te necesitan', pista: 'Esperan tu respuesta', es: (c) => c.estado === 'Nuevo' && grupoDe(c) === 'te-necesita', alSoltar: 'Nuevo' },
+    { id: 'masterclass', titulo: 'Masterclass', pista: 'Van solas: correos y grupo', es: (c) => c.estado === 'Nuevo' && grupoDe(c) !== 'te-necesita', alSoltar: 'Nuevo' },
+    { id: 'hablando', titulo: 'Hablando', pista: 'Ya les has escrito', es: (c) => c.estado === 'Contactado' || c.estado === 'En conversación', alSoltar: 'Contactado' },
+    { id: 'cerrado', titulo: 'Cerrado', pista: 'Compraron o reservaron', es: (c) => c.estado === 'Cerrado', alSoltar: 'Cerrado' },
   ];
 
   const siguiente = (e: Estado): Estado | null =>
@@ -1355,8 +1377,11 @@ export default function Contactos() {
      componente nuevo en cada repintado y desmontaría la tarjeta a mitad de un
      arrastre. */
   function tarjeta(c: Contacto) {
-    const sig = siguiente(c.estado);
-    const dias = espera(c);
+    /* A las de la masterclass no hay que escribirles una a una: ni «Ya le
+       escribí» ni «Esperando N días». En su lugar, cómo va lo del grupo. */
+    const auto = c.estado === 'Nuevo' && grupoDe(c) !== 'te-necesita';
+    const sig = auto ? null : siguiente(c.estado);
+    const dias = auto ? 0 : espera(c);
     return (
       <motion.div
         key={c.id}
@@ -1423,6 +1448,17 @@ export default function Contactos() {
               {dias >= 2 ? `Esperando ${dias} días` : cuando(c.creado)}
               {c.estado === 'En conversación' && ' · en conversación'}
             </span>
+            {auto && c.grupo && (
+              <button
+                type="button"
+                className={k.marcarGrupo}
+                aria-pressed={c.grupo.dentro}
+                onClick={() => marcarGrupo(c.id, !c.grupo!.dentro)}
+                title={c.grupo.pulso ? 'Pulsó el botón del grupo' : 'No consta que haya pulsado el botón del grupo'}
+              >
+                {c.grupo.dentro ? '✓ En el grupo' : c.grupo.pulso ? 'Pulsó · ¿dentro?' : '¿En el grupo?'}
+              </button>
+            )}
             <span className={k.iconos}>
               {c.whatsapp && (
                 <a className={k.icono} data-canal="whatsapp" href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp a ${c.nombre}`} title="WhatsApp">
@@ -1465,7 +1501,7 @@ export default function Contactos() {
   }
 
   const columnaMovil = COLUMNAS.find((col) => col.id === pestana) ?? COLUMNAS[0];
-  const cuentaDe = (col: (typeof COLUMNAS)[number]) => visibles.filter((c) => col.estados.includes(c.estado)).length;
+  const cuentaDe = (col: (typeof COLUMNAS)[number]) => visibles.filter(col.es).length;
   const activos = COLUMNAS.reduce((s, col) => s + cuentaDe(col), 0);
 
   return (
@@ -1732,7 +1768,7 @@ export default function Contactos() {
           <LayoutGroup>
             <div className={k.tablero}>
               {COLUMNAS.map((col) => {
-                const suyos = visibles.filter((c) => col.estados.includes(c.estado));
+                const suyos = visibles.filter(col.es);
                 /* Por tandas, como la lista: las primeras 50 y un botón para
                    las siguientes. Arrastrar sigue funcionando igual porque la
                    columna de destino no necesita tener pintadas las suyas. */
@@ -1757,7 +1793,7 @@ export default function Contactos() {
                       setArrastrando(null);
                       const id = e.dataTransfer.getData('text/plain');
                       const c = lista.find((x) => x.id === id);
-                      if (c && !col.estados.includes(c.estado)) mover(id, col.alSoltar);
+                      if (c && !col.es(c)) mover(id, col.alSoltar);
                     }}
                     aria-label={col.titulo}
                   >
@@ -1779,7 +1815,9 @@ export default function Contactos() {
                           {busca || filtrosPuestos
                             ? 'Nadie con ese filtro.'
                             : col.id === 'atender'
-                              ? 'Todo atendido. Bien hecho.'
+                              ? 'Nadie espera respuesta. Bien hecho.'
+                              : col.id === 'masterclass'
+                                ? 'Aquí aparecen las apuntadas a la masterclass.'
                               : 'Arrastra aquí una tarjeta.'}
                         </p>
                       )}
@@ -1824,6 +1862,7 @@ export default function Contactos() {
         onCerrar={() => setAbierta(null)}
         onCambiarEstado={(id, estado) => cambiarEstado(id, estado as Estado)}
         onApuntar={apuntar}
+        onMarcarGrupo={marcarGrupo}
       />
 
       {/* La `key` hace que al pasar de apuntar a corregir —o de una persona a
