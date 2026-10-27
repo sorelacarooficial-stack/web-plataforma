@@ -17,7 +17,7 @@
 
 .embudo {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: clamp(10px, 1.4vw, 18px);
 }
 
@@ -44,6 +44,11 @@
   color: inherit;
   cursor: default;
   transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.paso[data-columna='masterclass'] {
+  --color: #8f8578;
+  --tinta: var(--ink-3, #4f4840);
 }
 
 .paso[data-columna='hablando'] {
@@ -269,7 +274,7 @@
 
 .tablero {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: clamp(10px, 1.4vw, 18px);
   align-items: start;
 }
@@ -693,6 +698,19 @@
 
 /* ---------- Móvil: el embudo hace de pestañas ---------- */
 
+/* Con cuatro columnas, entre tableta y portátil pequeño no caben: dos y dos. */
+@media (min-width: 901px) and (max-width: 1560px) {
+  .embudo,
+  .tablero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* En dos filas la flecha de un paso al siguiente ya no señala nada. */
+  .flecha {
+    display: none;
+  }
+}
+
 @media (max-width: 900px) {
   .embudo {
     gap: 6px;
@@ -889,4 +907,27 @@
   top: auto;
   bottom: calc(100% + 4px);
   transform-origin: bottom right;
+}
+
+/* Lo del grupo de WhatsApp en la tarjeta de las apuntadas a la masterclass. */
+.marcarGrupo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line-4);
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 12.5px;
+  white-space: nowrap;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.marcarGrupo[aria-pressed='true'] {
+  border-color: transparent;
+  background: #e7efe4;
+  color: var(--bien-letra, #3d5a33);
 }
