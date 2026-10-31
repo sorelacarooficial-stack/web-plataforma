@@ -50,6 +50,9 @@ cada cambio importante** (una línea por decisión, con la fecha).
   no deja leer quién está dentro. (2026-10-27)
 - A las apuntadas nunca se les habla de la Comunidad Divine, tampoco en el
   mensaje de WhatsApp que propone la ficha: solo de la masterclass.
+- Vídeo de invitación de Sorela en la portada de `/comunidad`
+  (`components/VideoInvitacion.tsx`, `public/video/`), sin reproducción
+  automática; Medidor cuenta reproducciones. (2026-10-31)
 - La serie de correos vive en Firestore (Programados): cambiar
   `lib/serie-lanzamiento.ts` no cambia lo ya guardado.
 
@@ -70,3 +73,12 @@ cada cambio importante** (una línea por decisión, con la fecha).
 - Variables en Vercel: `META_CAPI_TOKEN`, `META_DATASET_ID`, `META_ADS_TOKEN`
   (token de usuario largo, caduca ~mediados de diciembre).
 - Para cambiar anuncios: sustituirlos, no pausar la campaña.
+- Desde 2026-10-31: España 2 €, Latam 6 €, Caliente 2 €. Anuncio A8 «Vamos a
+  ser honestas» (Sorela a cámara, 9:16 para historias/reels y 4:5 para feed)
+  en los tres conjuntos. La versión larga dice «zonas de congestión»: no va a
+  Meta (regla de no prometer salud); la de Meta no lo dice.
+- Campaña «MC 6 nov · Recordatorio a registradas» `120255122303810427`
+  (alcance, solo el público de registradas): R1 «Mañana a las 19:00» el 5 nov y
+  R2 «Hoy a las 19:00» el 6 nov hasta las 19:00, 2,50 € cada una. Enlace a
+  `/grupo`; cuando llegue el Zoom, se puede cambiar el de R2.
+- Medios públicos para Meta: rama `medios-anuncios` (raw.githubusercontent).

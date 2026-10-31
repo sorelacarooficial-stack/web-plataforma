@@ -1,0 +1,83 @@
+/* El vídeo de invitación en la portada oscura de la masterclass: una ventana
+   con borde de oro fino y el botón de reproducir en la tinta de la marca. */
+.marco {
+  position: relative;
+  margin: 4px 0 0;
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 16 / 9;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #120d09;
+  box-shadow:
+    0 30px 60px -30px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(217, 180, 124, 0.28);
+}
+
+.video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.play {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px 8px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(23, 20, 15, 0.82);
+  backdrop-filter: blur(6px);
+  color: #f6eee4;
+  font: inherit;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(217, 180, 124, 0.35);
+  transition: transform 0.2s ease;
+}
+
+.play:hover {
+  transform: translateY(-1px);
+}
+
+.play:focus-visible {
+  outline: 2px solid #d9b47c;
+  outline-offset: 3px;
+}
+
+.icono {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #f3d9ae, #c99a5c);
+  color: #1c1510;
+}
+
+.texto {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: 1.2;
+}
+
+.texto b {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.texto span {
+  font-size: 13px;
+  color: #cbbfaf;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play {
+    transition: none;
+  }
+}
