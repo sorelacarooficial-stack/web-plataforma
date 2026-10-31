@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import VideoInvitacion from '@/components/VideoInvitacion';
 import Contador from '@/components/Contador';
 import ListaEspera from '@/components/ListaEspera';
 import { OBJECIONES, PIEZAS_MASTERCLASS } from '@/lib/contenido';
@@ -66,6 +67,7 @@ export default function Comunidad() {
               Te enseño qué observar antes de empezar, cómo interpretar lo que ves y cómo decidir qué
               necesita cada cuerpo. Apúntate y te mando el enlace de Zoom.
             </p>
+            <VideoInvitacion />
             <Contador sobre="oscuro" />
           </div>
 
