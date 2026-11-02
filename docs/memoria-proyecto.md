@@ -82,3 +82,19 @@ cada cambio importante** (una línea por decisión, con la fecha).
   R2 «Hoy a las 19:00» el 6 nov hasta las 19:00, 2,50 € cada una. Enlace a
   `/grupo`; cuando llegue el Zoom, se puede cambiar el de R2.
 - Medios públicos para Meta: rama `medios-anuncios` (raw.githubusercontent).
+
+## Presentación en directo de la masterclass
+
+- `/clase` (y `clase.sorelacarodivine.com` cuando se dé de alta en DNS y
+  Vercel): la presentación de 28 diapositivas que Sorela comparte por Zoom.
+  Aquí sí salen la Comunidad Divine y los precios (se cuentan en directo). No
+  se indexa; con `CLASE_CLAVE` en Vercel solo abre con `?k=<clave>`.
+  (2026-11-02)
+- Todo lo que cambia (fecha, precios, plazas, vídeos de TV y de Beatriz,
+  ciudades del mapa) está en `lib/clase.ts`. Diapositivas en
+  `components/clase/diapositivas.tsx`.
+- El QR apunta siempre a `/clase/entrar`, que redirige a `CLASE_ENLACE_PAGO`
+  (Vercel) o, si no hay, al WhatsApp de Sorela con el mensaje escrito.
+- Teclas: → siguiente, G vista general, P presentador (otra ventana
+  sincronizada), F pantalla completa, B negro. Plazas, votos y ciudades se
+  pulsan en directo y se ven igual en las dos ventanas.
