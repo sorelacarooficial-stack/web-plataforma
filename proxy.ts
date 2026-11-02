@@ -34,7 +34,7 @@ import { NextResponse, type NextRequest } from 'next/server';
  * algún día dejará de cuadrar. Añadir uno nuevo es añadirlo aquí y darlo de
  * alta en el DNS y en Vercel.
  */
-const SUBDOMINIOS = ['alumnas', 'presentacion'] as const;
+const SUBDOMINIOS = ['alumnas', 'presentacion', 'clase'] as const;
 
 /**
  * Protección contra peticiones falsificadas desde otra web (CSRF): una página
