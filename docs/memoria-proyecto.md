@@ -106,3 +106,5 @@ cada cambio importante** (una línea por decisión, con la fecha).
   después de formarte?» (23) y Bienvenida a la Comunidad Divine® (24). Fuera:
   «Las 23:00», 10 plazas de fundadora y el precio 49 €/490 € de la comunidad.
   Precios y fechas en `lib/clase.ts` (`FORMACIONES`, `ONLINE`).
+- 2026-11-04: diapositiva 18 «Otro abdomen, el mismo criterio», antes/después
+  que se arrastra con la foto que mandó Sorela (`public/clase/abdomen2-*`).

@@ -719,6 +719,32 @@ function Casos({ v, on }: Props) {
   );
 }
 
+/* ------------------------------------------------------------- 17b */
+
+function Caso2({ v, on }: Props) {
+  return (
+    <div className={css.dosCol} style={{ gridTemplateColumns: '0.5fr 1fr' }}>
+      <div className={css.columna}>
+        <Eyebrow className={v(0)}>Casos reales</Eyebrow>
+        <Titulo texto={'Otro abdomen,\n*el mismo criterio.*'} on={on(0)} className={css.h2} />
+        <div className={css.columna} style={{ gap: 14, marginTop: 40, alignItems: 'flex-start' }}>
+          {['Qué observó', 'Qué interpretó', 'Qué decidió'].map((t, k) => (
+            <span key={t} className={`${css.chipOscuro} ${v(0, css.rIzq)}`} style={d(0.6 + k * 0.15)}>
+              <span className={css.puntoOro} /> {t}
+            </span>
+          ))}
+        </div>
+        <p className={`${css.pieFoto} ${v(1)}`} style={{ marginTop: 34 }}>
+          Arrastra la línea para comparar
+        </p>
+      </div>
+      <div className={v(0, css.rEscala)} style={d(0.4)}>
+        <AntesDespues antes="/clase/abdomen2-antes.webp" despues="/clase/abdomen2-despues.webp" on={on(1)} alto={692} />
+      </div>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------- 18 */
 
 function Lunes({ v, on }: Props) {
@@ -1268,6 +1294,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'secuencia', titulo: 'Paso 3 · La secuencia', tema: 'crema', fase: 3, pasos: 3, Vista: Secuencia, notas: 'Un paso por clic: estimulación ganglionar (~10 min), escucha el abdomen, maniobras lentas.' },
   { id: 'cuerpo-limpio', titulo: 'Sobre un cuerpo limpio', tema: 'oscuro', fase: 3, pasos: 3, Vista: CuerpoLimpio, notas: 'La base primero. Cada clic apila una capa: aparatología, cosmética, tratamientos.' },
   { id: 'casos', titulo: 'Una sesión. 55 minutos', tema: 'oscuro', pasos: 2, Vista: Casos, notas: 'Clic: el abdomen se descubre. Clic: el rostro. Puedes arrastrar la línea mientras explicas.' },
+  { id: 'caso-2', titulo: 'Otro abdomen, el mismo criterio', tema: 'oscuro', pasos: 1, Vista: Caso2, notas: 'Clic: la línea barre y se ve el después. Arrástrala despacio mientras cuentas qué observaste, qué interpretaste y qué decidiste.' },
   { id: 'lunes', titulo: 'Tu lunes', tema: 'crema', pasos: 3, Vista: Lunes, notas: 'Una pregunta por clic. Puedes marcar las casillas.' },
   { id: 'prueba', titulo: 'Lo que cambia en tu cabina', tema: 'oscuro', pasos: 3, Vista: Prueba, notas: 'Un escalón por clic. El antes/después se descubre en el primero.' },
   { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Clic: fase 1 online. Clic: fase 2 en Bogotá, día a día. Clic: tres días para aprender, practicar y ganar seguridad.' },
