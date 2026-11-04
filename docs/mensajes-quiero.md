@@ -12,8 +12,8 @@ de Sorela**. Lo que va entre corchetes se rellena antes del viernes.
 >
 > ¿Qué formación te interesa?
 > 1️⃣ Divine® Online
-> 2️⃣ Presencial en Medellín · 11, 12 y 13 de diciembre
-> 3️⃣ Presencial en Caracas · 18, 19 y 20 de diciembre
+> 2️⃣ Presencial en Caracas · 4, 5 y 6 de diciembre
+> 3️⃣ Presencial en Medellín · 10, 11 y 12 de diciembre
 >
 > Respóndeme con el número y te cuento cómo reservar.
 
@@ -21,15 +21,15 @@ de Sorela**. Lo que va entre corchetes se rellena antes del viernes.
 
 > Divine® Online: precio habitual 900 USD, **precio especial 750 USD**.
 > Incluye la Academia Virtual, dosieres y material audiovisual, una clase en
-> directo con Sorela por cada módulo, clase práctica online con modelo real,
-> la Comunidad Divine® y acompañamiento continuado.
+> directo con Sorela por cada módulo, clase práctica online con modelo real
+> y acompañamiento continuado.
 >
 > Reservas tu plaza con **250 USD**, y la reserva te garantiza el precio
 > especial. ¿Cómo prefieres pagar: tarjeta, transferencia o cripto?
 
-## 3 · Si elige presencial (Medellín o Caracas)
+## 3 · Si elige presencial (Caracas o Medellín)
 
-> Tienes tres formas de hacerlo en [Medellín / Caracas], [fechas]:
+> Tienes tres formas de hacerlo en [Caracas / Medellín], [fechas]:
 >
 > • **Completa · 3 días** (abdomen, piernas y glúteos, facial y brazos, con la
 >   academia online incluida): 2.250 USD · reserva 250 USD
@@ -68,5 +68,5 @@ de Sorela**. Lo que va entre corchetes se rellena antes del viernes.
 
 ---
 
-Pendiente antes del viernes: enlace de Stripe, datos de transferencia local y
-de cripto, y quién hace de persona de apoyo durante la masterclass.
+La formación completa (3 días) es la que homologa y da paso a la Membresía
+Divine®, que se presenta después en una sesión privada.

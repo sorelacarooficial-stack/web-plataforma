@@ -59,7 +59,7 @@ const ALUMNA: Pieza[] = [
   },
   {
     titulo: 'La Comunidad Divine',
-    texto: 'Se presenta en la masterclass de apertura. Ese día se cuenta qué hay dentro.',
+    texto: 'Para terapeutas homologadas: se abre al completar la formación de 3 días.',
   },
 ];
 

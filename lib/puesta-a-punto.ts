@@ -1,0 +1,128 @@
+import 'server-only';
+import { FieldValue } from 'firebase-admin/firestore';
+import { baseDeDatos, hayFirebase } from './firebase-servidor';
+import { COLECCION_CAMPANAS } from './campanas';
+import { coleccion as convocatorias, refrescarFormaciones } from './convocatorias';
+import { CURSO_POR_DEFECTO } from './convocatorias-tipos';
+
+/**
+ * Cambios de datos que no se pueden hacer desde el código porque viven en
+ * Firestore. Los lanza el cron de la mañana (`tareasDelDia`) ANTES de mandar
+ * los correos, y cada uno se hace una sola vez.
+ *
+ * 4 nov 2026, tras la reunión con Sorela:
+ *
+ *  1. Las convocatorias presenciales de diciembre, publicadas y abiertas:
+ *     Caracas 4-6 dic y Medellín 10-12 dic. Con `create` y un id fijo: si ya
+ *     existen (o Sorela las creó a mano con ese id), no se tocan.
+ *  2. La masterclass es por Google Meet, no por Zoom. Los correos programados
+ *     de la serie ya estaban guardados con «Zoom»: se corrigen, y el botón
+ *     «Entrar a la masterclass», que iba vacío a propósito, apunta a /directo.
+ *     También dejan de decir que ese día «se abre la Comunidad Divine»: la
+ *     comunidad es solo para terapeutas homologadas y no se vende en la clase.
+ *
+ * Solo se cambian los textos que coinciden tal cual; lo que Sorela haya
+ * reescrito a mano se respeta (salvo la palabra «Zoom», que se cambia siempre).
+ */
+
+const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
+const MARCA = { coleccion: 'ajustes', doc: 'puesta-a-punto' };
+
+export const CONVOCATORIAS_DICIEMBRE = [
+  { id: 'caracas-2026-12', ciudad: 'Caracas', inicio: '2026-12-04', fin: '2026-12-06' },
+  { id: 'medellin-2026-12', ciudad: 'Medellín', inicio: '2026-12-10', fin: '2026-12-12' },
+];
+
+/** Cambios de texto en los correos programados: [lo que había, lo que va]. */
+const CAMBIOS_TEXTO: [string, string][] = [
+  [
+    '**Si nunca has usado Zoom**, descárgalo hoy en el móvil o el ordenador. Así mañana entras con un toque.',
+    '**Es por Google Meet.** En el ordenador se abre en el navegador, sin instalar nada. En el móvil, descarga hoy la app Google Meet: así mañana entras con un toque.',
+  ],
+  ['El botón de abajo te lleva directa a Zoom.', 'El botón de abajo te lleva directa a la clase, en Google Meet.'],
+  [
+    ' y al final te cuento por fin qué es la Comunidad Divine.',
+    ' y al final te cuento cómo seguir formándote conmigo.',
+  ],
+  ['empieza la masterclass en directo en la que abro la Comunidad Divine.', 'empieza la masterclass en directo «Antes de tocar».'],
+  ['masterclass en directo por Zoom** y abro la Comunidad Divine.', 'masterclass en directo por Google Meet**.'],
+  ['Mañana a primera hora te mando el enlace para entrar.', 'Mañana a primera hora te mando el enlace para entrar (también lo tienes ya aquí: sorelacarodivine.com/directo).'],
+];
+
+function corregir(t: string): string {
+  let r = t;
+  for (const [a, b] of CAMBIOS_TEXTO) r = r.split(a).join(b);
+  return r.replace(/\bZoom\b/g, 'Google Meet');
+}
+
+export async function puestaAPunto(): Promise<{ id: string; enviados: number; fallidos: number; omitidos: number }[]> {
+  if (!hayFirebase()) return [];
+  const db = baseDeDatos();
+  const marca = db.collection(MARCA.coleccion).doc(MARCA.doc);
+  const hecho = (await marca.get()).data() ?? {};
+  const informe: { id: string; enviados: number; fallidos: number; omitidos: number }[] = [];
+
+  /* 1 · Convocatorias de diciembre. */
+  if (!hecho.convocatoriasDiciembre) {
+    let creadas = 0;
+    for (const c of CONVOCATORIAS_DICIEMBRE) {
+      const ok = await convocatorias()
+        .doc(c.id)
+        .create({
+          curso: CURSO_POR_DEFECTO.id,
+          inicio: c.inicio,
+          fin: c.fin,
+          horario: {},
+          ciudad: c.ciudad,
+          lugar: '',
+          plazas: null,
+          // Formación completa, 2.250 USD (en céntimos). Nunca sale en la web.
+          precio: 225000,
+          moneda: 'USD',
+          abierta: true,
+          publicada: true,
+          inscritas: {},
+          ocupadas: 0,
+          creadaPor: 'puesta-a-punto',
+          creada: FieldValue.serverTimestamp(),
+          actualizada: FieldValue.serverTimestamp(),
+        })
+        .then(() => true)
+        .catch(() => false);
+      if (ok) creadas++;
+    }
+    refrescarFormaciones();
+    await marca.set({ convocatoriasDiciembre: FieldValue.serverTimestamp() }, { merge: true });
+    informe.push({ id: 'convocatorias-diciembre', enviados: creadas, fallidos: 0, omitidos: CONVOCATORIAS_DICIEMBRE.length - creadas });
+  }
+
+  /* 2 · Correos programados: de Zoom a Google Meet. */
+  if (!hecho.correosMeet) {
+    const programadas = await db.collection(COLECCION_CAMPANAS).where('estado', 'in', ['programada', 'pausada', 'borrador']).get();
+    let tocados = 0;
+    for (const d of programadas.docs) {
+      const v = d.data();
+      const cambios: Record<string, unknown> = {};
+      for (const campo of ['asunto', 'cuerpo'] as const) {
+        const antes = String(v[campo] ?? '');
+        const despues = corregir(antes);
+        if (despues !== antes) cambios[campo] = despues;
+      }
+      if (v.boton && v.boton.texto) {
+        const texto = corregir(String(v.boton.texto));
+        const vacio = !String(v.boton.enlace ?? '').trim();
+        const esEntrar = /entrar|masterclass|clase|directo/i.test(texto);
+        const enlace = vacio && esEntrar ? `${WEB}/directo` : String(v.boton.enlace ?? '');
+        if (texto !== v.boton.texto || enlace !== (v.boton.enlace ?? '')) cambios.boton = { texto, enlace };
+      }
+      if (Object.keys(cambios).length) {
+        await d.ref.update(cambios);
+        tocados++;
+      }
+    }
+    await marca.set({ correosMeet: FieldValue.serverTimestamp() }, { merge: true });
+    informe.push({ id: 'correos-google-meet', enviados: tocados, fallidos: 0, omitidos: 0 });
+  }
+
+  return informe;
+}

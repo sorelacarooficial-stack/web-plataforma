@@ -313,7 +313,7 @@ export const TERCEROS: { quien: string; cuando: string }[] = [
       'Si entras en el grupo de la lista de espera o escribes a Sorela o a una terapeuta por WhatsApp desde la web.',
   },
   {
-    quien: 'Zoom',
+    quien: 'Google (Google Meet)',
     cuando: 'Si te conectas a la masterclass en directo con el enlace que recibes por correo.',
   },
   {

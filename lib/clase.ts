@@ -2,7 +2,7 @@
  * La presentación en directo de la masterclass «Antes de tocar».
  *
  * Vive en `/clase` y en `clase.sorelacarodivine.com` (proxy.ts). Es lo que
- * Sorela comparte por Zoom el viernes 6 de noviembre: aquí SÍ salen la
+ * Sorela comparte por Google Meet el viernes 6 de noviembre: aquí SÍ salen la
  * Comunidad Divine y los precios, porque se cuentan en directo al final de la
  * clase. Por eso la página no se indexa y, si en Vercel está `CLASE_CLAVE`,
  * solo se abre con `?k=<clave>`.
@@ -20,8 +20,8 @@ export const EMPIEZA = '2026-11-06T18:00:00Z';
  * de Colombia). `inicio` es el primer día a las 8:00 hora local.
  */
 export const SEDES = [
-  { ciudad: 'Medellín', fechas: '11, 12 y 13 de diciembre', inicio: '2026-12-11T13:00:00Z' },
-  { ciudad: 'Caracas', fechas: '18, 19 y 20 de diciembre', inicio: '2026-12-18T12:00:00Z' },
+  { ciudad: 'Caracas', fechas: '4, 5 y 6 de diciembre', inicio: '2026-12-04T12:00:00Z' },
+  { ciudad: 'Medellín', fechas: '10, 11 y 12 de diciembre', inicio: '2026-12-10T13:00:00Z' },
 ];
 
 /** Formación presencial (Medellín y Caracas). Precios en USD. */
