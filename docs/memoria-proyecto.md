@@ -129,4 +129,8 @@ cada cambio importante** (una línea por decisión, con la fecha).
   vende en la masterclass: se presenta como servicio añadido y se vende en una
   sesión privada para alumnas. Pagos: Stripe (tarjeta), transferencia local
   (CO/VE) y cripto. Decir «activación/estimulación» de ganglios, nunca «abrir».
+- 2026-11-04: recta final. Pausado «A3 Sin ritmo ES» (0 registros en 3 días).
+  España 1 €, Latam 7 €, Caliente (retargeting) 4 €. A 4 nov: 352 registros por
+  174 € (0,50 €/registro; Latam 0,30 €). La campaña termina sola el 6 nov a las
+  18:00; R1 (5 nov) y R2 (6 nov hasta las 19:00) a las registradas.
 
