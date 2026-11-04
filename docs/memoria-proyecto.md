@@ -106,3 +106,19 @@ cada cambio importante** (una línea por decisión, con la fecha).
   después de formarte?» (23) y Bienvenida a la Comunidad Divine® (24). Fuera:
   «Las 23:00», 10 plazas de fundadora y el precio 49 €/490 € de la comunidad.
   Precios y fechas en `lib/clase.ts` (`FORMACIONES`, `ONLINE`).
+- 2026-11-04: diapositiva 18 «Otro abdomen, el mismo criterio», antes/después
+  que se arrastra con la foto que mandó Sorela (`public/clase/abdomen2-*`).
+- 2026-11-04: «Localiza tu terapeuta» = solo terapeutas homologadas por
+  Sorela (sin buscador de ejemplo). «Marketing e IA» pasa a «Agente IA para tu
+  negocio». La diapositiva del agente: un agente conectado a todo el negocio
+  (agenda, WhatsApp, Instagram, fichas, servicios, cobros) con el objetivo de
+  que el centro facture más. No se promete facturación garantizada.
+- 2026-11-04: antes del agente, dos diapositivas nuevas. «¿Cuántas creéis que
+  la tecnología y la IA están cambiando radicalmente el mundo…?» (votos SÍ/NO
+  del chat + 86 %, WEF Future of Jobs 2025) y «Una cosa es formarte. Otra es
+  hacer crecer tu negocio» (41,9 % de empresas españolas siguen abiertas a los
+  5 años, INE cohorte 2018 → te forma, te acompaña, crece tu negocio). El
+  agente: «Por eso hemos construido el Agente IA Divine, adaptado a tu
+  negocio»: responde, ejecuta, publica, registra y vende; dato 55 % de Zenoti
+  (vendedor de software, citar como tal).
+

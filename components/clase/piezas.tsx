@@ -78,7 +78,9 @@ export function Cuenta({ a, on, ms = 1600, miles = true, decimales = 0 }: { a: n
   }, [on, a, ms]);
   const txt = decimales ? v.toFixed(decimales) : Math.round(v).toString();
   /* A mano: es-ES no pone el punto en los números de 4 cifras (2250). */
-  return <>{miles ? txt.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : txt}</>;
+  const [entero, dec] = txt.split('.');
+  const conPuntos = miles ? entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : entero;
+  return <>{dec ? `${conPuntos},${dec}` : conPuntos}</>;
 }
 
 /* ============================================================== iconos */

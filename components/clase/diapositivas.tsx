@@ -719,6 +719,32 @@ function Casos({ v, on }: Props) {
   );
 }
 
+/* ------------------------------------------------------------- 17b */
+
+function Caso2({ v, on }: Props) {
+  return (
+    <div className={css.dosCol} style={{ gridTemplateColumns: '0.5fr 1fr' }}>
+      <div className={css.columna}>
+        <Eyebrow className={v(0)}>Casos reales</Eyebrow>
+        <Titulo texto={'Otro abdomen,\n*el mismo criterio.*'} on={on(0)} className={css.h2} />
+        <div className={css.columna} style={{ gap: 14, marginTop: 40, alignItems: 'flex-start' }}>
+          {['Qué observó', 'Qué interpretó', 'Qué decidió'].map((t, k) => (
+            <span key={t} className={`${css.chipOscuro} ${v(0, css.rIzq)}`} style={d(0.6 + k * 0.15)}>
+              <span className={css.puntoOro} /> {t}
+            </span>
+          ))}
+        </div>
+        <p className={`${css.pieFoto} ${v(1)}`} style={{ marginTop: 34 }}>
+          Arrastra la línea para comparar
+        </p>
+      </div>
+      <div className={v(0, css.rEscala)} style={d(0.4)}>
+        <AntesDespues antes="/clase/abdomen2-antes.webp" despues="/clase/abdomen2-despues.webp" on={on(1)} alto={692} />
+      </div>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------- 18 */
 
 function Lunes({ v, on }: Props) {
@@ -1041,15 +1067,13 @@ function Comunidad({ v, on }: Props) {
 
 /* -------------------------------------------------------------- 22 */
 
-function Dentro({ activa, estatica, v, on }: Props) {
-  const k = useGoteo(3, activa && !estatica, 700, 2200);
-  const busca = estatica ? 3 : k;
+function Dentro({ v, on }: Props) {
   const items = [
     ['pantalla', 'Clase en directo', 'Una cada mes, conmigo'],
     ['avion', 'Canal de Telegram', 'Novedades y avisos de la comunidad'],
     ['ficha', 'Fichas y descargables', 'Para usar en cabina'],
-    ['pin', 'Localiza tu terapeuta', 'Tu ficha en la web, para que te encuentren'],
-    ['chispa', 'Marketing e IA', 'Formación para tu negocio'],
+    ['pin', 'Localiza tu terapeuta', 'Si estás homologada por Sorela, tu ficha aparece en el mapa de terapeutas Divine®'],
+    ['chispa', 'Agente IA para tu negocio', 'Adaptado a tu centro, a tus servicios y a tus clientas'],
   ];
   return (
     <div className={css.columna}>
@@ -1064,18 +1088,14 @@ function Dentro({ activa, estatica, v, on }: Props) {
             <h3>{t}</h3>
             <p>{s}</p>
             {j === 3 && (
-              <div className={css.buscador}>
-                <span className={css.buscadorCampo}>
-                  <Icono n="lupa" className={css.chipIcono} />
-                  {'Vigo'.slice(0, busca > 0 ? 4 : 0) || 'Tu ciudad'}
-                </span>
-                <span className={`${css.resultado} ${busca > 1 ? css.avisoOn : ''}`}>
-                  <span className={css.puntoOro} /> Terapeuta Divine · Vigo
-                </span>
-                <span className={`${css.resultado} ${busca > 2 ? css.avisoOn : ''}`}>
-                  <span className={css.puntoOro} /> Terapeuta Divine · Madrid
-                </span>
-              </div>
+              <span className={css.sello}>
+                <Icono n="escudo" className={css.chipIcono} /> Homologada Divine®
+              </span>
+            )}
+            {j === 4 && (
+              <span className={css.sello}>
+                <Icono n="chispa" className={css.chipIcono} /> Conectado a tu negocio
+              </span>
             )}
           </div>
         ))}
@@ -1086,76 +1106,210 @@ function Dentro({ activa, estatica, v, on }: Props) {
 
 /* -------------------------------------------------------------- 23 */
 
-function Agente({ activa, estatica, v, on }: Props) {
-  const [vuelta, setVuelta] = useState(0);
-  const mensajes: [string, string][] = [
-    ['ella', 'Hola, ¿tienes hueco esta semana para un drenaje?'],
-    ['agente', '¡Hola, Lucía! Tengo el jueves a las 17:00 o el viernes a las 10:00. ¿Cuál te va mejor?'],
-    ['ella', 'El jueves'],
-    ['agente', 'Hecho: jueves a las 17:00. Te lo recuerdo el miércoles.'],
-  ];
-  const k = useGoteo(mensajes.length + 1, activa && !estatica, 1700, 900, vuelta);
-  const vistos = estatica ? mensajes.length + 1 : k;
-  const escribiendo = !estatica && vistos < mensajes.length && mensajes[vistos]?.[0] === 'agente';
-  const funciones = [
-    ['chat', 'Responde', 'A tus clientas, a cualquier hora'],
-    ['calendario', 'Agenda', 'Da cita y mueve las que se caen'],
-    ['campana', 'Recuerda', 'La cita, el día antes'],
-    ['carpeta', 'Organiza', 'Tu semana y tu negocio'],
-  ];
+function PreguntaIA({ v, on }: Props) {
+  const { estado, cambiar } = useClase();
+  const [si, no] = estado.tec;
+  const total = si + no;
+  const sumar = (k: 0 | 1, n: number) =>
+    cambiar((st) => {
+      const tec = [...st.tec] as [number, number];
+      tec[k] = Math.max(0, tec[k] + n);
+      return { ...st, tec };
+    });
   return (
-    <div className={css.dosCol} style={{ gridTemplateColumns: '1.1fr 0.9fr' }}>
-      <div className={css.columna}>
-        <Eyebrow className={v(0)}>Tu agente Divine</Eyebrow>
-        <Titulo texto={'Tu asistente, *mientras tú\nestás en cabina*'} on={on(0)} className={css.h2} />
-        <div className={css.cuatro} style={{ marginTop: 30 }}>
-          {funciones.map(([i, t, s], j) => (
-            <div key={t} className={`${css.oscuraCaja} ${css.funcion} ${v(0, css.rArriba)}`} style={d(0.5 + j * 0.15)}>
-              <span className={css.circuloIconoOscuro}>
-                <Icono n={i} />
-              </span>
-              <div>
-                <b>{t}</b>
-                <span>{s}</span>
+    <div className={css.columna}>
+      <Eyebrow className={v(0)}>Una pregunta antes de seguir</Eyebrow>
+      <Titulo
+        texto={'¿Cuántas creéis que la tecnología y la IA\n*están cambiando radicalmente*\nel mundo y la forma de trabajar?'}
+        on={on(0)}
+        className={`${css.h2} ${css.tituloPregunta}`}
+      />
+      <div className={css.encuesta}>
+        {(['Sí', 'No'] as const).map((t, k) => {
+          const n = estado.tec[k];
+          const pct = total ? Math.round((n / total) * 100) : 0;
+          return (
+            <div key={t} className={`${css.oscuraCaja} ${css.voto2} ${v(0, css.rArriba)}`} style={d(1.4 + k * 0.15)}>
+              <div className={css.filaEntre}>
+                <b className={css.voto2Texto}>{t}</b>
+                <span className={css.voto2Num} key={n}>
+                  {n}
+                  {total > 0 && <em> · {pct} %</em>}
+                </span>
+              </div>
+              <div className={css.voto}>
+                <span className={css.votoBarra} style={{ width: `${pct}%` }} />
+              </div>
+              <div className={css.fila}>
+                <button type="button" className={css.boton} onClick={(e) => (e.stopPropagation(), sumar(k as 0 | 1, 1))}>
+                  +1
+                </button>
+                <button type="button" className={css.boton} onClick={(e) => (e.stopPropagation(), sumar(k as 0 | 1, 5))}>
+                  +5
+                </button>
+                <button type="button" className={css.miniSuave} onClick={(e) => (e.stopPropagation(), sumar(k as 0 | 1, -1))}>
+                  −1
+                </button>
               </div>
             </div>
-          ))}
-        </div>
-        <span className={`${css.chipOscuro} ${v(0)}`} style={{ ...d(1.3), alignSelf: 'flex-start', marginTop: 24 }}>
-          <Icono n="escudo" className={css.chipIcono} /> Hecho solo para terapeutas
+          );
+        })}
+      </div>
+      <div className={`${css.datoGrande} ${v(1)}`}>
+        <b>
+          <Cuenta a={86} on={on(1)} /> %
+        </b>
+        <span>
+          de las empresas del mundo espera que la IA <strong>transforme su negocio antes de 2030</strong>.
+          <small>Foro Económico Mundial · Future of Jobs Report 2025 (1.000 empresas, 55 países)</small>
         </span>
       </div>
-      <div className={css.columna} style={{ alignItems: 'center' }}>
-        <Eyebrow className={v(0)}>Así funcionará</Eyebrow>
-        <Movil className={v(0, css.rArriba)}>
-          <div className={css.chatCabeza}>
-            <span className={css.chatAvatar}>D</span>
+      <Chip icono="chat" className={`${css.chipEsquina} ${v(0)}`} style={d(1.2)}>
+        Escribe SÍ o NO en el chat
+      </Chip>
+    </div>
+  );
+}
+
+function Crecer({ v, on }: Props) {
+  const tres = [
+    ['libro', 'Te formas', 'La Técnica Divine®, con método y criterio.'],
+    ['gente', 'Creces acompañada', 'Una comunidad profesional que no te deja sola.'],
+    ['chispa', 'Crece tu negocio', 'Un Agente IA Divine adaptado a tu centro.'],
+  ];
+  return (
+    <div className={css.columna}>
+      <Eyebrow className={v(0)}>Nos hemos dado cuenta</Eyebrow>
+      <Titulo texto={'Una cosa es *formarte*.\nOtra es *hacer crecer tu negocio*.'} on={on(0)} className={css.h2} />
+      <div className={`${css.vidrio} ${css.datoCrema} ${v(0, css.rArriba)}`} style={d(0.9)}>
+        <b>
+          <Cuenta a={41.9} decimales={1} on={on(0)} ms={1800} /> %
+        </b>
+        <span>
+          de las empresas que nacen en España <strong>sigue abierta a los cinco años</strong>. Más de la mitad cierra antes.
+          <small>INE · Demografía Armonizada de Empresas (empresas nacidas en 2018)</small>
+        </span>
+      </div>
+      <p className={`${css.texto} ${css.textoAncho} ${v(1)}`} style={{ maxWidth: '60ch' }}>
+        Ser muy buena con las manos no basta para que la agenda se llene. Por eso Divine® no solo te forma: <b>te forma, te acompaña y hace crecer tu negocio.</b>
+      </p>
+      <div className={css.tres} style={{ margin: '34px 0 0' }}>
+        {tres.map(([i, t, s], k) => (
+          <div key={t} className={`${k === 2 ? css.epocaOscura : css.vidrio} ${css.pilar} ${v(2, css.rArriba)}`} style={d(k * 0.2)}>
+            <span className={k === 2 ? css.circuloIconoOscuro : css.circuloIcono}>
+              <Icono n={i} />
+            </span>
             <div>
-              <b>Tu centro · Asistente</b>
-              <span>en línea</span>
+              <b>{t}</b>
+              <span>{s}</span>
             </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------- 23 */
+
+/** Lo que el agente conecta, alrededor del centro (x, y en un lienzo de 760×620). */
+const CONEXIONES: [string, string, number, number][] = [
+  ['calendario', 'Agenda', 380, 70],
+  ['chat', 'WhatsApp', 640, 170],
+  ['chispa', 'Instagram y Facebook', 650, 450],
+  ['ficha', 'Registros y fichas', 380, 560],
+  ['pantalla', 'Tu web', 110, 450],
+  ['tarjeta', 'Ventas y cobros', 120, 170],
+];
+
+function Agente({ activa, estatica, v, on }: Props) {
+  const [vuelta, setVuelta] = useState(0);
+  const acciones: [string, string, string][] = [
+    ['avion', 'Publicado en Instagram y Facebook', 'Tu antes y después de la semana, con el texto y la hora que mejor funcionan.'],
+    ['chat', 'Clienta nueva por Instagram', 'Le explico el drenaje, resuelvo sus dudas y la dejo agendada.'],
+    ['ficha', 'Registro desde tu web', 'Ficha creada, bienvenida enviada y primera cita propuesta.'],
+    ['tarjeta', 'Venta cerrada', 'Bono de 5 sesiones pagado online. Ya está en tu agenda.'],
+  ];
+  const k = useGoteo(acciones.length, activa && !estatica, 1500, 1800, vuelta);
+  const vistas = estatica ? acciones.length : k;
+  return (
+    <div className={css.dosCol} style={{ gridTemplateColumns: '1fr 1fr', gap: 70 }}>
+      <div className={css.columna}>
+        <Eyebrow className={v(0)}>Por eso hemos construido</Eyebrow>
+        <Titulo texto={'El Agente IA Divine,\n*adaptado a tu negocio*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
+        <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.6), maxWidth: '36ch' }}>
+          Vinculado directamente a tu centro, a tu web y a tus redes. No solo responde: <b>ejecuta, publica y vende por ti.</b>
+        </p>
+        <div className={css.fila} style={{ marginTop: 26, gap: 10 }}>
+          {['Responde', 'Ejecuta', 'Publica', 'Registra', 'Vende'].map((t, i) => (
+            <span key={t} className={`${css.verbo} ${v(0)}`} style={d(1 + i * 0.12)}>
+              {t}
+            </span>
+          ))}
+        </div>
+        <svg viewBox="0 0 760 620" className={`${css.red} ${v(0, css.rEscala)}`} style={d(0.4)}>
+          {CONEXIONES.map(([, , x, y], i) => (
+            <g key={i}>
+              <path d={`M${x} ${y} L380 310`} className={css.redLinea} />
+              {on(0) && !estatica && <path d={`M${x} ${y} L380 310`} className={css.redFlujo} style={{ animationDelay: `${i * 0.25}s` }} />}
+            </g>
+          ))}
+          <circle cx="380" cy="310" r="118" className={css.redHalo} />
+          <circle cx="380" cy="310" r="86" className={css.redCentro} />
+          <text x="380" y="300" textAnchor="middle" className={css.redCentroTexto}>
+            Agente
+          </text>
+          <text x="380" y="338" textAnchor="middle" className={css.redCentroTexto2}>
+            Divine®
+          </text>
+          {CONEXIONES.map(([ico, t, x, y], i) => (
+            <g key={t} className={`${css.redNodo} ${on(0) ? css.on : ''}`} style={{ '--d': `${0.8 + i * 0.15}s` } as CSSProperties}>
+              <circle cx={x} cy={y} r="44" className={css.redNodoFondo} />
+              <svg x={x - 18} y={y - 18} width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={css.redIcono}>
+                <Icono n={ico} className={css.redIconoSvg} />
+              </svg>
+              <text x={x} y={y + (y > 310 ? 74 : -58)} textAnchor="middle" className={css.redTexto}>
+                {t}
+              </text>
+            </g>
+          ))}
+        </svg>
+      </div>
+      <div className={css.columna} style={{ gap: 18 }}>
+        <div className={`${css.oscuraCaja} ${css.panelAgente} ${v(0, css.rDer)}`} style={d(0.6)}>
+          <div className={css.filaEntre}>
+            <span className={css.panelTitulo}>
+              <span className={css.enLinea} /> Hoy, mientras estás en cabina
+            </span>
             <button type="button" className={css.chatOtraVez} onClick={(e) => (e.stopPropagation(), setVuelta((n) => n + 1))} title="Repetir">
               ↻
             </button>
           </div>
-          <div className={css.chat}>
-            {mensajes.map(([quien, t], i) => (
-              <div key={i} className={`${quien === 'ella' ? css.burbujaElla : css.burbujaAgente} ${i < vistos ? css.avisoOn : ''}`}>
-                {t}
+          <div className={css.acciones}>
+            {acciones.map(([ico, t, s], i) => (
+              <div key={t} className={`${css.accion} ${i < vistas ? css.avisoOn : ''}`}>
+                <span className={css.circuloIconoOscuro}>
+                  <Icono n={ico} />
+                </span>
+                <div>
+                  <b>{t}</b>
+                  <span>{s}</span>
+                </div>
               </div>
             ))}
-            {escribiendo && (
-              <div className={`${css.burbujaAgente} ${css.avisoOn} ${css.escribiendo}`}>
-                <i />
-                <i />
-                <i />
-              </div>
-            )}
-            <span className={`${css.chatSistema} ${vistos > mensajes.length ? css.avisoOn : ''}`}>
-              <Icono n="campana" className={css.chipIcono} /> Miércoles 10:00 · recordatorio enviado
-            </span>
           </div>
-        </Movil>
+        </div>
+        <div className={css.palancas}>
+          {['Más citas', 'Más ventas', 'Clientas que vuelven'].map((t, i) => (
+            <span key={t} className={`${css.palanca} ${v(1, css.rArriba)}`} style={d(i * 0.18)}>
+              {t}
+            </span>
+          ))}
+        </div>
+        <p className={`${css.notaDato} ${v(1)}`} style={d(0.7)}>
+          <b>55 %</b> de las clientas de salones y spas ya se siente cómoda hablando con una recepcionista de IA.
+          <small>Zenoti · encuesta a 1.000 clientas, 2025</small>
+        </p>
       </div>
     </div>
   );
@@ -1268,6 +1422,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'secuencia', titulo: 'Paso 3 · La secuencia', tema: 'crema', fase: 3, pasos: 3, Vista: Secuencia, notas: 'Un paso por clic: estimulación ganglionar (~10 min), escucha el abdomen, maniobras lentas.' },
   { id: 'cuerpo-limpio', titulo: 'Sobre un cuerpo limpio', tema: 'oscuro', fase: 3, pasos: 3, Vista: CuerpoLimpio, notas: 'La base primero. Cada clic apila una capa: aparatología, cosmética, tratamientos.' },
   { id: 'casos', titulo: 'Una sesión. 55 minutos', tema: 'oscuro', pasos: 2, Vista: Casos, notas: 'Clic: el abdomen se descubre. Clic: el rostro. Puedes arrastrar la línea mientras explicas.' },
+  { id: 'caso-2', titulo: 'Otro abdomen, el mismo criterio', tema: 'oscuro', pasos: 1, Vista: Caso2, notas: 'Clic: la línea barre y se ve el después. Arrástrala despacio mientras cuentas qué observaste, qué interpretaste y qué decidiste.' },
   { id: 'lunes', titulo: 'Tu lunes', tema: 'crema', pasos: 3, Vista: Lunes, notas: 'Una pregunta por clic. Puedes marcar las casillas.' },
   { id: 'prueba', titulo: 'Lo que cambia en tu cabina', tema: 'oscuro', pasos: 3, Vista: Prueba, notas: 'Un escalón por clic. El antes/después se descubre en el primero.' },
   { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Clic: fase 1 online. Clic: fase 2 en Bogotá, día a día. Clic: tres días para aprender, practicar y ganar seguridad.' },
@@ -1275,8 +1430,10 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Lo que incluye entra solo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
   { id: 'despues', titulo: '¿Y qué pasa después de formarte?', tema: 'crema', pasos: 2, Vista: Despues, notas: 'Clic: muchas terminan solas, con dudas. Clic: «Por eso hemos creado algo más».' },
   { id: 'comunidad', titulo: 'Bienvenida a la Comunidad Divine®', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'Bienvenida a la Comunidad Divine®. Clic: aprendiendo, acompañada, evolucionando.' },
-  { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Las cinco cosas. El buscador de terapeutas se escribe solo.' },
-  { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 0, Vista: Agente, notas: 'El chat se reproduce solo. ↻ en el móvil lo repite.' },
+  { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Las cinco cosas. Localiza tu terapeuta: solo las homologadas por Sorela. Agente IA adaptado a su negocio.' },
+  { id: 'pregunta-ia', titulo: '¿La IA está cambiando el mundo?', tema: 'oscuro', pasos: 1, Vista: PreguntaIA, notas: 'Pregunta y pide SÍ o NO en el chat. Suma con +1 / +5. Clic: el 86 % (Foro Económico Mundial, Future of Jobs Report 2025: el 86 % de las empresas espera que la IA transforme su negocio antes de 2030).' },
+  { id: 'crecer', titulo: 'Formarte y hacer crecer tu negocio', tema: 'crema', pasos: 2, Vista: Crecer, notas: 'Nos hemos dado cuenta: solo el 41,9 % de las empresas que nacen en España sigue abierta a los cinco años (INE, empresas nacidas en 2018). Clic: por eso Divine te forma, te acompaña y hace crecer tu negocio. Clic: los tres pilares.' },
+  { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Por eso hemos construido el Agente IA Divine, adaptado a tu negocio: responde, ejecuta, publica en redes, gestiona registros y vende. Dato de abajo: Zenoti (empresa de software de salones), encuesta a 1.000 clientas en EE. UU., 2025. Se conecta con agenda, WhatsApp, Instagram, fichas, servicios y cobros. Las acciones del día entran solas (↻ las repite). Clic: más citas, menos huecos, clientas que vuelven.' },
   { id: 'escanea', titulo: 'Escanea y reserva', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'El QR lleva a /clase/entrar. Pega también el enlace en el chat de Zoom.' },
   { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. El QR sigue visible para reservar.' },
   { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. Recuerda Bogotá, 11, 12 y 13 de diciembre.' },
