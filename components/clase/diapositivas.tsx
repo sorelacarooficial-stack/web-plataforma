@@ -18,6 +18,8 @@ export type Props = {
   paso: number;
   activa: boolean;
   estatica: boolean;
+  /** Ventana del presentador: los vídeos se ven pero no suenan. */
+  muda?: boolean;
   qr: string;
   /** Visible a partir del paso k. */
   on: (k?: number) => boolean;
@@ -1456,21 +1458,23 @@ function Gracias({ activa, estatica, v, on }: Props) {
 /**
  * Una diapositiva que es un vídeo a pantalla completa. Empieza solo al llegar
  * (la tecla o el clic de Sorela cuenta como gesto, así que suena) y se para al
- * irse. Pulsar encima lo pausa o lo sigue. En la vista general y en la de
- * presentador sale solo la portada.
+ * irse. Pulsar encima lo pausa o lo sigue. En la vista general y en
+ * «siguiente» sale solo la portada; en la diapositiva actual del presentador
+ * se reproduce sin sonido (el audio sale solo por la ventana que se comparte).
  */
 function diapoVideo(src: string, portada: string) {
-  return function DiapoVideo({ activa, estatica }: Props) {
+  return function DiapoVideo({ activa, estatica, muda = false }: Props) {
     const ref = useRef<HTMLVideoElement>(null);
     const [bloqueado, setBloqueado] = useState(false);
     useEffect(() => {
       const v = ref.current;
       if (!v || estatica) return;
+      v.muted = muda;
       if (activa) {
         v.currentTime = 0;
         v.play().then(() => setBloqueado(false)).catch(() => setBloqueado(true));
       } else v.pause();
-    }, [activa, estatica]);
+    }, [activa, estatica, muda]);
     if (estatica) {
       // eslint-disable-next-line @next/next/no-img-element
       return <img src={portada} alt="" className={css.videoLleno} />;
@@ -1483,6 +1487,7 @@ function diapoVideo(src: string, portada: string) {
           poster={portada}
           className={css.videoLleno}
           playsInline
+          muted={muda}
           preload="auto"
           onClick={(e) => {
             e.stopPropagation();
