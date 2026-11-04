@@ -52,6 +52,7 @@ import Contactos from './Contactos';
 import Acuerdos from './Acuerdos';
 import Proximamente from './Proximamente';
 import ComunidadHomologadas from './ComunidadHomologadas';
+import AgenteProximamente from './AgenteProximamente';
 import Aula from './Aula';
 import SubirClases from './SubirClases';
 import Agenda from './Agenda';
@@ -249,6 +250,8 @@ export default function Plataforma({
   return (
     <div className={css.pantalla}>
       <Motas className={css.motas} />
+      {/* El anuncio del Agente IA Divine: se abre solo la primera vez. */}
+      <AgenteProximamente />
       {/* Los logros que se van ganando, con confeti. Solo para quien aprende. */}
       {!puedeVerComo && <Celebracion />}
       {/* La bienvenida: foto, perfil y, si es miembro, su ficha del mapa. Se
