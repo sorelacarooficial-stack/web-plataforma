@@ -4,7 +4,7 @@ import { createContext, useContext } from 'react';
 
 /**
  * Lo que cambia en directo y tienen que ver igual la ventana que se comparte
- * por Zoom y la del presentador: plazas llenas, votos, ciudades encendidas…
+ * por Google Meet y la del presentador: plazas llenas, votos, ciudades encendidas…
  * Deck.tsx lo guarda en localStorage y lo pasa entre ventanas con
  * BroadcastChannel.
  */

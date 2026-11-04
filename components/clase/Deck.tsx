@@ -9,14 +9,16 @@ import css from './clase.module.css';
  * El motor de la presentación.
  *
  * - Escenario fijo de 1920×1080 que se escala a la pantalla (se ve igual en
- *   Zoom, en el portátil y en el proyector).
+ *   Google Meet, en el portátil y en el proyector).
  * - → / espacio / AvPág / clic: siguiente paso; ← / RePág: atrás. Funciona con
  *   cualquier pasador de diapositivas (mandan AvPág/RePág).
  * - F pantalla completa · G vista general · B pantalla en negro · P abre la
  *   vista de presentador · ? ayuda. Un número + Intro salta a esa diapositiva.
- * - La ventana del presentador y la que se comparte por Zoom van a la vez
- *   (BroadcastChannel), y lo que se toca en directo (plazas, votos, ciudades)
- *   se ve igual en las dos y sobrevive a recargar (localStorage).
+ * - La ventana del presentador y la que se comparte por Google Meet van a la
+ *   vez (BroadcastChannel), y lo que se toca en directo (plazas, votos,
+ *   ciudades) se ve igual en las dos y sobrevive a recargar (localStorage).
+ *   Los vídeos solo suenan en la que se comparte: en la del presentador van
+ *   sin sonido, para que no se oigan dos veces ni se cuelen por el micro.
  */
 
 const CANAL = 'clase-antes-de-tocar';
@@ -64,6 +66,7 @@ function Diapositiva({
   paso,
   qr,
   estatica = false,
+  muda = false,
 }: {
   diapo: Diapo;
   indice: number;
@@ -71,6 +74,8 @@ function Diapositiva({
   paso: number;
   qr: string;
   estatica?: boolean;
+  /** Vista del presentador: los vídeos se ven pero no suenan. */
+  muda?: boolean;
 }) {
   const activa = estado === 'actual';
   const on = (k = 0) => estatica || (activa && paso >= k);
@@ -93,7 +98,7 @@ function Diapositiva({
         </div>
       )}
       <div className={css.contenido}>
-        <Vista paso={paso} activa={activa} estatica={estatica} qr={qr} on={on} v={v} />
+        <Vista paso={paso} activa={activa} estatica={estatica} muda={muda} qr={qr} on={on} v={v} />
       </div>
       {!diapo.sinPie && (
         <footer className={css.pie}>
@@ -397,8 +402,8 @@ function Ayuda({ cerrar }: { cerrar: () => void }) {
           </p>
         ))}
         <p className={css.ayudaNota}>
-          En Zoom, comparte la ventana de la presentación y lleva la vista de presentador en la otra pantalla. Las plazas, votos y ciudades que pulses se ven en las
-          dos.
+          En Google Meet, comparte la pestaña de la presentación con «Compartir también el audio de la pestaña» y lleva la vista de presentador en la otra
+          pantalla (ahí los vídeos van sin sonido). Las plazas, votos y ciudades que pulses se ven en las dos.
         </p>
       </div>
     </div>
@@ -440,7 +445,7 @@ function Presentador({
     <div className={css.presentador}>
       <div className={css.presActual}>
         <Escala>
-          <Diapositiva diapo={d} indice={pos.i} estado="actual" paso={pos.paso} qr={qr} />
+          <Diapositiva diapo={d} indice={pos.i} estado="actual" paso={pos.paso} qr={qr} muda />
         </Escala>
       </div>
       <aside className={css.presLado}>

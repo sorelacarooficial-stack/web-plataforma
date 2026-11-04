@@ -158,4 +158,17 @@ cada cambio importante** (una línea por decisión, con la fecha).
   sale una vez y luego desde la pastilla «Agente IA · Pronto».
   ElevenLabs: flujo `ndDWySHHfE6q5cLUZHLY`; la red de la sesión bloquea
   elevenlabsusercontent.com (hay que permitirlo para descargar).
+- 2026-11-04: vídeo de la Membresía Divine montado (62,6 s,
+  `public/clase/video/membresia.mp4`): 7 planos de Seedance + voz de Nicole +
+  música de cine + lluvia, móvil, golpes con cola y barridos; color frío en el
+  dolor y dorado en la solución. La subida de la música cae en el corte a la
+  clase en directo (28,2 s) y el golpe final con el logo (55,55 s). Cierra con
+  «Solo para terapeutas homologadas por Sorela Caro». El vídeo de Sorela lleva
+  ya el piano debajo (delante en intro y cierre, de fondo en la entrevista).
+  Los dos a −16 LUFS. Los medios brutos de ElevenLabs están en la rama
+  `claude/eleven-medios` (carpeta `eleven/`), los bajó otra sesión.
+- 2026-11-04: en la ventana del presentador (P) los vídeos se ven pero van sin
+  sonido (antes sonaban en las dos y se podían colar por el micro en Meet).
+  Chromium de Playwright no reproduce H.264: para probar vídeos se sirve un
+  WebM con `ctx.route`.
 

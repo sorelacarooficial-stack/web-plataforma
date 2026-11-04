@@ -59,9 +59,9 @@ export const VIDEOS = {
   /** Antes de «Mi historia»: vídeo de 1 min que presenta a Sorela. */
   sorela: '/clase/video/sorela-presenta.mp4',
   sorelaPortada: '/clase/video/sorela-presenta.jpg',
-  /** Antes de la membresía: el vídeo cinematográfico. Vacío = la diapositiva no sale. */
-  membresia: '',
-  membresiaPortada: '',
+  /** Antes de la membresía: el vídeo cinematográfico (1 min). Vacío = la diapositiva no sale. */
+  membresia: '/clase/video/membresia.mp4',
+  membresiaPortada: '/clase/video/membresia.jpg',
 };
 
 export type Ciudad = { nombre: string; lng: number; lat: number; zona: 'es' | 'latam' };
