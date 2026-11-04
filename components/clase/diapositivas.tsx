@@ -973,7 +973,7 @@ function Online({ v, on }: Props) {
     ['carpeta', 'Dosieres profesionales y material audiovisual.'],
     ['pantalla', 'Una clase en directo con Sorela Caro por cada módulo.'],
     ['mano', 'Clase práctica online con modelo real.'],
-    ['gente', 'Grupo de alumnas y soporte durante la formación.'],
+    ['gente', 'Incorporación a la Comunidad Divine®.'],
     ['escudo', 'Acompañamiento y apoyo continuado.'],
   ];
   return (
@@ -1018,7 +1018,7 @@ function Online({ v, on }: Props) {
           <span className={css.brillo} />
         </div>
         <p className={`${css.textoSuave} ${v(3)}`} style={{ margin: 0 }}>
-          <b>Mucho más que una formación.</b> No vienes solamente a aprender una técnica: es el primer paso para homologarte y entrar en la Comunidad Divine®.
+          <b>Mucho más que una formación.</b> No vienes solamente a aprender una técnica. Vienes a formar parte de una comunidad profesional que te acompaña.
         </p>
       </div>
     </div>

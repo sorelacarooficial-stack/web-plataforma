@@ -21,8 +21,8 @@ de Sorela**. Lo que va entre corchetes se rellena antes del viernes.
 
 > Divine® Online: precio habitual 900 USD, **precio especial 750 USD**.
 > Incluye la Academia Virtual, dosieres y material audiovisual, una clase en
-> directo con Sorela por cada módulo, clase práctica online con modelo real
-> y acompañamiento continuado.
+> directo con Sorela por cada módulo, clase práctica online con modelo real,
+> la Comunidad Divine® y acompañamiento continuado.
 >
 > Reservas tu plaza con **250 USD**, y la reserva te garantiza el precio
 > especial. ¿Cómo prefieres pagar: tarjeta, transferencia o cripto?
@@ -68,5 +68,5 @@ de Sorela**. Lo que va entre corchetes se rellena antes del viernes.
 
 ---
 
-La formación completa (3 días) es la que homologa y da paso a la Membresía
-Divine®, que se presenta después en una sesión privada.
+Para la Membresía Divine® hay que pasar sí o sí por la formación completa de
+3 días: al terminarla, la terapeuta queda certificada y homologada.
