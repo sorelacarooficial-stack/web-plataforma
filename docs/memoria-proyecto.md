@@ -121,4 +121,12 @@ cada cambio importante** (una línea por decisión, con la fecha).
   agente: «Por eso hemos construido el Agente IA Divine, adaptado a tu
   negocio»: responde, ejecuta, publica, registra y vende; dato 55 % de Zenoti
   (vendedor de software, citar como tal).
+- 2026-11-04, reunión con Sorela: la presencial pasa de Bogotá a **Medellín
+  11-13 dic y Caracas 18-20 dic** (`SEDES` en `lib/clase.ts`). Sin QR: para
+  reservar se escribe **«QUIERO»** en el chat o en el grupo, y la persona de apoyo
+  escribe por privado (mensajes en `docs/mensajes-quiero.md`). Sin Telegram: el
+  canal de la comunidad va en la plataforma. La membresía (49 € / 47-49 USD) NO se
+  vende en la masterclass: se presenta como servicio añadido y se vende en una
+  sesión privada para alumnas. Pagos: Stripe (tarjeta), transferencia local
+  (CO/VE) y cripto. Decir «activación/estimulación» de ganglios, nunca «abrir».
 

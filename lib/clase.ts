@@ -14,10 +14,17 @@
 /** Viernes 6 nov 2026, 19:00 en España (CET, UTC+1). */
 export const EMPIEZA = '2026-11-06T18:00:00Z';
 
-/** La formación presencial en Bogotá empieza el viernes 11 dic (Bogotá, UTC−5). */
-export const BOGOTA_INICIO = '2026-12-11T13:00:00Z';
+/**
+ * Sedes de la formación presencial (reunión del 4 nov: se cambia Bogotá por
+ * Medellín y Caracas, por dónde están las registradas: 68 de Venezuela y 15
+ * de Colombia). `inicio` es el primer día a las 8:00 hora local.
+ */
+export const SEDES = [
+  { ciudad: 'Medellín', fechas: '11, 12 y 13 de diciembre', inicio: '2026-12-11T13:00:00Z' },
+  { ciudad: 'Caracas', fechas: '18, 19 y 20 de diciembre', inicio: '2026-12-18T12:00:00Z' },
+];
 
-/** Formación presencial en Bogotá, 11, 12 y 13 de diciembre. Precios en USD. */
+/** Formación presencial (Medellín y Caracas). Precios en USD. */
 export const FORMACIONES = [
   { nombre: 'Completa', dias: '3 días', precio: 2250, reserva: 250 },
   { nombre: 'Intensiva', dias: '2 días', precio: 1500, reserva: 250 },

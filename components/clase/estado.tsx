@@ -17,6 +17,8 @@ export type EstadoClase = {
   fichas: boolean[];
   /** Respuestas del chat a «¿la IA está cambiando el mundo?»: [sí, no]. */
   tec: [number, number];
+  /** Cuántas han escrito «QUIERO» para reservar. */
+  quiero: number;
 };
 
 export const ESTADO_INICIAL: EstadoClase = {
@@ -27,6 +29,7 @@ export const ESTADO_INICIAL: EstadoClase = {
   otras: 0,
   fichas: [false, false, false],
   tec: [0, 0],
+  quiero: 0,
 };
 
 export type Cambiar = (f: (e: EstadoClase) => EstadoClase) => void;

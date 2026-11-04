@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { BOGOTA_INICIO, FORMACIONES, ONLINE, VIDEOS } from '@/lib/clase';
+import { FORMACIONES, ONLINE, SEDES, VIDEOS } from '@/lib/clase';
 import { AntesDespues, Cuenta, CuentaAtras, Cuerpo, Icono, Mapa, Movil, Polvo, Quedan, Titulo, useGoteo, VideoModal } from './piezas';
 import { useClase } from './estado';
 import css from './clase.module.css';
@@ -842,23 +842,27 @@ function Prueba({ v, on }: Props) {
 
 function Metodologia({ activa, estatica, v, on }: Props) {
   const dias = [
-    ['11 dic', 'Abdomen', 'Trabajo interior y exterior.'],
-    ['12 dic', 'Piernas y glúteos', 'Lipedema · Linfedema · Armonización.'],
-    ['13 dic', 'Facial y brazos', 'Técnica y protocolos.'],
+    ['Día 1', 'Abdomen', 'Trabajo interior y exterior.'],
+    ['Día 2', 'Piernas y glúteos', 'Lipedema · Linfedema · Armonización.'],
+    ['Día 3', 'Facial y brazos', 'Técnica y protocolos.'],
   ];
   return (
     <div className={css.columna}>
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Metodología Divine®</Eyebrow>
         <Titulo texto={'Aprende *online*.\nPractica *presencialmente*.'} on={on(0)} className={css.h2} />
-        <span className={`${css.chipOscuro} ${css.chipGrande} ${v(0)}`} style={{ ...d(0.8), alignSelf: 'flex-start', marginTop: 26 }}>
-          <Icono n="pin" className={css.chipIcono} /> Bogotá · 11, 12 y 13 de diciembre
-          {!estatica && (
-            <em className={css.chipSuave}>
-              · <Quedan hasta={BOGOTA_INICIO} activa={activa} />
-            </em>
-          )}
-        </span>
+        <div className={css.fila} style={{ marginTop: 26 }}>
+          {SEDES.map((s, k) => (
+            <span key={s.ciudad} className={`${css.chipOscuro} ${css.chipGrande} ${v(0)}`} style={d(0.8 + k * 0.15)}>
+              <Icono n="pin" className={css.chipIcono} /> {s.ciudad} · {s.fechas}
+              {k === 0 && !estatica && (
+                <em className={css.chipSuave}>
+                  · <Quedan hasta={s.inicio} activa={activa} />
+                </em>
+              )}
+            </span>
+          ))}
+        </div>
       </div>
       <div className={css.fases2}>
         <div className={`${css.oscuraCaja} ${css.faseCaja} ${v(1, css.rIzq)}`}>
@@ -875,7 +879,7 @@ function Metodologia({ activa, estatica, v, on }: Props) {
         </div>
         <Flecha className={v(2)} style={{ width: 90, flex: 'none' }} />
         <div className={`${css.oscuraCaja} ${css.faseCaja} ${css.faseCajaOro} ${v(2, css.rDer)}`}>
-          <span className={css.faseNum}>Fase 2</span>
+          <span className={css.faseNum}>Fase 2 · Medellín o Caracas</span>
           <h3>Formación presencial</h3>
           <div className={css.dias}>
             {dias.map(([f, t, s], k) => (
@@ -900,23 +904,38 @@ function Metodologia({ activa, estatica, v, on }: Props) {
 
 function Presencial({ v, on }: Props) {
   const [elegida, setElegida] = useState(0);
+  const [sede, setSede] = useState(0);
+  const incluye = [
+    ['libro', 'Academia online incluida'],
+    ['gente', 'Material, modelos y comida'],
+    ['chispa', 'Cena de gala y certificado'],
+  ];
   return (
     <div className={css.columna}>
       <div className={css.filaEntre} style={{ alignItems: 'flex-end' }}>
         <div>
           <Eyebrow className={v(0)}>Technique Divine® · Formación presencial</Eyebrow>
-          <Titulo texto={'Tres días en *Bogotá*'} on={on(0)} className={css.h2} />
+          <Titulo texto={'Tres días, *dos ciudades*'} on={on(0)} className={css.h2} />
         </div>
         <div className={css.fila}>
-          <span className={`${css.chip} ${v(0)}`} style={d(0.5)}>
-            <Icono n="pin" className={css.chipIcono} /> Bogotá
-          </span>
-          <span className={`${css.chip} ${v(0)}`} style={d(0.6)}>
-            <Icono n="calendario" className={css.chipIcono} /> 11, 12 y 13 de diciembre
-          </span>
+          {SEDES.map((s, k) => (
+            <button
+              type="button"
+              key={s.ciudad}
+              className={`${css.sede} ${k === sede ? css.sedeOn : ''} ${v(0)}`}
+              style={d(0.5 + k * 0.12)}
+              onClick={(e) => (e.stopPropagation(), setSede(k))}
+            >
+              <Icono n="pin" className={css.chipIcono} />
+              <span>
+                <b>{s.ciudad}</b>
+                <small>{s.fechas}</small>
+              </span>
+            </button>
+          ))}
         </div>
       </div>
-      <div className={css.formaciones}>
+      <div className={css.formaciones} style={{ marginTop: 50 }}>
         {FORMACIONES.map((f, k) => (
           <button
             type="button"
@@ -937,10 +956,10 @@ function Presencial({ v, on }: Props) {
           </button>
         ))}
       </div>
-      <div className={`${css.zonas} ${v(1)}`} style={d(1)}>
-        {['Abdomen', 'Piernas y glúteos', 'Facial y brazos'].map((z) => (
-          <span key={z} className={css.zona}>
-            <span className={css.puntoOro} /> {z}
+      <div className={`${css.zonas} ${v(3)}`} style={d(0.6)}>
+        {incluye.map(([i, t]) => (
+          <span key={t} className={css.zona}>
+            <Icono n={i} className={css.chipIcono} /> {t}
           </span>
         ))}
       </div>
@@ -1039,14 +1058,15 @@ function Comunidad({ v, on }: Props) {
   return (
     <div className={css.dosCol} style={{ gridTemplateColumns: '0.85fr 1fr' }}>
       <div className={css.columna}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/clase/logo-tinta.webp" alt="" className={`${css.logoPeque} ${v(0)}`} />
         <Eyebrow className={v(0)}>Bienvenida a la</Eyebrow>
         <Titulo texto={'Comunidad\n*Divine®*'} on={on(0)} className={css.h1crema} paso={0.2} />
         <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.7), maxWidth: '30ch' }}>
           Divine® no quiere que simplemente aprendas. <b>Queremos que sigas creciendo, evolucionando y formando parte de una comunidad profesional.</b>
         </p>
-        <div className={css.fila} style={{ gap: 26, marginTop: 34 }}>
+        <span className={`${css.barraOscura} ${v(1)}`} style={{ ...d(0.5), alignSelf: 'flex-start', marginTop: 22 }}>
+          <Icono n="calendario" className={css.chipIcono} /> Te la presentamos en una sesión privada, solo para alumnas
+        </span>
+        <div className={css.fila} style={{ gap: 22, marginTop: 24 }}>
           {tres.map(([i, t], k) => (
             <span key={t} className={`${css.itemIcono} ${css.itemIconoPeque} ${v(1, css.rIzq)}`} style={d(k * 0.2)}>
               <span className={css.circuloIcono}>
@@ -1069,10 +1089,10 @@ function Comunidad({ v, on }: Props) {
 
 function Dentro({ v, on }: Props) {
   const items = [
-    ['pantalla', 'Clase en directo', 'Una cada mes, conmigo'],
-    ['avion', 'Canal de Telegram', 'Novedades y avisos de la comunidad'],
-    ['ficha', 'Fichas y descargables', 'Para usar en cabina'],
-    ['pin', 'Localiza tu terapeuta', 'Si estás homologada por Sorela, tu ficha aparece en el mapa de terapeutas Divine®'],
+    ['pantalla', 'Clase en directo', 'Una cada mes, conmigo, y queda grabada'],
+    ['chat', 'Canal en la plataforma', 'Consultas y aportes, dentro de la web de Divine®'],
+    ['ficha', 'Fichas, vídeos y dossier', 'Fichas descargables y vídeos paso a paso'],
+    ['pin', 'Localiza tu terapeuta', 'Si estás homologada por Sorela, apareces en el mapa mundial de terapeutas Divine®'],
     ['chispa', 'Agente IA para tu negocio', 'Adaptado a tu centro, a tus servicios y a tus clientas'],
   ];
   return (
@@ -1225,7 +1245,7 @@ const CONEXIONES: [string, string, number, number][] = [
 function Agente({ activa, estatica, v, on }: Props) {
   const [vuelta, setVuelta] = useState(0);
   const acciones: [string, string, string][] = [
-    ['avion', 'Publicado en Instagram y Facebook', 'Tu antes y después de la semana, con el texto y la hora que mejor funcionan.'],
+    ['avion', 'Reel creado y publicado', 'Un vídeo con tu marca, a partir de tu sesión, en Instagram y Facebook.'],
     ['chat', 'Clienta nueva por Instagram', 'Le explico el drenaje, resuelvo sus dudas y la dejo agendada.'],
     ['ficha', 'Registro desde tu web', 'Ficha creada, bienvenida enviada y primera cita propuesta.'],
     ['tarjeta', 'Venta cerrada', 'Bono de 5 sesiones pagado online. Ya está en tu agenda.'],
@@ -1238,10 +1258,10 @@ function Agente({ activa, estatica, v, on }: Props) {
         <Eyebrow className={v(0)}>Por eso hemos construido</Eyebrow>
         <Titulo texto={'El Agente IA Divine,\n*adaptado a tu negocio*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
         <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.6), maxWidth: '36ch' }}>
-          Vinculado directamente a tu centro, a tu web y a tus redes. No solo responde: <b>ejecuta, publica y vende por ti.</b>
+          Se instala en tu web con un complemento y se conecta con tu agenda, tu WhatsApp, tus redes y tus registros. No solo responde: <b>ejecuta, publica y vende por ti.</b>
         </p>
         <div className={css.fila} style={{ marginTop: 26, gap: 10 }}>
-          {['Responde', 'Ejecuta', 'Publica', 'Registra', 'Vende'].map((t, i) => (
+          {['Responde', 'Ejecuta', 'Publica', 'Crea vídeos', 'Vende'].map((t, i) => (
             <span key={t} className={`${css.verbo} ${v(0)}`} style={d(1 + i * 0.12)}>
               {t}
             </span>
@@ -1317,20 +1337,35 @@ function Agente({ activa, estatica, v, on }: Props) {
 
 /* -------------------------------------------------------------- 26 */
 
-function Escanea({ qr, v, on }: Props) {
+function Escanea({ v, on }: Props) {
+  const { estado, cambiar } = useClase();
   const pasos = [
-    ['qr', 'Entras', 'Desde el QR o el enlace del chat'],
-    ['tarjeta', 'Reservas tu plaza', `Online: ${ONLINE.reserva} USD · Presencial: desde ${Math.min(...FORMACIONES.map((f) => f.reserva))} USD`],
-    ['llave', 'Te llega el acceso', 'Al aula virtual, desde hoy'],
+    ['chat', 'Escribe «QUIERO»', 'En el chat o en el grupo de WhatsApp'],
+    ['gente', 'Te escribimos por privado', 'Desde el número oficial de Sorela, con tu reserva'],
+    ['tarjeta', 'Reservas tu plaza', 'Tarjeta · transferencia local · cripto'],
   ];
   return (
     <div className={css.dosCol} style={{ gridTemplateColumns: '0.9fr 1fr' }}>
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Cómo reservar</Eyebrow>
-        <Titulo texto="Escanea y *reserva*" on={on(0)} className={css.h2} />
-        <div className={`${css.qrCaja} ${v(0, css.rEscala)}`} style={d(0.4)}>
-          <div className={css.qr} dangerouslySetInnerHTML={{ __html: qr }} />
-          <span className={css.qrLaser} />
+        <Titulo texto={'Escribe *«QUIERO»*'} on={on(0)} className={css.h2} />
+        <div className={`${css.quieroCaja} ${v(0, css.rEscala)}`} style={d(0.4)}>
+          <span className={css.quieroPalabra}>QUIERO</span>
+          <div className={css.quieroCuenta}>
+            <b key={estado.quiero}>{estado.quiero}</b>
+            <span>personas ya lo han escrito</span>
+          </div>
+          <div className={css.fila} style={{ justifyContent: 'center' }}>
+            <button type="button" className={css.boton} onClick={(e) => (e.stopPropagation(), cambiar((s) => ({ ...s, quiero: s.quiero + 1 })))}>
+              +1
+            </button>
+            <button type="button" className={css.boton} onClick={(e) => (e.stopPropagation(), cambiar((s) => ({ ...s, quiero: s.quiero + 5 })))}>
+              +5
+            </button>
+            <button type="button" className={css.miniSuave} onClick={(e) => (e.stopPropagation(), cambiar((s) => ({ ...s, quiero: Math.max(0, s.quiero - 1) })))}>
+              −1
+            </button>
+          </div>
         </div>
       </div>
       <div className={css.columna} style={{ gap: 24, justifyContent: 'center' }}>
@@ -1344,6 +1379,12 @@ function Escanea({ qr, v, on }: Props) {
             <Icono n={i} className={css.pasoIcono} />
           </div>
         ))}
+        <p className={`${css.seguridad} ${v(3)}`} style={d(0.4)}>
+          <Icono n="escudo" className={css.chipIcono} />
+          <span>
+            <b>Por tu seguridad:</b> solo te escribiremos desde el número oficial de Sorela. Nadie de Divine te pedirá un pago por otro canal.
+          </span>
+        </p>
       </div>
     </div>
   );
@@ -1351,7 +1392,7 @@ function Escanea({ qr, v, on }: Props) {
 
 /* -------------------------------------------------------------- 27 */
 
-function Preguntas({ qr, v, on }: Props) {
+function Preguntas({ v, on }: Props) {
   return (
     <div className={css.preguntas}>
       <div className={css.centro} style={{ flex: 1 }}>
@@ -1363,13 +1404,15 @@ function Preguntas({ qr, v, on }: Props) {
           <span className={`${css.chipOscuro} ${v(0)}`} style={d(0.8)}>
             <Icono n="pantalla" className={css.chipIcono} /> Divine® Online · {ONLINE.especial} USD
           </span>
-          <span className={`${css.chipOscuro} ${v(0)}`} style={d(0.9)}>
-            <Icono n="pin" className={css.chipIcono} /> Bogotá · 11, 12 y 13 de diciembre
-          </span>
+          {SEDES.map((s, k) => (
+            <span key={s.ciudad} className={`${css.chipOscuro} ${v(0)}`} style={d(0.9 + k * 0.1)}>
+              <Icono n="pin" className={css.chipIcono} /> {s.ciudad} · {s.fechas}
+            </span>
+          ))}
         </div>
-        <div className={`${css.vidrio} ${css.qrMini} ${v(0, css.rArriba)}`} style={d(1)}>
-          <div className={css.qr} dangerouslySetInnerHTML={{ __html: qr }} />
-          <Eyebrow>Reserva aquí</Eyebrow>
+        <div className={`${css.vidrio} ${css.quieroMini} ${v(0, css.rArriba)}`} style={d(1.1)}>
+          <Eyebrow>Para reservar</Eyebrow>
+          <b>QUIERO</b>
         </div>
       </div>
     </div>
@@ -1391,10 +1434,13 @@ function Gracias({ activa, estatica, v, on }: Props) {
         Tu ficha <b>«Lo que miro antes de tocar»</b> llega hoy a tu email.
       </p>
       <div className={css.fila} style={{ justifyContent: 'center' }}>
-        <Chip icono="calendario" className={v(0)} style={d(1.2)}>
-          Reserva tu plaza · Bogotá, 11, 12 y 13 de diciembre
+        <Chip icono="chat" className={v(0)} style={d(1.2)}>
+          Para reservar, escribe «QUIERO»
         </Chip>
-        <Chip className={v(0)} style={d(1.35)}>
+        <Chip icono="calendario" className={v(0)} style={d(1.3)}>
+          Medellín 11-13 dic · Caracas 18-20 dic
+        </Chip>
+        <Chip className={v(0)} style={d(1.4)}>
           @sorelacaro_
         </Chip>
       </div>
@@ -1419,22 +1465,22 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'no-tocar', titulo: 'Cuándo no tocar', tema: 'oscuro', fase: 1, pasos: 1, Vista: NoTocar, notas: 'Contraindicaciones: primero médico. Clic: con más suavidad.' },
   { id: 'interpretar', titulo: 'Paso 2 · El cuerpo expresa', tema: 'oscuro', fase: 2, pasos: 3, Vista: Interpretar, notas: 'El cuerpo expresa lo que esconde el alma. Clic: clienta A, el punto sube al pecho (estrés). Clic: B, baja a las piernas. Clic: «Misma queja. Distinto origen».' },
   { id: 'noventa', titulo: 'El drenaje de hace 90 años', tema: 'crema', fase: 2, pasos: 2, Vista: Noventa, notas: 'La linfa se mueve hacia los ganglios. Clic: Hoy. Clic: Divine.' },
-  { id: 'secuencia', titulo: 'Paso 3 · La secuencia', tema: 'crema', fase: 3, pasos: 3, Vista: Secuencia, notas: 'Un paso por clic: estimulación ganglionar (~10 min), escucha el abdomen, maniobras lentas.' },
+  { id: 'secuencia', titulo: 'Paso 3 · La secuencia', tema: 'crema', fase: 3, pasos: 3, Vista: Secuencia, notas: 'Un paso por clic: estimulación ganglionar (~10 min; nunca «abrir» ganglios), escucha el abdomen, maniobras lentas.' },
   { id: 'cuerpo-limpio', titulo: 'Sobre un cuerpo limpio', tema: 'oscuro', fase: 3, pasos: 3, Vista: CuerpoLimpio, notas: 'La base primero. Cada clic apila una capa: aparatología, cosmética, tratamientos.' },
   { id: 'casos', titulo: 'Una sesión. 55 minutos', tema: 'oscuro', pasos: 2, Vista: Casos, notas: 'Clic: el abdomen se descubre. Clic: el rostro. Puedes arrastrar la línea mientras explicas.' },
   { id: 'caso-2', titulo: 'Otro abdomen, el mismo criterio', tema: 'oscuro', pasos: 1, Vista: Caso2, notas: 'Clic: la línea barre y se ve el después. Arrástrala despacio mientras cuentas qué observaste, qué interpretaste y qué decidiste.' },
   { id: 'lunes', titulo: 'Tu lunes', tema: 'crema', pasos: 3, Vista: Lunes, notas: 'Una pregunta por clic. Puedes marcar las casillas.' },
   { id: 'prueba', titulo: 'Lo que cambia en tu cabina', tema: 'oscuro', pasos: 3, Vista: Prueba, notas: 'Un escalón por clic. El antes/después se descubre en el primero.' },
-  { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Clic: fase 1 online. Clic: fase 2 en Bogotá, día a día. Clic: tres días para aprender, practicar y ganar seguridad.' },
-  { id: 'presencial', titulo: 'Formación presencial · Bogotá', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Una formación por clic: completa (3 días), intensiva (2), específica (1). Pulsa una tarjeta para destacarla mientras hablas de ella.' },
+  { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Medellín 11, 12 y 13 de diciembre y Caracas 18, 19 y 20. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
+  { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Pulsa Medellín o Caracas arriba. Una formación por clic: completa (3 días, incluye la academia online), intensiva (2 días, dos zonas), específica (1 día, una zona). Último clic: material, modelos y comida incluidos (solo llegar), cena de gala con entrega de certificados.' },
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Lo que incluye entra solo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
   { id: 'despues', titulo: '¿Y qué pasa después de formarte?', tema: 'crema', pasos: 2, Vista: Despues, notas: 'Clic: muchas terminan solas, con dudas. Clic: «Por eso hemos creado algo más».' },
-  { id: 'comunidad', titulo: 'Bienvenida a la Comunidad Divine®', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'Bienvenida a la Comunidad Divine®. Clic: aprendiendo, acompañada, evolucionando.' },
-  { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Las cinco cosas. Localiza tu terapeuta: solo las homologadas por Sorela. Agente IA adaptado a su negocio.' },
+  { id: 'comunidad', titulo: 'Bienvenida a la Comunidad Divine®', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'La comunidad NO se vende hoy: se presenta como servicio añadido. Clic: te la presentamos en una sesión privada solo para alumnas.' },
+  { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Clases en directo mensuales y grabadas, canal en la plataforma (sin Telegram), fichas, vídeos paso a paso y dossier, Localiza tu terapeuta (mapa mundial, solo homologadas) y el agente IA.' },
   { id: 'pregunta-ia', titulo: '¿La IA está cambiando el mundo?', tema: 'oscuro', pasos: 1, Vista: PreguntaIA, notas: 'Pregunta y pide SÍ o NO en el chat. Suma con +1 / +5. Clic: el 86 % (Foro Económico Mundial, Future of Jobs Report 2025: el 86 % de las empresas espera que la IA transforme su negocio antes de 2030).' },
   { id: 'crecer', titulo: 'Formarte y hacer crecer tu negocio', tema: 'crema', pasos: 2, Vista: Crecer, notas: 'Nos hemos dado cuenta: solo el 41,9 % de las empresas que nacen en España sigue abierta a los cinco años (INE, empresas nacidas en 2018). Clic: por eso Divine te forma, te acompaña y hace crecer tu negocio. Clic: los tres pilares.' },
   { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Por eso hemos construido el Agente IA Divine, adaptado a tu negocio: responde, ejecuta, publica en redes, gestiona registros y vende. Dato de abajo: Zenoti (empresa de software de salones), encuesta a 1.000 clientas en EE. UU., 2025. Se conecta con agenda, WhatsApp, Instagram, fichas, servicios y cobros. Las acciones del día entran solas (↻ las repite). Clic: más citas, menos huecos, clientas que vuelven.' },
-  { id: 'escanea', titulo: 'Escanea y reserva', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'El QR lleva a /clase/entrar. Pega también el enlace en el chat de Zoom.' },
-  { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. El QR sigue visible para reservar.' },
-  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. Recuerda Bogotá, 11, 12 y 13 de diciembre.' },
+  { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Pide que escriban QUIERO en el chat o en el grupo. Suma con +1 / +5. La persona de apoyo las saca del chat y les escribe por privado con el mensaje preparado. Último clic: aviso de seguridad (cuenta hackeada en el pasado).' },
+  { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. Recuerda: para reservar, QUIERO.' },
+  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. QUIERO para reservar. Medellín 11-13 dic, Caracas 18-20 dic.' },
 ];
