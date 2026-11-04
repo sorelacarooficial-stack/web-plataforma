@@ -6,7 +6,7 @@ import type { Campana } from './plantillas-campana';
  *
  * Va a la lista de espera: un correo por semana hasta la última, y en la
  * última uno cada día, contando hacia atrás hasta la masterclass en directo
- * (por Zoom) en la que Sorela abre la comunidad. Cada uno trae algo que sirva
+ * (por Google Meet) en la que Sorela abre la comunidad. Cada uno trae algo que sirva
  * aunque nunca entren —postura, cabina, clientas, redes, cómo hablar de su
  * trabajo—, porque un correo que solo dice «queda poco» se deja de abrir al
  * tercero.
@@ -16,7 +16,7 @@ import type { Campana } from './plantillas-campana';
  * masterclass —la técnica de Sorela y el alto impacto de lo digital en las
  * terapeutas—, nunca qué trae la comunidad.
  *
- * El último lleva el botón de Zoom SIN enlace a propósito: no sale hasta que
+ * El último lleva el botón de Google Meet SIN enlace a propósito: no sale hasta que
  * Sorela lo pegue en Programados (lib/campanas.ts no manda un correo con un
  * botón vacío, y el resumen de la mañana se lo recuerda).
  *
@@ -87,7 +87,7 @@ El viernes que viene empieza la cuenta atrás.`,
     fecha: '2026-10-30',
     etiqueta: 'Faltan 7 días',
     asunto: 'Falta una semana: el 6 de noviembre, en directo',
-    cuerpo: `Dentro de siete días, el **${DIA_APERTURA} a las ${HORA_ESPANA}** (hora de España), hago una **masterclass en directo por Zoom** y abro la Comunidad Divine.
+    cuerpo: `Dentro de siete días, el **${DIA_APERTURA} a las ${HORA_ESPANA}** (hora de España), hago una **masterclass en directo por Google Meet** y abro la Comunidad Divine.
 
 Las horas en cada país: ${APERTURA_POR_PAISES}.
 
@@ -206,7 +206,7 @@ Para que no se te escape:
 
 - **Pon una alarma** cinco minutos antes, con la hora de tu país.
 - **Busca un rato tranquilo**, mejor con libreta que con el móvil en la mano. No es para tenerla de fondo.
-- **Si nunca has usado Zoom**, descárgalo hoy en el móvil o el ordenador. Así mañana entras con un toque.
+- **Es por Google Meet.** En el ordenador se abre en el navegador, sin instalar nada. En el móvil, descarga hoy la app Google Meet: así mañana entras con un toque.
 
 Mañana a primera hora te mando el enlace para entrar.
 
@@ -226,11 +226,10 @@ Mañana nos vemos en directo.`,
 
 Las horas en cada país: ${APERTURA_POR_PAISES}.
 
-El botón de abajo te lleva directa a Zoom. Entra cinco minutos antes para que nada te pille con prisas. Si te surge cualquier duda, respóndeme a este correo: hoy estoy pendiente de todo.
+El botón de abajo te lleva directa a la clase, en Google Meet. Entra cinco minutos antes para que nada te pille con prisas. Si te surge cualquier duda, respóndeme a este correo: hoy estoy pendiente de todo.
 
 Gracias por esperar conmigo. Nos vemos dentro.`,
-    // Sin enlace hasta que Sorela pegue el de Zoom: así no sale (ver arriba).
-    boton: { texto: 'Entrar a la masterclass', enlace: '' },
+    boton: { texto: 'Entrar a la masterclass', enlace: `${WEB}/directo` },
     // «Hoy a las 19:00»: si el enlace se pega tarde y el cron no lo manda el 6, el 7 ya no sale.
     soloSuDia: true,
   },

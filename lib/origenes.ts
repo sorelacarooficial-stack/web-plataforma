@@ -33,7 +33,7 @@ export const ETIQUETA_TIPO: Record<Tipo, string> = {
 export const QUE_QUIERE: Record<Tipo, string> = {
   clienta: 'Quiere que le traten. Busca una sesión, no aprender la técnica.',
   alumna: 'Quiere formarse en la Técnica Divine.',
-  comunidad: 'Se apuntó a la masterclass gratuita «Antes de tocar» del 6 de noviembre. Le llegan solos los correos y el enlace de Zoom.',
+  comunidad: 'Se apuntó a la masterclass gratuita «Antes de tocar» del 6 de noviembre. Le llegan solos los correos y el enlace de Google Meet.',
   otro: 'No se sabe qué busca: hay que preguntárselo.',
 };
 

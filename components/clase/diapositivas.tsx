@@ -879,7 +879,7 @@ function Metodologia({ activa, estatica, v, on }: Props) {
         </div>
         <Flecha className={v(2)} style={{ width: 90, flex: 'none' }} />
         <div className={`${css.oscuraCaja} ${css.faseCaja} ${css.faseCajaOro} ${v(2, css.rDer)}`}>
-          <span className={css.faseNum}>Fase 2 · Medellín o Caracas</span>
+          <span className={css.faseNum}>Fase 2 · Caracas o Medellín</span>
           <h3>Formación presencial</h3>
           <div className={css.dias}>
             {dias.map(([f, t, s], k) => (
@@ -973,7 +973,7 @@ function Online({ v, on }: Props) {
     ['carpeta', 'Dosieres profesionales y material audiovisual.'],
     ['pantalla', 'Una clase en directo con Sorela Caro por cada módulo.'],
     ['mano', 'Clase práctica online con modelo real.'],
-    ['gente', 'Incorporación a la Comunidad Divine®.'],
+    ['gente', 'Grupo de alumnas y soporte durante la formación.'],
     ['escudo', 'Acompañamiento y apoyo continuado.'],
   ];
   return (
@@ -1018,7 +1018,7 @@ function Online({ v, on }: Props) {
           <span className={css.brillo} />
         </div>
         <p className={`${css.textoSuave} ${v(3)}`} style={{ margin: 0 }}>
-          <b>Mucho más que una formación.</b> No vienes solamente a aprender una técnica. Vienes a formar parte de una comunidad profesional que te acompaña.
+          <b>Mucho más que una formación.</b> No vienes solamente a aprender una técnica: es el primer paso para homologarte y entrar en la Comunidad Divine®.
         </p>
       </div>
     </div>
@@ -1064,7 +1064,7 @@ function Comunidad({ v, on }: Props) {
           Divine® no quiere que simplemente aprendas. <b>Queremos que sigas creciendo, evolucionando y formando parte de una comunidad profesional.</b>
         </p>
         <span className={`${css.barraOscura} ${v(1)}`} style={{ ...d(0.5), alignSelf: 'flex-start', marginTop: 22 }}>
-          <Icono n="calendario" className={css.chipIcono} /> Te la presentamos en una sesión privada, solo para alumnas
+          <Icono n="calendario" className={css.chipIcono} /> Solo para terapeutas homologadas por Sorela
         </span>
         <div className={css.fila} style={{ gap: 22, marginTop: 24 }}>
           {tres.map(([i, t], k) => (
@@ -1319,6 +1319,9 @@ function Agente({ activa, estatica, v, on }: Props) {
             ))}
           </div>
         </div>
+        <span className={`${css.barraOscura} ${css.barraOro} ${v(1)}`} style={{ alignSelf: 'flex-start', fontSize: 21, padding: '14px 26px' }}>
+          Incluido en la Membresía Divine®, para terapeutas homologadas
+        </span>
         <div className={css.palancas}>
           {['Más citas', 'Más ventas', 'Clientas que vuelven'].map((t, i) => (
             <span key={t} className={`${css.palanca} ${v(1, css.rArriba)}`} style={d(i * 0.18)}>
@@ -1438,7 +1441,7 @@ function Gracias({ activa, estatica, v, on }: Props) {
           Para reservar, escribe «QUIERO»
         </Chip>
         <Chip icono="calendario" className={v(0)} style={d(1.3)}>
-          Medellín 11-13 dic · Caracas 18-20 dic
+          Caracas 4-6 dic · Medellín 10-12 dic
         </Chip>
         <Chip className={v(0)} style={d(1.4)}>
           @sorelacaro_
@@ -1471,16 +1474,16 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'caso-2', titulo: 'Otro abdomen, el mismo criterio', tema: 'oscuro', pasos: 1, Vista: Caso2, notas: 'Clic: la línea barre y se ve el después. Arrástrala despacio mientras cuentas qué observaste, qué interpretaste y qué decidiste.' },
   { id: 'lunes', titulo: 'Tu lunes', tema: 'crema', pasos: 3, Vista: Lunes, notas: 'Una pregunta por clic. Puedes marcar las casillas.' },
   { id: 'prueba', titulo: 'Lo que cambia en tu cabina', tema: 'oscuro', pasos: 3, Vista: Prueba, notas: 'Un escalón por clic. El antes/después se descubre en el primero.' },
-  { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Medellín 11, 12 y 13 de diciembre y Caracas 18, 19 y 20. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
-  { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Pulsa Medellín o Caracas arriba. Una formación por clic: completa (3 días, incluye la academia online), intensiva (2 días, dos zonas), específica (1 día, una zona). Último clic: material, modelos y comida incluidos (solo llegar), cena de gala con entrega de certificados.' },
+  { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Caracas 4, 5 y 6 de diciembre y Medellín 10, 11 y 12. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
+  { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Pulsa Caracas o Medellín arriba. Una formación por clic: completa (3 días, incluye la academia online), intensiva (2 días, dos zonas), específica (1 día, una zona). Último clic: material, modelos y comida incluidos (solo llegar), cena de gala con entrega de certificados.' },
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Lo que incluye entra solo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
   { id: 'despues', titulo: '¿Y qué pasa después de formarte?', tema: 'crema', pasos: 2, Vista: Despues, notas: 'Clic: muchas terminan solas, con dudas. Clic: «Por eso hemos creado algo más».' },
-  { id: 'comunidad', titulo: 'Bienvenida a la Comunidad Divine®', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'La comunidad NO se vende hoy: se presenta como servicio añadido. Clic: te la presentamos en una sesión privada solo para alumnas.' },
+  { id: 'comunidad', titulo: 'Bienvenida a la Comunidad Divine®', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'La comunidad NO se vende hoy: es solo para terapeutas homologadas (formación completa de 3 días); a ellas se les vende en una sesión privada. Clic: el requisito.' },
   { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Clases en directo mensuales y grabadas, canal en la plataforma (sin Telegram), fichas, vídeos paso a paso y dossier, Localiza tu terapeuta (mapa mundial, solo homologadas) y el agente IA.' },
   { id: 'pregunta-ia', titulo: '¿La IA está cambiando el mundo?', tema: 'oscuro', pasos: 1, Vista: PreguntaIA, notas: 'Pregunta y pide SÍ o NO en el chat. Suma con +1 / +5. Clic: el 86 % (Foro Económico Mundial, Future of Jobs Report 2025: el 86 % de las empresas espera que la IA transforme su negocio antes de 2030).' },
   { id: 'crecer', titulo: 'Formarte y hacer crecer tu negocio', tema: 'crema', pasos: 2, Vista: Crecer, notas: 'Nos hemos dado cuenta: solo el 41,9 % de las empresas que nacen en España sigue abierta a los cinco años (INE, empresas nacidas en 2018). Clic: por eso Divine te forma, te acompaña y hace crecer tu negocio. Clic: los tres pilares.' },
   { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Por eso hemos construido el Agente IA Divine, adaptado a tu negocio: responde, ejecuta, publica en redes, gestiona registros y vende. Dato de abajo: Zenoti (empresa de software de salones), encuesta a 1.000 clientas en EE. UU., 2025. Se conecta con agenda, WhatsApp, Instagram, fichas, servicios y cobros. Las acciones del día entran solas (↻ las repite). Clic: más citas, menos huecos, clientas que vuelven.' },
   { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Pide que escriban QUIERO en el chat o en el grupo. Suma con +1 / +5. La persona de apoyo las saca del chat y les escribe por privado con el mensaje preparado. Último clic: aviso de seguridad (cuenta hackeada en el pasado).' },
   { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. Recuerda: para reservar, QUIERO.' },
-  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. QUIERO para reservar. Medellín 11-13 dic, Caracas 18-20 dic.' },
+  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. QUIERO para reservar. Caracas 4-6 dic, Medellín 10-12 dic.' },
 ];

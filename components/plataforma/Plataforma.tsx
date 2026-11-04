@@ -50,7 +50,8 @@ import SobreEsto from './SobreEsto';
 import BlogAdmin from './BlogAdmin';
 import Contactos from './Contactos';
 import Acuerdos from './Acuerdos';
-import Proximamente, { ComunidadProximamente } from './Proximamente';
+import Proximamente from './Proximamente';
+import ComunidadHomologadas from './ComunidadHomologadas';
 import Aula from './Aula';
 import SubirClases from './SubirClases';
 import Agenda from './Agenda';
@@ -517,11 +518,11 @@ export default function Plataforma({
           {esAdmin && actual === 'correos' && <Correos />}
           {esAdmin && actual === 'buzon' && <Buzon />}
           {esAdmin && actual === 'blog' && <BlogAdmin />}
-          {/* Solo con la membresía (o Sorela). A quien no la tiene no se le
-              enseña el espacio: ve que viene y nada más. El servidor tampoco
-              le da nada. */}
+          {/* Solo con la membresía (o Sorela). A quien no la tiene se le dice
+              que es para terapeutas homologadas; no se le enseña el espacio.
+              El servidor tampoco le da nada. */}
           {actual === 'comunidad' &&
-            (esAdmin || tieneMembresia(accesosVistos) ? <Comunidad /> : <ComunidadProximamente nombre={usuario} />)}
+            (esAdmin || tieneMembresia(accesosVistos) ? <Comunidad /> : <ComunidadHomologadas nombre={sesion.nombre ?? null} />)}
           {actual === 'perfil' && <Perfil />}
           </motion.div>
           </AnimatePresence>

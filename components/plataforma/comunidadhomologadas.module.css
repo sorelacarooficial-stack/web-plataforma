@@ -1,0 +1,42 @@
+.caja {
+  max-width: 720px;
+  margin: 24px auto;
+  padding: 36px 32px;
+  border-radius: 24px;
+  background: var(--surface, #fff);
+  box-shadow: 0 0 0 1px rgba(154, 115, 64, 0.14), 0 30px 60px -40px rgba(90, 62, 24, 0.45);
+}
+.eyebrow {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--oro, #8a6a32);
+}
+.titulo {
+  margin: 0 0 18px;
+  font-size: clamp(30px, 5vw, 44px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+}
+.titulo strong {
+  font-weight: 600;
+  color: var(--oro, #8a6a32);
+}
+.texto {
+  margin: 0 0 12px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink-2, #3e3831);
+}
+.texto b {
+  font-weight: 600;
+}
+@media (max-width: 600px) {
+  .caja {
+    margin: 16px;
+    padding: 28px 20px;
+  }
+}
