@@ -3250,8 +3250,8 @@ button.oscuraCaja {
 /* 26 · agente */
 .red {
   width: 100%;
-  height: 400px;
-  margin-top: 22px;
+  height: 330px;
+  margin-top: 18px;
   overflow: visible;
 }
 .redLinea {
@@ -3411,4 +3411,12 @@ button.oscuraCaja {
   font-weight: 600;
   background: linear-gradient(135deg, #f3d9ae, #c99a5c);
   color: #141210;
+}
+.verbo {
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #141210;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
 }

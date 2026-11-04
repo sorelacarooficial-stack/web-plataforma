@@ -1119,9 +1119,9 @@ const CONEXIONES: [string, string, number, number][] = [
 function Agente({ activa, estatica, v, on }: Props) {
   const [vuelta, setVuelta] = useState(0);
   const acciones: [string, string, string][] = [
+    ['avion', 'Publicado en Instagram y Facebook', 'Tu antes y después de la semana, con el texto y la hora que mejor funcionan.'],
     ['calendario', 'Hueco libre el jueves a las 17:00', 'Aviso a las clientas a las que les toca sesión. Marta reserva.'],
     ['campana', 'Elena no viene desde hace 6 semanas', 'Le escribo con su tratamiento y le propongo dos horas.'],
-    ['check', 'Mañana: 5 citas confirmadas', 'Recordatorio enviado a cada una. Ninguna ausencia.'],
     ['chispa', 'Clienta nueva desde Instagram', 'Le explico el drenaje, le doy precio y la dejo agendada.'],
   ];
   const k = useGoteo(acciones.length, activa && !estatica, 1500, 1800, vuelta);
@@ -1134,6 +1134,13 @@ function Agente({ activa, estatica, v, on }: Props) {
         <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.6), maxWidth: '36ch' }}>
           Conoce y se conecta con todo tu negocio: tu agenda, tus canales y tus clientas. Y trabaja con un objetivo: <b>que tu centro facture más.</b>
         </p>
+        <div className={css.fila} style={{ marginTop: 26, gap: 10 }}>
+          {['Publica', 'Responde', 'Agenda', 'Recuerda', 'Recupera clientas'].map((t, i) => (
+            <span key={t} className={`${css.verbo} ${v(0)}`} style={d(1 + i * 0.12)}>
+              {t}
+            </span>
+          ))}
+        </div>
         <svg viewBox="0 0 760 620" className={`${css.red} ${v(0, css.rEscala)}`} style={d(0.4)}>
           {CONEXIONES.map(([, , x, y], i) => (
             <g key={i}>
@@ -1317,7 +1324,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'despues', titulo: '¿Y qué pasa después de formarte?', tema: 'crema', pasos: 2, Vista: Despues, notas: 'Clic: muchas terminan solas, con dudas. Clic: «Por eso hemos creado algo más».' },
   { id: 'comunidad', titulo: 'Bienvenida a la Comunidad Divine®', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'Bienvenida a la Comunidad Divine®. Clic: aprendiendo, acompañada, evolucionando.' },
   { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Las cinco cosas. Localiza tu terapeuta: solo las homologadas por Sorela. Agente IA adaptado a su negocio.' },
-  { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Se conecta con agenda, WhatsApp, Instagram, fichas, servicios y cobros. Las acciones del día entran solas (↻ las repite). Clic: más citas, menos huecos, clientas que vuelven.' },
+  { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Adaptado a tu negocio: publica, responde, agenda, recuerda y recupera clientas. Se conecta con agenda, WhatsApp, Instagram, fichas, servicios y cobros. Las acciones del día entran solas (↻ las repite). Clic: más citas, menos huecos, clientas que vuelven.' },
   { id: 'escanea', titulo: 'Escanea y reserva', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'El QR lleva a /clase/entrar. Pega también el enlace en el chat de Zoom.' },
   { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. El QR sigue visible para reservar.' },
   { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. Recuerda Bogotá, 11, 12 y 13 de diciembre.' },
