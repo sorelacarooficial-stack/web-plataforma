@@ -1067,15 +1067,13 @@ function Comunidad({ v, on }: Props) {
 
 /* -------------------------------------------------------------- 22 */
 
-function Dentro({ activa, estatica, v, on }: Props) {
-  const k = useGoteo(3, activa && !estatica, 700, 2200);
-  const busca = estatica ? 3 : k;
+function Dentro({ v, on }: Props) {
   const items = [
     ['pantalla', 'Clase en directo', 'Una cada mes, conmigo'],
     ['avion', 'Canal de Telegram', 'Novedades y avisos de la comunidad'],
     ['ficha', 'Fichas y descargables', 'Para usar en cabina'],
-    ['pin', 'Localiza tu terapeuta', 'Tu ficha en la web, para que te encuentren'],
-    ['chispa', 'Marketing e IA', 'Formación para tu negocio'],
+    ['pin', 'Localiza tu terapeuta', 'Si estás homologada por Sorela, tu ficha aparece en el mapa de terapeutas Divine®'],
+    ['chispa', 'Agente IA para tu negocio', 'Adaptado a tu centro, a tus servicios y a tus clientas'],
   ];
   return (
     <div className={css.columna}>
@@ -1090,18 +1088,14 @@ function Dentro({ activa, estatica, v, on }: Props) {
             <h3>{t}</h3>
             <p>{s}</p>
             {j === 3 && (
-              <div className={css.buscador}>
-                <span className={css.buscadorCampo}>
-                  <Icono n="lupa" className={css.chipIcono} />
-                  {'Vigo'.slice(0, busca > 0 ? 4 : 0) || 'Tu ciudad'}
-                </span>
-                <span className={`${css.resultado} ${busca > 1 ? css.avisoOn : ''}`}>
-                  <span className={css.puntoOro} /> Terapeuta Divine · Vigo
-                </span>
-                <span className={`${css.resultado} ${busca > 2 ? css.avisoOn : ''}`}>
-                  <span className={css.puntoOro} /> Terapeuta Divine · Madrid
-                </span>
-              </div>
+              <span className={css.sello}>
+                <Icono n="escudo" className={css.chipIcono} /> Homologada Divine®
+              </span>
+            )}
+            {j === 4 && (
+              <span className={css.sello}>
+                <Icono n="chispa" className={css.chipIcono} /> Conectado a tu negocio
+              </span>
             )}
           </div>
         ))}
@@ -1112,76 +1106,96 @@ function Dentro({ activa, estatica, v, on }: Props) {
 
 /* -------------------------------------------------------------- 23 */
 
+/** Lo que el agente conecta, alrededor del centro (x, y en un lienzo de 760×620). */
+const CONEXIONES: [string, string, number, number][] = [
+  ['calendario', 'Agenda', 380, 70],
+  ['chat', 'WhatsApp', 640, 170],
+  ['chispa', 'Instagram', 650, 450],
+  ['ficha', 'Fichas de clientas', 380, 560],
+  ['carpeta', 'Servicios y precios', 110, 450],
+  ['tarjeta', 'Cobros', 120, 170],
+];
+
 function Agente({ activa, estatica, v, on }: Props) {
   const [vuelta, setVuelta] = useState(0);
-  const mensajes: [string, string][] = [
-    ['ella', 'Hola, ¿tienes hueco esta semana para un drenaje?'],
-    ['agente', '¡Hola, Lucía! Tengo el jueves a las 17:00 o el viernes a las 10:00. ¿Cuál te va mejor?'],
-    ['ella', 'El jueves'],
-    ['agente', 'Hecho: jueves a las 17:00. Te lo recuerdo el miércoles.'],
+  const acciones: [string, string, string][] = [
+    ['calendario', 'Hueco libre el jueves a las 17:00', 'Aviso a las clientas a las que les toca sesión. Marta reserva.'],
+    ['campana', 'Elena no viene desde hace 6 semanas', 'Le escribo con su tratamiento y le propongo dos horas.'],
+    ['check', 'Mañana: 5 citas confirmadas', 'Recordatorio enviado a cada una. Ninguna ausencia.'],
+    ['chispa', 'Clienta nueva desde Instagram', 'Le explico el drenaje, le doy precio y la dejo agendada.'],
   ];
-  const k = useGoteo(mensajes.length + 1, activa && !estatica, 1700, 900, vuelta);
-  const vistos = estatica ? mensajes.length + 1 : k;
-  const escribiendo = !estatica && vistos < mensajes.length && mensajes[vistos]?.[0] === 'agente';
-  const funciones = [
-    ['chat', 'Responde', 'A tus clientas, a cualquier hora'],
-    ['calendario', 'Agenda', 'Da cita y mueve las que se caen'],
-    ['campana', 'Recuerda', 'La cita, el día antes'],
-    ['carpeta', 'Organiza', 'Tu semana y tu negocio'],
-  ];
+  const k = useGoteo(acciones.length, activa && !estatica, 1500, 1800, vuelta);
+  const vistas = estatica ? acciones.length : k;
   return (
-    <div className={css.dosCol} style={{ gridTemplateColumns: '1.1fr 0.9fr' }}>
+    <div className={css.dosCol} style={{ gridTemplateColumns: '1fr 1fr', gap: 70 }}>
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Tu agente Divine</Eyebrow>
-        <Titulo texto={'Tu asistente, *mientras tú\nestás en cabina*'} on={on(0)} className={css.h2} />
-        <div className={css.cuatro} style={{ marginTop: 30 }}>
-          {funciones.map(([i, t, s], j) => (
-            <div key={t} className={`${css.oscuraCaja} ${css.funcion} ${v(0, css.rArriba)}`} style={d(0.5 + j * 0.15)}>
-              <span className={css.circuloIconoOscuro}>
-                <Icono n={i} />
-              </span>
-              <div>
-                <b>{t}</b>
-                <span>{s}</span>
-              </div>
-            </div>
+        <Titulo texto={'Un agente que conoce\n*todo tu negocio*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
+        <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.6), maxWidth: '36ch' }}>
+          Se conecta con tu agenda, tus canales y tus clientas. Y trabaja con un objetivo: <b>que tu centro facture más.</b>
+        </p>
+        <svg viewBox="0 0 760 620" className={`${css.red} ${v(0, css.rEscala)}`} style={d(0.4)}>
+          {CONEXIONES.map(([, , x, y], i) => (
+            <g key={i}>
+              <path d={`M${x} ${y} L380 310`} className={css.redLinea} />
+              {on(0) && !estatica && <path d={`M${x} ${y} L380 310`} className={css.redFlujo} style={{ animationDelay: `${i * 0.25}s` }} />}
+            </g>
           ))}
-        </div>
-        <span className={`${css.chipOscuro} ${v(0)}`} style={{ ...d(1.3), alignSelf: 'flex-start', marginTop: 24 }}>
-          <Icono n="escudo" className={css.chipIcono} /> Hecho solo para terapeutas
-        </span>
+          <circle cx="380" cy="310" r="118" className={css.redHalo} />
+          <circle cx="380" cy="310" r="86" className={css.redCentro} />
+          <text x="380" y="300" textAnchor="middle" className={css.redCentroTexto}>
+            Agente
+          </text>
+          <text x="380" y="338" textAnchor="middle" className={css.redCentroTexto2}>
+            Divine®
+          </text>
+          {CONEXIONES.map(([ico, t, x, y], i) => (
+            <g key={t} className={`${css.redNodo} ${on(0) ? css.on : ''}`} style={{ '--d': `${0.8 + i * 0.15}s` } as CSSProperties}>
+              <circle cx={x} cy={y} r="44" className={css.redNodoFondo} />
+              <svg x={x - 18} y={y - 18} width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={css.redIcono}>
+                <Icono n={ico} className={css.redIconoSvg} />
+              </svg>
+              <text x={x} y={y + (y > 310 ? 74 : -58)} textAnchor="middle" className={css.redTexto}>
+                {t}
+              </text>
+            </g>
+          ))}
+        </svg>
       </div>
-      <div className={css.columna} style={{ alignItems: 'center' }}>
-        <Eyebrow className={v(0)}>Así funcionará</Eyebrow>
-        <Movil className={v(0, css.rArriba)}>
-          <div className={css.chatCabeza}>
-            <span className={css.chatAvatar}>D</span>
-            <div>
-              <b>Tu centro · Asistente</b>
-              <span>en línea</span>
-            </div>
+      <div className={css.columna} style={{ gap: 18 }}>
+        <div className={`${css.oscuraCaja} ${css.panelAgente} ${v(0, css.rDer)}`} style={d(0.6)}>
+          <div className={css.filaEntre}>
+            <span className={css.panelTitulo}>
+              <span className={css.enLinea} /> Hoy, mientras estás en cabina
+            </span>
             <button type="button" className={css.chatOtraVez} onClick={(e) => (e.stopPropagation(), setVuelta((n) => n + 1))} title="Repetir">
               ↻
             </button>
           </div>
-          <div className={css.chat}>
-            {mensajes.map(([quien, t], i) => (
-              <div key={i} className={`${quien === 'ella' ? css.burbujaElla : css.burbujaAgente} ${i < vistos ? css.avisoOn : ''}`}>
-                {t}
+          <div className={css.acciones}>
+            {acciones.map(([ico, t, s], i) => (
+              <div key={t} className={`${css.accion} ${i < vistas ? css.avisoOn : ''}`}>
+                <span className={css.circuloIconoOscuro}>
+                  <Icono n={ico} />
+                </span>
+                <div>
+                  <b>{t}</b>
+                  <span>{s}</span>
+                </div>
               </div>
             ))}
-            {escribiendo && (
-              <div className={`${css.burbujaAgente} ${css.avisoOn} ${css.escribiendo}`}>
-                <i />
-                <i />
-                <i />
-              </div>
-            )}
-            <span className={`${css.chatSistema} ${vistos > mensajes.length ? css.avisoOn : ''}`}>
-              <Icono n="campana" className={css.chipIcono} /> Miércoles 10:00 · recordatorio enviado
-            </span>
           </div>
-        </Movil>
+        </div>
+        <div className={css.palancas}>
+          {['Más citas', 'Menos huecos', 'Clientas que vuelven'].map((t, i) => (
+            <span key={t} className={`${css.palanca} ${v(1, css.rArriba)}`} style={d(i * 0.18)}>
+              {t}
+            </span>
+          ))}
+        </div>
+        <span className={`${css.chipOscuro} ${v(1)}`} style={{ ...d(0.7), alignSelf: 'flex-start' }}>
+          <Icono n="escudo" className={css.chipIcono} /> Hecho solo para terapeutas Divine®
+        </span>
       </div>
     </div>
   );
@@ -1302,8 +1316,8 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Lo que incluye entra solo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
   { id: 'despues', titulo: '¿Y qué pasa después de formarte?', tema: 'crema', pasos: 2, Vista: Despues, notas: 'Clic: muchas terminan solas, con dudas. Clic: «Por eso hemos creado algo más».' },
   { id: 'comunidad', titulo: 'Bienvenida a la Comunidad Divine®', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'Bienvenida a la Comunidad Divine®. Clic: aprendiendo, acompañada, evolucionando.' },
-  { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Las cinco cosas. El buscador de terapeutas se escribe solo.' },
-  { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 0, Vista: Agente, notas: 'El chat se reproduce solo. ↻ en el móvil lo repite.' },
+  { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Las cinco cosas. Localiza tu terapeuta: solo las homologadas por Sorela. Agente IA adaptado a su negocio.' },
+  { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Se conecta con agenda, WhatsApp, Instagram, fichas, servicios y cobros. Las acciones del día entran solas (↻ las repite). Clic: más citas, menos huecos, clientas que vuelven.' },
   { id: 'escanea', titulo: 'Escanea y reserva', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'El QR lleva a /clase/entrar. Pega también el enlace en el chat de Zoom.' },
   { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. El QR sigue visible para reservar.' },
   { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. Recuerda Bogotá, 11, 12 y 13 de diciembre.' },

@@ -3228,3 +3228,187 @@ button.oscuraCaja {
 .bucle .bucleTramo:last-of-type {
   flex: 0.82;
 }
+
+/* 25 · qué hay dentro */
+.sello {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f3d9ae, #dcb47b);
+  color: #141210;
+  font-size: 16px;
+  font-weight: 600;
+}
+.sello .chipIcono {
+  width: 18px;
+  height: 18px;
+}
+
+/* 26 · agente */
+.red {
+  width: 100%;
+  height: 400px;
+  margin-top: 22px;
+  overflow: visible;
+}
+.redLinea {
+  stroke: rgba(243, 217, 174, 0.18);
+  stroke-width: 2;
+}
+.redFlujo {
+  stroke: #f3d9ae;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 8 300;
+  animation: redFlujo 2.2s linear infinite;
+}
+@keyframes redFlujo {
+  from {
+    stroke-dashoffset: 300;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.redHalo {
+  fill: rgba(201, 154, 92, 0.1);
+  animation: halo 3s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.redCentro {
+  fill: #c99a5c;
+  stroke: #f3d9ae;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 30px rgba(201, 154, 92, 0.6));
+}
+.redCentroTexto {
+  font-size: 30px;
+  font-weight: 600;
+  fill: #141210;
+}
+.redCentroTexto2 {
+  font-size: 22px;
+  font-weight: 500;
+  fill: #141210;
+}
+.redNodo {
+  opacity: 0;
+  transform: scale(0.5);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 0.6s var(--d, 0s),
+    transform 0.7s cubic-bezier(0.2, 1.5, 0.4, 1) var(--d, 0s);
+}
+.redNodo.on {
+  opacity: 1;
+  transform: none;
+}
+.redNodoFondo {
+  fill: #221b14;
+  stroke: rgba(243, 217, 174, 0.35);
+  stroke-width: 1.5;
+}
+.redIcono {
+  color: #e6c491;
+}
+.redIconoSvg {
+  width: 100%;
+  height: 100%;
+}
+.redTexto {
+  font-size: 21px;
+  font-weight: 500;
+  fill: #f4efe7;
+}
+.panelAgente {
+  padding: 30px 34px;
+}
+.panelTitulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #e6c491;
+}
+.enLinea {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #7ed08f;
+  box-shadow: 0 0 0 0 rgba(126, 208, 143, 0.6);
+  animation: latidoVerde 1.6s infinite;
+}
+@keyframes latidoVerde {
+  70%,
+  100% {
+    box-shadow: 0 0 0 10px rgba(126, 208, 143, 0);
+  }
+}
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 22px;
+}
+.accion {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 22px;
+  border-radius: 22px;
+  background: rgba(255, 240, 220, 0.05);
+  box-shadow: 0 0 0 1px rgba(243, 217, 174, 0.1) inset;
+  opacity: 0;
+  transform: translateX(40px);
+  filter: blur(6px);
+  transition:
+    opacity 0.6s,
+    transform 0.7s cubic-bezier(0.2, 1.2, 0.4, 1),
+    filter 0.6s;
+}
+.accion.avisoOn {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+.accion .circuloIconoOscuro {
+  width: 58px;
+  height: 58px;
+}
+.accion .icono {
+  width: 26px;
+  height: 26px;
+}
+.accion b {
+  display: block;
+  font-size: 22px;
+  font-weight: 600;
+}
+.accion > div span {
+  display: block;
+  margin-top: 2px;
+  font-size: 18px;
+  opacity: 0.65;
+  line-height: 1.35;
+}
+.palancas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.palanca {
+  padding: 20px 16px;
+  border-radius: 20px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  color: #141210;
+}
