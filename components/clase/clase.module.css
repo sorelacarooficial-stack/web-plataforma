@@ -3420,3 +3420,147 @@ button.oscuraCaja {
   color: #141210;
   background: linear-gradient(135deg, #f3d9ae, #c99a5c);
 }
+
+/* pregunta IA y crecer */
+.encuesta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 50px;
+  max-width: 1200px;
+}
+.voto2 {
+  padding: 28px 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.voto2Texto {
+  font-size: 54px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.voto2Num {
+  font-size: 54px;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  color: #e6c491;
+  animation: salta 0.5s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+.voto2Num em {
+  font-style: normal;
+  font-size: 28px;
+  opacity: 0.7;
+}
+.voto2 .voto {
+  margin: 0;
+  height: 12px;
+}
+.datoGrande,
+.datoCrema {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  margin-top: 32px;
+  padding: 30px 42px;
+  border-radius: 30px;
+}
+.datoGrande {
+  background: linear-gradient(135deg, rgba(243, 217, 174, 0.14), rgba(201, 154, 92, 0.05));
+  box-shadow: 0 0 0 1px rgba(243, 217, 174, 0.3) inset;
+}
+.datoGrande b,
+.datoCrema b {
+  font-size: 120px;
+  font-weight: 200;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.datoGrande b {
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.datoCrema b {
+  color: #9a7340;
+}
+.datoGrande span,
+.datoCrema span {
+  font-size: 30px;
+  line-height: 1.35;
+}
+.datoGrande strong,
+.datoCrema strong {
+  font-weight: 600;
+}
+.datoGrande small,
+.datoCrema small {
+  display: block;
+  margin-top: 10px;
+  font-size: 17px;
+  opacity: 0.55;
+  letter-spacing: 0.02em;
+}
+.datoCrema {
+  margin-top: 40px;
+  max-width: 1500px;
+}
+.pilar {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 26px 30px;
+  border-radius: 28px;
+}
+.pilar b {
+  display: block;
+  font-size: 28px;
+  font-weight: 600;
+}
+.pilar span:not([class]) {
+  display: block;
+  margin-top: 4px;
+  font-size: 19px;
+  opacity: 0.65;
+}
+.pilar > div span {
+  display: block;
+  margin-top: 4px;
+  font-size: 19px;
+  opacity: 0.65;
+}
+.pilar .circuloIcono,
+.pilar .circuloIconoOscuro {
+  width: 66px;
+  height: 66px;
+}
+.tituloPregunta {
+  font-size: 70px;
+  line-height: 1.12;
+}
+.encuesta {
+  margin-top: 40px;
+}
+.notaDato {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  font-size: 21px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+.notaDato b {
+  font-size: 40px;
+  font-weight: 300;
+  color: #e6c491;
+}
+.notaDato small {
+  flex-basis: 100%;
+  font-size: 15px;
+  opacity: 0.55;
+}

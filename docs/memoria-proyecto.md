@@ -113,3 +113,12 @@ cada cambio importante** (una línea por decisión, con la fecha).
   negocio». La diapositiva del agente: un agente conectado a todo el negocio
   (agenda, WhatsApp, Instagram, fichas, servicios, cobros) con el objetivo de
   que el centro facture más. No se promete facturación garantizada.
+- 2026-11-04: antes del agente, dos diapositivas nuevas. «¿Cuántas creéis que
+  la tecnología y la IA están cambiando radicalmente el mundo…?» (votos SÍ/NO
+  del chat + 86 %, WEF Future of Jobs 2025) y «Una cosa es formarte. Otra es
+  hacer crecer tu negocio» (41,9 % de empresas españolas siguen abiertas a los
+  5 años, INE cohorte 2018 → te forma, te acompaña, crece tu negocio). El
+  agente: «Por eso hemos construido el Agente IA Divine, adaptado a tu
+  negocio»: responde, ejecuta, publica, registra y vende; dato 55 % de Zenoti
+  (vendedor de software, citar como tal).
+
