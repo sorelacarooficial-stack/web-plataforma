@@ -338,6 +338,11 @@ export async function tareasDelDia(ahora = new Date()): Promise<InformeDia> {
   const hechas: InformeDia['hechas'] = [];
   if (!hayFirebase()) return { hoy: c.hoy, hechas };
 
+  /* Arreglos de datos de una sola vez (lib/puesta-a-punto.ts), ANTES de los
+     correos: el del día tiene que salir ya corregido. */
+  const { puestaAPunto } = await import('./puesta-a-punto');
+  for (const r of await puestaAPunto().catch((e) => (console.error('[puesta-a-punto]', e), []))) hechas.push({ ...r, id: `puesta-a-punto:${r.id}` });
+
   // Los avisos y la serie del lanzamiento que tocan hoy (lib/campanas.ts).
   const { campanasDelDia } = await import('./campanas');
   for (const r of await campanasDelDia(ahora)) hechas.push({ ...r, id: `campana:${r.id}` });

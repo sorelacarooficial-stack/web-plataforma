@@ -22,7 +22,7 @@ export const metadata: Metadata = {
      clic tiene que reconocer en la página lo que acaba de ver. */
   title: { absolute: 'Antes de tocar · Masterclass gratuita para terapeutas y esteticistas' },
   description:
-    'Masterclass gratuita en directo con Sorela Caro: qué observar, qué interpretar y cómo decidir antes de tocar. Una hora por Zoom. Apúntate y te mando el enlace.',
+    'Masterclass gratuita en directo con Sorela Caro: qué observar, qué interpretar y cómo decidir antes de tocar. Una hora por Google Meet. Apúntate y te mando el enlace.',
 };
 
 /**
@@ -65,7 +65,7 @@ export default function Comunidad() {
             <p className={css.lede}>
               La nueva era de las manos: una hora en directo, gratis, para terapeutas y esteticistas.
               Te enseño qué observar antes de empezar, cómo interpretar lo que ves y cómo decidir qué
-              necesita cada cuerpo. Apúntate y te mando el enlace de Zoom.
+              necesita cada cuerpo. Apúntate y te mando el enlace de Google Meet.
             </p>
             <VideoInvitacion />
             <Contador sobre="oscuro" />

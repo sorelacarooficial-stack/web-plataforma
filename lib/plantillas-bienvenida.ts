@@ -29,7 +29,7 @@ const cuando = `el ${DIA_APERTURA} a las ${HORA_ESPANA}, hora de España,`;
 function cierreComunidad(t: Tipo) {
   if (t === 'comunidad')
     // Lo que hay dentro NO se cuenta: se presenta ese día en la masterclass.
-    return `${CUANDO} abro la Comunidad Divine${fuera ? ` (${fuera})` : ''} con la masterclass en directo «La nueva era de las manos», por Zoom.`;
+    return `${CUANDO} abro la Comunidad Divine${fuera ? ` (${fuera})` : ''} con la masterclass en directo «La nueva era de las manos», por Google Meet.`;
   if (t === 'alumna')
     return `Y por si te sirve para decidirte: la formación no termina en el certificado. ${CUANDO} abro la Comunidad Divine con una masterclass en directo. Si quieres formar parte, apúntate a la lista de espera en mi web.`;
   if (t === 'clienta')
@@ -174,7 +174,7 @@ function correoListaEspera(n: string, asunto: string, saludo: string, grupo: str
     <tr><td style="padding:0;line-height:0"><img src="${IMAGEN_TITULO}" width="520" alt="${escapar(`Masterclass en directo: ${TITULO_MASTERCLASS}`)}" style="display:block;width:100%;max-width:520px;height:auto;border:0;margin:0 auto"></td></tr>
     <tr><td style="padding:22px 24px 0;border-top:1px solid rgba(217,180,124,.35)">
       <span style="display:block;font-family:${serif};font-size:28px;font-weight:600;line-height:1.1;color:#f3e3c3">${escapar(`${semana.charAt(0).toUpperCase()}${semana.slice(1)} ${dia} de ${mes}`)}</span>
-      <span style="display:block;margin-top:4px;font-family:${sans};font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#d9b47c">En directo por Zoom</span>
+      <span style="display:block;margin-top:4px;font-family:${sans};font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#d9b47c">En directo por Google Meet</span>
     </td></tr>
     <tr><td style="padding:18px 16px 20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid rgba(243,227,195,.12)"><tr>${horas}</tr></table></td></tr>
   </table>`;
@@ -214,7 +214,7 @@ function correoListaEspera(n: string, asunto: string, saludo: string, grupo: str
     '',
     saludo,
     '',
-    `Antes de tocar · ${TITULO_MASTERCLASS}. Clase gratuita en directo por Zoom, una hora: ${semana} ${dia} de ${mes}. ${APERTURA_POR_PAISES}.`,
+    `Antes de tocar · ${TITULO_MASTERCLASS}. Clase gratuita en directo por Google Meet, una hora: ${semana} ${dia} de ${mes}. ${APERTURA_POR_PAISES}.`,
     '',
     'Ahora, entra en el grupo de WhatsApp de la masterclass. Ahí aviso de todo y respondo dudas:',
     grupo,

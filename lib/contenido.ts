@@ -279,7 +279,7 @@ export const OBJECIONES: Pregunta[] = [
   },
   {
     q: '¿Cuándo es y cuánto dura?',
-    a: `El ${DIA_APERTURA}, en directo por Zoom: ${APERTURA_POR_PAISES}. Dura una hora.`,
+    a: `El ${DIA_APERTURA}, en directo por Google Meet: ${APERTURA_POR_PAISES}. Dura una hora.`,
   },
   {
     q: '¿Es para mí si no me he formado contigo?',
@@ -337,7 +337,7 @@ export const PIEZAS_MASTERCLASS: PiezaComunidad[] = [
     color: 'var(--arcilla)',
   },
   {
-    titulo: 'Gratis, por Zoom',
+    titulo: 'Gratis, por Google Meet',
     texto: 'Desde el móvil o el ordenador. Te apuntas aquí y el enlace te llega por correo.',
     estado: 'Online',
     color: 'var(--salvia)',

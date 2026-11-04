@@ -105,4 +105,12 @@ export const APERTURA_POR_PAISES = HORAS_APERTURA.map(
  * El grupo de WhatsApp de la lista de espera. Es el siguiente paso que se le
  * da a quien se apunta: en el correo de confirmación y en el aviso de la web.
  */
+/**
+ * La sala de la masterclass: Google Meet (no Zoom). Todo lo que manda a la
+ * clase apunta a `/directo`, que redirige aquí: si cambia la sala, se cambia
+ * solo esta línea.
+ */
+export const SALA_MASTERCLASS = 'https://meet.google.com/ftt-dtqj-qxh';
+export const PLATAFORMA_VIDEO = 'Google Meet';
+
 export const GRUPO_WHATSAPP = 'https://chat.whatsapp.com/LsbllKQ0P1gDD2Wb4jrHr7?mode=gi_t';

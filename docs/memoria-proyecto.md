@@ -121,8 +121,8 @@ cada cambio importante** (una línea por decisión, con la fecha).
   agente: «Por eso hemos construido el Agente IA Divine, adaptado a tu
   negocio»: responde, ejecuta, publica, registra y vende; dato 55 % de Zenoti
   (vendedor de software, citar como tal).
-- 2026-11-04, reunión con Sorela: la presencial pasa de Bogotá a **Medellín
-  11-13 dic y Caracas 18-20 dic** (`SEDES` en `lib/clase.ts`). Sin QR: para
+- 2026-11-04, reunión con Sorela: la presencial pasa de Bogotá a Medellín y
+  Caracas (fechas corregidas abajo) (`SEDES` en `lib/clase.ts`). Sin QR: para
   reservar se escribe **«QUIERO»** en el chat o en el grupo, y la persona de apoyo
   escribe por privado (mensajes en `docs/mensajes-quiero.md`). Sin Telegram: el
   canal de la comunidad va en la plataforma. La membresía (49 € / 47-49 USD) NO se
@@ -133,4 +133,14 @@ cada cambio importante** (una línea por decisión, con la fecha).
   España 1 €, Latam 7 €, Caliente (retargeting) 4 €. A 4 nov: 352 registros por
   174 € (0,50 €/registro; Latam 0,30 €). La campaña termina sola el 6 nov a las
   18:00; R1 (5 nov) y R2 (6 nov hasta las 19:00) a las registradas.
+- 2026-11-04 (noche): **Caracas 4-6 dic y Medellín 10-12 dic.** La masterclass
+  es por **Google Meet**, no Zoom: sala en `SALA_MASTERCLASS` (lib/apertura.ts) y
+  todo enlaza a `/directo`, que redirige. La **Membresía Divine® es solo para
+  terapeutas homologadas** (formación completa de 3 días); se les vende en
+  sesión privada, no en la masterclass; el agente IA va incluido en ella (se
+  vende la idea; aún no está construido). En la plataforma, «Comunidad» ya no
+  enseña la lista de espera: `ComunidadHomologadas`. `lib/puesta-a-punto.ts`
+  (cron de la mañana, una vez): crea las convocatorias `caracas-2026-12` y
+  `medellin-2026-12` publicadas y abiertas, y pasa los correos programados a
+  Google Meet con el botón del día 6 apuntando a /directo.
 
