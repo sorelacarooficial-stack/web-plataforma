@@ -14,15 +14,18 @@
 /** Viernes 6 nov 2026, 19:00 en España (CET, UTC+1). */
 export const EMPIEZA = '2026-11-06T18:00:00Z';
 
-/** El precio de lanzamiento dura hasta el domingo 8 nov, 23:59 en España. */
-export const FIN_PRECIO = '2026-11-08T22:59:00Z';
+/** La formación presencial en Bogotá empieza el viernes 11 dic (Bogotá, UTC−5). */
+export const BOGOTA_INICIO = '2026-12-11T13:00:00Z';
 
-export const PRECIOS = {
-  mensual: 49,
-  mensualDespues: 69,
-  anual: 490,
-  ahorro: 98,
-};
+/** Formación presencial en Bogotá, 11, 12 y 13 de diciembre. Precios en USD. */
+export const FORMACIONES = [
+  { nombre: 'Completa', dias: '3 días', precio: 2250, reserva: 250 },
+  { nombre: 'Intensiva', dias: '2 días', precio: 1500, reserva: 250 },
+  { nombre: 'Específica', dias: '1 día', precio: 750, reserva: 150 },
+];
+
+/** Divine® Online. Precios en USD. */
+export const ONLINE = { habitual: 900, especial: 750, reserva: 250 };
 
 /** Plazas de fundadora (1 a 1). */
 export const PLAZAS = 10;

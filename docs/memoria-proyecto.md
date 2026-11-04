@@ -98,3 +98,11 @@ cada cambio importante** (una línea por decisión, con la fecha).
 - Teclas: → siguiente, G vista general, P presentador (otra ventana
   sincronizada), F pantalla completa, B negro. Plazas, votos y ciudades se
   pulsan en directo y se ven igual en las dos ventanas.
+- 2026-11-04, versión 2 según el PPTX de Sorela: problema (4), tres obstáculos
+  (5), «fue ciego» (8), «El cuerpo expresa lo que esconde el alma» (13),
+  estimulación ganglionar (15), Metodología Divine® online + Bogotá 11-13 dic
+  (20), formación presencial 2.250 / 1.500 / 750 USD con reservas 250 / 250 /
+  150 (21), Divine® Online 900 → 750 USD, reserva 250 (22), «¿Y qué pasa
+  después de formarte?» (23) y Bienvenida a la Comunidad Divine® (24). Fuera:
+  «Las 23:00», 10 plazas de fundadora y el precio 49 €/490 € de la comunidad.
+  Precios y fechas en `lib/clase.ts` (`FORMACIONES`, `ONLINE`).
