@@ -141,6 +141,11 @@ cada cambio importante** (una línea por decisión, con la fecha).
   vende la idea; aún no está construido). En la plataforma, «Comunidad» ya no
   enseña la lista de espera: `ComunidadHomologadas`. `lib/puesta-a-punto.ts`
   (cron de la mañana, una vez): crea las convocatorias `caracas-2026-12` y
-  `medellin-2026-12` publicadas y abiertas, y pasa los correos programados a
+  `medellin-2026-12` abiertas pero NO publicadas (internas, ver abajo), y pasa los correos programados a
   Google Meet con el botón del día 6 apuntando a /directo.
+- 2026-11-05: las convocatorias de diciembre son **internas**: no salen en la
+  web, solo en la plataforma para apuntar y dar accesos (la venta es en la
+  masterclass). Divine® Online sí incluye la Comunidad; para la Membresía hay
+  que pasar sí o sí por la formación completa de 3 días (certificada =
+  homologada).
 

@@ -12,7 +12,8 @@ import { CURSO_POR_DEFECTO } from './convocatorias-tipos';
  *
  * 4 nov 2026, tras la reunión con Sorela:
  *
- *  1. Las convocatorias presenciales de diciembre, publicadas y abiertas:
+ *  1. Las convocatorias presenciales de diciembre, abiertas pero SIN
+ *     publicar en la web (son internas: la venta es en la masterclass):
  *     Caracas 4-6 dic y Medellín 10-12 dic. Con `create` y un id fijo: si ya
  *     existen (o Sorela las creó a mano con ese id), no se tocan.
  *  2. La masterclass es por Google Meet, no por Zoom. Los correos programados
@@ -80,7 +81,9 @@ export async function puestaAPunto(): Promise<{ id: string; enviados: number; fa
           precio: 225000,
           moneda: 'USD',
           abierta: true,
-          publicada: true,
+          // Internas: se usan dentro de la plataforma para apuntar y dar
+          // accesos; la venta es en la masterclass, no en la web.
+          publicada: false,
           inscritas: {},
           ocupadas: 0,
           creadaPor: 'puesta-a-punto',
@@ -94,6 +97,22 @@ export async function puestaAPunto(): Promise<{ id: string; enviados: number; fa
     refrescarFormaciones();
     await marca.set({ convocatoriasDiciembre: FieldValue.serverTimestamp() }, { merge: true });
     informe.push({ id: 'convocatorias-diciembre', enviados: creadas, fallidos: 0, omitidos: CONVOCATORIAS_DICIEMBRE.length - creadas });
+  }
+
+  /* 1b · Si se crearon publicadas (primera versión), se ocultan de la web. */
+  if (!hecho.convocatoriasInternas) {
+    let ocultas = 0;
+    for (const c of CONVOCATORIAS_DICIEMBRE) {
+      const ref = convocatorias().doc(c.id);
+      const d = await ref.get();
+      if (d.exists && d.get('publicada') === true) {
+        await ref.update({ publicada: false, actualizada: FieldValue.serverTimestamp() });
+        ocultas++;
+      }
+    }
+    if (ocultas) refrescarFormaciones();
+    await marca.set({ convocatoriasInternas: FieldValue.serverTimestamp() }, { merge: true });
+    informe.push({ id: 'convocatorias-internas', enviados: ocultas, fallidos: 0, omitidos: 0 });
   }
 
   /* 2 · Correos programados: de Zoom a Google Meet. */
