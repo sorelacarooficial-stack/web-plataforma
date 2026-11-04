@@ -56,6 +56,12 @@ export const VIDEOS = {
   tele: '',
   /** Diapositiva 19: testimonio de Beatriz (1 min). */
   beatriz: '',
+  /** Antes de «Mi historia»: vídeo de 1 min que presenta a Sorela. */
+  sorela: '/clase/video/sorela-presenta.mp4',
+  sorelaPortada: '/clase/video/sorela-presenta.jpg',
+  /** Antes de la membresía: el vídeo cinematográfico. Vacío = la diapositiva no sale. */
+  membresia: '',
+  membresiaPortada: '',
 };
 
 export type Ciudad = { nombre: string; lng: number; lat: number; zona: 'es' | 'latam' };

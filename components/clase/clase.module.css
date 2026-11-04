@@ -3687,3 +3687,41 @@ button.oscuraCaja {
   color: #9a7340;
   letter-spacing: -0.02em;
 }
+
+/* diapositivas de vídeo */
+.videoCaja {
+  position: absolute;
+  inset: 0;
+  background: #000;
+}
+.videoLleno {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+.videoPlay {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 40px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #141210;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+}
+.videoPlay svg {
+  width: 30px;
+  height: 30px;
+  fill: currentColor;
+}

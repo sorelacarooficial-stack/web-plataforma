@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { FORMACIONES, ONLINE, SEDES, VIDEOS } from '@/lib/clase';
 import { AntesDespues, Cuenta, CuentaAtras, Cuerpo, Icono, Mapa, Movil, Polvo, Quedan, Titulo, useGoteo, VideoModal } from './piezas';
 import { useClase } from './estado';
@@ -1451,7 +1451,68 @@ function Gracias({ activa, estatica, v, on }: Props) {
   );
 }
 
+/* ---------------------------------------------------------- vídeos */
+
+/**
+ * Una diapositiva que es un vídeo a pantalla completa. Empieza solo al llegar
+ * (la tecla o el clic de Sorela cuenta como gesto, así que suena) y se para al
+ * irse. Pulsar encima lo pausa o lo sigue. En la vista general y en la de
+ * presentador sale solo la portada.
+ */
+function diapoVideo(src: string, portada: string) {
+  return function DiapoVideo({ activa, estatica }: Props) {
+    const ref = useRef<HTMLVideoElement>(null);
+    const [bloqueado, setBloqueado] = useState(false);
+    useEffect(() => {
+      const v = ref.current;
+      if (!v || estatica) return;
+      if (activa) {
+        v.currentTime = 0;
+        v.play().then(() => setBloqueado(false)).catch(() => setBloqueado(true));
+      } else v.pause();
+    }, [activa, estatica]);
+    if (estatica) {
+      // eslint-disable-next-line @next/next/no-img-element
+      return <img src={portada} alt="" className={css.videoLleno} />;
+    }
+    return (
+      <div className={css.videoCaja}>
+        <video
+          ref={ref}
+          src={src}
+          poster={portada}
+          className={css.videoLleno}
+          playsInline
+          preload="auto"
+          onClick={(e) => {
+            e.stopPropagation();
+            const v = e.currentTarget;
+            if (v.paused) v.play().then(() => setBloqueado(false)).catch(() => {});
+            else v.pause();
+          }}
+        />
+        {bloqueado && (
+          <button
+            type="button"
+            className={css.videoPlay}
+            onClick={(e) => {
+              e.stopPropagation();
+              ref.current?.play().then(() => setBloqueado(false)).catch(() => {});
+            }}
+          >
+            <Icono n="play" /> Reproducir
+          </button>
+        )}
+      </div>
+    );
+  };
+}
+
+const VideoSorela = diapoVideo(VIDEOS.sorela, VIDEOS.sorelaPortada);
+const VideoMembresia = diapoVideo(VIDEOS.membresia, VIDEOS.membresiaPortada);
+
 /* ================================================================ lista */
+
 
 export const DIAPOSITIVAS: Diapo[] = [
   { id: 'portada', titulo: 'Antes de tocar', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Portada, notas: 'Saluda mientras corre la cuenta atrás. Pide que escriban en el chat desde dónde te ven. Pulsar la cuenta la reinicia.' },
@@ -1460,6 +1521,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'problema', titulo: 'El problema', tema: 'oscuro', pasos: 1, Vista: Bucle, notas: 'Los cuatro pasos entran solos. Suma los «1» del chat con +1 / +5. Clic: «No necesitas trabajar más. Necesitas aprender a observar, interpretar y actuar con criterio».' },
   { id: 'obstaculos', titulo: 'Los tres obstáculos', tema: 'oscuro', pasos: 3, Vista: Trampas, notas: 'Un obstáculo por clic. Pulsa cada tarjeta para sumar los votos del chat (1, 2 o 3). Al final, la frase: sin conocimiento, sin criterio y sin personalización, no hay evolución profesional.' },
   { id: 'cita', titulo: 'Qué observar, interpretar, decidir', tema: 'crema', pasos: 0, Vista: Cita, notas: 'Pausa. Deja que la frase entre entera antes de hablar.' },
+  { id: 'video-sorela', titulo: 'Vídeo · Sorela Caro', tema: 'oscuro', pasos: 0, sinPie: true, Vista: VideoSorela, notas: 'Vídeo de 1 min: empieza solo. En Google Meet comparte la pestaña con «Compartir también el audio de la pestaña». Al terminar, «Ahora, en directo»: entras tú.' },
   { id: 'historia', titulo: 'Empecé peinando', tema: 'crema', pasos: 1, Vista: Historia, notas: 'Tu historia: de peluquería a las emociones. Siguiente: «Quería entender lo que la persona sentía».' },
   { id: 'aprendi', titulo: 'El masajista más famoso fue ciego', tema: 'oscuro', pasos: 1, Vista: Aprendi, notas: 'La foto está en penumbra. Siguiente: se ilumina con «Las manos leen lo que los ojos no ven».' },
   { id: 'credenciales', titulo: 'Por qué puedo enseñarte esto', tema: 'crema', pasos: 0, Vista: Credenciales, notas: '30 años, +25.000 casos, Nueva Estética, televisión. La tarjeta TV abre el clip si está cargado (lib/clase.ts).' },
@@ -1477,6 +1539,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Caracas 4, 5 y 6 de diciembre y Medellín 10, 11 y 12. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
   { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Pulsa Caracas o Medellín arriba. Una formación por clic: completa (3 días, incluye la academia online), intensiva (2 días, dos zonas), específica (1 día, una zona). Último clic: material, modelos y comida incluidos (solo llegar), cena de gala con entrega de certificados.' },
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Lo que incluye entra solo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
+  ...(VIDEOS.membresia ? [{ id: 'video-membresia', titulo: 'Vídeo · Membresía Divine', tema: 'oscuro' as const, pasos: 0, sinPie: true, Vista: VideoMembresia, notas: 'Vídeo cinematográfico de la membresía. Empieza solo; al terminar, sigue con «¿Y qué pasa después de formarte?».' }] : []),
   { id: 'despues', titulo: '¿Y qué pasa después de formarte?', tema: 'crema', pasos: 2, Vista: Despues, notas: 'Clic: muchas terminan solas, con dudas. Clic: «Por eso hemos creado algo más».' },
   { id: 'comunidad', titulo: 'Bienvenida a la Comunidad Divine®', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'La comunidad NO se vende hoy: es solo para terapeutas homologadas (formación completa de 3 días); a ellas se les vende en una sesión privada. Clic: el requisito.' },
   { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Clases en directo mensuales y grabadas, canal en la plataforma (sin Telegram), fichas, vídeos paso a paso y dossier, Localiza tu terapeuta (mapa mundial, solo homologadas) y el agente IA.' },

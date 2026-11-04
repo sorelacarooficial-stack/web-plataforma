@@ -148,4 +148,14 @@ cada cambio importante** (una línea por decisión, con la fecha).
   masterclass). Divine® Online sí incluye la Comunidad; para la Membresía hay
   que pasar sí o sí por la formación completa de 3 días (certificada =
   homologada).
+- 2026-11-05: presentación con dos vídeos. «Vídeo · Sorela Caro» (1 min, antes
+  de «Mi historia»: motion graphics + entrevista de TV recortada de
+  public/presentacion/tecnica-divine.mp4, en `public/clase/video/`) y «Vídeo ·
+  Membresía Divine» (cinematográfico con ElevenLabs; sale solo cuando
+  `VIDEOS.membresia` en lib/clase.ts tiene archivo). Los vídeos arrancan solos
+  al llegar a la diapositiva; en Meet hay que compartir la pestaña con audio.
+  Plataforma: pop-up «Próximamente · Agente IA Divine» (AgenteProximamente),
+  sale una vez y luego desde la pastilla «Agente IA · Pronto».
+  ElevenLabs: flujo `ndDWySHHfE6q5cLUZHLY`; la red de la sesión bloquea
+  elevenlabsusercontent.com (hay que permitirlo para descargar).
 
