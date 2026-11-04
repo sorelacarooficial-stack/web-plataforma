@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { FIN_PRECIO, PLAZAS, PRECIOS, VIDEOS } from '@/lib/clase';
-import { AntesDespues, Cuenta, CuentaAtras, Cuerpo, Icono, Mapa, Movil, Plazas, Polvo, Quedan, Titulo, useGoteo, VideoModal } from './piezas';
+import { BOGOTA_INICIO, FORMACIONES, ONLINE, VIDEOS } from '@/lib/clase';
+import { AntesDespues, Cuenta, CuentaAtras, Cuerpo, Icono, Mapa, Movil, Polvo, Quedan, Titulo, useGoteo, VideoModal } from './piezas';
 import { useClase } from './estado';
 import css from './clase.module.css';
 
@@ -158,35 +158,30 @@ function TresCosas({ v, on }: Props) {
 
 function Bucle({ v, on }: Props) {
   const { estado, cambiar } = useClase();
-  const pasos = ['Entra', 'La tumbas', 'Tu protocolo\nde siempre', 'Sale igual'];
+  const pasos = ['Llega con\nuna necesidad', 'Repites el protocolo\nque ya conoces', 'No identificas qué\nnecesita realmente\nsu cuerpo', 'Y el resultado\nno llega como\nesperabas'];
   return (
     <div className={css.columna}>
-      <Eyebrow className={v(0)}>¿Te ha pasado?</Eyebrow>
-      <Titulo texto={'Pones todo de ti.\n*Y sale igual que entró.*'} on={on(0)} className={css.h2} />
-      <div className={css.bucle}>
+      <Eyebrow className={v(0)}>El problema</Eyebrow>
+      <Titulo texto={'Pones todo de ti,\n*pero no consigues el cambio\nque tu clienta espera.*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
+      <div className={css.bucle} style={{ paddingBottom: 0, marginTop: 56 }}>
         {pasos.map((p, k) => (
           <div key={p} className={css.bucleTramo}>
             <div
-              className={`${css.caja} ${k === 3 ? css.cajaFinal : ''} ${k === 3 && on(1) ? css.cajaAlarma : ''} ${v(0, css.rIzq)}`}
-              style={d(0.6 + k * 0.35)}
+              className={`${css.caja} ${css.cajaProblema} ${k === 3 ? css.cajaFinal : ''} ${k === 3 && on(1) ? css.cajaAlarma : ''} ${v(0, css.rIzq)}`}
+              style={d(0.8 + k * 0.45)}
             >
               {p.split('\n').map((l, i) => (
                 <span key={i}>{l}</span>
               ))}
             </div>
-            {k < 3 && <Flecha className={v(0)} style={d(0.8 + k * 0.35)} />}
+            {k < 3 && <Flecha className={v(0)} style={d(1 + k * 0.45)} />}
           </div>
         ))}
-        <svg viewBox="0 0 1500 120" className={`${css.vuelta} ${on(0) ? css.on : ''}`} aria-hidden>
-          <path d="M1290 10 C1290 90 1200 100 750 100 C300 100 150 90 150 10" />
-          <path d="M1290 10 C1290 90 1200 100 750 100 C300 100 150 90 150 10" className={css.vueltaFlujo} />
-          <path d="M140 24 150 8 162 22" />
-        </svg>
-        <span className={`${css.vueltaTexto} ${v(0)}`} style={d(2.4)}>
-          Y vuelta a empezar
-        </span>
       </div>
-      <div className={`${css.contadorGrande} ${v(1)}`}>
+      <div className={`${css.conclusion} ${v(1)}`}>
+        <Titulo as="p" texto={'No necesitas trabajar más.\nNecesitas aprender a *observar, interpretar y actuar con criterio.*'} on={on(1)} className={css.conclusionTexto} retraso={0.2} paso={0.06} />
+      </div>
+      <div className={`${css.contadorGrande} ${v(0)}`} style={d(2.6)}>
         <div>
           <span className={css.contadorNum} key={estado.unos}>
             {estado.unos}
@@ -219,29 +214,29 @@ function Bucle({ v, on }: Props) {
 function Trampas({ v, on }: Props) {
   const { estado, cambiar } = useClase();
   const total = estado.votos.reduce((a, b) => a + b, 0);
-  const trampas = [
-    ['aparato', 'El aparato que\nno se paga', '−€€€'],
-    ['copia', 'El mismo protocolo\npara todas', ''],
-    ['mano', 'Improvisar\ny esperar', ''],
+  const obstaculos = [
+    ['aparato', 'Aparatología que no ofrece los resultados que esperas', 'Inviertes en tecnología, pero no siempre consigues solucionar lo que realmente necesita tu clienta.'],
+    ['copia', 'El mismo protocolo para todas', 'Cada cuerpo es diferente. Cada persona tiene necesidades, circunstancias y respuestas distintas. Un mismo protocolo no puede responder a todas por igual.'],
+    ['mano', 'Improvisar y esperar resultados', 'Trabajar sin conocer el antes, el durante y el después; sin comprender el cómo ni el porqué de cada maniobra, es trabajar sin criterio y asumir resultados inciertos.'],
   ];
   return (
     <div className={css.columna}>
-      <Eyebrow className={v(0)}>Las tres trampas</Eyebrow>
-      <Titulo texto={'Por qué trabajas tanto\n*y no ves lo que esperas*'} on={on(0)} className={css.h2} />
-      <div className={css.tres}>
-        {trampas.map(([i, t, extra], k) => {
+      <Eyebrow className={v(0)}>Los tres obstáculos</Eyebrow>
+      <Titulo texto={'¿Por qué trabajas tanto\n*y no consigues los resultados que esperas?*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
+      <div className={css.tres} style={{ margin: '44px 0 34px' }}>
+        {obstaculos.map(([i, t, s], k) => {
           const pct = total ? Math.round((estado.votos[k] / total) * 100) : 0;
           return (
             <button
               type="button"
               key={k}
-              className={`${css.oscuraCaja} ${css.trampa} ${v(k + 1, css.rArriba)}`}
+              className={`${css.oscuraCaja} ${css.trampa} ${css.obstaculo} ${v(k + 1, css.rArriba)}`}
               onClick={(e) => {
                 e.stopPropagation();
-                cambiar((s) => {
-                  const votos = [...s.votos] as [number, number, number];
+                cambiar((st) => {
+                  const votos = [...st.votos] as [number, number, number];
                   votos[k]++;
-                  return { ...s, votos };
+                  return { ...st, votos };
                 });
               }}
               title="Pulsa para sumar un voto del chat"
@@ -250,17 +245,10 @@ function Trampas({ v, on }: Props) {
                 <span className={css.numGrande}>{k + 1}</span>
                 <span className={css.circuloIconoOscuro}>
                   <Icono n={i} />
-                  {extra && <em className={css.menosDinero}>{extra}</em>}
                 </span>
               </div>
-              <h3>
-                {t.split('\n').map((l, j) => (
-                  <span key={j}>
-                    {l}
-                    <br />
-                  </span>
-                ))}
-              </h3>
+              <h3>{t}</h3>
+              <p>{s}</p>
               <div className={css.voto}>
                 <span className={css.votoBarra} style={{ width: `${pct}%` }} />
               </div>
@@ -271,15 +259,11 @@ function Trampas({ v, on }: Props) {
       </div>
       <div className={css.filaEntre}>
         <p className={`${css.cita} ${v(3)}`} style={d(0.4)}>
-          «Sin ritmo, sin sentido, sin conciencia.»
+          «Sin conocimiento, sin criterio y sin personalización, no hay evolución profesional».
         </p>
         <div className={css.fila}>
           {total > 0 && (
-            <button
-              type="button"
-              className={css.miniSuave}
-              onClick={(e) => (e.stopPropagation(), cambiar((s) => ({ ...s, votos: [0, 0, 0] })))}
-            >
+            <button type="button" className={css.miniSuave} onClick={(e) => (e.stopPropagation(), cambiar((st) => ({ ...st, votos: [0, 0, 0] })))}>
               borrar votos
             </button>
           )}
@@ -345,7 +329,7 @@ function Aprendi({ v, on }: Props) {
       </div>
       <div className={css.sangreTexto}>
         <Eyebrow className={v(0)}>Lo que aprendí</Eyebrow>
-        <Titulo texto={'El masajista\nmás famoso\n*es ciego.*'} on={on(0)} className={css.h2} paso={0.12} />
+        <Titulo texto={'El masajista\nmás famoso\n*fue ciego.*'} on={on(0)} className={css.h2} paso={0.12} />
         <p className={`${css.texto} ${v(1)}`}>Las manos leen lo que los ojos no ven.</p>
       </div>
     </div>
@@ -539,7 +523,10 @@ function Interpretar({ v, on }: Props) {
     <div className={css.dosCol} style={{ gridTemplateColumns: '1.3fr 0.7fr', alignItems: 'stretch' }}>
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Paso 2 · Interpretar</Eyebrow>
-        <Titulo texto="Lo que callas, *tu cuerpo lo siente*" on={on(0)} className={css.h2} />
+        <Titulo texto="El cuerpo expresa *lo que esconde el alma*" on={on(0)} className={`${css.h2} ${css.h2medio}`} />
+        <p className={`${css.textoSuave} ${v(0)}`} style={d(0.7)}>
+          O lo que muchas veces no sabemos poner en palabras.
+        </p>
         <div className={css.dosIguales} style={{ marginTop: 36 }}>
           {[
             { n: 'A', detras: 'tensión y estrés', p: on(1) ? { x: 100, y: 120, tono: 'oro' as const } : { x: 100, y: 180 } },
@@ -611,7 +598,11 @@ function Secuencia({ v, on }: Props) {
             </span>
             <span className={css.numNegro}>1</span>
           </div>
-          <h3>Abre ganglios</h3>
+          <h3>
+            Estimulación
+            <br />
+            ganglionar
+          </h3>
           <div className={css.anillo}>
             <svg viewBox="0 0 40 40">
               <circle cx="20" cy="20" r="17" className={css.anilloFondo} />
@@ -823,52 +814,190 @@ function Prueba({ v, on }: Props) {
 
 /* -------------------------------------------------------------- 20 */
 
-function Noche({ activa, estatica, v, on }: Props) {
-  const avisos = [
-    ['Lucía', '¿Tienes hueco el jueves por la tarde?', 'ahora'],
-    ['Marta', 'Me ha surgido algo, no puedo ir mañana', '5 min'],
-    ['Elena', '¿Cuánto cuesta la sesión de drenaje?', '12 min'],
+function Metodologia({ activa, estatica, v, on }: Props) {
+  const dias = [
+    ['11 dic', 'Abdomen', 'Trabajo interior y exterior.'],
+    ['12 dic', 'Piernas y glúteos', 'Lipedema · Linfedema · Armonización.'],
+    ['13 dic', 'Facial y brazos', 'Técnica y protocolos.'],
   ];
-  const k = useGoteo(avisos.length + 1, activa && !estatica, 1300, 900);
-  const vistos = estatica ? avisos.length + 1 : k;
   return (
-    <div className={css.dosCol} style={{ gridTemplateColumns: '1.25fr 0.75fr' }}>
+    <div className={css.columna}>
       <div className={css.columna}>
-        <Eyebrow className={v(0)}>La otra mitad del trabajo</Eyebrow>
-        <Titulo texto={'Las 23:00.\n*Sigues contestando\nmensajes.*'} on={on(0)} className={css.h2} />
-        <p className={`${css.texto} ${v(1)}`}>
-          Citas que se caen, clientas que escriben a deshoras y <b>hacerlo todo sola.</b>
-        </p>
-        <div className={`${css.oscuraCaja} ${css.estadistica} ${v(2, css.rArriba)}`}>
-          <b>
-            <Cuenta a={12} on={on(2)} />–<Cuenta a={19} on={on(2)} /> %
-          </b>
-          <span>
-            de las citas en clínicas privadas españolas se quedan sin atender
-            <small>Fuente: Servimedia en The Objective, septiembre de 2025</small>
+        <Eyebrow className={v(0)}>Metodología Divine®</Eyebrow>
+        <Titulo texto={'Aprende *online*.\nPractica *presencialmente*.'} on={on(0)} className={css.h2} />
+        <span className={`${css.chipOscuro} ${css.chipGrande} ${v(0)}`} style={{ ...d(0.8), alignSelf: 'flex-start', marginTop: 26 }}>
+          <Icono n="pin" className={css.chipIcono} /> Bogotá · 11, 12 y 13 de diciembre
+          {!estatica && (
+            <em className={css.chipSuave}>
+              · <Quedan hasta={BOGOTA_INICIO} activa={activa} />
+            </em>
+          )}
+        </span>
+      </div>
+      <div className={css.fases2}>
+        <div className={`${css.oscuraCaja} ${css.faseCaja} ${v(1, css.rIzq)}`}>
+          <span className={css.faseNum}>Fase 1</span>
+          <h3>Preparación online</h3>
+          <ul className={css.lista}>
+            {['Acceso inmediato al aula virtual.', 'Formación teórica.', 'Estudio a tu ritmo.'].map((t, k) => (
+              <li key={t} className={v(1)} style={d(0.4 + k * 0.18)}>
+                <Icono n="check" className={css.chipIcono} />
+                {t}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <Flecha className={v(2)} style={{ width: 90, flex: 'none' }} />
+        <div className={`${css.oscuraCaja} ${css.faseCaja} ${css.faseCajaOro} ${v(2, css.rDer)}`}>
+          <span className={css.faseNum}>Fase 2</span>
+          <h3>Formación presencial</h3>
+          <div className={css.dias}>
+            {dias.map(([f, t, s], k) => (
+              <div key={f} className={`${css.dia} ${v(2)}`} style={d(0.4 + k * 0.25)}>
+                <span className={css.diaFecha}>{f}</span>
+                <div>
+                  <b>{t}</b>
+                  <span>{s}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className={`${css.barraOscura} ${css.barraOro} ${v(3)}`} style={{ alignSelf: 'center' }}>
+        Tres días para aprender, practicar y ganar seguridad profesional.
+        <span className={css.brillo} />
+      </div>
+    </div>
+  );
+}
+
+function Presencial({ v, on }: Props) {
+  const [elegida, setElegida] = useState(0);
+  return (
+    <div className={css.columna}>
+      <div className={css.filaEntre} style={{ alignItems: 'flex-end' }}>
+        <div>
+          <Eyebrow className={v(0)}>Technique Divine® · Formación presencial</Eyebrow>
+          <Titulo texto={'Tres días en *Bogotá*'} on={on(0)} className={css.h2} />
+        </div>
+        <div className={css.fila}>
+          <span className={`${css.chip} ${v(0)}`} style={d(0.5)}>
+            <Icono n="pin" className={css.chipIcono} /> Bogotá
+          </span>
+          <span className={`${css.chip} ${v(0)}`} style={d(0.6)}>
+            <Icono n="calendario" className={css.chipIcono} /> 11, 12 y 13 de diciembre
           </span>
         </div>
       </div>
-      <Movil className={v(0, css.rArriba)}>
-        <div className={css.bloqueo}>
-          <span className={css.bloqueoHora}>23:0{Math.min(4, 1 + vistos)}</span>
-          <span className={css.bloqueoDia}>martes</span>
-        </div>
-        <div className={css.avisos}>
-          {avisos.map(([n, t, h], i) => (
-            <div key={n} className={`${css.aviso2} ${i < vistos ? css.avisoOn : ''}`}>
-              <span className={css.avisoApp}>
-                <i /> Mensajes <em>{h}</em>
-              </span>
-              <b>{n}</b>
-              <span>{t}</span>
-            </div>
-          ))}
-          <span className={`${css.masMensajes} ${vistos > avisos.length ? css.avisoOn : ''}`}>
-            + <Cuenta a={14} on={vistos > avisos.length} ms={1400} /> mensajes sin leer
+      <div className={css.formaciones}>
+        {FORMACIONES.map((f, k) => (
+          <button
+            type="button"
+            key={f.nombre}
+            className={`${k === elegida ? css.formacionOn : ''} ${css.formacion} ${v(k + 1, css.rArriba)}`}
+            onClick={(e) => (e.stopPropagation(), setElegida(k))}
+          >
+            {k === 0 && <span className={css.corona}>Recomendada</span>}
+            <span className={css.formacionTipo}>Formación</span>
+            <b className={css.formacionNombre}>{f.nombre}</b>
+            <span className={css.formacionDias}>{f.dias}</span>
+            <span className={css.formacionPrecio}>
+              <Cuenta a={f.precio} on={on(k + 1)} ms={1400} /> <small>USD</small>
+            </span>
+            <span className={css.formacionReserva}>
+              Reserva <b>{f.reserva} USD</b>
+            </span>
+          </button>
+        ))}
+      </div>
+      <div className={`${css.zonas} ${v(1)}`} style={d(1)}>
+        {['Abdomen', 'Piernas y glúteos', 'Facial y brazos'].map((z) => (
+          <span key={z} className={css.zona}>
+            <span className={css.puntoOro} /> {z}
           </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Online({ v, on }: Props) {
+  const incluye = [
+    ['libro', 'Acceso a nuestra Academia Virtual.'],
+    ['carpeta', 'Dosieres profesionales y material audiovisual.'],
+    ['pantalla', 'Una clase en directo con Sorela Caro por cada módulo.'],
+    ['mano', 'Clase práctica online con modelo real.'],
+    ['gente', 'Incorporación a la Comunidad Divine®.'],
+    ['escudo', 'Acompañamiento y apoyo continuado.'],
+  ];
+  return (
+    <div className={css.dosCol} style={{ gridTemplateColumns: '1fr 0.85fr', alignItems: 'center' }}>
+      <div className={css.columna}>
+        <Eyebrow className={v(0)}>Formación profesional · 100 % online</Eyebrow>
+        <Titulo texto={'Divine® Online:\n*inversión en tu formación*'} on={on(0)} className={css.h2} />
+        <p className={`${css.textoSuave} ${v(0)}`} style={d(0.6)}>
+          Especialízate en la Técnica Divine® desde cualquier lugar del mundo.
+        </p>
+        <div className={css.incluye}>
+          {incluye.map(([i, t], k) => (
+            <span key={t} className={`${css.itemIcono} ${css.itemIconoPeque} ${v(0, css.rIzq)}`} style={d(0.9 + k * 0.14)}>
+              <span className={css.circuloIcono}>
+                <Icono n={i} />
+              </span>
+              {t}
+            </span>
+          ))}
         </div>
-      </Movil>
+      </div>
+      <div className={css.columna} style={{ gap: 22 }}>
+        <div className={`${css.precioOscuro} ${css.precio} ${css.precioOnline} ${v(1, css.rArriba)}`}>
+          <div className={css.filaEntre}>
+            <Eyebrow>Inversión en tu formación</Eyebrow>
+            <span className={css.insignia}>Precio especial</span>
+          </div>
+          <p className={css.precioHabitual}>
+            Precio habitual <s className={on(1) ? css.tachadoOn : ''}>{ONLINE.habitual} USD</s>
+          </p>
+          <p className={css.cifra}>
+            <Cuenta a={ONLINE.especial} on={on(1)} ms={1600} />
+            <small>USD</small>
+          </p>
+          <div className={`${css.reservaBanda} ${v(2)}`}>
+            <Icono n="calendario" className={css.chipIcono} />
+            Reserva tu plaza con solo <b>{ONLINE.reserva} USD</b>
+          </div>
+          <p className={`${css.precioNota} ${v(2)}`} style={d(0.3)}>
+            Tu reserva garantiza tu plaza y el precio promocional de la formación.
+          </p>
+          <span className={css.brillo} />
+        </div>
+        <p className={`${css.textoSuave} ${v(3)}`} style={{ margin: 0 }}>
+          <b>Mucho más que una formación.</b> No vienes solamente a aprender una técnica. Vienes a formar parte de una comunidad profesional que te acompaña.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Despues({ v, on }: Props) {
+  return (
+    <div className={css.dosCol} style={{ gridTemplateColumns: '1.1fr 0.9fr' }}>
+      <div className={css.columna}>
+        <Eyebrow className={v(0)}>Después de formarte</Eyebrow>
+        <Titulo texto={'¿Y qué pasa *después\nde formarte?*'} on={on(0)} className={css.h2} />
+        <p className={`${css.texto} ${css.textoAncho} ${v(0)}`} style={d(0.7)}>
+          Aprender una técnica es importante, pero <b>mantenerse actualizada, acompañada y en constante evolución</b> es lo que marca la diferencia.
+        </p>
+        <p className={`${css.texto} ${css.textoAncho} ${v(1)}`}>
+          Sabemos que muchas profesionales terminan una formación y después se encuentran <b>solas, con dudas, inseguridades</b> y sin saber cómo seguir avanzando.
+        </p>
+        <p className={`${css.textoGrandeOro} ${v(2)}`}>Por eso hemos creado algo más.</p>
+      </div>
+      <div className={`${css.foto} ${css.fotoAlta} ${v(0, css.rCortina)}`} style={d(0.3)}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/clase/despues.webp" alt="Sorela con una alumna" />
+      </div>
     </div>
   );
 }
@@ -878,22 +1007,22 @@ function Noche({ activa, estatica, v, on }: Props) {
 function Comunidad({ v, on }: Props) {
   const tres = [
     ['libro', 'Sigues aprendiendo'],
-    ['pin', 'Te encuentran clientas'],
-    ['mano', 'Te quitamos trabajo de encima'],
+    ['gente', 'Sigues acompañada'],
+    ['chispa', 'Sigues evolucionando'],
   ];
   return (
-    <div className={css.dosCol} style={{ gridTemplateColumns: '0.8fr 1fr' }}>
+    <div className={css.dosCol} style={{ gridTemplateColumns: '0.85fr 1fr' }}>
       <div className={css.columna}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/clase/logo-tinta.webp" alt="" className={`${css.logoPeque} ${v(0)}`} />
-        <Eyebrow className={v(0)}>Por eso nace</Eyebrow>
-        <Titulo texto={'Comunidad\n*Divine*'} on={on(0)} className={css.h1crema} paso={0.2} />
-        <p className={`${css.texto} ${v(0)}`} style={d(0.7)}>
-          Para que <b>no lo hagas sola.</b>
+        <Eyebrow className={v(0)}>Bienvenida a la</Eyebrow>
+        <Titulo texto={'Comunidad\n*Divine®*'} on={on(0)} className={css.h1crema} paso={0.2} />
+        <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.7), maxWidth: '30ch' }}>
+          Divine® no quiere que simplemente aprendas. <b>Queremos que sigas creciendo, evolucionando y formando parte de una comunidad profesional.</b>
         </p>
-        <div className={css.columna} style={{ gap: 16, marginTop: 14 }}>
+        <div className={css.fila} style={{ gap: 26, marginTop: 34 }}>
           {tres.map(([i, t], k) => (
-            <span key={t} className={`${css.itemIcono} ${v(0, css.rIzq)}`} style={d(1 + k * 0.2)}>
+            <span key={t} className={`${css.itemIcono} ${css.itemIconoPeque} ${v(1, css.rIzq)}`} style={d(k * 0.2)}>
               <span className={css.circuloIcono}>
                 <Icono n={i} />
               </span>
@@ -902,15 +1031,9 @@ function Comunidad({ v, on }: Props) {
           ))}
         </div>
       </div>
-      <div className={css.columna} style={{ gap: 26 }}>
-        <div className={`${css.foto} ${css.fotoAncha} ${v(0, css.rEscala)}`} style={d(0.5)}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/clase/grupo.webp" alt="Sorela con su equipo de alumnas" />
-        </div>
-        <span className={`${css.barraOscura} ${v(1)}`} style={{ alignSelf: 'flex-start' }}>
-          <Icono n="check" className={css.chipIcono} />
-          No hace falta haber hecho mi curso
-        </span>
+      <div className={`${css.foto} ${css.fotoAncha} ${v(0, css.rEscala)}`} style={{ ...d(0.5), height: 640 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/clase/grupo.webp" alt="Sorela con su equipo de alumnas" />
       </div>
     </div>
   );
@@ -1038,111 +1161,19 @@ function Agente({ activa, estatica, v, on }: Props) {
   );
 }
 
-/* -------------------------------------------------------------- 24 */
-
-function DiezPlazas({ v, on }: Props) {
-  const { estado } = useClase();
-  const quedan = PLAZAS - estado.plazas;
-  const pasos = ['Entendemos tu negocio', 'Dejamos tu agente\na tu medida', 'Lo que aprendemos entrena\nel agente de todas'];
-  return (
-    <div className={css.columna}>
-      <Eyebrow className={v(0)}>Solo {PLAZAS} plazas</Eyebrow>
-      <Titulo texto={`Las ${PLAZAS} primeras:\n*nos sentamos contigo, 1 a 1*`} on={on(0)} className={css.h2} />
-      <div className={v(0)} style={d(0.6)}>
-        <Plazas grande on={on(0)} />
-      </div>
-      <p className={`${css.textoSuave} ${v(0)}`} style={d(1.2)}>
-        {quedan === PLAZAS ? (
-          'Las plazas se rellenan en directo, con cada alta.'
-        ) : quedan > 0 ? (
-          <>
-            <b className={css.oroTexto}>Quedan {quedan}</b> · se rellenan en directo, con cada alta.
-          </>
-        ) : (
-          <b className={css.oroTexto}>Plazas de fundadora completas.</b>
-        )}
-      </p>
-      <div className={css.flujo}>
-        {pasos.map((p, k) => (
-          <div key={p} className={css.flujoTramo}>
-            <div className={`${css.oscuraCaja} ${css.flujoPaso} ${v(1, css.rIzq)}`} style={d(k * 0.3)}>
-              <span className={css.numOro}>{k + 1}</span>
-              <span>
-                {p.split('\n').map((l, i) => (
-                  <span key={i} style={{ display: 'block' }}>
-                    {l}
-                  </span>
-                ))}
-              </span>
-            </div>
-            {k < 2 && <Flecha className={v(1)} style={d(0.2 + k * 0.3)} />}
-          </div>
-        ))}
-      </div>
-      <span className={`${css.chipOscuro} ${v(2)}`} style={{ alignSelf: 'flex-start' }}>
-        <Icono n="calendario" className={css.chipIcono} /> Del 10 al 25 de noviembre
-      </span>
-    </div>
-  );
-}
-
-/* -------------------------------------------------------------- 25 */
-
-function Precio({ activa, estatica, v, on }: Props) {
-  return (
-    <div className={css.centro} style={{ gap: 34 }}>
-      <Eyebrow className={v(0)}>Precio de lanzamiento</Eyebrow>
-      <Titulo texto="Entra hoy, *al precio de hoy*" on={on(0)} className={css.h2} />
-      <div className={css.precios}>
-        <div className={`${css.vidrio} ${css.precio} ${v(0, css.rArriba)}`} style={d(0.5)}>
-          <Eyebrow>Mensual</Eyebrow>
-          <p className={css.cifra}>
-            <Cuenta a={PRECIOS.mensual} on={on(0)} /> €<small>/mes</small>
-          </p>
-          <p className={css.precioNota}>
-            Después, <b>{PRECIOS.mensualDespues} €/mes</b>
-          </p>
-        </div>
-        <div className={`${css.precioOscuro} ${css.precio} ${v(1, css.rArriba)}`}>
-          <div className={css.filaEntre}>
-            <Eyebrow>Anual</Eyebrow>
-            <span className={css.insignia}>Solo en la masterclass</span>
-          </div>
-          <p className={css.cifra}>
-            <Cuenta a={PRECIOS.anual} on={on(1)} /> €<small>/año</small>
-          </p>
-          <p className={css.precioNota}>
-            <b>2 meses gratis</b> · ahorras {PRECIOS.ahorro} €
-          </p>
-          <span className={css.brillo} />
-        </div>
-      </div>
-      <div className={css.fila} style={{ justifyContent: 'center' }}>
-        <span className={`${css.barraOscura} ${v(2)}`}>
-          <Icono n="check" className={css.chipIcono} /> Quien entra ahora, mantiene su precio
-        </span>
-        <span className={`${css.barraOscura} ${v(2)}`} style={d(0.2)}>
-          <Icono n="reloj" className={css.chipIcono} /> Hasta el domingo 8 de noviembre · 23:59 ·{' '}
-          <Quedan hasta={FIN_PRECIO} activa={activa && !estatica} />
-        </span>
-      </div>
-    </div>
-  );
-}
-
 /* -------------------------------------------------------------- 26 */
 
 function Escanea({ qr, v, on }: Props) {
   const pasos = [
     ['qr', 'Entras', 'Desde el QR o el enlace del chat'],
-    ['tarjeta', 'Pagas', 'Mensual o anual'],
-    ['llave', 'Te llega el acceso', 'Y si eres fundadora, tu cita 1 a 1'],
+    ['tarjeta', 'Reservas tu plaza', `Online: ${ONLINE.reserva} USD · Presencial: desde ${Math.min(...FORMACIONES.map((f) => f.reserva))} USD`],
+    ['llave', 'Te llega el acceso', 'Al aula virtual, desde hoy'],
   ];
   return (
     <div className={css.dosCol} style={{ gridTemplateColumns: '0.9fr 1fr' }}>
       <div className={css.columna}>
-        <Eyebrow className={v(0)}>Cómo entrar</Eyebrow>
-        <Titulo texto="Escanea y *entra*" on={on(0)} className={css.h2} />
+        <Eyebrow className={v(0)}>Cómo reservar</Eyebrow>
+        <Titulo texto="Escanea y *reserva*" on={on(0)} className={css.h2} />
         <div className={`${css.qrCaja} ${v(0, css.rEscala)}`} style={d(0.4)}>
           <div className={css.qr} dangerouslySetInnerHTML={{ __html: qr }} />
           <span className={css.qrLaser} />
@@ -1174,13 +1205,17 @@ function Preguntas({ qr, v, on }: Props) {
         <Titulo texto={'Pregúntame\n*lo que quieras*'} on={on(0)} className={css.h1crema} paso={0.14} />
       </div>
       <div className={css.filaEntre} style={{ alignItems: 'flex-end' }}>
-        <div className={`${css.vidrio} ${css.fundadoras} ${v(0, css.rArriba)}`} style={d(0.8)}>
-          <Eyebrow>Fundadoras</Eyebrow>
-          <Plazas on={on(0)} />
+        <div className={css.fila}>
+          <span className={`${css.chipOscuro} ${v(0)}`} style={d(0.8)}>
+            <Icono n="pantalla" className={css.chipIcono} /> Divine® Online · {ONLINE.especial} USD
+          </span>
+          <span className={`${css.chipOscuro} ${v(0)}`} style={d(0.9)}>
+            <Icono n="pin" className={css.chipIcono} /> Bogotá · 11, 12 y 13 de diciembre
+          </span>
         </div>
         <div className={`${css.vidrio} ${css.qrMini} ${v(0, css.rArriba)}`} style={d(1)}>
           <div className={css.qr} dangerouslySetInnerHTML={{ __html: qr }} />
-          <Eyebrow>Entra aquí</Eyebrow>
+          <Eyebrow>Reserva aquí</Eyebrow>
         </div>
       </div>
     </div>
@@ -1202,8 +1237,8 @@ function Gracias({ activa, estatica, v, on }: Props) {
         Tu ficha <b>«Lo que miro antes de tocar»</b> llega hoy a tu email.
       </p>
       <div className={css.fila} style={{ justifyContent: 'center' }}>
-        <Chip icono="reloj" className={v(0)} style={d(1.2)}>
-          Precio de lanzamiento hasta el domingo 8, 23:59 · <Quedan hasta={FIN_PRECIO} activa={activa && !estatica} />
+        <Chip icono="calendario" className={v(0)} style={d(1.2)}>
+          Reserva tu plaza · Bogotá, 11, 12 y 13 de diciembre
         </Chip>
         <Chip className={v(0)} style={d(1.35)}>
           @sorelacaro_
@@ -1219,29 +1254,30 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'portada', titulo: 'Antes de tocar', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Portada, notas: 'Saluda mientras corre la cuenta atrás. Pide que escriban en el chat desde dónde te ven. Pulsar la cuenta la reinicia.' },
   { id: 'bienvenida', titulo: '¿Desde dónde nos ves?', tema: 'crema', pasos: 0, Vista: Bienvenida, notas: 'Lee ciudades del chat y pulsa cada una en el mapa para encenderla. «+ otro sitio» suma las que no salen. Pregunta cuántos años llevan con las manos.' },
   { id: 'tres-cosas', titulo: 'Hoy te llevas 3 cosas', tema: 'crema', pasos: 1, Vista: TresCosas, notas: 'Las tres cosas. Siguiente: anuncia la ficha y «una noticia» al final (solo en directo), para que se queden.' },
-  { id: 'bucle', titulo: 'Y sale igual que entró', tema: 'oscuro', pasos: 1, Vista: Bucle, notas: 'Cuenta el bucle. Siguiente: aparece el contador de «1». Súmalos con +1 / +5 según llegan al chat.' },
-  { id: 'trampas', titulo: 'Las tres trampas', tema: 'oscuro', pasos: 3, Vista: Trampas, notas: 'Una trampa por clic. Pulsa cada tarjeta para sumar los votos del chat (1, 2 o 3): las barras se mueven solas.' },
+  { id: 'problema', titulo: 'El problema', tema: 'oscuro', pasos: 1, Vista: Bucle, notas: 'Los cuatro pasos entran solos. Suma los «1» del chat con +1 / +5. Clic: «No necesitas trabajar más. Necesitas aprender a observar, interpretar y actuar con criterio».' },
+  { id: 'obstaculos', titulo: 'Los tres obstáculos', tema: 'oscuro', pasos: 3, Vista: Trampas, notas: 'Un obstáculo por clic. Pulsa cada tarjeta para sumar los votos del chat (1, 2 o 3). Al final, la frase: sin conocimiento, sin criterio y sin personalización, no hay evolución profesional.' },
   { id: 'cita', titulo: 'Qué observar, interpretar, decidir', tema: 'crema', pasos: 0, Vista: Cita, notas: 'Pausa. Deja que la frase entre entera antes de hablar.' },
   { id: 'historia', titulo: 'Empecé peinando', tema: 'crema', pasos: 1, Vista: Historia, notas: 'Tu historia: de peluquería a las emociones. Siguiente: «Quería entender lo que la persona sentía».' },
-  { id: 'aprendi', titulo: 'El masajista más famoso es ciego', tema: 'oscuro', pasos: 1, Vista: Aprendi, notas: 'La foto está en penumbra. Siguiente: se ilumina con «Las manos leen lo que los ojos no ven».' },
+  { id: 'aprendi', titulo: 'El masajista más famoso fue ciego', tema: 'oscuro', pasos: 1, Vista: Aprendi, notas: 'La foto está en penumbra. Siguiente: se ilumina con «Las manos leen lo que los ojos no ven».' },
   { id: 'credenciales', titulo: 'Por qué puedo enseñarte esto', tema: 'crema', pasos: 0, Vista: Credenciales, notas: '30 años, +25.000 casos, Nueva Estética, televisión. La tarjeta TV abre el clip si está cargado (lib/clase.ts).' },
   { id: 'metodo', titulo: 'El método', tema: 'crema', pasos: 3, Vista: Metodo, notas: 'Un paso por clic: Observar, Interpretar, Decidir.' },
   { id: 'observar', titulo: 'Paso 1 · Mira y escucha', tema: 'crema', fase: 1, pasos: 2, Vista: Observar, notas: 'Los puntos del cuerpo se pueden pulsar. Clic: «Mira» (piel, postura, respiración, dónde retiene). Clic: «Escucha».' },
   { id: 'no-tocar', titulo: 'Cuándo no tocar', tema: 'oscuro', fase: 1, pasos: 1, Vista: NoTocar, notas: 'Contraindicaciones: primero médico. Clic: con más suavidad.' },
-  { id: 'interpretar', titulo: 'Paso 2 · Lo que callas', tema: 'oscuro', fase: 2, pasos: 3, Vista: Interpretar, notas: 'Las dos con la misma queja. Clic: A, el punto sube al pecho (estrés). Clic: B, baja a las piernas. Clic: «Misma queja. Distinto origen».' },
+  { id: 'interpretar', titulo: 'Paso 2 · El cuerpo expresa', tema: 'oscuro', fase: 2, pasos: 3, Vista: Interpretar, notas: 'El cuerpo expresa lo que esconde el alma. Clic: clienta A, el punto sube al pecho (estrés). Clic: B, baja a las piernas. Clic: «Misma queja. Distinto origen».' },
   { id: 'noventa', titulo: 'El drenaje de hace 90 años', tema: 'crema', fase: 2, pasos: 2, Vista: Noventa, notas: 'La linfa se mueve hacia los ganglios. Clic: Hoy. Clic: Divine.' },
-  { id: 'secuencia', titulo: 'Paso 3 · La secuencia', tema: 'crema', fase: 3, pasos: 3, Vista: Secuencia, notas: 'Un paso por clic: ganglios (~10 min), escucha el abdomen, maniobras lentas.' },
+  { id: 'secuencia', titulo: 'Paso 3 · La secuencia', tema: 'crema', fase: 3, pasos: 3, Vista: Secuencia, notas: 'Un paso por clic: estimulación ganglionar (~10 min), escucha el abdomen, maniobras lentas.' },
   { id: 'cuerpo-limpio', titulo: 'Sobre un cuerpo limpio', tema: 'oscuro', fase: 3, pasos: 3, Vista: CuerpoLimpio, notas: 'La base primero. Cada clic apila una capa: aparatología, cosmética, tratamientos.' },
   { id: 'casos', titulo: 'Una sesión. 55 minutos', tema: 'oscuro', pasos: 2, Vista: Casos, notas: 'Clic: el abdomen se descubre. Clic: el rostro. Puedes arrastrar la línea mientras explicas.' },
   { id: 'lunes', titulo: 'Tu lunes', tema: 'crema', pasos: 3, Vista: Lunes, notas: 'Una pregunta por clic. Puedes marcar las casillas.' },
   { id: 'prueba', titulo: 'Lo que cambia en tu cabina', tema: 'oscuro', pasos: 3, Vista: Prueba, notas: 'Un escalón por clic. El antes/después se descubre en el primero.' },
-  { id: 'noche', titulo: 'Las 23:00', tema: 'oscuro', pasos: 2, Vista: Noche, notas: 'Los mensajes entran solos. Clic: el texto. Clic: el dato 12–19 %.' },
-  { id: 'comunidad', titulo: 'Comunidad Divine', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'Presentas la comunidad. Clic: «No hace falta haber hecho mi curso».' },
+  { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Clic: fase 1 online. Clic: fase 2 en Bogotá, día a día. Clic: tres días para aprender, practicar y ganar seguridad.' },
+  { id: 'presencial', titulo: 'Formación presencial · Bogotá', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Una formación por clic: completa (3 días), intensiva (2), específica (1). Pulsa una tarjeta para destacarla mientras hablas de ella.' },
+  { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Lo que incluye entra solo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
+  { id: 'despues', titulo: '¿Y qué pasa después de formarte?', tema: 'crema', pasos: 2, Vista: Despues, notas: 'Clic: muchas terminan solas, con dudas. Clic: «Por eso hemos creado algo más».' },
+  { id: 'comunidad', titulo: 'Bienvenida a la Comunidad Divine®', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'Bienvenida a la Comunidad Divine®. Clic: aprendiendo, acompañada, evolucionando.' },
   { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Las cinco cosas. El buscador de terapeutas se escribe solo.' },
   { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 0, Vista: Agente, notas: 'El chat se reproduce solo. ↻ en el móvil lo repite.' },
-  { id: 'plazas', titulo: 'Solo 10 plazas', tema: 'oscuro', pasos: 2, Vista: DiezPlazas, notas: 'Pulsa un círculo por cada alta: se llena aquí, en la diapositiva 27 y en la vista de presentador. Clic: los tres pasos. Clic: fechas.' },
-  { id: 'precio', titulo: 'Precio de lanzamiento', tema: 'crema', pasos: 2, Vista: Precio, notas: 'Primero mensual. Clic: anual (solo en la masterclass). Clic: condiciones y cuenta atrás hasta el domingo 23:59.' },
-  { id: 'escanea', titulo: 'Escanea y entra', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'El QR lleva a /clase/entrar. Pega también el enlace en el chat de Zoom.' },
-  { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. Sigue llenando plazas de fundadora según entran.' },
-  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. Recuerda que la ficha llega hoy por email y el precio hasta el domingo.' },
+  { id: 'escanea', titulo: 'Escanea y reserva', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'El QR lleva a /clase/entrar. Pega también el enlace en el chat de Zoom.' },
+  { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. El QR sigue visible para reservar.' },
+  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. Recuerda Bogotá, 11, 12 y 13 de diciembre.' },
 ];

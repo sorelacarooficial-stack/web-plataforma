@@ -16,7 +16,7 @@ export function GET() {
     process.env.CLASE_ENLACE_PAGO ||
     ENLACE_PAGO ||
     `https://wa.me/${WHATSAPP_SORELA.replace(/\D/g, '')}?text=${encodeURIComponent(
-      'Hola, Sorela. Vengo de la masterclass y quiero entrar en la Comunidad Divine.'
+      'Hola, Sorela. Vengo de la masterclass y quiero reservar mi plaza en la formación Divine.'
     )}`;
   return NextResponse.redirect(destino, { status: 302, headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' } });
 }
