@@ -1130,9 +1130,9 @@ function Agente({ activa, estatica, v, on }: Props) {
     <div className={css.dosCol} style={{ gridTemplateColumns: '1fr 1fr', gap: 70 }}>
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Tu agente Divine</Eyebrow>
-        <Titulo texto={'Un agente que conoce\n*todo tu negocio*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
+        <Titulo texto={'Un agente IA\n*adaptado a tu negocio*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
         <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.6), maxWidth: '36ch' }}>
-          Se conecta con tu agenda, tus canales y tus clientas. Y trabaja con un objetivo: <b>que tu centro facture más.</b>
+          Conoce y se conecta con todo tu negocio: tu agenda, tus canales y tus clientas. Y trabaja con un objetivo: <b>que tu centro facture más.</b>
         </p>
         <svg viewBox="0 0 760 620" className={`${css.red} ${v(0, css.rEscala)}`} style={d(0.4)}>
           {CONEXIONES.map(([, , x, y], i) => (
@@ -1194,7 +1194,7 @@ function Agente({ activa, estatica, v, on }: Props) {
           ))}
         </div>
         <span className={`${css.chipOscuro} ${v(1)}`} style={{ ...d(0.7), alignSelf: 'flex-start' }}>
-          <Icono n="escudo" className={css.chipIcono} /> Hecho solo para terapeutas Divine®
+          <Icono n="escudo" className={css.chipIcono} /> Adaptado a tu negocio · solo para terapeutas Divine®
         </span>
       </div>
     </div>
