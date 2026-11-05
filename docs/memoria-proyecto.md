@@ -184,3 +184,10 @@ cada cambio importante** (una línea por decisión, con la fecha).
   Sorela de blanco (imagen editada con gemini-3-pro-image a partir de sus
   fotos + Seedance; la otra variante la rechazó el filtro de personas reales).
   Medios en la rama `claude/eleven-medios-2` (carpeta `eleven2/`).
+- 2026-11-05: sala de espera en la portada: cuenta atrás + frases rotando
+  (`ESPERA.frases`) + botón «Poner música» (`public/clase/musica/espera.mp3`,
+  6 min de lounge con piano generado en ElevenLabs, bucle, −18 LUFS). La
+  música se apaga sola en fundido al llegar la cuenta a cero o al pasar de
+  diapositiva; en el presentador no suena. En «QUIERO», 10 min de preguntas y
+  reservas (`MINUTOS_PREGUNTAS`, estado compartido `preguntasDesde`; pulsar
+  reinicia). Guion de venta completo en `docs/mensajes-quiero.md`.

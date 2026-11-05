@@ -71,7 +71,7 @@ export const VIDEOS = {
  * Vacío = no sale el botón.
  */
 export const ESPERA = {
-  musica: [] as string[],
+  musica: ['/clase/musica/espera.mp3'] as string[],
   /** Frases que van rotando bajo la cuenta atrás. */
   frases: [
     'Escribe en el chat desde dónde nos ves',
