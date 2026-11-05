@@ -815,8 +815,8 @@ function Metodologia({ activa, estatica, v, on }: Props) {
   return (
     <div className={css.columna}>
       <div className={css.columna}>
-        <Eyebrow className={v(0)}>Metodología Divine®</Eyebrow>
-        <Titulo texto={'Aprende *online*.\nPractica *presencialmente*.'} on={on(0)} className={css.h2} />
+        <Eyebrow className={v(0)}>Metodología Divine® · Formación premium</Eyebrow>
+        <Titulo texto={'Una formación *premium*.\nAprende online. *Practica conmigo.*'} on={on(0)} className={css.h2} />
         <div className={css.fila} style={{ marginTop: 26 }}>
           {SEDES.map((s, k) => (
             <span key={s.ciudad} className={`${css.chipOscuro} ${css.chipGrande} ${v(0)}`} style={d(0.8 + k * 0.15)}>
