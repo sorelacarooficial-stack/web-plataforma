@@ -3725,3 +3725,99 @@ button.oscuraCaja {
   height: 30px;
   fill: currentColor;
 }
+
+/* ---------------------------------------------------------- costes (hagamos cuentas) */
+.costes {
+  padding: 34px 40px 26px;
+  border-radius: 34px;
+}
+.costeFila {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(154, 115, 64, 0.14);
+}
+.costeFila .circuloIcono {
+  width: 52px;
+  height: 52px;
+}
+.costeFila b {
+  display: block;
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+.costeFila > div span {
+  display: block;
+  margin-top: 2px;
+  font-size: 18px;
+  color: rgba(20, 18, 16, 0.55);
+}
+.costeFila em {
+  font-style: normal;
+  font-size: 30px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: #141210;
+  font-variant-numeric: tabular-nums;
+}
+.costeTotal {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding-top: 20px;
+}
+.costeTotal > span {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9a7340;
+}
+.costeTotal b {
+  font-size: 64px;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  color: #9a7340;
+  font-variant-numeric: tabular-nums;
+}
+.costeTotal small {
+  font-size: 22px;
+  color: rgba(20, 18, 16, 0.6);
+}
+.costeNota {
+  display: block;
+  margin-top: 10px;
+  font-size: 15px;
+  color: rgba(20, 18, 16, 0.45);
+}
+.costesDivine {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 40px;
+  padding: 26px 30px;
+  border-radius: 28px;
+  background: #17140f;
+  color: #f4efe7;
+  max-width: 700px;
+}
+.costesDivine b {
+  display: block;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.costesDivine span:not(.circuloIconoOscuro) {
+  display: block;
+  margin-top: 4px;
+  font-size: 20px;
+  color: rgba(244, 239, 231, 0.75);
+}

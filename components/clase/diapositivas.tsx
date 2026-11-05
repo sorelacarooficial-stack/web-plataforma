@@ -1232,6 +1232,71 @@ function Crecer({ v, on }: Props) {
   );
 }
 
+/* -------------------------------------------------------------- costes */
+
+/**
+ * Lo que cuesta hoy, por separado, lo que hará el agente. Precios de lista en
+ * USD/mes para 1 usuaria, sin impuestos (consultados en nov. 2026). Se cambian
+ * aquí si suben.
+ */
+const HERRAMIENTAS: [string, string, string, number][] = [
+  ['chat', 'Agente IA que responde y agenda', 'BookSpa AI, GoodCall…', 99],
+  ['ficha', 'CRM de clientas y fichas', 'HubSpot Starter', 20],
+  ['calendario', 'Agenda y reservas online', 'Booksy', 30],
+  ['avion', 'Programar redes sociales', 'Metricool Starter', 25],
+  ['chispa', 'Diseño de publicaciones', 'Canva Pro', 18],
+  ['play', 'Edición de vídeos y reels', 'CapCut Pro', 20],
+  ['campana', 'Email a tus clientas', 'Mailchimp Standard', 20],
+];
+const TOTAL_MES = HERRAMIENTAS.reduce((s, h) => s + h[3], 0);
+
+function Costes({ v, on }: Props) {
+  return (
+    <div className={css.dosCol} style={{ gridTemplateColumns: '0.9fr 1.1fr', gap: 80, alignItems: 'center' }}>
+      <div className={css.columna}>
+        <Eyebrow className={v(0)}>Hagamos cuentas</Eyebrow>
+        <Titulo texto={'Hoy, para crecer,\n*pagas cada herramienta por separado*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
+        <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.6), maxWidth: '34ch' }}>
+          Siete suscripciones, siete contraseñas y ninguna habla con las demás. Y el tiempo de conectarlas lo pones tú.
+        </p>
+        <div className={`${css.costesDivine} ${v(1, css.rArriba)}`}>
+          <span className={css.circuloIconoOscuro}>
+            <Icono n="chispa" />
+          </span>
+          <div>
+            <b>Con Divine®, todo en un solo agente</b>
+            <span>Adaptado a tu negocio e incluido en la Membresía Divine®.</span>
+          </div>
+        </div>
+      </div>
+      <div className={`${css.vidrio} ${css.costes} ${v(0, css.rArriba)}`} style={d(0.3)}>
+        {HERRAMIENTAS.map(([i, t, ej, p], k) => (
+          <div key={t} className={`${css.costeFila} ${v(0)}`} style={d(0.7 + k * 0.28)}>
+            <span className={css.circuloIcono}>
+              <Icono n={i} />
+            </span>
+            <div>
+              <b>{t}</b>
+              <span>{ej}</span>
+            </div>
+            <em>{p} $</em>
+          </div>
+        ))}
+        <div className={`${css.costeTotal} ${v(0)}`} style={d(0.7 + HERRAMIENTAS.length * 0.28)}>
+          <span>Al mes</span>
+          <b>
+            ≈ <Cuenta a={TOTAL_MES} on={on(0)} ms={1600} /> USD
+          </b>
+          <small>
+            ≈ <Cuenta a={TOTAL_MES * 12} on={on(0)} ms={1800} /> USD al año
+          </small>
+        </div>
+        <small className={css.costeNota}>Precios de lista, 1 usuaria, sin impuestos (nov. 2026). Sin contar el tiempo de manejarlas.</small>
+      </div>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------- 23 */
 
 /** Lo que el agente conecta, alrededor del centro (x, y en un lienzo de 760×620). */
@@ -1550,6 +1615,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Clases en directo mensuales y grabadas, canal en la plataforma (sin Telegram), fichas, vídeos paso a paso y dossier, Localiza tu terapeuta (mapa mundial, solo homologadas) y el agente IA.' },
   { id: 'pregunta-ia', titulo: '¿La IA está cambiando el mundo?', tema: 'oscuro', pasos: 1, Vista: PreguntaIA, notas: 'Pregunta y pide SÍ o NO en el chat. Suma con +1 / +5. Clic: el 86 % (Foro Económico Mundial, Future of Jobs Report 2025: el 86 % de las empresas espera que la IA transforme su negocio antes de 2030).' },
   { id: 'crecer', titulo: 'Formarte y hacer crecer tu negocio', tema: 'crema', pasos: 2, Vista: Crecer, notas: 'Nos hemos dado cuenta: solo el 41,9 % de las empresas que nacen en España sigue abierta a los cinco años (INE, empresas nacidas en 2018). Clic: por eso Divine te forma, te acompaña y hace crecer tu negocio. Clic: los tres pilares.' },
+  { id: 'costes', titulo: 'Hagamos cuentas', tema: 'crema', pasos: 1, Vista: Costes, notas: `Hoy una terapeuta que quiere crecer paga cada herramienta por separado: agente IA, CRM, agenda, redes, diseño, vídeo y email. Unos ${TOTAL_MES} USD al mes, ${(TOTAL_MES * 12).toLocaleString('es-ES')} al año, y ninguna habla con las demás. Precios de lista consultados en nov. 2026 (1 usuaria, sin impuestos). Clic: con Divine, todo en un solo agente adaptado a tu negocio, incluido en la Membresía. Siguiente: el agente.` },
   { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Por eso hemos construido el Agente IA Divine, adaptado a tu negocio: responde, ejecuta, publica en redes, gestiona registros y vende. Dato de abajo: Zenoti (empresa de software de salones), encuesta a 1.000 clientas en EE. UU., 2025. Se conecta con agenda, WhatsApp, Instagram, fichas, servicios y cobros. Las acciones del día entran solas (↻ las repite). Clic: más citas, menos huecos, clientas que vuelven.' },
   { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Pide que escriban QUIERO en el chat o en el grupo. Suma con +1 / +5. La persona de apoyo las saca del chat y les escribe por privado con el mensaje preparado. Último clic: aviso de seguridad (cuenta hackeada en el pasado).' },
   { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. Recuerda: para reservar, QUIERO.' },
