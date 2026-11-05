@@ -172,3 +172,15 @@ cada cambio importante** (una línea por decisión, con la fecha).
   Chromium de Playwright no reproduce H.264: para probar vídeos se sirve un
   WebM con `ctx.route`.
 
+- 2026-11-05: diapositiva «Hagamos cuentas» antes del agente: lo que cuesta
+  hoy cada herramienta por separado (agente IA 99, CRM 20, agenda 30, redes
+  25, diseño 18, vídeo 20, email 20 → ≈ 232 USD/mes, 2.784 al año; precios de
+  lista nov. 2026 en `HERRAMIENTAS`, diapositivas.tsx). Cierra con «Con
+  Divine®, todo en un solo agente, incluido en la Membresía» (sin precio de la
+  membresía). Ojo: el agente aún no existe; se presenta como lo que tendrá.
+- 2026-11-05: vídeo de la membresía v2: música épica nueva (ElevenLabs,
+  impacto a 25 s y subida a 28,6 s, entra en −0,4 s) con menos «ducking»
+  (4,5 dB) para que no suba y baje a cada frase; el plano del grupo lleva a
+  Sorela de blanco (imagen editada con gemini-3-pro-image a partir de sus
+  fotos + Seedance; la otra variante la rechazó el filtro de personas reales).
+  Medios en la rama `claude/eleven-medios-2` (carpeta `eleven2/`).
