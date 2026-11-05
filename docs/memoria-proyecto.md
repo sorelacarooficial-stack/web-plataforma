@@ -206,3 +206,6 @@ cada cambio importante** (una línea por decisión, con la fecha).
   de herramientas) → Agente (demo de conversación que entra sola, ↻ repite) →
   ¿Y después? → Comunidad → Qué hay dentro → «QUIERO» (centrada, sin
   contador de personas).
+- 2026-11-05 (noche): toda la publi a **Venezuela + Colombia** (pedido de la
+  usuaria, Caracas es la prioridad). B Latam → VE+CO, 12 €/día; C Caliente → VE+CO,
+  4 €/día; A España sigue pausado. Fuera México y Argentina.
