@@ -3821,3 +3821,132 @@ button.oscuraCaja {
   font-size: 20px;
   color: rgba(244, 239, 231, 0.75);
 }
+
+/* ---------------------------------------------------------- sala de espera */
+.rotador {
+  position: relative;
+  height: 40px;
+  margin: 26px 0 0;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: rgba(244, 239, 231, 0.78);
+}
+.rotador span {
+  display: inline-block;
+  animation: rotadorEntra 6s ease both;
+}
+@keyframes rotadorEntra {
+  0% { opacity: 0; filter: blur(8px); transform: translateY(8px); }
+  10%, 88% { opacity: 1; filter: blur(0); transform: none; }
+  100% { opacity: 0; filter: blur(6px); transform: translateY(-6px); }
+}
+.musicaBoton {
+  position: absolute;
+  right: 56px;
+  bottom: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 22px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 19px;
+  font-weight: 500;
+  color: #f4efe7;
+  background: rgba(255, 240, 220, 0.07);
+  box-shadow: 0 0 0 1px rgba(243, 217, 174, 0.22) inset;
+  cursor: pointer;
+}
+.musicaOn {
+  color: #17140f;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+}
+.musicaBarras {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+}
+.musicaBarras i {
+  display: block;
+  width: 3px;
+  height: 6px;
+  border-radius: 2px;
+  background: currentColor;
+}
+.musicaOn .musicaBarras i {
+  animation: barraMusica 0.9s ease-in-out infinite alternate;
+}
+.musicaOn .musicaBarras i:nth-child(2) { animation-delay: 0.2s; }
+.musicaOn .musicaBarras i:nth-child(3) { animation-delay: 0.45s; }
+.musicaOn .musicaBarras i:nth-child(4) { animation-delay: 0.1s; }
+@keyframes barraMusica {
+  from { height: 4px; }
+  to { height: 18px; }
+}
+
+/* ---------------------------------------------------------- preguntas y reservas */
+.cuentaPreguntas {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px 26px;
+  width: 100%;
+  max-width: 700px;
+  margin-top: 26px;
+  padding: 20px 28px 22px;
+  border: 0;
+  border-radius: 26px;
+  font: inherit;
+  text-align: left;
+  color: #f4efe7;
+  background: rgba(255, 240, 220, 0.06);
+  box-shadow: 0 0 0 1px rgba(243, 217, 174, 0.2) inset;
+  cursor: pointer;
+}
+.cuentaPreguntasEtiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 21px;
+  font-weight: 500;
+  color: rgba(244, 239, 231, 0.85);
+}
+.cuentaPreguntas b {
+  font-size: 58px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.cuentaPreguntasBarra {
+  grid-column: 1 / -1;
+  height: 5px;
+  border-radius: 5px;
+  background: rgba(255, 240, 220, 0.1);
+  overflow: hidden;
+}
+.cuentaPreguntasBarra i {
+  display: block;
+  height: 100%;
+  transform-origin: left;
+  background: linear-gradient(90deg, #f3d9ae, #c99a5c);
+  transition: transform 0.3s linear;
+}
+.cuentaPreguntasUltimo {
+  animation: latidoPreguntas 1.2s ease-in-out infinite;
+}
+@keyframes latidoPreguntas {
+  50% { box-shadow: 0 0 0 2px rgba(243, 217, 174, 0.6) inset; }
+}
+.cuentaPreguntasFin b {
+  font-size: 40px;
+}

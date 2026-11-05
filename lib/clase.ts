@@ -64,6 +64,27 @@ export const VIDEOS = {
   membresiaPortada: '/clase/video/membresia.jpg',
 };
 
+/**
+ * Sala de espera (portada): la música que suena mientras entra la gente. Se
+ * enciende con el botón «Música» (el navegador no deja que suene sola), va
+ * en bucle y se apaga sola, en fundido, cuando la cuenta llega a cero.
+ * Vacío = no sale el botón.
+ */
+export const ESPERA = {
+  musica: [] as string[],
+  /** Frases que van rotando bajo la cuenta atrás. */
+  frases: [
+    'Escribe en el chat desde dónde nos ves',
+    'Ten a mano papel y boli: vas a querer apuntar',
+    'Dura una hora. Al final, preguntas en directo',
+    'Quédate hasta el final: hay una noticia solo para quien esté en directo',
+    'Activa el sonido: empezamos con un vídeo',
+  ],
+};
+
+/** Minutos de la cuenta de preguntas y reservas en la diapositiva «QUIERO». */
+export const MINUTOS_PREGUNTAS = 10;
+
 export type Ciudad = { nombre: string; lng: number; lat: number; zona: 'es' | 'latam' };
 
 /** Las ciudades del mapa de bienvenida. Se encienden al pulsarlas. */

@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { CIUDADES, EMPIEZA, PLAZAS } from '@/lib/clase';
+import { CIUDADES, EMPIEZA, ESPERA, MINUTOS_PREGUNTAS, PLAZAS } from '@/lib/clase';
 import { useClase } from './estado';
 import css from './clase.module.css';
 
@@ -253,7 +253,7 @@ const dos = (n: number) => String(Math.max(0, Math.floor(n))).padStart(2, '0');
  * día 6, cuenta hasta esa hora. Si no (ensayos, otra hora), cuenta 10 minutos
  * desde que se abre la diapositiva. Pulsarla la reinicia.
  */
-export function CuentaAtras({ activa }: { activa: boolean }) {
+export function CuentaAtras({ activa, alTerminar }: { activa: boolean; alTerminar?: (ya: boolean) => void }) {
   const [fin, setFin] = useState<number | null>(null);
   const [ahora, setAhora] = useState(0);
   const reiniciar = () => {
@@ -274,6 +274,9 @@ export function CuentaAtras({ activa }: { activa: boolean }) {
   const m = Math.floor(resta / 60);
   const s = Math.floor(resta % 60);
   const ya = resta <= 0;
+  useEffect(() => {
+    alTerminar?.(ya);
+  }, [ya, alTerminar]);
   return (
     <button type="button" className={css.cuentaAtras} onClick={reiniciar} title="Reiniciar la cuenta atrás">
       <span className={css.cuentaEtiqueta}>{ya ? 'Empezamos' : 'Empezamos en'}</span>
@@ -288,6 +291,147 @@ export function CuentaAtras({ activa }: { activa: boolean }) {
           </span>
         </span>
       )}
+    </button>
+  );
+}
+
+/**
+ * Música de la sala de espera. El navegador no deja que suene sola, así que
+ * se enciende con el botón (cuenta como gesto). Va en bucle por la lista de
+ * `ESPERA.musica`, entra y sale en fundido, y se apaga sola cuando `apagar`
+ * pasa a true (la cuenta atrás llega a cero) o al dejar la diapositiva. En la
+ * ventana del presentador no suena.
+ */
+export function MusicaEspera({ activa, apagar, muda }: { activa: boolean; apagar: boolean; muda: boolean }) {
+  const ref = useRef<HTMLAudioElement>(null);
+  const [sonando, setSonando] = useState(false);
+  const [pista, setPista] = useState(0);
+  const fundido = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lleva = (a: HTMLAudioElement, hasta: number, ms: number, luego?: () => void) => {
+    if (fundido.current) clearInterval(fundido.current);
+    const desde = a.volume;
+    const t0 = Date.now();
+    fundido.current = setInterval(() => {
+      const k = Math.min(1, (Date.now() - t0) / ms);
+      a.volume = desde + (hasta - desde) * k;
+      if (k >= 1) {
+        if (fundido.current) clearInterval(fundido.current);
+        luego?.();
+      }
+    }, 50);
+  };
+  const parar = (ms = 4000) => {
+    const a = ref.current;
+    if (!a) return;
+    lleva(a, 0, ms, () => a.pause());
+    setSonando(false);
+  };
+  const tocar = () => {
+    const a = ref.current;
+    if (!a) return;
+    a.volume = 0;
+    a.play()
+      .then(() => {
+        setSonando(true);
+        lleva(a, 0.7, 3000);
+      })
+      .catch(() => setSonando(false));
+  };
+  useEffect(() => {
+    if (sonando && (apagar || !activa)) parar(apagar ? 6000 : 1500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apagar, activa]);
+  useEffect(() => () => {
+    if (fundido.current) clearInterval(fundido.current);
+  }, []);
+  if (!ESPERA.musica.length) return null;
+  return (
+    <>
+      <audio
+        ref={ref}
+        src={ESPERA.musica[pista % ESPERA.musica.length]}
+        preload="auto"
+        muted={muda}
+        onEnded={() => {
+          setPista((p) => p + 1);
+          setTimeout(() => ref.current?.play().catch(() => {}), 50);
+        }}
+      />
+      <button
+        type="button"
+        className={`${css.musicaBoton} ${sonando ? css.musicaOn : ''}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (sonando) parar(1500);
+          else tocar();
+        }}
+        title={sonando ? 'Apagar la música' : 'Poner música de espera'}
+      >
+        <span className={css.musicaBarras} aria-hidden>
+          <i />
+          <i />
+          <i />
+          <i />
+        </span>
+        {sonando ? 'Música · sonando' : 'Poner música'}
+      </button>
+    </>
+  );
+}
+
+/** Frases que van cambiando cada pocos segundos, con fundido. */
+export function Rotador({ frases, activa, ms = 6000 }: { frases: string[]; activa: boolean; ms?: number }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (!activa || frases.length < 2) return;
+    const id = setInterval(() => setI((k) => (k + 1) % frases.length), ms);
+    return () => clearInterval(id);
+  }, [activa, frases.length, ms]);
+  return (
+    <p className={css.rotador} aria-live="polite">
+      <span key={i}>{frases[i]}</span>
+    </p>
+  );
+}
+
+/**
+ * Cuenta de 10 min para preguntas y reservas. Arranca sola la primera vez que
+ * se llega a la diapositiva y se ve igual en las dos ventanas (va en el estado
+ * compartido). Pulsarla la reinicia.
+ */
+export function CuentaPreguntas({ activa, estatica }: { activa: boolean; estatica: boolean }) {
+  const { estado, cambiar } = useClase();
+  const [ahora, setAhora] = useState(0);
+  const total = MINUTOS_PREGUNTAS * 60e3;
+  useEffect(() => {
+    if (!activa || estatica) return;
+    if (estado.preguntasDesde == null) cambiar((e) => (e.preguntasDesde == null ? { ...e, preguntasDesde: Date.now() } : e));
+    setAhora(Date.now());
+    const id = setInterval(() => setAhora(Date.now()), 250);
+    return () => clearInterval(id);
+  }, [activa, estatica, estado.preguntasDesde, cambiar]);
+  const desde = estado.preguntasDesde;
+  const resta = desde && ahora ? Math.max(0, desde + total - ahora) : total;
+  const m = Math.floor(resta / 60e3);
+  const s = Math.floor((resta % 60e3) / 1000);
+  const fin = resta <= 0;
+  return (
+    <button
+      type="button"
+      className={`${css.cuentaPreguntas} ${fin ? css.cuentaPreguntasFin : ''} ${resta < 60e3 && !fin ? css.cuentaPreguntasUltimo : ''}`}
+      onClick={(e) => (e.stopPropagation(), cambiar((x) => ({ ...x, preguntasDesde: Date.now() })))}
+      title="Reiniciar los 10 minutos"
+    >
+      <span className={css.cuentaPreguntasEtiqueta}>
+        <Icono n="chat" className={css.chipIcono} />
+        {fin ? 'Últimas reservas' : resta < 60e3 ? 'Último minuto · preguntas y reservas' : 'Preguntas y reservas en directo'}
+      </span>
+      <b>
+        {dos(m)}:{dos(s)}
+      </b>
+      <span className={css.cuentaPreguntasBarra}>
+        <i style={{ transform: `scaleX(${resta / total})` }} />
+      </span>
     </button>
   );
 }
