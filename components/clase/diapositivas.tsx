@@ -121,7 +121,7 @@ function Bienvenida({ activa, estatica, v, on }: Props) {
         </div>
       </div>
       <div className={`${css.vidrio} ${css.mapaCaja} ${v(0, css.rEscala)}`} style={d(0.3)}>
-        <Eyebrow>Escríbelo en el chat · pulsa tu ciudad</Eyebrow>
+        <Eyebrow>Escríbelo en el chat</Eyebrow>
         <Mapa activa={activa} estatica={estatica} />
       </div>
     </div>
@@ -131,33 +131,31 @@ function Bienvenida({ activa, estatica, v, on }: Props) {
 /* --------------------------------------------------------------- 3 */
 
 function TresCosas({ v, on }: Props) {
-  const cosas = [
-    ['ojo', 'Qué observar', 'Lo que te dice el cuerpo antes de tocarlo'],
-    ['lupa', 'Qué interpretar', 'Lo que hay detrás de lo que ves'],
-    ['decidir', 'Cómo decidir', 'Por dónde empezar, y por qué'],
+  const partes: [string, string, string, string[]][] = [
+    ['libro', 'Parte 1', 'Lo que vas a aprender', ['Qué observar antes de tocar', 'Qué interpretar de lo que ves', 'Cómo decidir por dónde empezar']],
+    ['regalo', 'Parte 2', 'Una oportunidad para todas', ['Solo para quien esté en directo', 'Te la cuento al final', 'Y tu ficha «Lo que miro antes de tocar»']],
   ];
   return (
     <div className={css.columna}>
-      <Eyebrow className={v(0)}>Lo que te llevas hoy</Eyebrow>
-      <Titulo texto="Hoy te llevas *3 cosas*" on={on(0)} className={css.h2} />
-      <div className={css.tres}>
-        {cosas.map(([i, t, s], k) => (
-          <div key={t} className={`${css.vidrio} ${css.cosa} ${v(0, css.rArriba)}`} style={d(0.5 + k * 0.18)}>
+      <Eyebrow className={v(0)}>Así va a ser la clase</Eyebrow>
+      <Titulo texto="Hoy tenemos *dos partes*" on={on(0)} className={css.h2} />
+      <div className={css.dosPartes}>
+        {partes.map(([i, n, t, l], k) => (
+          <div key={n} className={`${k === 1 ? css.parteOscura : css.vidrio} ${css.parte} ${v(k, css.rArriba)}`} style={d(k === 0 ? 0.5 : 0.1)}>
             <div className={css.cosaCabeza}>
-              <span className={css.circuloIcono}>
+              <span className={k === 1 ? css.circuloIconoOscuro : css.circuloIcono}>
                 <Icono n={i} />
               </span>
-              <span className={css.numFino}>0{k + 1}</span>
+              <span className={css.parteNum}>{n}</span>
             </div>
             <h3>{t}</h3>
-            <p>{s}</p>
+            <ul>
+              {l.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
           </div>
         ))}
-      </div>
-      <div className={`${css.barraOscura} ${v(1)}`}>
-        <Icono n="regalo" className={css.chipIcono} />
-        Al final, solo en directo: tu ficha <b>«Lo que miro antes de tocar»</b> y una noticia
-        <span className={css.brillo} />
       </div>
     </div>
   );
@@ -166,7 +164,6 @@ function TresCosas({ v, on }: Props) {
 /* --------------------------------------------------------------- 4 */
 
 function Bucle({ v, on }: Props) {
-  const { estado, cambiar } = useClase();
   const pasos = ['Llega con\nuna necesidad', 'Repites el protocolo\nque ya conoces', 'No identificas qué\nnecesita realmente\nsu cuerpo', 'Y el resultado\nno llega como\nesperabas'];
   return (
     <div className={css.columna}>
@@ -190,30 +187,6 @@ function Bucle({ v, on }: Props) {
       <div className={`${css.conclusion} ${v(1)}`}>
         <Titulo as="p" texto={'No necesitas trabajar más.\nNecesitas aprender a *observar, interpretar y actuar con criterio.*'} on={on(1)} className={css.conclusionTexto} retraso={0.2} paso={0.06} />
       </div>
-      <div className={`${css.contadorGrande} ${v(0)}`} style={d(2.6)}>
-        <div>
-          <span className={css.contadorNum} key={estado.unos}>
-            {estado.unos}
-          </span>
-          <span className={css.contadorTexto}>
-            personas han escrito <b>«1»</b> en el chat
-          </span>
-        </div>
-        <div className={css.fila}>
-          <button type="button" className={css.boton} onClick={(e) => (e.stopPropagation(), cambiar((s) => ({ ...s, unos: s.unos + 1 })))}>
-            +1
-          </button>
-          <button type="button" className={css.boton} onClick={(e) => (e.stopPropagation(), cambiar((s) => ({ ...s, unos: s.unos + 5 })))}>
-            +5
-          </button>
-          <button type="button" className={css.miniSuave} onClick={(e) => (e.stopPropagation(), cambiar((s) => ({ ...s, unos: Math.max(0, s.unos - 1) })))}>
-            −1
-          </button>
-        </div>
-      </div>
-      <Chip icono="chat" className={`${css.chipEsquina} ${v(0)}`} style={d(1.6)}>
-        Si te ha pasado, escribe un 1
-      </Chip>
     </div>
   );
 }
@@ -328,22 +301,6 @@ function Historia({ v, on }: Props) {
 }
 
 /* --------------------------------------------------------------- 8 */
-
-function Aprendi({ v, on }: Props) {
-  return (
-    <div className={css.sangre}>
-      <div className={`${css.fotoSangre} ${on(1) ? css.fotoNitida : ''}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/clase/aprendi.webp" alt="Sorela trabajando con las manos" />
-      </div>
-      <div className={css.sangreTexto}>
-        <Eyebrow className={v(0)}>Lo que aprendí</Eyebrow>
-        <Titulo texto={'El masajista\nmás famoso\n*fue ciego.*'} on={on(0)} className={css.h2} paso={0.12} />
-        <p className={`${css.texto} ${v(1)}`}>Las manos leen lo que los ojos no ven.</p>
-      </div>
-    </div>
-  );
-}
 
 /* --------------------------------------------------------------- 9 */
 
@@ -760,16 +717,16 @@ function Lunes({ v, on }: Props) {
   const { estado, cambiar } = useClase();
   const preguntas = ['¿Qué veo?', '¿Qué me dice su cuerpo?', '¿Por dónde empiezo, y por qué?'];
   return (
-    <div className={css.dosCol} style={{ gridTemplateColumns: '0.8fr 1fr' }}>
+    <div className={css.dosCol} style={{ gridTemplateColumns: '0.8fr 1fr', alignItems: 'center' }}>
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Tu lunes</Eyebrow>
         <Titulo texto={'Antes de tu\npróxima clienta,\n*pregúntate esto*'} on={on(0)} className={css.h2} />
-        <span className={`${css.barraOscura} ${v(0)}`} style={{ ...d(0.8), alignSelf: 'flex-start' }}>
+        <span className={`${css.barraOscura} ${v(0)}`} style={{ ...d(0.8), alignSelf: 'flex-start', marginTop: 40 }}>
           <Icono n="ficha" className={css.chipIcono} />
           La ficha completa te llega hoy
         </span>
       </div>
-      <div className={`${css.ficha} ${v(0, css.rGiro)}`} style={d(0.4)}>
+      <div className={`${css.ficha} ${v(0, css.rArriba)}`} style={d(0.4)}>
         <div className={css.filaEntre}>
           <div>
             <Eyebrow>Ficha de valoración</Eyebrow>
@@ -782,7 +739,7 @@ function Lunes({ v, on }: Props) {
           <button
             type="button"
             key={p}
-            className={`${css.fichaLinea} ${v(k + 1, css.rDer)}`}
+            className={`${css.fichaLinea} ${on(k + 1) ? css.fichaLineaOn : ''}`}
             onClick={(e) => {
               e.stopPropagation();
               cambiar((s) => {
@@ -1596,14 +1553,13 @@ const VideoMembresia = diapoVideo(VIDEOS.membresia, VIDEOS.membresiaPortada);
 
 export const DIAPOSITIVAS: Diapo[] = [
   { id: 'portada', titulo: 'Antes de tocar', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Portada, notas: 'Sala de espera: comparte 10 min antes. Pulsa «Poner música» (suena solo por esta ventana; en Meet, pestaña con audio). Las frases van rotando solas. La música se apaga sola en fundido cuando la cuenta llega a cero. Pulsar la cuenta la reinicia (10 min si aún falta más de una hora).' },
-  { id: 'bienvenida', titulo: '¿Desde dónde nos ves?', tema: 'crema', pasos: 0, Vista: Bienvenida, notas: 'Lee ciudades del chat y pulsa cada una en el mapa para encenderla. «+ otro sitio» suma las que no salen. Pregunta cuántos años llevan con las manos.' },
-  { id: 'tres-cosas', titulo: 'Hoy te llevas 3 cosas', tema: 'crema', pasos: 1, Vista: TresCosas, notas: 'Las tres cosas. Siguiente: anuncia la ficha y «una noticia» al final (solo en directo), para que se queden.' },
-  { id: 'problema', titulo: 'El problema', tema: 'oscuro', pasos: 1, Vista: Bucle, notas: 'Los cuatro pasos entran solos. Suma los «1» del chat con +1 / +5. Clic: «No necesitas trabajar más. Necesitas aprender a observar, interpretar y actuar con criterio».' },
+  { id: 'bienvenida', titulo: '¿Desde dónde nos ves?', tema: 'crema', pasos: 0, Vista: Bienvenida, notas: 'Lee ciudades del chat y pulsa cada una en el mapa para encenderla. Pregunta cuántos años llevan con las manos.' },
+  { id: 'tres-cosas', titulo: 'Hoy tenemos dos partes', tema: 'crema', pasos: 1, Vista: TresCosas, notas: 'Cuenta cómo va la clase. Parte 1: lo que van a aprender (observar, interpretar, decidir). Clic: parte 2, una oportunidad para todas, solo para quien esté en directo, al final. Que se queden hasta el final.' },
+  { id: 'problema', titulo: 'El problema', tema: 'oscuro', pasos: 1, Vista: Bucle, notas: 'Los cuatro pasos entran solos. Clic: «No necesitas trabajar más. Necesitas aprender a observar, interpretar y actuar con criterio».' },
   { id: 'obstaculos', titulo: 'Los tres obstáculos', tema: 'oscuro', pasos: 3, Vista: Trampas, notas: 'Un obstáculo por clic. Pulsa cada tarjeta para sumar los votos del chat (1, 2 o 3). Al final, la frase: sin conocimiento, sin criterio y sin personalización, no hay evolución profesional.' },
   { id: 'cita', titulo: 'Qué observar, interpretar, decidir', tema: 'crema', pasos: 0, Vista: Cita, notas: 'Pausa. Deja que la frase entre entera antes de hablar.' },
   { id: 'video-sorela', titulo: 'Vídeo · Sorela Caro', tema: 'oscuro', pasos: 0, sinPie: true, Vista: VideoSorela, notas: 'Vídeo de 1 min: empieza solo. En Google Meet comparte la pestaña con «Compartir también el audio de la pestaña». Al terminar, «Ahora, en directo»: entras tú.' },
   { id: 'historia', titulo: 'Empecé peinando', tema: 'crema', pasos: 1, Vista: Historia, notas: 'Tu historia: de peluquería a las emociones. Siguiente: «Quería entender lo que la persona sentía».' },
-  { id: 'aprendi', titulo: 'El masajista más famoso fue ciego', tema: 'oscuro', pasos: 1, Vista: Aprendi, notas: 'La foto está en penumbra. Siguiente: se ilumina con «Las manos leen lo que los ojos no ven».' },
   { id: 'credenciales', titulo: 'Por qué puedo enseñarte esto', tema: 'crema', pasos: 0, Vista: Credenciales, notas: '30 años, +25.000 casos, Nueva Estética, televisión. La tarjeta TV abre el clip si está cargado (lib/clase.ts).' },
   { id: 'metodo', titulo: 'El método', tema: 'crema', pasos: 3, Vista: Metodo, notas: 'Un paso por clic: Observar, Interpretar, Decidir.' },
   { id: 'observar', titulo: 'Paso 1 · Mira y escucha', tema: 'crema', fase: 1, pasos: 2, Vista: Observar, notas: 'Los puntos del cuerpo se pueden pulsar. Clic: «Mira» (piel, postura, respiración, dónde retiene). Clic: «Escucha».' },

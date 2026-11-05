@@ -193,3 +193,9 @@ cada cambio importante** (una línea por decisión, con la fecha).
   diapositiva; en el presentador no suena. En «QUIERO», 10 min de preguntas y
   reservas (`MINUTOS_PREGUNTAS`, estado compartido `preguntasDesde`; pulsar
   reinicia). Guion de venta completo en `docs/mensajes-quiero.md`.
+- 2026-11-05: ajustes pedidos: mapa sin contador «Nos ves desde N sitios»;
+  «Hoy te llevas 3 cosas» pasa a «Hoy tenemos dos partes» (1: lo que vas a
+  aprender; 2: una oportunidad para todas, solo en directo); fuera el
+  contador «Si te ha pasado, escribe un 1» y la diapositiva «El masajista más
+  famoso fue ciego»; «Tu lunes» centrada, sin giro y con las preguntas
+  siempre visibles (se encienden por clic). Quedan 34 diapositivas.
