@@ -1092,106 +1092,53 @@ function Dentro({ v, on }: Props) {
 
 /* -------------------------------------------------------------- 23 */
 
-function PreguntaIA({ v, on }: Props) {
-  const { estado, cambiar } = useClase();
-  const [si, no] = estado.tec;
-  const total = si + no;
-  const sumar = (k: 0 | 1, n: number) =>
-    cambiar((st) => {
-      const tec = [...st.tec] as [number, number];
-      tec[k] = Math.max(0, tec[k] + n);
-      return { ...st, tec };
-    });
+/* -------------------------------------------------------------- puente a la oferta */
+
+function Puente({ v, on }: Props) {
   return (
-    <div className={css.columna}>
-      <Eyebrow className={v(0)}>Una pregunta antes de seguir</Eyebrow>
-      <Titulo
-        texto={'¿Cuántas creéis que la tecnología y la IA\n*están cambiando radicalmente*\nel mundo y la forma de trabajar?'}
-        on={on(0)}
-        className={`${css.h2} ${css.tituloPregunta}`}
-      />
-      <div className={css.encuesta}>
-        {(['Sí', 'No'] as const).map((t, k) => {
-          const n = estado.tec[k];
-          const pct = total ? Math.round((n / total) * 100) : 0;
-          return (
-            <div key={t} className={`${css.oscuraCaja} ${css.voto2} ${v(0, css.rArriba)}`} style={d(1.4 + k * 0.15)}>
-              <div className={css.filaEntre}>
-                <b className={css.voto2Texto}>{t}</b>
-                <span className={css.voto2Num} key={n}>
-                  {n}
-                  {total > 0 && <em> · {pct} %</em>}
-                </span>
-              </div>
-              <div className={css.voto}>
-                <span className={css.votoBarra} style={{ width: `${pct}%` }} />
-              </div>
-              <div className={css.fila}>
-                <button type="button" className={css.boton} onClick={(e) => (e.stopPropagation(), sumar(k as 0 | 1, 1))}>
-                  +1
-                </button>
-                <button type="button" className={css.boton} onClick={(e) => (e.stopPropagation(), sumar(k as 0 | 1, 5))}>
-                  +5
-                </button>
-                <button type="button" className={css.miniSuave} onClick={(e) => (e.stopPropagation(), sumar(k as 0 | 1, -1))}>
-                  −1
-                </button>
-              </div>
-            </div>
-          );
-        })}
+    <div className={css.centro}>
+      <Eyebrow className={v(0)}>Parte 2 · Tu oportunidad</Eyebrow>
+      <Titulo texto={'Esto es solo *el principio*'} on={on(0)} className={`${css.h1crema} ${css.puenteTitulo}`} paso={0.12} />
+      <p className={`${css.sub} ${v(0)}`} style={{ ...d(0.9), maxWidth: '40ch' }}>
+        Hoy has visto qué observar, qué interpretar y cómo decidir. Ahora te cuento cómo <b>aprenderlo entero, conmigo</b>.
+      </p>
+      <div className={css.fila} style={{ justifyContent: 'center', marginTop: 40 }}>
+        {['Cómo te formas', 'Dónde y cuándo', 'Cuánto cuesta'].map((t, k) => (
+          <span key={t} className={`${css.chipOscuro} ${v(1, css.rArriba)}`} style={d(k * 0.15)}>
+            <span className={css.puenteNum}>{k + 1}</span> {t}
+          </span>
+        ))}
       </div>
-      <div className={`${css.datoGrande} ${v(1)}`}>
-        <b>
-          <Cuenta a={86} on={on(1)} /> %
-        </b>
-        <span>
-          de las empresas del mundo espera que la IA <strong>transforme su negocio antes de 2030</strong>.
-          <small>Foro Económico Mundial · Future of Jobs Report 2025 (1.000 empresas, 55 países)</small>
-        </span>
-      </div>
-      <Chip icono="chat" className={`${css.chipEsquina} ${v(0)}`} style={d(1.2)}>
-        Escribe SÍ o NO en el chat
-      </Chip>
     </div>
   );
 }
 
-function Crecer({ v, on }: Props) {
-  const tres = [
-    ['libro', 'Te formas', 'La Técnica Divine®, con método y criterio.'],
-    ['gente', 'Creces acompañada', 'Una comunidad profesional que no te deja sola.'],
-    ['chispa', 'Crece tu negocio', 'Un Agente IA Divine adaptado a tu centro.'],
+/* -------------------------------------------------------------- datos */
+
+function Datos({ v, on }: Props) {
+  const datos: [number, number, string, string][] = [
+    [86, 0, 'de las empresas espera que la IA transforme su negocio antes de 2030.', 'Foro Económico Mundial · Future of Jobs Report 2025'],
+    [41.9, 1, 'de las empresas que nacen sigue abierta a los cinco años. Más de la mitad cierra antes.', 'INE · empresas nacidas en España en 2018'],
+    [55, 0, 'de las clientas de salones y spas ya se siente cómoda hablando con una recepcionista de IA.', 'Zenoti (software de salones) · encuesta a 1.000 clientas, 2025'],
   ];
   return (
     <div className={css.columna}>
-      <Eyebrow className={v(0)}>Nos hemos dado cuenta</Eyebrow>
-      <Titulo texto={'Una cosa es *formarte*.\nOtra es *hacer crecer tu negocio*.'} on={on(0)} className={css.h2} />
-      <div className={`${css.vidrio} ${css.datoCrema} ${v(0, css.rArriba)}`} style={d(0.9)}>
-        <b>
-          <Cuenta a={41.9} decimales={1} on={on(0)} ms={1800} /> %
-        </b>
-        <span>
-          de las empresas que nacen en España <strong>sigue abierta a los cinco años</strong>. Más de la mitad cierra antes.
-          <small>INE · Demografía Armonizada de Empresas (empresas nacidas en 2018)</small>
-        </span>
-      </div>
-      <p className={`${css.texto} ${css.textoAncho} ${v(1)}`} style={{ maxWidth: '60ch' }}>
-        Ser muy buena con las manos no basta para que la agenda se llene. Por eso Divine® no solo te forma: <b>te forma, te acompaña y hace crecer tu negocio.</b>
-      </p>
-      <div className={css.tres} style={{ margin: '34px 0 0' }}>
-        {tres.map(([i, t, s], k) => (
-          <div key={t} className={`${k === 2 ? css.epocaOscura : css.vidrio} ${css.pilar} ${v(2, css.rArriba)}`} style={d(k * 0.2)}>
-            <span className={k === 2 ? css.circuloIconoOscuro : css.circuloIcono}>
-              <Icono n={i} />
-            </span>
-            <div>
-              <b>{t}</b>
-              <span>{s}</span>
-            </div>
+      <Eyebrow className={v(0)}>Tres datos</Eyebrow>
+      <Titulo texto={'Formarte es el primer paso.\n*Hacer crecer tu negocio, el siguiente.*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
+      <div className={css.tres}>
+        {datos.map(([n, dec, t, f], k) => (
+          <div key={f} className={`${css.oscuraCaja} ${css.datoCaja} ${v(0, css.rArriba)}`} style={d(0.6 + k * 0.25)}>
+            <b>
+              <Cuenta a={n} decimales={dec} on={on(0)} ms={1800} /> %
+            </b>
+            <span>{t}</span>
+            <small>{f}</small>
           </div>
         ))}
       </div>
+      <p className={`${css.textoGrandeOro} ${v(1)}`} style={{ marginTop: 40 }}>
+        Por eso Divine® no solo te forma: te acompaña y hace crecer tu negocio.
+      </p>
     </div>
   );
 }
@@ -1203,16 +1150,18 @@ function Crecer({ v, on }: Props) {
  * USD/mes para 1 usuaria, sin impuestos (consultados en nov. 2026). Se cambian
  * aquí si suben.
  */
-const HERRAMIENTAS: [string, string, string, number][] = [
-  ['chat', 'Agente IA que responde y agenda', 'BookSpa AI, GoodCall…', 99],
-  ['ficha', 'CRM de clientas y fichas', 'HubSpot Starter', 20],
-  ['calendario', 'Agenda y reservas online', 'Booksy', 30],
-  ['avion', 'Programar redes sociales', 'Metricool Starter', 25],
-  ['chispa', 'Diseño de publicaciones', 'Canva Pro', 18],
-  ['play', 'Edición de vídeos y reels', 'CapCut Pro', 20],
-  ['campana', 'Email a tus clientas', 'Mailchimp Standard', 20],
+const HERRAMIENTAS: [string, string, number][] = [
+  // Referencia (nov. 2026): recepcionista IA ~99, CRM ~20, agenda online ~30, programador
+  // de redes ~25, diseño ~18, edición de vídeo ~20, email ~20. En pantalla no se nombran marcas.
+  ['chat', 'Un agente que responda y agende', 99],
+  ['ficha', 'Un programa para tus clientas y fichas', 20],
+  ['calendario', 'Una agenda con reservas online', 30],
+  ['avion', 'Una herramienta para programar redes', 25],
+  ['chispa', 'Otra para diseñar publicaciones', 18],
+  ['play', 'Otra para editar vídeos y reels', 20],
+  ['campana', 'Otra para enviar emails', 20],
 ];
-const TOTAL_MES = HERRAMIENTAS.reduce((s, h) => s + h[3], 0);
+const TOTAL_MES = HERRAMIENTAS.reduce((s, h) => s + h[2], 0);
 
 function Costes({ v, on }: Props) {
   return (
@@ -1234,14 +1183,13 @@ function Costes({ v, on }: Props) {
         </div>
       </div>
       <div className={`${css.vidrio} ${css.costes} ${v(0, css.rArriba)}`} style={d(0.3)}>
-        {HERRAMIENTAS.map(([i, t, ej, p], k) => (
+        {HERRAMIENTAS.map(([i, t, p], k) => (
           <div key={t} className={`${css.costeFila} ${v(0)}`} style={d(0.7 + k * 0.28)}>
             <span className={css.circuloIcono}>
               <Icono n={i} />
             </span>
             <div>
               <b>{t}</b>
-              <span>{ej}</span>
             </div>
             <em>{p} $</em>
           </div>
@@ -1255,7 +1203,7 @@ function Costes({ v, on }: Props) {
             ≈ <Cuenta a={TOTAL_MES * 12} on={on(0)} ms={1800} /> USD al año
           </small>
         </div>
-        <small className={css.costeNota}>Precios de lista, 1 usuaria, sin impuestos (nov. 2026). Sin contar el tiempo de manejarlas.</small>
+        <small className={css.costeNota}>Precios orientativos de mercado, 1 usuaria, sin impuestos. Sin contar el tiempo de manejarlas.</small>
       </div>
     </div>
   );
@@ -1275,14 +1223,18 @@ const CONEXIONES: [string, string, number, number][] = [
 
 function Agente({ activa, estatica, v, on }: Props) {
   const [vuelta, setVuelta] = useState(0);
-  const acciones: [string, string, string][] = [
-    ['avion', 'Reel creado y publicado', 'Un vídeo con tu marca, a partir de tu sesión, en Instagram y Facebook.'],
-    ['chat', 'Clienta nueva por Instagram', 'Le explico el drenaje, resuelvo sus dudas y la dejo agendada.'],
-    ['ficha', 'Registro desde tu web', 'Ficha creada, bienvenida enviada y primera cita propuesta.'],
-    ['tarjeta', 'Venta cerrada', 'Bono de 5 sesiones pagado online. Ya está en tu agenda.'],
+  const demo: [string, string, string?][] = [
+    ['ella', '¡Hola! ¿Hacéis drenaje linfático? ¿Qué día tenéis libre?'],
+    ['agente', '¡Hola, Laura! 💛 Sí: el drenaje Divine dura 55 minutos. Tengo el jueves a las 18:00. ¿Te lo reservo?'],
+    ['ella', '¡Sí, perfecto!'],
+    ['evento', 'Cita agendada · jueves 18:00', 'calendario'],
+    ['agente', 'Hecho ✨ Te mando el enlace para dejarla confirmada.'],
+    ['evento', 'Pago recibido · ficha de Laura creada', 'tarjeta'],
+    ['evento', 'Reel de la sesión publicado en Instagram', 'avion'],
   ];
-  const k = useGoteo(acciones.length, activa && !estatica, 1500, 1800, vuelta);
-  const vistas = estatica ? acciones.length : k;
+  const k = useGoteo(demo.length, activa && !estatica, 1700, 1400, vuelta);
+  const vistas = estatica ? demo.length : k;
+  const escribe = !estatica && activa && vistas < demo.length && demo[vistas][0] === 'agente';
   return (
     <div className={css.dosCol} style={{ gridTemplateColumns: '1fr 1fr', gap: 70 }}>
       <div className={css.columna}>
@@ -1330,24 +1282,35 @@ function Agente({ activa, estatica, v, on }: Props) {
         <div className={`${css.oscuraCaja} ${css.panelAgente} ${v(0, css.rDer)}`} style={d(0.6)}>
           <div className={css.filaEntre}>
             <span className={css.panelTitulo}>
-              <span className={css.enLinea} /> Hoy, mientras estás en cabina
+              <span className={css.enLinea} /> En directo · mientras estás en cabina
             </span>
             <button type="button" className={css.chatOtraVez} onClick={(e) => (e.stopPropagation(), setVuelta((n) => n + 1))} title="Repetir">
               ↻
             </button>
           </div>
-          <div className={css.acciones}>
-            {acciones.map(([ico, t, s], i) => (
-              <div key={t} className={`${css.accion} ${i < vistas ? css.avisoOn : ''}`}>
-                <span className={css.circuloIconoOscuro}>
-                  <Icono n={ico} />
-                </span>
-                <div>
+          <div className={css.chatDemo}>
+            {demo.slice(0, vistas).map(([quien, t, ico], i) =>
+              quien === 'evento' ? (
+                <div key={i} className={css.chatEvento}>
+                  <span className={css.circuloIconoOscuro}>
+                    <Icono n={ico ?? 'check'} />
+                  </span>
                   <b>{t}</b>
-                  <span>{s}</span>
                 </div>
+              ) : (
+                <div key={i} className={`${css.demoBurbuja} ${quien === 'agente' ? css.demoAgente : css.demoElla}`}>
+                  {quien === 'agente' && <em>Agente Divine</em>}
+                  {t}
+                </div>
+              ),
+            )}
+            {escribe && (
+              <div className={`${css.demoBurbuja} ${css.demoAgente} ${css.demoEscribe}`}>
+                <i />
+                <i />
+                <i />
               </div>
-            ))}
+            )}
           </div>
         </div>
         <span className={`${css.barraOscura} ${css.barraOro} ${v(1)}`} style={{ alignSelf: 'flex-start', fontSize: 21, padding: '14px 26px' }}>
@@ -1360,10 +1323,6 @@ function Agente({ activa, estatica, v, on }: Props) {
             </span>
           ))}
         </div>
-        <p className={`${css.notaDato} ${v(1)}`} style={d(0.7)}>
-          <b>55 %</b> de las clientas de salones y spas ya se siente cómoda hablando con una recepcionista de IA.
-          <small>Zenoti · encuesta a 1.000 clientas, 2025</small>
-        </p>
       </div>
     </div>
   );
@@ -1372,57 +1331,34 @@ function Agente({ activa, estatica, v, on }: Props) {
 /* -------------------------------------------------------------- 26 */
 
 function Escanea({ activa, estatica, v, on }: Props) {
-  const { estado, cambiar } = useClase();
   const pasos = [
     ['chat', 'Escribe «QUIERO»', 'En el chat o en el grupo de WhatsApp'],
-    ['gente', 'Te escribimos por privado', 'Desde el número oficial de Sorela, con tu reserva'],
+    ['gente', 'Te escribimos por privado', 'Desde el número oficial de Sorela'],
     ['tarjeta', 'Reservas tu plaza', 'Tarjeta · transferencia local · cripto'],
   ];
   return (
-    <div className={css.dosCol} style={{ gridTemplateColumns: '0.9fr 1fr' }}>
-      <div className={css.columna}>
-        <Eyebrow className={v(0)}>Cómo reservar</Eyebrow>
-        <Titulo texto={'Escribe *«QUIERO»*'} on={on(0)} className={css.h2} />
-        <div className={v(0)} style={d(0.3)}>
-          <CuentaPreguntas activa={activa} estatica={estatica} />
-        </div>
-        <div className={`${css.quieroCaja} ${v(0, css.rEscala)}`} style={d(0.4)}>
-          <span className={css.quieroPalabra}>QUIERO</span>
-          <div className={css.quieroCuenta}>
-            <b key={estado.quiero}>{estado.quiero}</b>
-            <span>personas ya lo han escrito</span>
-          </div>
-          <div className={css.fila} style={{ justifyContent: 'center' }}>
-            <button type="button" className={css.boton} onClick={(e) => (e.stopPropagation(), cambiar((s) => ({ ...s, quiero: s.quiero + 1 })))}>
-              +1
-            </button>
-            <button type="button" className={css.boton} onClick={(e) => (e.stopPropagation(), cambiar((s) => ({ ...s, quiero: s.quiero + 5 })))}>
-              +5
-            </button>
-            <button type="button" className={css.miniSuave} onClick={(e) => (e.stopPropagation(), cambiar((s) => ({ ...s, quiero: Math.max(0, s.quiero - 1) })))}>
-              −1
-            </button>
-          </div>
-        </div>
+    <div className={css.centro}>
+      <Eyebrow className={v(0)}>Cómo reservar</Eyebrow>
+      <Titulo texto={'Escribe *«QUIERO»*'} on={on(0)} className={`${css.h2} ${css.quieroTitulo}`} />
+      <div className={v(0)} style={{ ...d(0.3), width: 700 }}>
+        <CuentaPreguntas activa={activa} estatica={estatica} />
       </div>
-      <div className={css.columna} style={{ gap: 24, justifyContent: 'center' }}>
-        {pasos.map(([i, t, s], k) => (
-          <div key={t} className={`${css.oscuraCaja} ${css.paso} ${v(k + 1, css.rDer)}`}>
+      <div className={css.quieroPasos}>
+        {pasos.map(([i, t, x], k) => (
+          <div key={t} className={`${css.oscuraCaja} ${css.quieroPaso} ${v(k + 1, css.rArriba)}`}>
             <span className={css.numOro}>{k + 1}</span>
-            <div>
-              <b>{t}</b>
-              <span>{s}</span>
-            </div>
             <Icono n={i} className={css.pasoIcono} />
+            <b>{t}</b>
+            <span>{x}</span>
           </div>
         ))}
-        <p className={`${css.seguridad} ${v(3)}`} style={d(0.4)}>
-          <Icono n="escudo" className={css.chipIcono} />
-          <span>
-            <b>Por tu seguridad:</b> solo te escribiremos desde el número oficial de Sorela. Nadie de Divine te pedirá un pago por otro canal.
-          </span>
-        </p>
       </div>
+      <p className={`${css.seguridad} ${v(3)}`} style={{ ...d(0.4), maxWidth: 1100 }}>
+        <Icono n="escudo" className={css.chipIcono} />
+        <span>
+          <b>Por tu seguridad:</b> solo te escribiremos desde el número oficial de Sorela. Nadie de Divine te pedirá un pago por otro canal.
+        </span>
+      </p>
     </div>
   );
 }
@@ -1572,17 +1508,17 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'caso-2', titulo: 'Otro abdomen, el mismo criterio', tema: 'oscuro', pasos: 1, Vista: Caso2, notas: 'Clic: la línea barre y se ve el después. Arrástrala despacio mientras cuentas qué observaste, qué interpretaste y qué decidiste.' },
   { id: 'lunes', titulo: 'Tu lunes', tema: 'crema', pasos: 3, Vista: Lunes, notas: 'Una pregunta por clic. Puedes marcar las casillas.' },
   { id: 'prueba', titulo: 'Lo que cambia en tu cabina', tema: 'oscuro', pasos: 3, Vista: Prueba, notas: 'Un escalón por clic. El antes/después se descubre en el primero.' },
+  { id: 'puente', titulo: 'Esto es solo el principio', tema: 'oscuro', pasos: 1, Vista: Puente, notas: 'Puente a la oferta (unos 30 s): «Hasta aquí, la parte 1. Ahora, la parte 2: cómo aprenderlo entero conmigo». Clic: lo que viene (cómo te formas, dónde y cuándo, cuánto cuesta). Siguiente: Metodología Divine.' },
   { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Caracas 4, 5 y 6 de diciembre y Medellín 10, 11 y 12. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
   { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Pulsa Caracas o Medellín arriba. Una formación por clic: completa (3 días, incluye la academia online), intensiva (2 días, dos zonas), específica (1 día, una zona). Último clic: material, modelos y comida incluidos (solo llegar), cena de gala con entrega de certificados.' },
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Lo que incluye entra solo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
   ...(VIDEOS.membresia ? [{ id: 'video-membresia', titulo: 'Vídeo · Membresía Divine', tema: 'oscuro' as const, pasos: 0, sinPie: true, Vista: VideoMembresia, notas: 'Vídeo cinematográfico de la membresía. Empieza solo; al terminar, sigue con «¿Y qué pasa después de formarte?».' }] : []),
+  { id: 'datos', titulo: 'Tres datos', tema: 'oscuro', pasos: 1, Vista: Datos, notas: 'Los dos datos juntos: el 86 % de las empresas espera que la IA transforme su negocio antes de 2030 (WEF, Future of Jobs 2025) solo el 41,9 % de las empresas que nacen en España sigue abierta a los cinco años (INE, nacidas en 2018) y el 55 % de las clientas ya se siente cómoda hablando con una recepcionista de IA (Zenoti, empresa de software de salones, 1.000 clientas en EE. UU., 2025). Clic: por eso Divine te forma, te acompaña y hace crecer tu negocio.' },
+  { id: 'costes', titulo: 'Hagamos cuentas', tema: 'crema', pasos: 1, Vista: Costes, notas: `Hoy una terapeuta que quiere crecer paga cada herramienta por separado: agente IA, CRM, agenda, redes, diseño, vídeo y email. Unos ${TOTAL_MES} USD al mes, ${(TOTAL_MES * 12).toLocaleString('es-ES')} al año, y ninguna habla con las demás. Precios de lista consultados en nov. 2026 (1 usuaria, sin impuestos). Clic: con Divine, todo en un solo agente adaptado a tu negocio, incluido en la Membresía. Siguiente: el agente.` },
+  { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Por eso hemos construido el Agente IA Divine, adaptado a tu negocio: responde, ejecuta, publica en redes, gestiona registros y vende. La conversación de la derecha es una demostración: entra sola (↻ la repite). Se conecta con agenda, WhatsApp, Instagram, fichas, servicios y cobros. Las acciones del día entran solas (↻ las repite). Clic: más citas, menos huecos, clientas que vuelven.' },
   { id: 'despues', titulo: '¿Y qué pasa después de formarte?', tema: 'crema', pasos: 2, Vista: Despues, notas: 'Clic: muchas terminan solas, con dudas. Clic: «Por eso hemos creado algo más».' },
   { id: 'comunidad', titulo: 'Bienvenida a la Comunidad Divine®', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'La comunidad NO se vende hoy: es solo para terapeutas homologadas (formación completa de 3 días); a ellas se les vende en una sesión privada. Clic: el requisito.' },
   { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Clases en directo mensuales y grabadas, canal en la plataforma (sin Telegram), fichas, vídeos paso a paso y dossier, Localiza tu terapeuta (mapa mundial, solo homologadas) y el agente IA.' },
-  { id: 'pregunta-ia', titulo: '¿La IA está cambiando el mundo?', tema: 'oscuro', pasos: 1, Vista: PreguntaIA, notas: 'Pregunta y pide SÍ o NO en el chat. Suma con +1 / +5. Clic: el 86 % (Foro Económico Mundial, Future of Jobs Report 2025: el 86 % de las empresas espera que la IA transforme su negocio antes de 2030).' },
-  { id: 'crecer', titulo: 'Formarte y hacer crecer tu negocio', tema: 'crema', pasos: 2, Vista: Crecer, notas: 'Nos hemos dado cuenta: solo el 41,9 % de las empresas que nacen en España sigue abierta a los cinco años (INE, empresas nacidas en 2018). Clic: por eso Divine te forma, te acompaña y hace crecer tu negocio. Clic: los tres pilares.' },
-  { id: 'costes', titulo: 'Hagamos cuentas', tema: 'crema', pasos: 1, Vista: Costes, notas: `Hoy una terapeuta que quiere crecer paga cada herramienta por separado: agente IA, CRM, agenda, redes, diseño, vídeo y email. Unos ${TOTAL_MES} USD al mes, ${(TOTAL_MES * 12).toLocaleString('es-ES')} al año, y ninguna habla con las demás. Precios de lista consultados en nov. 2026 (1 usuaria, sin impuestos). Clic: con Divine, todo en un solo agente adaptado a tu negocio, incluido en la Membresía. Siguiente: el agente.` },
-  { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Por eso hemos construido el Agente IA Divine, adaptado a tu negocio: responde, ejecuta, publica en redes, gestiona registros y vende. Dato de abajo: Zenoti (empresa de software de salones), encuesta a 1.000 clientas en EE. UU., 2025. Se conecta con agenda, WhatsApp, Instagram, fichas, servicios y cobros. Las acciones del día entran solas (↻ las repite). Clic: más citas, menos huecos, clientas que vuelven.' },
   { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Arrancan solos 10 min de preguntas y reservas (pulsar la cuenta los reinicia; se ve igual en las dos ventanas). Contesta preguntas del chat mientras la persona de apoyo escribe a quien pone QUIERO. Pide que escriban QUIERO en el chat o en el grupo. Suma con +1 / +5. La persona de apoyo las saca del chat y les escribe por privado con el mensaje preparado. Último clic: aviso de seguridad (cuenta hackeada en el pasado).' },
   { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. Recuerda: para reservar, QUIERO.' },
   { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. QUIERO para reservar. Caracas 4-6 dic, Medellín 10-12 dic.' },

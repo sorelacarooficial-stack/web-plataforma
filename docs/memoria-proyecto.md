@@ -199,3 +199,10 @@ cada cambio importante** (una línea por decisión, con la fecha).
   contador «Si te ha pasado, escribe un 1» y la diapositiva «El masajista más
   famoso fue ciego»; «Tu lunes» centrada, sin giro y con las preguntas
   siempre visibles (se encienden por clic). Quedan 34 diapositivas.
+- 2026-11-05: diapositiva puente «Esto es solo el principio» (parte 2) entre
+  «Lo que cambia en tu cabina» y «Metodología». Bloque de la membresía
+  reordenado: vídeo → «Tres datos» (86 % WEF, 41,9 % INE y 55 % Zenoti en una
+  sola diapositiva; fuera la encuesta SÍ/NO) → «Hagamos cuentas» (sin nombres
+  de herramientas) → Agente (demo de conversación que entra sola, ↻ repite) →
+  ¿Y después? → Comunidad → Qué hay dentro → «QUIERO» (centrada, sin
+  contador de personas).
