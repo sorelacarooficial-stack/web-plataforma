@@ -19,6 +19,8 @@ export type EstadoClase = {
   tec: [number, number];
   /** Cuántas han escrito «QUIERO» para reservar. */
   quiero: number;
+  /** Cuándo empezó la cuenta de 10 min de preguntas y reservas (ms), o null. */
+  preguntasDesde: number | null;
 };
 
 export const ESTADO_INICIAL: EstadoClase = {
@@ -30,6 +32,7 @@ export const ESTADO_INICIAL: EstadoClase = {
   fichas: [false, false, false],
   tec: [0, 0],
   quiero: 0,
+  preguntasDesde: null,
 };
 
 export type Cambiar = (f: (e: EstadoClase) => EstadoClase) => void;

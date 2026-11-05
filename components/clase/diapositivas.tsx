@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { FORMACIONES, ONLINE, SEDES, VIDEOS } from '@/lib/clase';
-import { AntesDespues, Cuenta, CuentaAtras, Cuerpo, Icono, Mapa, Movil, Polvo, Quedan, Titulo, useGoteo, VideoModal } from './piezas';
+import { ESPERA, FORMACIONES, ONLINE, SEDES, VIDEOS } from '@/lib/clase';
+import { AntesDespues, Cuenta, CuentaAtras, CuentaPreguntas, Cuerpo, Icono, Mapa, Movil, MusicaEspera, Polvo, Quedan, Rotador, Titulo, useGoteo, VideoModal } from './piezas';
 import { useClase } from './estado';
 import css from './clase.module.css';
 
@@ -63,7 +63,8 @@ function Flecha({ className, style }: { className?: string; style?: CSSPropertie
 
 /* --------------------------------------------------------------- 1 */
 
-function Portada({ activa, estatica, v, on }: Props) {
+function Portada({ activa, estatica, muda = false, v, on }: Props) {
+  const [empieza, setEmpieza] = useState(false);
   return (
     <div className={css.portada}>
       {!estatica && <Polvo activa={activa} />}
@@ -78,8 +79,13 @@ function Portada({ activa, estatica, v, on }: Props) {
         Qué observar, qué interpretar y cómo decidir antes de trabajar.
       </p>
       <div className={v(0)} style={d(1.1)}>
-        <CuentaAtras activa={activa && !estatica} />
+        <CuentaAtras activa={activa && !estatica} alTerminar={setEmpieza} />
       </div>
+      {!estatica && (
+        <div className={v(0)} style={d(1.2)}>
+          <Rotador frases={ESPERA.frases} activa={activa} />
+        </div>
+      )}
       <div className={css.fila} style={{ justifyContent: 'center' }}>
         <Chip icono="chat" className={v(0)} style={d(1.3)}>
           Escribe en el chat desde dónde nos ves
@@ -88,6 +94,7 @@ function Portada({ activa, estatica, v, on }: Props) {
           Vie 6 nov · 19:00 España · 13:00 Colombia
         </Chip>
       </div>
+      {!estatica && <MusicaEspera activa={activa} apagar={empieza} muda={muda} />}
     </div>
   );
 }
@@ -1407,7 +1414,7 @@ function Agente({ activa, estatica, v, on }: Props) {
 
 /* -------------------------------------------------------------- 26 */
 
-function Escanea({ v, on }: Props) {
+function Escanea({ activa, estatica, v, on }: Props) {
   const { estado, cambiar } = useClase();
   const pasos = [
     ['chat', 'Escribe «QUIERO»', 'En el chat o en el grupo de WhatsApp'],
@@ -1419,6 +1426,9 @@ function Escanea({ v, on }: Props) {
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Cómo reservar</Eyebrow>
         <Titulo texto={'Escribe *«QUIERO»*'} on={on(0)} className={css.h2} />
+        <div className={v(0)} style={d(0.3)}>
+          <CuentaPreguntas activa={activa} estatica={estatica} />
+        </div>
         <div className={`${css.quieroCaja} ${v(0, css.rEscala)}`} style={d(0.4)}>
           <span className={css.quieroPalabra}>QUIERO</span>
           <div className={css.quieroCuenta}>
@@ -1585,7 +1595,7 @@ const VideoMembresia = diapoVideo(VIDEOS.membresia, VIDEOS.membresiaPortada);
 
 
 export const DIAPOSITIVAS: Diapo[] = [
-  { id: 'portada', titulo: 'Antes de tocar', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Portada, notas: 'Saluda mientras corre la cuenta atrás. Pide que escriban en el chat desde dónde te ven. Pulsar la cuenta la reinicia.' },
+  { id: 'portada', titulo: 'Antes de tocar', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Portada, notas: 'Sala de espera: comparte 10 min antes. Pulsa «Poner música» (suena solo por esta ventana; en Meet, pestaña con audio). Las frases van rotando solas. La música se apaga sola en fundido cuando la cuenta llega a cero. Pulsar la cuenta la reinicia (10 min si aún falta más de una hora).' },
   { id: 'bienvenida', titulo: '¿Desde dónde nos ves?', tema: 'crema', pasos: 0, Vista: Bienvenida, notas: 'Lee ciudades del chat y pulsa cada una en el mapa para encenderla. «+ otro sitio» suma las que no salen. Pregunta cuántos años llevan con las manos.' },
   { id: 'tres-cosas', titulo: 'Hoy te llevas 3 cosas', tema: 'crema', pasos: 1, Vista: TresCosas, notas: 'Las tres cosas. Siguiente: anuncia la ficha y «una noticia» al final (solo en directo), para que se queden.' },
   { id: 'problema', titulo: 'El problema', tema: 'oscuro', pasos: 1, Vista: Bucle, notas: 'Los cuatro pasos entran solos. Suma los «1» del chat con +1 / +5. Clic: «No necesitas trabajar más. Necesitas aprender a observar, interpretar y actuar con criterio».' },
@@ -1617,7 +1627,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'crecer', titulo: 'Formarte y hacer crecer tu negocio', tema: 'crema', pasos: 2, Vista: Crecer, notas: 'Nos hemos dado cuenta: solo el 41,9 % de las empresas que nacen en España sigue abierta a los cinco años (INE, empresas nacidas en 2018). Clic: por eso Divine te forma, te acompaña y hace crecer tu negocio. Clic: los tres pilares.' },
   { id: 'costes', titulo: 'Hagamos cuentas', tema: 'crema', pasos: 1, Vista: Costes, notas: `Hoy una terapeuta que quiere crecer paga cada herramienta por separado: agente IA, CRM, agenda, redes, diseño, vídeo y email. Unos ${TOTAL_MES} USD al mes, ${(TOTAL_MES * 12).toLocaleString('es-ES')} al año, y ninguna habla con las demás. Precios de lista consultados en nov. 2026 (1 usuaria, sin impuestos). Clic: con Divine, todo en un solo agente adaptado a tu negocio, incluido en la Membresía. Siguiente: el agente.` },
   { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Por eso hemos construido el Agente IA Divine, adaptado a tu negocio: responde, ejecuta, publica en redes, gestiona registros y vende. Dato de abajo: Zenoti (empresa de software de salones), encuesta a 1.000 clientas en EE. UU., 2025. Se conecta con agenda, WhatsApp, Instagram, fichas, servicios y cobros. Las acciones del día entran solas (↻ las repite). Clic: más citas, menos huecos, clientas que vuelven.' },
-  { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Pide que escriban QUIERO en el chat o en el grupo. Suma con +1 / +5. La persona de apoyo las saca del chat y les escribe por privado con el mensaje preparado. Último clic: aviso de seguridad (cuenta hackeada en el pasado).' },
+  { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Arrancan solos 10 min de preguntas y reservas (pulsar la cuenta los reinicia; se ve igual en las dos ventanas). Contesta preguntas del chat mientras la persona de apoyo escribe a quien pone QUIERO. Pide que escriban QUIERO en el chat o en el grupo. Suma con +1 / +5. La persona de apoyo las saca del chat y les escribe por privado con el mensaje preparado. Último clic: aviso de seguridad (cuenta hackeada en el pasado).' },
   { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. Recuerda: para reservar, QUIERO.' },
   { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. QUIERO para reservar. Caracas 4-6 dic, Medellín 10-12 dic.' },
 ];
