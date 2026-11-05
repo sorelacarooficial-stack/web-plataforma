@@ -8,6 +8,8 @@ cada cambio importante** (una línea por decisión, con la fecha).
 
 - Nada va directo a `main`: rama `claude/<tema>` + PR, y el merge lo hace la
   dueña del proyecto. El push directo a main está bloqueado.
+- Al hablar con la usuaria: explicarlo todo muy fácil, como a un niño de 5
+  años (frases cortas, sin palabras técnicas). (2026-11-05)
 - Tokens y claves solo en Vercel (variables de entorno), nunca en el chat ni
   en el repositorio.
 - Grafo del código: codebase-memory-mcp. Se instala e indexa solo al arrancar
