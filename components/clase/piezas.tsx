@@ -582,19 +582,6 @@ export function Mapa({ activa, estatica }: { activa: boolean; estatica: boolean 
         })}
         <circle cx={origen.x} cy={origen.y} r={0} />
       </svg>
-      <div className={css.mapaPie}>
-        <span>
-          Nos ves desde <b>{encendidas.size + estado.otras}</b> {encendidas.size + estado.otras === 1 ? 'sitio' : 'sitios'}
-        </span>
-        <button type="button" className={css.mini} onClick={() => cambiar((e) => ({ ...e, otras: e.otras + 1 }))}>
-          + otro sitio
-        </button>
-        {(encendidas.size > 0 || estado.otras > 0) && (
-          <button type="button" className={css.miniSuave} onClick={() => cambiar((e) => ({ ...e, ciudades: [], otras: 0 }))}>
-            borrar
-          </button>
-        )}
-      </div>
     </div>
   );
 }
