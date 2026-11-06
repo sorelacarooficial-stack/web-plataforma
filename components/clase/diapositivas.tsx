@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { ESPERA, FORMACIONES, MEMBRESIA, ONLINE, PLAZAS, SEDES, VIDEOS } from '@/lib/clase';
-import { AntesDespues, Cuenta, CuentaAtras, CuentaPreguntas, Cuerpo, Icono, Mapa, Movil, MusicaEspera, Polvo, Quedan, Rotador, Titulo, useGoteo, VideoModal } from './piezas';
+import { DESPEDIDA, ESPERA, FORMACIONES, MEMBRESIA, ONLINE, PLAZAS, SEDES, VIDEOS } from '@/lib/clase';
+import { AntesDespues, Cuenta, CuentaAtras, CuentaPreguntas, Cuerpo, Icono, Mapa, Movil, Musica, Polvo, Quedan, Rotador, Titulo, useGoteo, VideoModal } from './piezas';
 import { useClase } from './estado';
 import css from './clase.module.css';
 
@@ -20,6 +20,8 @@ export type Props = {
   estatica: boolean;
   /** Ventana del presentador: los vídeos se ven pero no suenan. */
   muda?: boolean;
+  /** Se va a cambiar de diapositiva: la música está bajando. */
+  saliendo?: boolean;
   qr: string;
   /** Visible a partir del paso k. */
   on: (k?: number) => boolean;
@@ -63,7 +65,7 @@ function Flecha({ className, style }: { className?: string; style?: CSSPropertie
 
 /* --------------------------------------------------------------- 1 */
 
-function Portada({ activa, estatica, muda = false, v, on }: Props) {
+function Portada({ activa, estatica, muda = false, saliendo = false, v, on }: Props) {
   const [empieza, setEmpieza] = useState(false);
   return (
     <div className={css.portada}>
@@ -90,11 +92,8 @@ function Portada({ activa, estatica, muda = false, v, on }: Props) {
         <Chip icono="chat" className={v(0)} style={d(1.3)}>
           Escribe en el chat desde dónde nos ves
         </Chip>
-        <Chip icono="calendario" className={v(0)} style={d(1.4)}>
-          Vie 6 nov · 19:00 España · 13:00 Colombia
-        </Chip>
       </div>
-      {!estatica && <MusicaEspera activa={activa} apagar={empieza} muda={muda} />}
+      {!estatica && <Musica pistas={ESPERA.musica} activa={activa} saliendo={saliendo} apagar={empieza} muda={muda} />}
     </div>
   );
 }
@@ -555,9 +554,9 @@ function Secuencia({ v, on }: Props) {
             <span className={css.numNegro}>2</span>
           </div>
           <h3>
-            Escucha
+            Ritmo
             <br />
-            el abdomen
+            y velocidad
           </h3>
           <svg viewBox="0 0 300 60" className={`${css.ondaSonido} ${on(2) ? css.on : ''}`}>
             <path d="M0 30 H70 L82 10 L94 50 L106 4 L118 56 L130 18 L142 40 L154 30 H300" />
@@ -572,9 +571,9 @@ function Secuencia({ v, on }: Props) {
             <span className={css.numNegro}>3</span>
           </div>
           <h3>
-            Maniobras
+            Arrastre hasta la
             <br />
-            lentas
+            estación más cercana
           </h3>
           <svg viewBox="0 0 300 60" className={`${css.ondaLenta} ${on(3) ? css.on : ''}`}>
             <path d="M0 40 C50 40 60 12 110 12 S170 48 220 48 S280 20 300 20" />
@@ -655,7 +654,7 @@ function Caso2({ v, on }: Props) {
     <div className={css.dosCol} style={{ gridTemplateColumns: '0.5fr 1fr' }}>
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Casos reales</Eyebrow>
-        <Titulo texto={'Otro abdomen,\n*el mismo criterio.*'} on={on(0)} className={css.h2} />
+        <Titulo texto={'Una sola sesión, cuerpo perfectamente drenado,\n*solo con las manos.*'} on={on(0)} className={css.h2} />
         <div className={css.columna} style={{ gap: 14, marginTop: 40, alignItems: 'flex-start' }}>
           {['Qué observó', 'Qué interpretó', 'Qué decidió'].map((t, k) => (
             <span key={t} className={`${css.chipOscuro} ${v(0, css.rIzq)}`} style={d(0.6 + k * 0.15)}>
@@ -1026,7 +1025,7 @@ function Dentro({ v, on }: Props) {
 
 /* -------------------------------------------------------------- puente a la oferta */
 
-function Puente({ v, on }: Props) {
+function Puente({ activa, estatica, v, on }: Props) {
   return (
     <div className={css.centro}>
       <Eyebrow className={v(0)}>Parte 2 · Tu oportunidad</Eyebrow>
@@ -1043,6 +1042,9 @@ function Puente({ v, on }: Props) {
             <span className={css.puenteNum}>{k + 1}</span> {t}
           </span>
         ))}
+      </div>
+      <div className={v(0)} style={{ ...d(1.4), width: 700, marginTop: 44 }}>
+        <CuentaPreguntas activa={activa} estatica={estatica} campo="puenteDesde" textos={['Preguntas y respuestas', 'Último minuto de preguntas', 'Pasamos a la parte 2']} />
       </div>
     </div>
   );
@@ -1283,12 +1285,6 @@ function Escanea({ activa, estatica, v, on }: Props) {
           </div>
         ))}
       </div>
-      <p className={`${css.seguridad} ${v(3)}`} style={{ ...d(0.4), maxWidth: 1100 }}>
-        <Icono n="escudo" className={css.chipIcono} />
-        <span>
-          <b>Por tu seguridad:</b> solo te escribiremos desde el número oficial de Divine. Nadie te pedirá un pago por otro canal.
-        </span>
-      </p>
     </div>
   );
 }
@@ -1324,7 +1320,7 @@ function Preguntas({ v, on }: Props) {
 
 /* -------------------------------------------------------------- 28 */
 
-function Gracias({ activa, estatica, v, on }: Props) {
+function Gracias({ activa, estatica, muda = false, saliendo = false, v, on }: Props) {
   return (
     <div className={css.portada}>
       {!estatica && <Polvo activa={activa} cuantas={90} />}
@@ -1347,6 +1343,7 @@ function Gracias({ activa, estatica, v, on }: Props) {
           @sorelacaro_
         </Chip>
       </div>
+      {!estatica && <Musica pistas={[DESPEDIDA]} activa={activa} saliendo={saliendo} muda={muda} bucle={false} volumen={0.9} />}
     </div>
   );
 }
@@ -1418,7 +1415,7 @@ const VideoMembresia = diapoVideo(VIDEOS.membresia, VIDEOS.membresiaPortada);
 
 
 export const DIAPOSITIVAS: Diapo[] = [
-  { id: 'portada', titulo: 'Antes de tocar', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Portada, notas: 'Sala de espera: comparte 10 min antes. Pulsa «Poner música» (suena solo por esta ventana; en Meet, pestaña con audio). Las frases van rotando solas. La música se apaga sola en fundido cuando la cuenta llega a cero. Pulsar la cuenta la reinicia (10 min si aún falta más de una hora).' },
+  { id: 'portada', titulo: 'Antes de tocar', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Portada, notas: 'Sala de espera: comparte 10 min antes. Suena sola «Poder en la oración» (si el navegador no deja, arranca con la primera tecla: pulsa F). En Meet, comparte la pestaña con audio. Al pasar de diapositiva la música baja poco a poco y luego cambia. Las frases van rotando solas. La música se apaga sola en fundido cuando la cuenta llega a cero. Pulsar la cuenta la reinicia (10 min si aún falta más de una hora).' },
   { id: 'bienvenida', titulo: '¿Desde dónde nos ves?', tema: 'crema', pasos: 0, Vista: Bienvenida, notas: 'Lee ciudades del chat y pulsa cada una en el mapa para encenderla. Pregunta cuántos años llevan con las manos.' },
   { id: 'tres-cosas', titulo: 'Hoy tenemos dos partes', tema: 'crema', pasos: 1, Vista: TresCosas, notas: 'Cómo va la clase. Parte 1: lo que van a aprender. Clic: parte 2, una oportunidad para todas (solo en directo, al final). Que se queden hasta el final.' },
   { id: 'problema', titulo: 'El problema', tema: 'oscuro', pasos: 1, Vista: Bucle, notas: 'Los cuatro pasos entran solos. Clic: «No necesitas trabajar más. Necesitas aprender a observar, interpretar y actuar con criterio».' },
@@ -1432,13 +1429,13 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'no-tocar', titulo: 'Cuándo no tocar', tema: 'oscuro', fase: 1, pasos: 1, Vista: NoTocar, notas: 'Contraindicaciones: primero su médico (cáncer, enfermedades terminales, problemas cardíacos, infecciones). Clic: damos la palabra al Doctor Achile.' },
   { id: 'interpretar', titulo: 'Paso 2 · El cuerpo expresa', tema: 'oscuro', fase: 2, pasos: 3, Vista: Interpretar, notas: 'El cuerpo expresa lo que esconde el alma. Clic: clienta A, el punto sube al pecho (estrés). Clic: B, baja a las piernas. Clic: «Misma queja. Distinto origen».' },
   { id: 'noventa', titulo: 'El drenaje de hace 90 años', tema: 'crema', fase: 2, pasos: 2, Vista: Noventa, notas: 'La linfa se mueve hacia los ganglios. Clic: Hoy. Clic: Divine.' },
-  { id: 'secuencia', titulo: 'Paso 3 · La secuencia', tema: 'crema', fase: 3, pasos: 3, Vista: Secuencia, notas: 'Un paso por clic: estimulación ganglionar (~10 min; nunca «abrir» ganglios), escucha el abdomen, maniobras lentas.' },
+  { id: 'secuencia', titulo: 'Paso 3 · La secuencia', tema: 'crema', fase: 3, pasos: 3, Vista: Secuencia, notas: 'Un paso por clic: estimulación ganglionar (~10 min; nunca «abrir» ganglios), ritmo y velocidad, arrastre hasta la estación más cercana.' },
   { id: 'cuerpo-limpio', titulo: 'Sobre un cuerpo limpio', tema: 'oscuro', fase: 3, pasos: 3, Vista: CuerpoLimpio, notas: 'La base primero. Cada clic apila una capa: aparatología, cosmética, tratamientos.' },
   { id: 'casos', titulo: 'Una sesión. 55 minutos', tema: 'oscuro', pasos: 1, Vista: Casos, notas: 'Clic: el rostro se descubre. Puedes arrastrar la línea mientras explicas qué observaste, qué interpretaste y qué decidiste.' },
-  { id: 'caso-2', titulo: 'Otro abdomen, el mismo criterio', tema: 'oscuro', pasos: 1, Vista: Caso2, notas: 'Clic: la línea barre y se ve el después. Arrástrala despacio mientras cuentas qué observaste, qué interpretaste y qué decidiste.' },
+  { id: 'caso-2', titulo: 'Una sola sesión, solo con las manos', tema: 'oscuro', pasos: 1, Vista: Caso2, notas: 'Clic: la línea barre y se ve el después. Arrástrala despacio mientras cuentas qué observaste, qué interpretaste y qué decidiste.' },
   { id: 'lunes', titulo: 'Tu lunes', tema: 'crema', pasos: 3, Vista: Lunes, notas: 'Una pregunta por clic. Puedes marcar las casillas.' },
   { id: 'prueba', titulo: 'Lo que cambia en tu cabina', tema: 'oscuro', pasos: 3, Vista: Prueba, notas: 'Un escalón por clic. El antes/después se descubre en el primero.' },
-  { id: 'puente', titulo: 'Esto es solo el principio', tema: 'oscuro', pasos: 1, Vista: Puente, notas: 'Frase clave: «Toda persona que se somete a este tratamiento obtiene resultados». «Hasta aquí, la parte 1. Ahora, la parte 2.» Clic: lo que viene (cómo te formas, dónde y cuándo, cuánto cuesta).' },
+  { id: 'puente', titulo: 'Esto es solo el principio', tema: 'oscuro', pasos: 1, Vista: Puente, notas: 'Frase clave: «Toda persona que se somete a este tratamiento obtiene resultados». «Hasta aquí, la parte 1. Ahora, la parte 2.» Arrancan solos 10 min de preguntas y respuestas (pulsar el reloj lo reinicia). Clic: lo que viene (cómo te formas, dónde y cuándo, cuánto cuesta).' },
   { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Caracas 4, 5 y 6 de diciembre y Medellín 10, 11 y 12. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
   { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Solo 10 plazas por ciudad. Pulsa Caracas o Medellín arriba. Una formación por clic, con el precio de antes tachado: completa (3 días, incluye cena de gala, certificado y academia online), intensiva (2 días), específica (1 día). Último clic: material, modelos y comida incluidos.' },
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Para quien ya tiene buenos resultados y quiere conocer la técnica, certificarse y estudiar a su ritmo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
@@ -1447,7 +1444,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'costes', titulo: 'Hagamos cuentas', tema: 'crema', pasos: 1, Vista: Costes, notas: 'Hoy todo es por suscripción: CRM para los datos, automatizaciones (emails, reservas, respuestas, agenda), vídeos (programas o un editor cada mes) y un agente IA. Unos 232 USD al mes. Clic: en Divine, todo en el mismo espacio: aprendes, tienes tu comunidad y tu negocio crece.' },
   { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Lo estamos construyendo: con cada terapeuta que entra lo entrenamos con sus servicios y necesidades, y ejecuta, responde, publica y vende. La conversación de la derecha es una demostración (↻ la repite). Clic: incluido en la Membresía, más citas, más ventas.' },
   { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 1, Vista: Dentro, notas: 'La Membresía Divine®: solo para terapeutas homologadas (formación completa de 3 días). Clases en directo, canal, fichas y vídeos, Localiza tu terapeuta y el agente IA, entrenado solo para terapeutas y que mejora a medida que trabajan con él. Clic: este primer mes 49 USD (después 98 USD) y con las 10 primeras nos sentamos 1 a 1 para adaptar su agente.' },
-  { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Arrancan solos 10 min de preguntas y reservas. Pide que escriban QUIERO en el chat o en el grupo: nuestro equipo les escribe por privado. Último clic: aviso de seguridad.' },
+  { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Arrancan solos 10 min de preguntas y reservas. Pide que escriban QUIERO en el chat o en el grupo: nuestro equipo les escribe por privado. Un clic por paso: escribir, te escribimos, reservas.' },
   { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. Recuerda: para reservar, QUIERO.' },
-  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. QUIERO para reservar. Caracas 4-6 dic, Medellín 10-12 dic.' },
+  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. Suena sola «Proceso con Dios» (entra desde abajo hasta la voz) mientras la gente se va. QUIERO para reservar. Caracas 4-6 dic, Medellín 10-12 dic.' },
 ];

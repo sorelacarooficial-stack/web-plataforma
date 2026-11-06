@@ -1,6 +1,6 @@
 # Guion de venta por WhatsApp · masterclass 6 nov
 
-Lo usa la persona de apoyo, **siempre desde el número oficial de Sorela**.
+Lo usa el equipo de Sorela (Gerson escribe a las chicas desde su número).
 Lo que va entre [corchetes] se rellena antes del viernes. Los mensajes son
 cortos a propósito: en WhatsApp gana quien responde rápido y pregunta, no
 quien manda un ladrillo.
@@ -144,9 +144,8 @@ Si dice «ahora no puedo pagar, luego»:
 > reales y ella te corrige en el momento. Muchas alumnas empezaron así.
 
 **«¿Cómo sé que no es una estafa?»**
-> Es normal preguntarlo, y te lo agradezco. Este es el número oficial de
-> Sorela Caro; nadie de Divine te va a pedir dinero por otro canal ni otro
-> número. Puedes pagar con tarjeta por Stripe (tu banco te protege) y
+> Es normal preguntarlo, y te lo agradezco. Soy del equipo de Sorela Caro
+> y te escribo porque pusiste «QUIERO» en la clase. Puedes pagar con tarjeta por Stripe (tu banco te protege) y
 > recibes confirmación por escrito. Si quieres, te paso también el perfil
 > oficial: @sorelacaro_.
 

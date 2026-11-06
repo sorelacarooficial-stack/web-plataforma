@@ -195,9 +195,6 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
       )}
 
       <footer className={css.pie}>
-        <p>
-          <b>Por tu seguridad:</b> solo te escribimos desde el número oficial de Divine ({whatsapp}).
-        </p>
         <a href={wa('Hola, vengo de la masterclass y tengo una duda sobre la reserva.')} target="_blank" rel="noopener noreferrer">
           ¿Dudas? Escríbenos
         </a>
