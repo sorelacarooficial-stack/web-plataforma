@@ -254,3 +254,42 @@
   font-weight: 600;
   color: #8a6a32;
 }
+.opciones {
+  margin-top: 30px;
+}
+.opcion {
+  cursor: default;
+}
+.opcion .boton {
+  align-self: stretch;
+  margin-top: 10px;
+  padding: 14px 18px;
+  font-size: 16px;
+}
+.opcionTop {
+  box-shadow: 0 0 0 2px #c99a5c, 0 18px 40px -28px rgba(90, 62, 24, 0.5);
+}
+.precio em {
+  font-style: normal;
+  font-size: 13px;
+  color: rgba(20, 18, 16, 0.6);
+}
+.otros {
+  margin-top: 28px;
+  text-align: center;
+}
+.otrosBoton {
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: #8a6a32;
+  background: none;
+  box-shadow: 0 0 0 1px rgba(154, 115, 64, 0.4) inset;
+  cursor: pointer;
+}
+.otros .datos {
+  text-align: left;
+}

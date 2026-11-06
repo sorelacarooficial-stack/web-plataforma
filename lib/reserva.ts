@@ -1,10 +1,11 @@
-import { FORMACIONES, ONLINE, PLAZAS, SEDES } from './clase';
+import { FORMACIONES, MEMBRESIA, ONLINE, PLAZAS, SEDES } from './clase';
 
 /**
  * /reserva: la página que el equipo manda por WhatsApp a quien escribe
  * «QUIERO» en la masterclass. Vale 24 horas. La persona elige qué quiere y
  * cómo pagar, paga, y manda el comprobante por WhatsApp con un mensaje ya
- * escrito (así el equipo sabe al momento qué ha elegido).
+ * escrito (así el equipo sabe al momento qué ha elegido). Con enlace de
+ * Stripe, cada opción se paga ahí mismo con un toque.
  *
  * Rellenar antes de mandarla: los enlaces de Stripe, las cuentas de
  * transferencia y la dirección de cripto. Lo que esté vacío no sale.
@@ -23,6 +24,8 @@ export type Opcion = {
   /** Precio total (USD) y el de antes, tachado. */
   precio?: number;
   antes?: number;
+  /** Solo la membresía: lo que costará después del primer mes. */
+  despues?: number;
   /** Enlace de pago de Stripe para la reserva (o el pago). Vacío = sin tarjeta. */
   stripe: string;
   nota?: string;
@@ -42,8 +45,8 @@ function presencial(sede: (typeof SEDES)[number]): Opcion[] {
 export const OPCIONES: Opcion[] = [
   ...SEDES.flatMap(presencial),
   { id: 'online', grupo: 'Online', titulo: 'Divine® Online', detalle: 'A tu ritmo · para profesionales con experiencia', reserva: ONLINE.reserva, precio: ONLINE.especial, antes: ONLINE.habitual, stripe: '' },
-  // La membresía es solo para terapeutas homologadas. Sale solo si tiene enlace de pago.
-  { id: 'membresia', grupo: 'Membresía', titulo: 'Membresía Divine®', detalle: 'Solo para terapeutas homologadas por Sorela', reserva: 0, stripe: '' },
+  // La membresía es solo para terapeutas homologadas.
+  { id: 'membresia', grupo: 'Membresía', titulo: 'Membresía Divine®', detalle: 'Solo para terapeutas homologadas por Sorela', reserva: 0, precio: MEMBRESIA.primerMes, despues: MEMBRESIA.despues, stripe: '' },
 ];
 
 /** Enlaces de Stripe por opción: se rellenan aquí (son públicos, no son claves). */

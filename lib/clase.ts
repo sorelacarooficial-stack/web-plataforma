@@ -32,6 +32,9 @@ export const FORMACIONES = [
   { nombre: 'Específica', dias: '1 día', antes: 1000, precio: 750, reserva: 150 },
 ];
 
+/** Membresía Divine® (solo homologadas): primer mes y precio después, en USD. Con las `primeras` se hace la sesión 1 a 1. */
+export const MEMBRESIA = { primerMes: 49, despues: 98, primeras: 10 };
+
 /** Divine® Online. Precios en USD. */
 export const ONLINE = { habitual: 900, especial: 750, reserva: 250 };
 
