@@ -3860,10 +3860,41 @@ button.oscuraCaja {
   10%, 88% { opacity: 1; filter: blur(0); transform: none; }
   100% { opacity: 0; filter: blur(6px); transform: translateY(-6px); }
 }
-.musicaBoton {
+.musicaControl {
   position: absolute;
   right: 56px;
   bottom: 48px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+.volumen {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 16px;
+  color: #f4efe7;
+  background: rgba(255, 240, 220, 0.07);
+  box-shadow: 0 0 0 1px rgba(243, 217, 174, 0.22) inset;
+  cursor: pointer;
+}
+.volumen input {
+  width: 150px;
+  accent-color: #c99a5c;
+  cursor: pointer;
+}
+.volumen b {
+  min-width: 2.2em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: #f3d9ae;
+}
+.musicaBoton {
   display: inline-flex;
   align-items: center;
   gap: 14px;
