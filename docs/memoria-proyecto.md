@@ -282,3 +282,9 @@ cada cambio importante** (una línea por decisión, con la fecha).
   «|» (`lib/transferencia.ts`). Salen al pie de /reserva (caja oscura +
   «Mandar el comprobante por WhatsApp»). Solo en /reserva: NUNCA en la
   presentación (lo pidió Gerson). Vacías = no salen.
+- 2026-11-06: control de volumen de las canciones: barra encima del botón de
+  la música (portada y Gracias) y teclas + / −. Va en el estado compartido
+  (`volumen`, 0–1), así que se mueve igual desde la ventana del presentador;
+  multiplica el volumen propio de cada canción. Tocar la barra no roba las
+  flechas a la presentación. Ojo: piezas.tsx quedó con comillas dobles por un
+  prettier sin config; no volver a pasarle prettier.

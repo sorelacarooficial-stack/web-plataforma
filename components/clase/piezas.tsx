@@ -420,6 +420,12 @@ export function Musica({
   alCantar?: (si: boolean) => void;
 }) {
   const ref = useRef<HTMLAudioElement>(null);
+  const { estado, cambiar } = useClase();
+  // Volumen que elige Gerson (0–1), por encima del de cada canción.
+  const nivel = Math.max(0, Math.min(1, typeof estado.volumen === "number" ? estado.volumen : 1));
+  const nivelRef = useRef(nivel);
+  nivelRef.current = nivel;
+  const objetivo = () => volumen * nivelRef.current;
   const [sonando, setSonando] = useState(false);
   const [bloqueada, setBloqueada] = useState(false);
   const [pista, setPista] = useState(0);
@@ -462,7 +468,7 @@ export function Musica({
         setSonando(true);
         setBloqueada(false);
         musicaSonando.add(clave);
-        lleva(a, volumen, 2500);
+        lleva(a, objetivo(), 2500);
       })
       .catch(() => {
         setSonando(false);
@@ -498,6 +504,12 @@ export function Musica({
     },
     [clave],
   );
+  /* Al mover el volumen, la música va a él enseguida (sin esperar a otro fundido). */
+  useEffect(() => {
+    const a = ref.current;
+    if (a && sonando && !a.paused) lleva(a, objetivo(), 250);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nivel]);
   const conLetra =
     Boolean(letra?.length) && sonando && pista % pistas.length === 0;
   useEffect(() => {
@@ -525,6 +537,26 @@ export function Musica({
           setTimeout(() => ref.current?.play().catch(() => {}), 50);
         }}
       />
+      <div className={css.musicaControl}>
+      <label className={css.volumen} title="Volumen de la música (teclas + y −)" onClick={(e) => e.stopPropagation()}>
+        <span aria-hidden>{nivel === 0 ? "🔇" : nivel < 0.5 ? "🔉" : "🔊"}</span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={5}
+          value={Math.round(nivel * 100)}
+          aria-label="Volumen de la música"
+          onChange={(e) => {
+            const v = Number(e.target.value) / 100;
+            cambiar((x) => ({ ...x, volumen: v }));
+          }}
+          // Suelta el foco: si no, las flechas moverían el volumen en vez de pasar de diapositiva.
+          onPointerUp={(e) => e.currentTarget.blur()}
+          onKeyUp={(e) => e.currentTarget.blur()}
+        />
+        <b>{Math.round(nivel * 100)}</b>
+      </label>
       <button
         type="button"
         className={`${css.musicaBoton} ${sonando ? css.musicaOn : ""}`}
@@ -547,6 +579,7 @@ export function Musica({
             ? "Pulsa para la música"
             : "Poner música"}
       </button>
+      </div>
     </>
   );
 }

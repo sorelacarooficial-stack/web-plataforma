@@ -23,6 +23,8 @@ export type EstadoClase = {
   preguntasDesde: number | null;
   /** Cuándo empezaron los 10 min de preguntas del puente (antes de la parte 2). */
   puenteDesde: number | null;
+  /** Volumen de las canciones, de 0 a 1 (se mueve desde las dos ventanas). */
+  volumen: number;
 };
 
 export const ESTADO_INICIAL: EstadoClase = {
@@ -36,6 +38,7 @@ export const ESTADO_INICIAL: EstadoClase = {
   quiero: 0,
   preguntasDesde: null,
   puenteDesde: null,
+  volumen: 1,
 };
 
 export type Cambiar = (f: (e: EstadoClase) => EstadoClase) => void;

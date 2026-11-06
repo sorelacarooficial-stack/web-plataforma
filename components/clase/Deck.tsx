@@ -237,7 +237,10 @@ export default function Deck({ qr, vista }: { qr: string; vista: 'publico' | 'pr
   /* ----------------------------------------------------------- teclado */
   useEffect(() => {
     const f = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey || e.altKey) return;
+      // La barra del volumen no se queda con las teclas: se suelta y la tecla manda en la presentación.
+      if (e.target instanceof HTMLInputElement && e.target.type === 'range') e.target.blur();
+      else if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
       const k = e.key;
       if (/^\d$/.test(k)) {
         const ahora = Date.now();
@@ -259,6 +262,8 @@ export default function Deck({ qr, vista }: { qr: string; vista: 'publico' | 'pr
         anterior();
       } else if (k === 'Home') ir(0);
       else if (k === 'End') ir(TOTAL - 1);
+      else if (k === '+' || k === '=') cambiar((x) => ({ ...x, volumen: Math.min(1, Math.round(((x.volumen ?? 1) + 0.1) * 10) / 10) }));
+      else if (k === '-' || k === '_') cambiar((x) => ({ ...x, volumen: Math.max(0, Math.round(((x.volumen ?? 1) - 0.1) * 10) / 10) }));
       else if (k === 'f' || k === 'F') pantallaCompleta();
       else if (k === 'g' || k === 'G') setGeneral((g) => !g);
       else if (k === 'Escape') {
@@ -270,7 +275,7 @@ export default function Deck({ qr, vista }: { qr: string; vista: 'publico' | 'pr
     };
     window.addEventListener('keydown', f);
     return () => window.removeEventListener('keydown', f);
-  }, [siguiente, anterior, ir, general, alternarNegro]);
+  }, [siguiente, anterior, ir, general, alternarNegro, cambiar]);
 
   /* Los controles y el cursor se esconden cuando el ratón se queda quieto. */
   useEffect(() => {
@@ -412,6 +417,7 @@ function Ayuda({ cerrar }: { cerrar: () => void }) {
     ['G', 'Vista general'],
     ['P', 'Vista de presentador (otra ventana, van sincronizadas)'],
     ['F', 'Pantalla completa'],
+    ['+ / −', 'Subir / bajar el volumen de la música'],
     ['B  o  .', 'Pantalla en negro'],
     ['Inicio  Fin', 'Primera / última'],
   ];
