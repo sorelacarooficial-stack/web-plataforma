@@ -545,3 +545,34 @@
     background: linear-gradient(180deg, rgba(13, 11, 8, 0.92) 0%, rgba(13, 11, 8, 0.78) 60%, rgba(13, 11, 8, 0.6) 100%);
   }
 }
+
+/* ---------- pago por transferencia (al pie) */
+.transfer {
+  max-width: 760px;
+  margin: 40px auto 0;
+  padding: 22px 16px 4px;
+  border-top: 1px solid rgba(154, 115, 64, 0.2);
+}
+.transferCaja {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #17140f;
+  color: #f4efe7;
+}
+.transferCaja b {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #d9b47c;
+}
+.transferCaja ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 16px;
+  line-height: 1.6;
+  user-select: all;
+}

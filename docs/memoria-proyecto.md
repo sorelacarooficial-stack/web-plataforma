@@ -276,3 +276,9 @@ cada cambio importante** (una línea por decisión, con la fecha).
   «pendiente» si no). En Contactos: «Pagado ✓ / Sin pagar» y sección
   «Reserva» en la ficha; aviso «Reserva pagada / Reserva sin pagar». No hay
   «Condiciones de contratación»: las tiene que fijar Sorela.
+- 2026-11-06: transferencia directa. Las cuentas NO van en el código (repo
+  público, datos personales de Sorela): variables de Vercel
+  `TRANSFERENCIA_COLOMBIA` / `TRANSFERENCIA_VENEZUELA`, líneas separadas por
+  «|» (`lib/transferencia.ts`). Salen al pie de /reserva (caja oscura +
+  «Mandar el comprobante por WhatsApp») y en la diapositiva «Preguntas» (31),
+  banda «¿Prefieres transferencia directa?» (solo Colombia). Vacías = no salen.
