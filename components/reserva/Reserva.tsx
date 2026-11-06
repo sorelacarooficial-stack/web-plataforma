@@ -17,7 +17,7 @@ const FOTOS: Record<string, string> = {
   online: '/clase/despues.webp',
   membresia: '/trayectoria/equipo.webp',
 };
-const INCLUYE_COMPLETA = ['3 días con Sorela', 'Abdomen, piernas, glúteos, facial y brazos', 'Cena de gala y certificado', 'Academia online incluida', 'Material, modelos y comida'];
+const INCLUYE_COMPLETA = ['3 días con Sorela', 'Abdomen, piernas, glúteos, facial y brazos', 'Cena de gala y certificado', 'Academia online incluida', 'Material, modelos y estación de snacks'];
 
 /**
  * Una sola pantalla: eliges ciudad y cada formación lleva su botón de pago.
@@ -108,7 +108,9 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
             <span className={css.cinta}>La más elegida</span>
           </div>
           <div className={css.estrellaTexto}>
-            <p className={css.tipo}>Formación completa · premium</p>
+            <p className={css.tipo}>
+              Formación completa <span className={css.premium}>Premium</span>
+            </p>
             <h2>
               {completa.titulo.split(' · ')[1]} <span>3 días</span>
             </h2>

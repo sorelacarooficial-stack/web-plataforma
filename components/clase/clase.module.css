@@ -4518,3 +4518,16 @@ button.oscuraCaja {
   font-size: 26px;
   line-height: 1.35;
 }
+
+/* «Premium» en oro, en la diapositiva de la presencial. */
+.premium {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 5px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #17140f;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  box-shadow: 0 10px 24px -12px rgba(201, 154, 92, 0.9);
+}
