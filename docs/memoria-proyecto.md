@@ -260,3 +260,12 @@ cada cambio importante** (una línea por decisión, con la fecha).
   ElevenLabs sobre los mismos mp3): la línea que se canta se enciende en oro
   palabra a palabra y debajo va la siguiente; en la portada sustituye a las
   frases que rotan mientras suena «Poder en la oración».
+- 2026-11-06: `/reserva/gracias` con casilla obligatoria de privacidad + aviso
+  legal y primera capa (`CAPA_RESERVA_PAGADA`; nuevo tratamiento «Datos
+  después de pagar una reserva» en lib/privacidad.ts, REVISADA → 6 nov). Se
+  guarda la prueba (`consentimiento.version`). Las presenciales entran solas
+  en `caracas-2026-12` / `medellin-2026-12` como «pendiente» con la nota del
+  pago (`inscribirReservaPagada`): Sorela las ve en Cuentas → Dar acceso →
+  esas fechas y crea el enlace. Online y Membresía: en Contactos («Pagó la
+  reserva»); en Dar acceso, «otra persona» con su correo. No hay
+  «Condiciones de contratación»: las tiene que redactar/fijar Sorela.

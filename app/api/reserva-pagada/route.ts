@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { normalizarTelefono } from '@/lib/captacion';
+import { REVISADA } from '@/lib/privacidad';
 import { CIUDADES_PAGO, FORMACIONES_PAGO } from '@/lib/reserva';
+import { inscribirReservaPagada } from '@/lib/reserva-convocatoria';
+
+/** Las fechas de diciembre de cada ciudad (creadas por lib/puesta-a-punto.ts). */
+const CONVOCATORIA: Record<string, string> = { Caracas: 'caracas-2026-12', Medellín: 'medellin-2026-12' };
 
 /**
  * Los datos que deja cada alumna en /reserva/gracias después de pagar.
@@ -59,6 +64,7 @@ export async function POST(peticion: Request) {
   if (!CORREO.test(correo)) errores.correo = 'Revisa el correo.';
   if (!formacion) errores.formacion = 'Elige qué has pagado.';
   if (formacion?.presencial && !ciudad) errores.ciudad = 'Elige tu ciudad.';
+  if (c.consentimiento !== true) errores.consentimiento = 'Para seguir, marca la casilla.';
   if (Object.keys(errores).length) return NextResponse.json({ ok: false, motivo: 'datos', errores }, { status: 400 });
 
   const db = baseDeDatos();
@@ -71,6 +77,8 @@ export async function POST(peticion: Request) {
     ciudad: formacion!.presencial ? ciudad : null,
     pago,
     revisado: false,
+    // La prueba de lo que aceptó (art. 7.1 RGPD): qué versión de la política y en qué formulario.
+    consentimiento: { version: REVISADA, formulario: 'reserva-pagada', en: FieldValue.serverTimestamp() },
     creado: FieldValue.serverTimestamp(),
   };
   await db.collection('reservas_pagadas').add(datos);
@@ -83,10 +91,28 @@ export async function POST(peticion: Request) {
       nombre: previo.data()?.nombre || nombre,
       whatsapp,
       reservaPagada: { formacion: datos.formacion, ciudad: datos.ciudad, pago, cuando: FieldValue.serverTimestamp() },
+      ...(datos.ciudad ? { ciudad: datos.ciudad } : {}),
       actualizado: FieldValue.serverTimestamp(),
       ...(previo.exists ? {} : { origen: 'reserva-pagada', estado: 'Nuevo', veces: 1, creado: FieldValue.serverTimestamp() }),
     },
     { merge: true }
   );
+
+  // Presencial: entra sola en las fechas de su ciudad, para darle el acceso
+  // desde «Dar acceso». Si falla, sus datos ya están guardados: no se le dice nada.
+  const conv = datos.ciudad ? CONVOCATORIA[datos.ciudad] : null;
+  if (conv) {
+    try {
+      await inscribirReservaPagada(conv, {
+        nombre,
+        correo,
+        telefono: whatsapp!,
+        contacto: ref.id,
+        nota: `Pagó la reserva por Stripe: ${formacion!.nombre}${pago ? ` · ${pago}` : ''}. Compruébalo en Stripe.`,
+      });
+    } catch (e) {
+      console.error('[reserva-pagada] convocatoria', conv, e);
+    }
+  }
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import InfoPrivacidad from '@/components/InfoPrivacidad';
+import { CAPA_RESERVA_PAGADA } from '@/lib/privacidad';
 import { CIUDADES_PAGO, FORMACIONES_PAGO, GRUPO_COMUNIDAD, type FormacionPago } from '@/lib/reserva';
 import css from './reserva.module.css';
 
@@ -12,6 +15,7 @@ export default function GraciasFormulario({ formacion, pago, whatsapp }: { forma
   const [f, setF] = useState<string>(formacion ?? '');
   const [ciudad, setCiudad] = useState('');
   const [datos, setDatos] = useState({ nombre: '', whatsapp: '', correo: '', empresa: '' });
+  const [acepta, setAcepta] = useState(false);
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [estado, setEstado] = useState<'rellenando' | 'enviando' | 'hecho' | 'fallo'>('rellenando');
   const elegida = FORMACIONES_PAGO.find((x) => x.id === f);
@@ -26,7 +30,7 @@ export default function GraciasFormulario({ formacion, pago, whatsapp }: { forma
       const r = await fetch('/api/reserva-pagada', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...datos, formacion: f, ciudad, pago }),
+        body: JSON.stringify({ ...datos, formacion: f, ciudad, pago, consentimiento: acepta }),
       });
       const j = await r.json().catch(() => ({}));
       if (r.ok && j.ok) return setEstado('hecho');
@@ -129,7 +133,35 @@ export default function GraciasFormulario({ formacion, pago, whatsapp }: { forma
       {campo('correo', 'Correo', 'email', 'El mismo que pusiste al pagar')}
       <input type="text" name="empresa" tabIndex={-1} autoComplete="off" value={datos.empresa} onChange={(e) => setDatos((d) => ({ ...d, empresa: e.target.value }))} style={{ display: 'none' }} aria-hidden />
 
-      <button type="submit" className={css.boton} disabled={estado === 'enviando' || (elegida?.presencial && !ciudad) || !f} style={{ width: '100%', border: 0, fontSize: 18, padding: '18px 16px', marginTop: 22, cursor: 'pointer', opacity: estado === 'enviando' ? 0.6 : 1 }}>
+      <label style={estilo.acepta}>
+        <input
+          type="checkbox"
+          required
+          checked={acepta}
+          onChange={(e) => {
+            setAcepta(e.target.checked);
+            if (errores.consentimiento) setErrores((x) => ({ ...x, consentimiento: '' }));
+          }}
+          style={{ width: 20, height: 20, margin: '1px 0 0', flex: 'none', accentColor: '#8a6a32' }}
+        />
+        <span>
+          He leído y acepto la{' '}
+          <Link href="/legal/privacidad" target="_blank" style={estilo.enlace}>
+            política de privacidad
+          </Link>{' '}
+          y el{' '}
+          <Link href="/legal/aviso-legal" target="_blank" style={estilo.enlace}>
+            aviso legal
+          </Link>
+          , y que Sorela trate mis datos para gestionar mi reserva.
+        </span>
+      </label>
+      {errores.consentimiento && <span style={estilo.error}>{errores.consentimiento}</span>}
+      <div style={{ marginTop: 12 }}>
+        <InfoPrivacidad capa={CAPA_RESERVA_PAGADA} claro />
+      </div>
+
+      <button type="submit" className={css.boton} disabled={estado === 'enviando' || (elegida?.presencial && !ciudad) || !f || !acepta} style={{ width: '100%', border: 0, fontSize: 18, padding: '18px 16px', marginTop: 18, cursor: 'pointer', opacity: estado === 'enviando' || !acepta ? 0.6 : 1 }}>
         {estado === 'enviando' ? 'Guardando…' : 'Guardar y entrar en la Comunidad'}
       </button>
     </form>
@@ -143,5 +175,7 @@ const estilo: Record<string, React.CSSProperties> = {
   inputMal: { borderColor: '#b3261e' },
   error: { fontSize: 13, color: '#b3261e' },
   ciudad: { font: 'inherit', fontSize: 17, fontWeight: 600, padding: '16px 10px', borderRadius: 14, border: '1px solid rgba(154,115,64,0.35)', background: '#fffdf9', color: '#141210', cursor: 'pointer' },
+  acepta: { display: 'flex', alignItems: 'flex-start', gap: 10, minHeight: 44, marginTop: 22, fontSize: 14, lineHeight: 1.5, color: 'rgba(20,18,16,0.75)', cursor: 'pointer' },
+  enlace: { color: 'inherit', textDecoration: 'underline', textUnderlineOffset: 2 },
   ciudadOn: { background: '#17140f', color: '#f3d9ae', borderColor: '#17140f' },
 };

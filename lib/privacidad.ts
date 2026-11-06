@@ -35,7 +35,7 @@ export const CORREO_PRIVACIDAD = 'sorelacarooficial@gmail.com';
  * acuerdo de confidencialidad guarda esta fecha como la versión de la política
  * que se le enseñó a quien firma.
  */
-export const REVISADA = '20 de octubre de 2026';
+export const REVISADA = '6 de noviembre de 2026';
 
 export type Tratamiento = {
   /** Para qué formulario o parte de la web. */
@@ -89,6 +89,19 @@ export const TRATAMIENTOS: Tratamiento[] = [
       'El aviso que pides, y solo ese: en el buscador de terapeutas, decirte cuándo hay una terapeuta certificada en Técnica Divine cerca de ti; en la página de formaciones, decirte cuándo hay una convocatoria en tu zona y tener en cuenta tu ciudad al organizar las próximas. No recibes la información general, ni publicidad, ni las campañas de correo.',
     base: 'Tu consentimiento, que puedes retirar cuando quieras.',
     conservacion: 'Hasta que pidas que se borren o retires tu consentimiento.',
+  },
+  {
+    donde: 'Datos después de pagar una reserva',
+    datos:
+      'Nombre, WhatsApp, correo electrónico, qué formación has pagado, en qué ciudad la haces (si es presencial), el número de operación que da Stripe al pagar (no los datos de tu tarjeta: esos los trata Stripe y Sorela no los ve), la fecha y la versión de esta política que tenías delante.',
+    finalidad:
+      'Confirmar tu reserva con el pago, apuntarte en las fechas de tu ciudad, darte el acceso a la plataforma, escribirte por WhatsApp o por correo sobre tu formación y añadirte al grupo de alumnas.',
+    base: 'La ejecución del contrato que has hecho al pagar la reserva (art. 6.1.b RGPD).',
+    baseResumen: 'Contrato',
+    conservacion:
+      'Mientras dure tu formación y tu relación con la Técnica Divine y, después, el tiempo que obligan las leyes fiscales y de consumo para poder acreditar la compra.',
+    quienVe:
+      'Sorela y su equipo. Si entras en el grupo de WhatsApp de la Comunidad Divine, tu número y tu nombre los verán las demás participantes y WhatsApp (Meta).',
   },
   {
     donde: 'Cuenta en la plataforma',
@@ -458,6 +471,14 @@ export const CAPA_CUENTA: PrimeraCapa = {
 };
 
 
+
+/** /reserva/gracias: lo que deja quien acaba de pagar una reserva. */
+export const CAPA_RESERVA_PAGADA: PrimeraCapa = {
+  finalidad:
+    'Confirmar tu reserva con el pago, apuntarte en las fechas de tu ciudad, darte el acceso a la plataforma y escribirte sobre tu formación.',
+  base: 'El contrato que has hecho al pagar la reserva.',
+  destinatarios: `${DESTINATARIOS_GENERAL} El pago lo trata Stripe. Si entras en el grupo de WhatsApp, tu número y tu nombre los verán las demás participantes y WhatsApp (Meta).`,
+};
 
 export const CAPA_ACUERDO: PrimeraCapa = {
   finalidad:
