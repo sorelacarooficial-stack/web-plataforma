@@ -3901,6 +3901,44 @@ button.oscuraCaja {
   to { height: 18px; }
 }
 
+/* ---------------------------------------------------------- letra de las canciones */
+.letra {
+  position: absolute;
+  left: 50%;
+  bottom: 120px;
+  width: 1500px;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+.letraLinea {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: rgba(244, 239, 231, 0.42);
+  animation: letraEntra 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.letraLinea span {
+  transition: color 0.25s, text-shadow 0.4s;
+}
+.letraLinea .letraOn {
+  color: #f3d9ae;
+  text-shadow: 0 0 28px rgba(243, 217, 174, 0.35);
+}
+.letraSiguiente {
+  margin: 14px 0 0;
+  font-size: 26px;
+  font-weight: 400;
+  color: rgba(244, 239, 231, 0.3);
+  animation: letraEntra 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes letraEntra {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
 /* ---------------------------------------------------------- preguntas y reservas */
 .cuentaPreguntas {
   position: relative;

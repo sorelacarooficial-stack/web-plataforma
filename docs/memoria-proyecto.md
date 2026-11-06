@@ -253,3 +253,10 @@ cada cambio importante** (una línea por decisión, con la fecha).
   «Reserva pagada» a Sorela), y luego el botón al grupo único de la
   **Comunidad Divine** (`GRUPO_COMUNIDAD`; vacío = WhatsApp al equipo). No
   prueba el pago: cruzar el número `cs_…` en Stripe.
+- 2026-11-06: enlaces de Stripe puestos en `STRIPE` (lib/reserva.ts),
+  asignados por el orden en que se crearon (…00 Completa, 01 Intensiva, 02
+  Específica, 03 Online, 04 Membresía); no se pudieron abrir desde la sesión.
+  Letra karaoke de las dos canciones (`lib/letras.ts`, transcrita con
+  ElevenLabs sobre los mismos mp3): la línea que se canta se enciende en oro
+  palabra a palabra y debajo va la siguiente; en la portada sustituye a las
+  frases que rotan mientras suena «Poder en la oración».

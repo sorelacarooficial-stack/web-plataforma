@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { CIUDADES, EMPIEZA, ESPERA, MINUTOS_PREGUNTAS, PLAZAS } from '@/lib/clase';
+import type { LineaLetra } from '@/lib/letras';
 import { useClase } from './estado';
 import css from './clase.module.css';
 
@@ -320,6 +321,8 @@ export function Musica({
   bucle = true,
   volumen = 0.8,
   precarga = true,
+  letra,
+  alCantar,
 }: {
   pistas: string[];
   activa: boolean;
@@ -330,6 +333,10 @@ export function Musica({
   volumen?: number;
   /** false: no se baja hasta que haga falta (para no cargar la página al abrir). */
   precarga?: boolean;
+  /** Letra de la primera pista, que sale palabra a palabra mientras suena. */
+  letra?: LineaLetra[];
+  /** Avisa cuando empieza o deja de verse la letra (la portada esconde sus frases). */
+  alCantar?: (si: boolean) => void;
 }) {
   const ref = useRef<HTMLAudioElement>(null);
   const [sonando, setSonando] = useState(false);
@@ -404,9 +411,15 @@ export function Musica({
     },
     [clave],
   );
+  const conLetra = Boolean(letra?.length) && sonando && pista % pistas.length === 0;
+  useEffect(() => {
+    alCantar?.(conLetra);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conLetra]);
   if (!pistas.length) return null;
   return (
     <>
+      {conLetra && letra && <Letra lineas={letra} audio={ref} />}
       <audio
         ref={ref}
         src={pistas[pista % pistas.length]}
@@ -456,6 +469,43 @@ export function Rotador({ frases, activa, ms = 6000 }: { frases: string[]; activ
     <p className={css.rotador} aria-live="polite">
       <span key={i}>{frases[i]}</span>
     </p>
+  );
+}
+
+/**
+ * Karaoke: la línea que se canta, con cada palabra encendiéndose en oro al
+ * sonar, y debajo, más suave, la que viene. Lee el tiempo del propio audio,
+ * así que va sincronizada aunque la música se pause o se reinicie.
+ */
+function Letra({ lineas, audio }: { lineas: LineaLetra[]; audio: React.RefObject<HTMLAudioElement | null> }) {
+  const [t, setT] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setT(audio.current?.currentTime ?? 0), 80);
+    return () => clearInterval(id);
+  }, [audio]);
+  // La línea que toca: desde un poco antes de que entre hasta que entra la siguiente
+  // (o hasta 2 s después de acabar, si hay un hueco instrumental).
+  let k = -1;
+  for (let i = 0; i < lineas.length; i++) if (t >= lineas[i].t - 0.35) k = i;
+  const actual = k >= 0 && t <= lineas[k].fin + 2 ? lineas[k] : null;
+  const siguiente = lineas[k + 1] && lineas[k + 1].t - t < 6 ? lineas[k + 1] : null;
+  return (
+    <div className={css.letra} aria-hidden>
+      {actual && (
+        <p key={actual.t} className={css.letraLinea}>
+          {actual.p.map(([w, a], i) => (
+            <span key={i} className={t >= a ? css.letraOn : ''}>
+              {w}{' '}
+            </span>
+          ))}
+        </p>
+      )}
+      {siguiente && siguiente !== actual && (
+        <p key={`s${siguiente.t}`} className={css.letraSiguiente}>
+          {siguiente.p.map(([w]) => w).join(' ')}
+        </p>
+      )}
+    </div>
   );
 }
 
