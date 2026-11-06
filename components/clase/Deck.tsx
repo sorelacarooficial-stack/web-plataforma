@@ -70,6 +70,7 @@ function Diapositiva({
   muda = false,
   saliendo = false,
   cerca = false,
+  transferencia = [],
 }: {
   diapo: Diapo;
   indice: number;
@@ -83,6 +84,8 @@ function Diapositiva({
   saliendo?: boolean;
   /** A una o dos diapositivas: se pinta y se precargan sus medios. */
   cerca?: boolean;
+  /** Cuenta para pagar por transferencia (de Vercel), para «Preguntas». */
+  transferencia?: string[];
 }) {
   const activa = estado === 'actual';
   const on = (k = 0) => estatica || (activa && paso >= k);
@@ -105,7 +108,7 @@ function Diapositiva({
         </div>
       )}
       <div className={css.contenido}>
-        <Vista paso={paso} activa={activa} estatica={estatica} muda={muda} saliendo={saliendo} cerca={cerca} qr={qr} on={on} v={v} />
+        <Vista paso={paso} activa={activa} estatica={estatica} muda={muda} saliendo={saliendo} cerca={cerca} transferencia={transferencia} qr={qr} on={on} v={v} />
       </div>
       {!diapo.sinPie && (
         <footer className={css.pie}>
@@ -119,7 +122,7 @@ function Diapositiva({
   );
 }
 
-export default function Deck({ qr, vista }: { qr: string; vista: 'publico' | 'presentador' }) {
+export default function Deck({ qr, vista, transferencia = [] }: { qr: string; vista: 'publico' | 'presentador'; transferencia?: string[] }) {
   const [pos, setPos] = useState({ i: 0, paso: 0 });
   const [estado, setEstado] = useState<EstadoClase>(ESTADO_INICIAL);
   const [general, setGeneral] = useState(false);
@@ -304,7 +307,7 @@ export default function Deck({ qr, vista }: { qr: string; vista: 'publico' | 'pr
   if (vista === 'presentador') {
     return (
       <ContextoClase.Provider value={contexto}>
-        <Presentador pos={pos} qr={qr} ir={ir} siguiente={siguiente} anterior={anterior} negro={negro} alternarNegro={alternarNegro} />
+        <Presentador pos={pos} qr={qr} transferencia={transferencia} ir={ir} siguiente={siguiente} anterior={anterior} negro={negro} alternarNegro={alternarNegro} />
       </ContextoClase.Provider>
     );
   }
@@ -333,6 +336,7 @@ export default function Deck({ qr, vista }: { qr: string; vista: 'publico' | 'pr
               paso={i === mostrada.i ? mostrada.paso : i < mostrada.i ? dp.pasos : 0}
               saliendo={i === mostrada.i && pos.i !== mostrada.i}
               cerca={Math.abs(i - mostrada.i) <= 2 || Math.abs(i - pos.i) <= 1}
+              transferencia={transferencia}
               qr={qr}
             />
           ))}
@@ -439,6 +443,7 @@ function Ayuda({ cerrar }: { cerrar: () => void }) {
 function Presentador({
   pos,
   qr,
+  transferencia,
   ir,
   siguiente,
   anterior,
@@ -447,6 +452,7 @@ function Presentador({
 }: {
   pos: { i: number; paso: number };
   qr: string;
+  transferencia: string[];
   ir: (i: number, paso?: number) => void;
   siguiente: () => void;
   anterior: () => void;
@@ -469,7 +475,7 @@ function Presentador({
     <div className={css.presentador}>
       <div className={css.presActual}>
         <Escala>
-          <Diapositiva diapo={d} indice={pos.i} estado="actual" paso={pos.paso} qr={qr} muda />
+          <Diapositiva diapo={d} indice={pos.i} estado="actual" paso={pos.paso} qr={qr} transferencia={transferencia} muda />
         </Escala>
       </div>
       <aside className={css.presLado}>
@@ -494,7 +500,7 @@ function Presentador({
         <div className={css.presSiguiente}>
           {sig ? (
             <Escala>
-              <Diapositiva diapo={DIAPOSITIVAS[sig.i]} indice={sig.i} estado="actual" paso={sig.paso} qr={qr} estatica={sig.i !== pos.i} />
+              <Diapositiva diapo={DIAPOSITIVAS[sig.i]} indice={sig.i} estado="actual" paso={sig.paso} qr={qr} transferencia={transferencia} estatica={sig.i !== pos.i} />
             </Escala>
           ) : (
             <span>Fin</span>

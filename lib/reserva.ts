@@ -62,10 +62,8 @@ export const STRIPE: Record<string, string> = {
   membresia: 'https://buy.stripe.com/14A28r3Jj7kj3yF37CaZi04',
 };
 
-export const TRANSFERENCIA: { pais: string; datos: string }[] = [
-  { pais: 'Colombia', datos: '' },
-  { pais: 'Venezuela', datos: '' },
-];
+// Las cuentas de transferencia NO van aquí (el repositorio es público): se
+// leen de Vercel en lib/transferencia.ts.
 
 export const CRIPTO = { red: '', direccion: '' };
 

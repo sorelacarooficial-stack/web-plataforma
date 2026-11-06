@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { SEDES } from '@/lib/clase';
-import { CRIPTO, OPCIONES, PLAZAS_SEDE, RESERVA_HASTA, TRANSFERENCIA, enlaceStripe, type Opcion } from '@/lib/reserva';
+import { CRIPTO, OPCIONES, PLAZAS_SEDE, RESERVA_HASTA, enlaceStripe, type Opcion } from '@/lib/reserva';
+import type { Transferencia } from '@/lib/transferencia';
 import ReservaDatos from './ReservaDatos';
 import css from './reserva.module.css';
 
@@ -24,7 +25,7 @@ const INCLUYE_COMPLETA = ['3 días con Sorela', 'Abdomen, piernas, glúteos, fac
  * Con enlace de Stripe paga ahí mismo; sin él, abre WhatsApp con la elección
  * ya escrita.
  */
-export default function Reserva({ whatsapp }: { whatsapp: string }) {
+export default function Reserva({ whatsapp, transferencias }: { whatsapp: string; transferencias: Transferencia[] }) {
   const [ahora, setAhora] = useState<number | null>(null);
   const [sede, setSede] = useState(0);
   const [otros, setOtros] = useState(false);
@@ -48,7 +49,6 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
   const especifica = de(`${ciudad}-especifica`);
   const online = de('online');
   const membresia = de('membresia');
-  const transferencias = TRANSFERENCIA.filter((t) => t.datos);
   const hayOtros = transferencias.length > 0 || !!CRIPTO.direccion;
 
   return (
@@ -172,18 +172,31 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
       </section>
 
       {hayOtros && (
-        <section className={css.otros}>
-          <button type="button" className={css.otrosBoton} onClick={() => setOtros((x) => !x)}>
-            {otros ? 'Ocultar' : '¿Prefieres transferencia o cripto?'}
-          </button>
-          {otros && (
+        <section className={css.transfer}>
+          <p className={css.paso}>¿Prefieres pagar por transferencia?</p>
+          <p className={css.suave} style={{ margin: '4px 0 0' }}>
+            Haz el abono directo a esta cuenta y mándanos el comprobante por WhatsApp.
+          </p>
+          {transferencias.map((t) => (
+            <div key={t.pais} className={css.transferCaja}>
+              <b>Transferencia · {t.pais}</b>
+              <ul>
+                {t.lineas.map((l) => (
+                  <li key={l}>{l}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <a className={`${css.boton} ${css.botonWa}`} href={wa('Hola, vengo de la masterclass. Ya hice la transferencia: te mando el comprobante.')} target="_blank" rel="noopener noreferrer">
+            Mandar el comprobante por WhatsApp
+          </a>
+          {CRIPTO.direccion && (
+            <button type="button" className={css.otrosBoton} onClick={() => setOtros((x) => !x)}>
+              {otros ? 'Ocultar' : '¿Prefieres cripto?'}
+            </button>
+          )}
+          {otros && CRIPTO.direccion && (
             <div className={css.datos}>
-              {transferencias.map((t) => (
-                <div key={t.pais}>
-                  <b>Transferencia · {t.pais}</b>
-                  <pre>{t.datos}</pre>
-                </div>
-              ))}
               {CRIPTO.direccion && (
                 <div>
                   <b>Cripto · {CRIPTO.red}</b>

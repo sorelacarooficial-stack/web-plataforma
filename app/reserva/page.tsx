@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import Reserva from '@/components/reserva/Reserva';
 import { WHATSAPP_SORELA } from '@/lib/contenido';
+import { transferencias } from '@/lib/transferencia';
 
 /**
  * /reserva: la página que el equipo manda por WhatsApp a quien escribe
@@ -15,6 +16,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: '#f4efe7' };
 
+// Lee las cuentas de transferencia de Vercel en cada visita.
+export const dynamic = 'force-dynamic';
+
 export default function PaginaReserva() {
-  return <Reserva whatsapp={WHATSAPP_SORELA} />;
+  return <Reserva whatsapp={WHATSAPP_SORELA} transferencias={transferencias()} />;
 }
