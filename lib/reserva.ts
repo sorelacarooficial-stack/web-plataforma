@@ -131,4 +131,4 @@ export function urlGracias(f: FormacionPago) {
 }
 
 /** El grupo de WhatsApp de la Comunidad Divine: el mismo para todas. */
-export const GRUPO_COMUNIDAD = '';
+export const GRUPO_COMUNIDAD = 'https://chat.whatsapp.com/DC5UtdoCLJBKtU2gnSfZj9';

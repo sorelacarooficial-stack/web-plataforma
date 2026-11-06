@@ -294,3 +294,5 @@ cada cambio importante** (una línea por decisión, con la fecha).
   `caracas-2026-12` de Firestore la corrige el cron de la mañana (paso 1c de
   lib/puesta-a-punto.ts) si aún tiene 4-6. Las notas antiguas de arriba que
   dicen «Caracas 4-6 dic» son historia.
+- 2026-11-06: grupo de la Comunidad Divine (`GRUPO_COMUNIDAD`, lib/reserva.ts):
+  https://chat.whatsapp.com/DC5UtdoCLJBKtU2gnSfZj9 — botón de /reserva/gracias.
