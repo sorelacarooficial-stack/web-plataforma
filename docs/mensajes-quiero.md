@@ -29,13 +29,17 @@ quien manda un ladrillo.
 ## 1 · Primer mensaje (en cuanto escribe «QUIERO»)
 
 > ¡Hola, [nombre]! 💛 Soy [tu nombre], del equipo de Sorela Caro. Vi tu
-> «QUIERO» en la masterclass y te escribo para ayudarte con tu plaza.
+> «QUIERO» en la masterclass. Aquí tienes todo para reservar en un minuto
+> (el precio especial dura 24 horas):
 >
-> Para orientarte bien: ¿ya trabajas con las manos (masaje, estética,
-> fisio…) o estás empezando?
+> 👉 https://www.sorelacarodivine.com/reserva
+>
+> Eliges qué formación quieres, cómo pagar, y me mandas el comprobante desde
+> la misma página. Si prefieres que te lo explique yo, dime: ¿ya trabajas con
+> las manos (masaje, estética, fisio…) o estás empezando?
 
-*Por qué así:* una pregunta fácil abre la conversación. Si mandas el
-catálogo de entrada, la mitad no responde.
+*Cuando alguien manda el mensaje desde la página, ya viene escrito qué
+formación ha elegido y cómo paga: así se filtra solo.*
 
 ## 2 · Según lo que conteste
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { ESPERA, FORMACIONES, ONLINE, SEDES, VIDEOS } from '@/lib/clase';
+import { ESPERA, FORMACIONES, ONLINE, PLAZAS, SEDES, VIDEOS } from '@/lib/clase';
 import { AntesDespues, Cuenta, CuentaAtras, CuentaPreguntas, Cuerpo, Icono, Mapa, Movil, MusicaEspera, Polvo, Quedan, Rotador, Titulo, useGoteo, VideoModal } from './piezas';
 import { useClase } from './estado';
 import css from './clase.module.css';
@@ -131,31 +131,38 @@ function Bienvenida({ activa, estatica, v, on }: Props) {
 /* --------------------------------------------------------------- 3 */
 
 function TresCosas({ v, on }: Props) {
-  const partes: [string, string, string, string[]][] = [
-    ['libro', 'Parte 1', 'Lo que vas a aprender', ['Qué observar antes de tocar', 'Qué interpretar de lo que ves', 'Cómo decidir por dónde empezar']],
-    ['regalo', 'Parte 2', 'Una oportunidad para todas', ['Solo para quien esté en directo', 'Te la cuento al final', 'Y tu ficha «Lo que miro antes de tocar»']],
-  ];
+  const aprendes = ['Qué observar antes de tocar', 'Qué interpretar de lo que ves', 'Cómo decidir por dónde empezar'];
   return (
     <div className={css.columna}>
       <Eyebrow className={v(0)}>Así va a ser la clase</Eyebrow>
       <Titulo texto="Hoy tenemos *dos partes*" on={on(0)} className={css.h2} />
       <div className={css.dosPartes}>
-        {partes.map(([i, n, t, l], k) => (
-          <div key={n} className={`${k === 1 ? css.parteOscura : css.vidrio} ${css.parte} ${v(k, css.rArriba)}`} style={d(k === 0 ? 0.5 : 0.1)}>
-            <div className={css.cosaCabeza}>
-              <span className={k === 1 ? css.circuloIconoOscuro : css.circuloIcono}>
-                <Icono n={i} />
-              </span>
-              <span className={css.parteNum}>{n}</span>
-            </div>
-            <h3>{t}</h3>
-            <ul>
-              {l.map((x) => (
-                <li key={x}>{x}</li>
-              ))}
-            </ul>
+        <div className={`${css.vidrio} ${css.parte} ${v(0, css.rArriba)}`} style={d(0.5)}>
+          <div className={css.cosaCabeza}>
+            <span className={css.circuloIcono}>
+              <Icono n="libro" />
+            </span>
+            <span className={css.parteNum}>Parte 1</span>
           </div>
-        ))}
+          <h3>Lo que vas a aprender</h3>
+          <ul>
+            {aprendes.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
+        </div>
+        <div className={`${css.parteOscura} ${css.parteRegalo} ${v(1, css.rEscala)}`} style={d(0.1)}>
+          <span className={css.parteNum}>Parte 2</span>
+          <span className={css.regaloIcono}>
+            <Icono n="regalo" />
+          </span>
+          <h3>
+            Una oportunidad
+            <br />
+            para todas
+          </h3>
+          <span className={css.brillo} />
+        </div>
       </div>
     </div>
   );
@@ -305,57 +312,33 @@ function Historia({ v, on }: Props) {
 /* --------------------------------------------------------------- 9 */
 
 function Credenciales({ v, on }: Props) {
-  const [video, setVideo] = useState(false);
   return (
-    <div className={css.dosCol} style={{ gridTemplateColumns: '0.7fr 1fr' }}>
+    <div className={css.dosCol} style={{ gridTemplateColumns: '0.75fr 1fr', alignItems: 'center' }}>
       <div className={`${css.foto} ${css.fotoAlta} ${v(0, css.rCortina)}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/clase/credenciales.webp" alt="Sorela Caro en cabina" />
       </div>
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Por qué puedo enseñarte esto</Eyebrow>
-        <Titulo texto="Sorela Caro" on={on(0)} className={css.h2} />
+        <Titulo texto="Sorela *Caro*" on={on(0)} className={css.h2} />
         <p className={`${css.textoSuave} ${v(0)}`} style={d(0.3)}>
-          Creadora de la Técnica Divine
+          Creadora de la Técnica Divine®
         </p>
-        <div className={css.cuatro}>
-          <div className={`${css.vidrio} ${css.dato} ${v(0, css.rArriba)}`} style={d(0.5)}>
+        <div className={css.credDatos}>
+          <div className={`${css.vidrio} ${css.credDato} ${v(0, css.rArriba)}`} style={d(0.5)}>
             <b>
               <Cuenta a={30} on={on(0)} />
             </b>
             <span>años con las manos en el cuerpo de otras personas</span>
           </div>
-          <div className={`${css.vidrio} ${css.dato} ${v(0, css.rArriba)}`} style={d(0.65)}>
+          <div className={`${css.vidrio} ${css.credDato} ${v(0, css.rArriba)}`} style={d(0.7)}>
             <b>
               +<Cuenta a={25000} on={on(0)} ms={2200} />
             </b>
-            <span>casos en cabina</span>
+            <span>casos en cabina, junto a mis alumnas</span>
           </div>
-          <div className={`${css.vidrio} ${css.dato} ${css.datoRevista} ${v(0, css.rArriba)}`} style={d(0.8)}>
-            <b>
-              <Cuenta a={6} on={on(0)} />
-            </b>
-            <span>páginas en la revista Nueva Estética</span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/clase/revista.webp" alt="" />
-          </div>
-          <button
-            type="button"
-            className={`${css.vidrio} ${css.dato} ${v(0, css.rArriba)}`}
-            style={d(0.95)}
-            onClick={(e) => (e.stopPropagation(), VIDEOS.tele && setVideo(true))}
-          >
-            <b>TV</b>
-            <span>entrevista en televisión · clip de 30 segundos</span>
-            {VIDEOS.tele && (
-              <span className={css.playRedondo}>
-                <Icono n="play" />
-              </span>
-            )}
-          </button>
         </div>
       </div>
-      {video && <VideoModal src={VIDEOS.tele} onCerrar={() => setVideo(false)} />}
     </div>
   );
 }
@@ -398,7 +381,7 @@ function Observar({ v, on }: Props) {
   return (
     <div className={css.columna}>
       <Eyebrow className={v(0)}>Paso 1 · Observar</Eyebrow>
-      <Titulo texto="Antes de tocar, *mira y escucha*" on={on(0)} className={css.h2} />
+      <Titulo texto="Antes de tocar, *observa*" on={on(0)} className={css.h2} />
       <div className={css.dosCol} style={{ gridTemplateColumns: '0.7fr 1fr', marginTop: 40 }}>
         <div className={`${css.vidrio} ${css.cuerpoCaja} ${v(0, css.rEscala)}`} style={d(0.3)}>
           <Cuerpo
@@ -426,17 +409,6 @@ function Observar({ v, on }: Props) {
               ))}
             </div>
           </div>
-          <div className={`${css.vidrio} ${css.panel} ${v(2, css.rDer)}`}>
-            <h3>
-              <span className={css.circuloIcono}>
-                <Icono n="oreja" />
-              </span>
-              Escucha
-            </h3>
-            <p className={css.texto}>
-              La zona que te señala suele ser <b>el final del problema, no el principio.</b>
-            </p>
-          </div>
         </div>
       </div>
     </div>
@@ -446,6 +418,7 @@ function Observar({ v, on }: Props) {
 /* -------------------------------------------------------------- 12 */
 
 function NoTocar({ v, on }: Props) {
+  const no = ['Antecedentes de cáncer', 'Enfermedades terminales', 'Problemas cardíacos', 'Infecciones'];
   return (
     <div className={css.columna}>
       <Eyebrow className={v(0)}>Paso 1 · Observar</Eyebrow>
@@ -457,25 +430,21 @@ function NoTocar({ v, on }: Props) {
             Primero, el visto bueno de su médico
           </h3>
           <ul>
-            {['Antecedentes de cáncer', 'Problemas cardíacos'].map((t, k) => (
+            {no.map((t, k) => (
               <li key={t} className={v(0)} style={d(0.9 + k * 0.2)}>
                 {t}
               </li>
             ))}
           </ul>
         </div>
-        <div className={`${css.oscuraCaja} ${css.aviso} ${v(1, css.rArriba)}`}>
-          <h3>
-            <span className={css.luzAmbar} />
-            Con más suavidad
-          </h3>
-          <ul>
-            {['Mayores de 60 años', 'Lipedema', 'Linfedema'].map((t, k) => (
-              <li key={t} className={v(1)} style={d(0.4 + k * 0.2)}>
-                {t}
-              </li>
-            ))}
-          </ul>
+        <div className={`${css.parteOscura} ${css.doctor} ${v(1, css.rEscala)}`}>
+          <span className={css.parteNum}>Con nosotros</span>
+          <span className={css.regaloIcono}>
+            <Icono n="gente" />
+          </span>
+          <h3>Doctor Achile</h3>
+          <p>Le damos la palabra para hablar de los límites médicos.</p>
+          <span className={css.brillo} />
         </div>
       </div>
     </div>
@@ -671,15 +640,9 @@ function Casos({ v, on }: Props) {
           ))}
         </div>
       </div>
-      <div className={css.dosIguales} style={{ marginTop: 40 }}>
-        <div className={v(0, css.rArriba)} style={d(0.4)}>
-          <AntesDespues antes="/clase/abdomen-antes.webp" despues="/clase/abdomen-despues.webp" on={on(1)} alto={620} />
-          <p className={css.pieFoto}>Abdomen · arrastra la línea</p>
-        </div>
-        <div className={v(0, css.rArriba)} style={d(0.55)}>
-          <AntesDespues antes="/clase/rostro-antes.webp" despues="/clase/rostro-despues.webp" on={on(2)} alto={620} />
-          <p className={css.pieFoto}>Rostro · sin aparatos</p>
-        </div>
+      <div className={v(0, css.rArriba)} style={{ ...d(0.4), marginTop: 36, width: 1240, alignSelf: 'center' }}>
+        <AntesDespues antes="/clase/rostro-antes.webp" despues="/clase/rostro-despues.webp" on={on(1)} alto={640} />
+        <p className={css.pieFoto}>Rostro · solo con las manos, sin aparatos</p>
       </div>
     </div>
   );
@@ -871,17 +834,15 @@ function Metodologia({ activa, estatica, v, on }: Props) {
 function Presencial({ v, on }: Props) {
   const [elegida, setElegida] = useState(0);
   const [sede, setSede] = useState(0);
-  const incluye = [
-    ['libro', 'Academia online incluida'],
-    ['gente', 'Material, modelos y comida'],
-    ['chispa', 'Cena de gala y certificado'],
-  ];
   return (
     <div className={css.columna}>
       <div className={css.filaEntre} style={{ alignItems: 'flex-end' }}>
         <div>
-          <Eyebrow className={v(0)}>Technique Divine® · Formación presencial</Eyebrow>
+          <Eyebrow className={v(0)}>Technique Divine® · Formación presencial premium</Eyebrow>
           <Titulo texto={'Tres días, *dos ciudades*'} on={on(0)} className={css.h2} />
+          <span className={`${css.plazasAviso} ${v(0)}`} style={d(0.7)}>
+            <span className={css.puntoRojo} /> Solo <b>{PLAZAS} plazas</b> por ciudad
+          </span>
         </div>
         <div className={css.fila}>
           {SEDES.map((s, k) => (
@@ -901,7 +862,7 @@ function Presencial({ v, on }: Props) {
           ))}
         </div>
       </div>
-      <div className={css.formaciones} style={{ marginTop: 50 }}>
+      <div className={css.formaciones} style={{ marginTop: 44 }}>
         {FORMACIONES.map((f, k) => (
           <button
             type="button"
@@ -913,21 +874,25 @@ function Presencial({ v, on }: Props) {
             <span className={css.formacionTipo}>Formación</span>
             <b className={css.formacionNombre}>{f.nombre}</b>
             <span className={css.formacionDias}>{f.dias}</span>
+            <s className={`${css.formacionAntes} ${on(k + 1) ? css.tachadoOn : ''}`}>{f.antes.toLocaleString('es-ES')} USD</s>
             <span className={css.formacionPrecio}>
               <Cuenta a={f.precio} on={on(k + 1)} ms={1400} /> <small>USD</small>
             </span>
             <span className={css.formacionReserva}>
               Reserva <b>{f.reserva} USD</b>
             </span>
+            {k === 0 && (
+              <span className={css.formacionExtra}>
+                <Icono n="chispa" className={css.chipIcono} /> Cena de gala, certificado y academia online
+              </span>
+            )}
           </button>
         ))}
       </div>
       <div className={`${css.zonas} ${v(3)}`} style={d(0.6)}>
-        {incluye.map(([i, t]) => (
-          <span key={t} className={css.zona}>
-            <Icono n={i} className={css.chipIcono} /> {t}
-          </span>
-        ))}
+        <span className={css.zona}>
+          <Icono n="gente" className={css.chipIcono} /> Material, modelos y comida incluidos: solo tienes que llegar
+        </span>
       </div>
     </div>
   );
@@ -945,10 +910,10 @@ function Online({ v, on }: Props) {
   return (
     <div className={css.dosCol} style={{ gridTemplateColumns: '1fr 0.85fr', alignItems: 'center' }}>
       <div className={css.columna}>
-        <Eyebrow className={v(0)}>Formación profesional · 100 % online</Eyebrow>
+        <Eyebrow className={v(0)}>Para profesionales con experiencia · 100 % online</Eyebrow>
         <Titulo texto={'Divine® Online:\n*inversión en tu formación*'} on={on(0)} className={css.h2} />
-        <p className={`${css.textoSuave} ${v(0)}`} style={d(0.6)}>
-          Especialízate en la Técnica Divine® desde cualquier lugar del mundo.
+        <p className={`${css.textoSuave} ${v(0)}`} style={{ ...d(0.6), maxWidth: '44ch' }}>
+          Si ya tienes muy buenos resultados y te gustaría conocer la Técnica Divine®, <b>certificarte y estudiar a tu ritmo</b>, tenemos Divine® Online.
         </p>
         <div className={css.incluye}>
           {incluye.map(([i, t], k) => (
@@ -991,65 +956,9 @@ function Online({ v, on }: Props) {
   );
 }
 
-function Despues({ v, on }: Props) {
-  return (
-    <div className={css.dosCol} style={{ gridTemplateColumns: '1.1fr 0.9fr' }}>
-      <div className={css.columna}>
-        <Eyebrow className={v(0)}>Después de formarte</Eyebrow>
-        <Titulo texto={'¿Y qué pasa *después\nde formarte?*'} on={on(0)} className={css.h2} />
-        <p className={`${css.texto} ${css.textoAncho} ${v(0)}`} style={d(0.7)}>
-          Aprender una técnica es importante, pero <b>mantenerse actualizada, acompañada y en constante evolución</b> es lo que marca la diferencia.
-        </p>
-        <p className={`${css.texto} ${css.textoAncho} ${v(1)}`}>
-          Sabemos que muchas profesionales terminan una formación y después se encuentran <b>solas, con dudas, inseguridades</b> y sin saber cómo seguir avanzando.
-        </p>
-        <p className={`${css.textoGrandeOro} ${v(2)}`}>Por eso hemos creado algo más.</p>
-      </div>
-      <div className={`${css.foto} ${css.fotoAlta} ${v(0, css.rCortina)}`} style={d(0.3)}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/clase/despues.webp" alt="Sorela con una alumna" />
-      </div>
-    </div>
-  );
-}
 
 /* -------------------------------------------------------------- 21 */
 
-function Comunidad({ v, on }: Props) {
-  const tres = [
-    ['libro', 'Sigues aprendiendo'],
-    ['gente', 'Sigues acompañada'],
-    ['chispa', 'Sigues evolucionando'],
-  ];
-  return (
-    <div className={css.dosCol} style={{ gridTemplateColumns: '0.85fr 1fr' }}>
-      <div className={css.columna}>
-        <Eyebrow className={v(0)}>Bienvenida a la</Eyebrow>
-        <Titulo texto={'Comunidad\n*Divine®*'} on={on(0)} className={css.h1crema} paso={0.2} />
-        <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.7), maxWidth: '30ch' }}>
-          Divine® no quiere que simplemente aprendas. <b>Queremos que sigas creciendo, evolucionando y formando parte de una comunidad profesional.</b>
-        </p>
-        <span className={`${css.barraOscura} ${v(1)}`} style={{ ...d(0.5), alignSelf: 'flex-start', marginTop: 22 }}>
-          <Icono n="calendario" className={css.chipIcono} /> Solo para terapeutas homologadas por Sorela
-        </span>
-        <div className={css.fila} style={{ gap: 22, marginTop: 24 }}>
-          {tres.map(([i, t], k) => (
-            <span key={t} className={`${css.itemIcono} ${css.itemIconoPeque} ${v(1, css.rIzq)}`} style={d(k * 0.2)}>
-              <span className={css.circuloIcono}>
-                <Icono n={i} />
-              </span>
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-      <div className={`${css.foto} ${css.fotoAncha} ${v(0, css.rEscala)}`} style={{ ...d(0.5), height: 640 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/clase/grupo.webp" alt="Sorela con su equipo de alumnas" />
-      </div>
-    </div>
-  );
-}
 
 /* -------------------------------------------------------------- 22 */
 
@@ -1063,8 +972,15 @@ function Dentro({ v, on }: Props) {
   ];
   return (
     <div className={css.columna}>
-      <Eyebrow className={v(0)}>Qué hay dentro</Eyebrow>
-      <Titulo texto="Todo lo que necesitas, *en un solo sitio*" on={on(0)} className={css.h2} />
+      <div className={css.filaEntre} style={{ alignItems: 'flex-end' }}>
+        <div>
+          <Eyebrow className={v(0)}>Membresía Divine®</Eyebrow>
+          <Titulo texto="Todo lo que necesitas, *en un solo sitio*" on={on(0)} className={css.h2} />
+        </div>
+        <span className={`${css.chipOscuro} ${css.chipHomologadas} ${v(0)}`} style={d(0.6)}>
+          <Icono n="escudo" className={css.chipIcono} /> Solo para terapeutas homologadas Divine®
+        </span>
+      </div>
       <div className={css.cinco}>
         {items.map(([i, t, s], j) => (
           <div key={t} className={`${css.vidrio} ${css.item} ${v(0, css.rArriba)}`} style={d(0.5 + j * 0.14)}>
@@ -1099,7 +1015,10 @@ function Puente({ v, on }: Props) {
     <div className={css.centro}>
       <Eyebrow className={v(0)}>Parte 2 · Tu oportunidad</Eyebrow>
       <Titulo texto={'Esto es solo *el principio*'} on={on(0)} className={`${css.h1crema} ${css.puenteTitulo}`} paso={0.12} />
-      <p className={`${css.sub} ${v(0)}`} style={{ ...d(0.9), maxWidth: '40ch' }}>
+      <p className={`${css.puenteFrase} ${v(0)}`} style={d(0.8)}>
+        Toda persona que se somete a este tratamiento <b>obtiene resultados.</b>
+      </p>
+      <p className={`${css.sub} ${v(0)}`} style={{ ...d(1.2), maxWidth: '40ch' }}>
         Hoy has visto qué observar, qué interpretar y cómo decidir. Ahora te cuento cómo <b>aprenderlo entero, conmigo</b>.
       </p>
       <div className={css.fila} style={{ justifyContent: 'center', marginTop: 40 }}>
@@ -1116,28 +1035,25 @@ function Puente({ v, on }: Props) {
 /* -------------------------------------------------------------- datos */
 
 function Datos({ v, on }: Props) {
-  const datos: [number, number, string, string][] = [
-    [86, 0, 'de las empresas espera que la IA transforme su negocio antes de 2030.', 'Foro Económico Mundial · Future of Jobs Report 2025'],
-    [41.9, 1, 'de las empresas que nacen sigue abierta a los cinco años. Más de la mitad cierra antes.', 'INE · empresas nacidas en España en 2018'],
-    [55, 0, 'de las clientas de salones y spas ya se siente cómoda hablando con una recepcionista de IA.', 'Zenoti (software de salones) · encuesta a 1.000 clientas, 2025'],
-  ];
   return (
     <div className={css.columna}>
-      <Eyebrow className={v(0)}>Tres datos</Eyebrow>
-      <Titulo texto={'Formarte es el primer paso.\n*Hacer crecer tu negocio, el siguiente.*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
-      <div className={css.tres}>
-        {datos.map(([n, dec, t, f], k) => (
-          <div key={f} className={`${css.oscuraCaja} ${css.datoCaja} ${v(0, css.rArriba)}`} style={d(0.6 + k * 0.25)}>
-            <b>
-              <Cuenta a={n} decimales={dec} on={on(0)} ms={1800} /> %
-            </b>
-            <span>{t}</span>
-            <small>{f}</small>
-          </div>
-        ))}
+      <Eyebrow className={v(0)}>Una pregunta</Eyebrow>
+      <Titulo
+        texto={'¿Cuántas creéis que la tecnología\nha venido a *cambiar nuestra forma de trabajar?*'}
+        on={on(0)}
+        className={`${css.h2} ${css.h2medio}`}
+      />
+      <div className={`${css.oscuraCaja} ${css.datoUnico} ${v(1, css.rArriba)}`}>
+        <b>
+          <Cuenta a={86} on={on(1)} ms={1800} /> %
+        </b>
+        <span>
+          de las empresas cree que la IA <strong>transformará su negocio antes de 2030.</strong>
+          <small>Foro Económico Mundial · Future of Jobs Report 2025</small>
+        </span>
       </div>
-      <p className={`${css.textoGrandeOro} ${v(1)}`} style={{ marginTop: 40 }}>
-        Por eso Divine® no solo te forma: te acompaña y hace crecer tu negocio.
+      <p className={`${css.textoGrandeOro} ${v(2)}`} style={{ marginTop: 40 }}>
+        Las que no se suban ahora, se quedarán atrás.
       </p>
     </div>
   );
@@ -1150,46 +1066,44 @@ function Datos({ v, on }: Props) {
  * USD/mes para 1 usuaria, sin impuestos (consultados en nov. 2026). Se cambian
  * aquí si suben.
  */
-const HERRAMIENTAS: [string, string, number][] = [
-  // Referencia (nov. 2026): recepcionista IA ~99, CRM ~20, agenda online ~30, programador
-  // de redes ~25, diseño ~18, edición de vídeo ~20, email ~20. En pantalla no se nombran marcas.
-  ['chat', 'Un agente que responda y agende', 99],
-  ['ficha', 'Un programa para tus clientas y fichas', 20],
-  ['calendario', 'Una agenda con reservas online', 30],
-  ['avion', 'Una herramienta para programar redes', 25],
-  ['chispa', 'Otra para diseñar publicaciones', 18],
-  ['play', 'Otra para editar vídeos y reels', 20],
-  ['campana', 'Otra para enviar emails', 20],
+const HERRAMIENTAS: [string, string, string, number][] = [
+  // Referencia (nov. 2026): CRM ~20; agenda online ~30 + email ~20; edición ~20 + diseño ~18 +
+  // programar redes ~25; recepcionista IA ~99. En pantalla no se nombran marcas.
+  ['ficha', 'CRM', 'Para manejar los datos de tus clientas', 20],
+  ['calendario', 'Automatizaciones', 'Emails, reservas, respuestas y agenda', 50],
+  ['play', 'Vídeos y redes', 'Programas de edición o un editor, cada mes', 63],
+  ['chat', 'Agente IA', 'Que responda y venda por ti', 99],
 ];
-const TOTAL_MES = HERRAMIENTAS.reduce((s, h) => s + h[2], 0);
+const TOTAL_MES = HERRAMIENTAS.reduce((s, h) => s + h[3], 0);
 
 function Costes({ v, on }: Props) {
   return (
     <div className={css.dosCol} style={{ gridTemplateColumns: '0.9fr 1.1fr', gap: 80, alignItems: 'center' }}>
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Hagamos cuentas</Eyebrow>
-        <Titulo texto={'Hoy, para crecer,\n*pagas cada herramienta por separado*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
+        <Titulo texto={'Hoy todo negocio digital\n*funciona por suscripción*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
         <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.6), maxWidth: '34ch' }}>
-          Siete suscripciones, siete contraseñas y ninguna habla con las demás. Y el tiempo de conectarlas lo pones tú.
+          Las empresas que se digitalizan pagan cada mes por varias herramientas distintas.
         </p>
         <div className={`${css.costesDivine} ${v(1, css.rArriba)}`}>
           <span className={css.circuloIconoOscuro}>
             <Icono n="chispa" />
           </span>
           <div>
-            <b>Con Divine®, todo en un solo agente</b>
-            <span>Adaptado a tu negocio e incluido en la Membresía Divine®.</span>
+            <b>En Divine®, todo en el mismo espacio</b>
+            <span>Aprendes, tienes tu comunidad y tu negocio crece.</span>
           </div>
         </div>
       </div>
       <div className={`${css.vidrio} ${css.costes} ${v(0, css.rArriba)}`} style={d(0.3)}>
-        {HERRAMIENTAS.map(([i, t, p], k) => (
+        {HERRAMIENTAS.map(([i, t, x, p], k) => (
           <div key={t} className={`${css.costeFila} ${v(0)}`} style={d(0.7 + k * 0.28)}>
             <span className={css.circuloIcono}>
               <Icono n={i} />
             </span>
             <div>
               <b>{t}</b>
+              <span>{x}</span>
             </div>
             <em>{p} $</em>
           </div>
@@ -1238,10 +1152,10 @@ function Agente({ activa, estatica, v, on }: Props) {
   return (
     <div className={css.dosCol} style={{ gridTemplateColumns: '1fr 1fr', gap: 70 }}>
       <div className={css.columna}>
-        <Eyebrow className={v(0)}>Por eso hemos construido</Eyebrow>
+        <Eyebrow className={v(0)}>Lo estamos construyendo</Eyebrow>
         <Titulo texto={'El Agente IA Divine,\n*adaptado a tu negocio*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
         <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.6), maxWidth: '36ch' }}>
-          Se instala en tu web con un complemento y se conecta con tu agenda, tu WhatsApp, tus redes y tus registros. No solo responde: <b>ejecuta, publica y vende por ti.</b>
+          Con cada terapeuta que entra lo entrenamos con <b>sus servicios y sus necesidades</b>. Se conecta con tu agenda, tu WhatsApp y tus redes, y no solo responde: <b>ejecuta, publica y vende por ti.</b>
         </p>
         <div className={css.fila} style={{ marginTop: 26, gap: 10 }}>
           {['Responde', 'Ejecuta', 'Publica', 'Crea vídeos', 'Vende'].map((t, i) => (
@@ -1333,7 +1247,7 @@ function Agente({ activa, estatica, v, on }: Props) {
 function Escanea({ activa, estatica, v, on }: Props) {
   const pasos = [
     ['chat', 'Escribe «QUIERO»', 'En el chat o en el grupo de WhatsApp'],
-    ['gente', 'Te escribimos por privado', 'Desde el número oficial de Sorela'],
+    ['gente', 'Nuestro equipo te escribe', 'Por privado, con toda la información'],
     ['tarjeta', 'Reservas tu plaza', 'Tarjeta · transferencia local · cripto'],
   ];
   return (
@@ -1356,7 +1270,7 @@ function Escanea({ activa, estatica, v, on }: Props) {
       <p className={`${css.seguridad} ${v(3)}`} style={{ ...d(0.4), maxWidth: 1100 }}>
         <Icono n="escudo" className={css.chipIcono} />
         <span>
-          <b>Por tu seguridad:</b> solo te escribiremos desde el número oficial de Sorela. Nadie de Divine te pedirá un pago por otro canal.
+          <b>Por tu seguridad:</b> solo te escribiremos desde el número oficial de Divine. Nadie te pedirá un pago por otro canal.
         </span>
       </p>
     </div>
@@ -1490,36 +1404,34 @@ const VideoMembresia = diapoVideo(VIDEOS.membresia, VIDEOS.membresiaPortada);
 export const DIAPOSITIVAS: Diapo[] = [
   { id: 'portada', titulo: 'Antes de tocar', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Portada, notas: 'Sala de espera: comparte 10 min antes. Pulsa «Poner música» (suena solo por esta ventana; en Meet, pestaña con audio). Las frases van rotando solas. La música se apaga sola en fundido cuando la cuenta llega a cero. Pulsar la cuenta la reinicia (10 min si aún falta más de una hora).' },
   { id: 'bienvenida', titulo: '¿Desde dónde nos ves?', tema: 'crema', pasos: 0, Vista: Bienvenida, notas: 'Lee ciudades del chat y pulsa cada una en el mapa para encenderla. Pregunta cuántos años llevan con las manos.' },
-  { id: 'tres-cosas', titulo: 'Hoy tenemos dos partes', tema: 'crema', pasos: 1, Vista: TresCosas, notas: 'Cuenta cómo va la clase. Parte 1: lo que van a aprender (observar, interpretar, decidir). Clic: parte 2, una oportunidad para todas, solo para quien esté en directo, al final. Que se queden hasta el final.' },
+  { id: 'tres-cosas', titulo: 'Hoy tenemos dos partes', tema: 'crema', pasos: 1, Vista: TresCosas, notas: 'Cómo va la clase. Parte 1: lo que van a aprender. Clic: parte 2, una oportunidad para todas (solo en directo, al final). Que se queden hasta el final.' },
   { id: 'problema', titulo: 'El problema', tema: 'oscuro', pasos: 1, Vista: Bucle, notas: 'Los cuatro pasos entran solos. Clic: «No necesitas trabajar más. Necesitas aprender a observar, interpretar y actuar con criterio».' },
   { id: 'obstaculos', titulo: 'Los tres obstáculos', tema: 'oscuro', pasos: 3, Vista: Trampas, notas: 'Un obstáculo por clic. Pulsa cada tarjeta para sumar los votos del chat (1, 2 o 3). Al final, la frase: sin conocimiento, sin criterio y sin personalización, no hay evolución profesional.' },
   { id: 'cita', titulo: 'Qué observar, interpretar, decidir', tema: 'crema', pasos: 0, Vista: Cita, notas: 'Pausa. Deja que la frase entre entera antes de hablar.' },
-  { id: 'video-sorela', titulo: 'Vídeo · Sorela Caro', tema: 'oscuro', pasos: 0, sinPie: true, Vista: VideoSorela, notas: 'Vídeo de 1 min: empieza solo. En Google Meet comparte la pestaña con «Compartir también el audio de la pestaña». Al terminar, «Ahora, en directo»: entras tú.' },
+  { id: 'video-sorela', titulo: 'Vídeo · Sorela Caro', tema: 'oscuro', pasos: 0, sinPie: true, Vista: VideoSorela, notas: 'Vídeo de 50 s: empieza solo (pregunta de la presentadora y respuesta de Sorela). En Google Meet comparte la pestaña con «Compartir también el audio de la pestaña». Al terminar, «Ahora, en directo»: entras tú.' },
   { id: 'historia', titulo: 'Empecé peinando', tema: 'crema', pasos: 1, Vista: Historia, notas: 'Tu historia: de peluquería a las emociones. Siguiente: «Quería entender lo que la persona sentía».' },
-  { id: 'credenciales', titulo: 'Por qué puedo enseñarte esto', tema: 'crema', pasos: 0, Vista: Credenciales, notas: '30 años, +25.000 casos, Nueva Estética, televisión. La tarjeta TV abre el clip si está cargado (lib/clase.ts).' },
+  { id: 'credenciales', titulo: 'Por qué puedo enseñarte esto', tema: 'crema', pasos: 0, Vista: Credenciales, notas: '30 años y más de 25.000 casos en cabina, junto a tus alumnas.' },
   { id: 'metodo', titulo: 'El método', tema: 'crema', pasos: 3, Vista: Metodo, notas: 'Un paso por clic: Observar, Interpretar, Decidir.' },
-  { id: 'observar', titulo: 'Paso 1 · Mira y escucha', tema: 'crema', fase: 1, pasos: 2, Vista: Observar, notas: 'Los puntos del cuerpo se pueden pulsar. Clic: «Mira» (piel, postura, respiración, dónde retiene). Clic: «Escucha».' },
-  { id: 'no-tocar', titulo: 'Cuándo no tocar', tema: 'oscuro', fase: 1, pasos: 1, Vista: NoTocar, notas: 'Contraindicaciones: primero médico. Clic: con más suavidad.' },
+  { id: 'observar', titulo: 'Paso 1 · Mira y escucha', tema: 'crema', fase: 1, pasos: 1, Vista: Observar, notas: 'Los puntos del cuerpo se pueden pulsar. Clic: «Mira» (piel, postura, respiración, dónde retiene). Las manos son un escáner: localizan nudos, bloqueos y atascos.' },
+  { id: 'no-tocar', titulo: 'Cuándo no tocar', tema: 'oscuro', fase: 1, pasos: 1, Vista: NoTocar, notas: 'Contraindicaciones: primero su médico (cáncer, enfermedades terminales, problemas cardíacos, infecciones). Clic: damos la palabra al Doctor Achile.' },
   { id: 'interpretar', titulo: 'Paso 2 · El cuerpo expresa', tema: 'oscuro', fase: 2, pasos: 3, Vista: Interpretar, notas: 'El cuerpo expresa lo que esconde el alma. Clic: clienta A, el punto sube al pecho (estrés). Clic: B, baja a las piernas. Clic: «Misma queja. Distinto origen».' },
   { id: 'noventa', titulo: 'El drenaje de hace 90 años', tema: 'crema', fase: 2, pasos: 2, Vista: Noventa, notas: 'La linfa se mueve hacia los ganglios. Clic: Hoy. Clic: Divine.' },
   { id: 'secuencia', titulo: 'Paso 3 · La secuencia', tema: 'crema', fase: 3, pasos: 3, Vista: Secuencia, notas: 'Un paso por clic: estimulación ganglionar (~10 min; nunca «abrir» ganglios), escucha el abdomen, maniobras lentas.' },
   { id: 'cuerpo-limpio', titulo: 'Sobre un cuerpo limpio', tema: 'oscuro', fase: 3, pasos: 3, Vista: CuerpoLimpio, notas: 'La base primero. Cada clic apila una capa: aparatología, cosmética, tratamientos.' },
-  { id: 'casos', titulo: 'Una sesión. 55 minutos', tema: 'oscuro', pasos: 2, Vista: Casos, notas: 'Clic: el abdomen se descubre. Clic: el rostro. Puedes arrastrar la línea mientras explicas.' },
+  { id: 'casos', titulo: 'Una sesión. 55 minutos', tema: 'oscuro', pasos: 1, Vista: Casos, notas: 'Clic: el rostro se descubre. Puedes arrastrar la línea mientras explicas qué observaste, qué interpretaste y qué decidiste.' },
   { id: 'caso-2', titulo: 'Otro abdomen, el mismo criterio', tema: 'oscuro', pasos: 1, Vista: Caso2, notas: 'Clic: la línea barre y se ve el después. Arrástrala despacio mientras cuentas qué observaste, qué interpretaste y qué decidiste.' },
   { id: 'lunes', titulo: 'Tu lunes', tema: 'crema', pasos: 3, Vista: Lunes, notas: 'Una pregunta por clic. Puedes marcar las casillas.' },
   { id: 'prueba', titulo: 'Lo que cambia en tu cabina', tema: 'oscuro', pasos: 3, Vista: Prueba, notas: 'Un escalón por clic. El antes/después se descubre en el primero.' },
-  { id: 'puente', titulo: 'Esto es solo el principio', tema: 'oscuro', pasos: 1, Vista: Puente, notas: 'Puente a la oferta (unos 30 s): «Hasta aquí, la parte 1. Ahora, la parte 2: cómo aprenderlo entero conmigo». Clic: lo que viene (cómo te formas, dónde y cuándo, cuánto cuesta). Siguiente: Metodología Divine.' },
+  { id: 'puente', titulo: 'Esto es solo el principio', tema: 'oscuro', pasos: 1, Vista: Puente, notas: 'Frase clave: «Toda persona que se somete a este tratamiento obtiene resultados». «Hasta aquí, la parte 1. Ahora, la parte 2.» Clic: lo que viene (cómo te formas, dónde y cuándo, cuánto cuesta).' },
   { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Caracas 4, 5 y 6 de diciembre y Medellín 10, 11 y 12. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
-  { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Pulsa Caracas o Medellín arriba. Una formación por clic: completa (3 días, incluye la academia online), intensiva (2 días, dos zonas), específica (1 día, una zona). Último clic: material, modelos y comida incluidos (solo llegar), cena de gala con entrega de certificados.' },
-  { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Lo que incluye entra solo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
+  { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Solo 10 plazas por ciudad. Pulsa Caracas o Medellín arriba. Una formación por clic, con el precio de antes tachado: completa (3 días, incluye cena de gala, certificado y academia online), intensiva (2 días), específica (1 día). Último clic: material, modelos y comida incluidos.' },
+  { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Para quien ya tiene buenos resultados y quiere conocer la técnica, certificarse y estudiar a su ritmo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
   ...(VIDEOS.membresia ? [{ id: 'video-membresia', titulo: 'Vídeo · Membresía Divine', tema: 'oscuro' as const, pasos: 0, sinPie: true, Vista: VideoMembresia, notas: 'Vídeo cinematográfico de la membresía. Empieza solo; al terminar, sigue con «¿Y qué pasa después de formarte?».' }] : []),
-  { id: 'datos', titulo: 'Tres datos', tema: 'oscuro', pasos: 1, Vista: Datos, notas: 'Los dos datos juntos: el 86 % de las empresas espera que la IA transforme su negocio antes de 2030 (WEF, Future of Jobs 2025) solo el 41,9 % de las empresas que nacen en España sigue abierta a los cinco años (INE, nacidas en 2018) y el 55 % de las clientas ya se siente cómoda hablando con una recepcionista de IA (Zenoti, empresa de software de salones, 1.000 clientas en EE. UU., 2025). Clic: por eso Divine te forma, te acompaña y hace crecer tu negocio.' },
-  { id: 'costes', titulo: 'Hagamos cuentas', tema: 'crema', pasos: 1, Vista: Costes, notas: `Hoy una terapeuta que quiere crecer paga cada herramienta por separado: agente IA, CRM, agenda, redes, diseño, vídeo y email. Unos ${TOTAL_MES} USD al mes, ${(TOTAL_MES * 12).toLocaleString('es-ES')} al año, y ninguna habla con las demás. Precios de lista consultados en nov. 2026 (1 usuaria, sin impuestos). Clic: con Divine, todo en un solo agente adaptado a tu negocio, incluido en la Membresía. Siguiente: el agente.` },
-  { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Por eso hemos construido el Agente IA Divine, adaptado a tu negocio: responde, ejecuta, publica en redes, gestiona registros y vende. La conversación de la derecha es una demostración: entra sola (↻ la repite). Se conecta con agenda, WhatsApp, Instagram, fichas, servicios y cobros. Las acciones del día entran solas (↻ las repite). Clic: más citas, menos huecos, clientas que vuelven.' },
-  { id: 'despues', titulo: '¿Y qué pasa después de formarte?', tema: 'crema', pasos: 2, Vista: Despues, notas: 'Clic: muchas terminan solas, con dudas. Clic: «Por eso hemos creado algo más».' },
-  { id: 'comunidad', titulo: 'Bienvenida a la Comunidad Divine®', tema: 'crema', pasos: 1, Vista: Comunidad, notas: 'La comunidad NO se vende hoy: es solo para terapeutas homologadas (formación completa de 3 días); a ellas se les vende en una sesión privada. Clic: el requisito.' },
-  { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'Clases en directo mensuales y grabadas, canal en la plataforma (sin Telegram), fichas, vídeos paso a paso y dossier, Localiza tu terapeuta (mapa mundial, solo homologadas) y el agente IA.' },
-  { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Arrancan solos 10 min de preguntas y reservas (pulsar la cuenta los reinicia; se ve igual en las dos ventanas). Contesta preguntas del chat mientras la persona de apoyo escribe a quien pone QUIERO. Pide que escriban QUIERO en el chat o en el grupo. Suma con +1 / +5. La persona de apoyo las saca del chat y les escribe por privado con el mensaje preparado. Último clic: aviso de seguridad (cuenta hackeada en el pasado).' },
+  { id: 'datos', titulo: 'Tres datos', tema: 'oscuro', pasos: 2, Vista: Datos, notas: 'Pregunta al chat: ¿cuántas creéis que la tecnología ha cambiado nuestra forma de trabajar? Clic: el 86 % de las empresas cree que la IA transformará su negocio antes de 2030 (WEF). Clic: las que no se suban ahora, se quedarán atrás.' },
+  { id: 'costes', titulo: 'Hagamos cuentas', tema: 'crema', pasos: 1, Vista: Costes, notas: 'Hoy todo es por suscripción: CRM para los datos, automatizaciones (emails, reservas, respuestas, agenda), vídeos (programas o un editor cada mes) y un agente IA. Unos 232 USD al mes. Clic: en Divine, todo en el mismo espacio: aprendes, tienes tu comunidad y tu negocio crece.' },
+  { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Lo estamos construyendo: con cada terapeuta que entra lo entrenamos con sus servicios y necesidades, y ejecuta, responde, publica y vende. La conversación de la derecha es una demostración (↻ la repite). Clic: incluido en la Membresía, más citas, más ventas.' },
+  { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'La Membresía Divine®: solo para terapeutas homologadas (formación completa de 3 días). Clases en directo, canal en la plataforma, fichas y vídeos, Localiza tu terapeuta y el agente IA.' },
+  { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Arrancan solos 10 min de preguntas y reservas. Pide que escriban QUIERO en el chat o en el grupo: nuestro equipo les escribe por privado. Último clic: aviso de seguridad.' },
   { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. Recuerda: para reservar, QUIERO.' },
   { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. QUIERO para reservar. Caracas 4-6 dic, Medellín 10-12 dic.' },
 ];

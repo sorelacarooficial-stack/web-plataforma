@@ -206,3 +206,16 @@ cada cambio importante** (una línea por decisión, con la fecha).
   de herramientas) → Agente (demo de conversación que entra sola, ↻ repite) →
   ¿Y después? → Comunidad → Qué hay dentro → «QUIERO» (centrada, sin
   contador de personas).
+- 2026-11-06 (reunión del 5 nov): parte 2 solo «Una oportunidad para todas»;
+  credenciales sin revista ni tele (30 años, +25.000 casos); «Observa» sin
+  «Escucha»; «Cuándo no tocar» con cáncer, terminales, cardíacos e
+  infecciones y tarjeta «Con nosotros · Doctor Achile» (le damos la palabra);
+  casos reales solo el facial; puente con «Toda persona que se somete a este
+  tratamiento obtiene resultados»; presencial con precio tachado (`antes` en
+  `FORMACIONES`: 3000/2000/1000, confirmar), «Solo 10 plazas por ciudad»
+  (`PLAZAS`) y cena de gala solo en la completa; Online para quien ya tiene
+  buenos resultados; datos = pregunta + 86 % antes de 2030; costes en 4
+  grupos (CRM, automatizaciones, vídeos, agente) por suscripción; agente «lo
+  estamos construyendo» y se entrena con cada terapeuta; fuera «¿Y después?»
+  y «Comunidad»; «Qué hay dentro» = Membresía, solo homologadas; en «QUIERO»
+  escribe «nuestro equipo». Quedan 32 diapositivas.
