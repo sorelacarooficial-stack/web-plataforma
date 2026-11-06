@@ -74,8 +74,12 @@ export const VIDEOS = {
  * en bucle y se apaga sola, en fundido, cuando la cuenta llega a cero.
  * Vacío = no sale el botón.
  */
+/** Canción del «Gracias»: «Proceso con Dios» (Cristian Robles), cortada para que suba desde abajo y llegue entera a la voz. */
+export const DESPEDIDA = '/clase/musica/despedida.mp3';
+
 export const ESPERA = {
-  musica: ['/clase/musica/espera.mp3'] as string[],
+  /** Primero «Poder en la oración» (Natali Apacible); luego el lounge, en bucle. */
+  musica: ['/clase/musica/inicio.mp3', '/clase/musica/espera.mp3'] as string[],
   /** Frases que van rotando bajo la cuenta atrás. */
   frases: [
     'Escribe en el chat desde dónde nos ves',

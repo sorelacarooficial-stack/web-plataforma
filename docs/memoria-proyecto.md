@@ -227,3 +227,20 @@ cada cambio importante** (una línea por decisión, con la fecha).
   solo para terapeutas y mejora con el uso. `/reserva`: una pantalla, cada
   opción con su botón de pago (Stripe en `STRIPE`, lib/reserva.ts; sin enlace
   abre WhatsApp con la elección escrita). Vale hasta el 7 nov 19:00 España.
+- 2026-11-06: canciones. Portada: «Poder en la oración» (Natali Apacible,
+  `public/clase/musica/inicio.mp3`) y luego el lounge, en bucle; suena sola
+  (si el navegador no deja, con la primera tecla). Gracias: «Proceso con Dios»
+  (Cristian Robles, `despedida.mp3`, cortada desde 23 s con subida de 8 s que
+  llega justo a la voz). Al cambiar de diapositiva con música, la música baja
+  (2,2 s, `SALIDA_MUSICA_MS`) y luego cambia. Secuencia: estimulación
+  ganglionar → ritmo y velocidad → arrastre hasta la estación más cercana.
+  Diapositiva 18: «Una sola sesión, cuerpo perfectamente drenado, solo con las
+  manos». Puente con su propio reloj de 10 min (`puenteDesde`); los relojes de
+  más de una hora (ensayo) empiezan de cero solos. Fuera el chip de la fecha
+  en la portada y los avisos «Por tu seguridad…» (escribe Gerson desde su
+  número).
+- 2026-11-06: presentación más ligera. Sin desenfoque de pantalla completa al
+  cambiar; las piezas de la diapositiva que se va no se re-desenfocan; las
+  diapositivas lejanas con `content-visibility: hidden` (`.lejos`); vídeos y
+  canción final solo se bajan al acercarse (al abrir: 42 MB → 5 MB); el mapa
+  en un solo trazo (5.500 → 1.600 nodos).

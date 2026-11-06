@@ -21,6 +21,8 @@ export type EstadoClase = {
   quiero: number;
   /** Cuándo empezó la cuenta de 10 min de preguntas y reservas (ms), o null. */
   preguntasDesde: number | null;
+  /** Cuándo empezaron los 10 min de preguntas del puente (antes de la parte 2). */
+  puenteDesde: number | null;
 };
 
 export const ESTADO_INICIAL: EstadoClase = {
@@ -33,6 +35,7 @@ export const ESTADO_INICIAL: EstadoClase = {
   tec: [0, 0],
   quiero: 0,
   preguntasDesde: null,
+  puenteDesde: null,
 };
 
 export type Cambiar = (f: (e: EstadoClase) => EstadoClase) => void;

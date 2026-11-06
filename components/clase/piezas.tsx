@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { CIUDADES, EMPIEZA, ESPERA, MINUTOS_PREGUNTAS, PLAZAS } from '@/lib/clase';
 import { useClase } from './estado';
 import css from './clase.module.css';
@@ -296,63 +296,128 @@ export function CuentaAtras({ activa, alTerminar }: { activa: boolean; alTermina
 }
 
 /**
- * Música de la sala de espera. El navegador no deja que suene sola, así que
- * se enciende con el botón (cuenta como gesto). Va en bucle por la lista de
- * `ESPERA.musica`, entra y sale en fundido, y se apaga sola cuando `apagar`
- * pasa a true (la cuenta atrás llega a cero) o al dejar la diapositiva. En la
- * ventana del presentador no suena.
+ * Pistas que suenan ahora mismo. El Deck lo mira para, al cambiar de
+ * diapositiva, esperar a que la música baje antes de pasar.
  */
-export function MusicaEspera({ activa, apagar, muda }: { activa: boolean; apagar: boolean; muda: boolean }) {
+export const musicaSonando = new Set<string>();
+/** Lo que tarda la música en bajar antes de cambiar de diapositiva. */
+export const SALIDA_MUSICA_MS = 2200;
+
+/**
+ * Música de una diapositiva (la portada y el «Gracias»). Intenta sonar sola
+ * al llegar; si el navegador no deja (al abrir la página sin tocar nada),
+ * arranca con la primera tecla o el primer clic. Entra en fundido, recorre
+ * `pistas` (en bucle si `bucle`) y baja poco a poco cuando `saliendo`
+ * (se va a cambiar de diapositiva), cuando `apagar` (la cuenta atrás llega a
+ * cero) o al dejar la diapositiva. En la ventana del presentador no suena.
+ */
+export function Musica({
+  pistas,
+  activa,
+  saliendo = false,
+  apagar = false,
+  muda,
+  bucle = true,
+  volumen = 0.8,
+  precarga = true,
+}: {
+  pistas: string[];
+  activa: boolean;
+  saliendo?: boolean;
+  apagar?: boolean;
+  muda: boolean;
+  bucle?: boolean;
+  volumen?: number;
+  /** false: no se baja hasta que haga falta (para no cargar la página al abrir). */
+  precarga?: boolean;
+}) {
   const ref = useRef<HTMLAudioElement>(null);
   const [sonando, setSonando] = useState(false);
+  const [bloqueada, setBloqueada] = useState(false);
   const [pista, setPista] = useState(0);
   const fundido = useRef<ReturnType<typeof setInterval> | null>(null);
+  const clave = pistas[0];
+  const quiere = activa && !saliendo && !apagar;
   const lleva = (a: HTMLAudioElement, hasta: number, ms: number, luego?: () => void) => {
     if (fundido.current) clearInterval(fundido.current);
     const desde = a.volume;
     const t0 = Date.now();
     fundido.current = setInterval(() => {
       const k = Math.min(1, (Date.now() - t0) / ms);
-      a.volume = desde + (hasta - desde) * k;
+      a.volume = Math.max(0, Math.min(1, desde + (hasta - desde) * k));
       if (k >= 1) {
         if (fundido.current) clearInterval(fundido.current);
         luego?.();
       }
-    }, 50);
+    }, 40);
   };
-  const parar = (ms = 4000) => {
+  const parar = (ms: number) => {
     const a = ref.current;
     if (!a) return;
-    lleva(a, 0, ms, () => a.pause());
     setSonando(false);
+    lleva(a, 0, ms, () => {
+      a.pause();
+      musicaSonando.delete(clave);
+    });
   };
   const tocar = () => {
     const a = ref.current;
     if (!a) return;
-    a.volume = 0;
+    if (a.paused) a.volume = 0;
     a.play()
       .then(() => {
         setSonando(true);
-        lleva(a, 0.7, 3000);
+        setBloqueada(false);
+        musicaSonando.add(clave);
+        lleva(a, volumen, 2500);
       })
-      .catch(() => setSonando(false));
+      .catch(() => {
+        setSonando(false);
+        setBloqueada(true);
+      });
   };
+  /* Al llegar suena sola; al irse (o al pedir apagar) baja poco a poco. */
   useEffect(() => {
-    if (sonando && (apagar || !activa)) parar(apagar ? 6000 : 1500);
+    if (quiere) {
+      tocar();
+      return;
+    }
+    if (ref.current && !ref.current.paused) parar(saliendo ? SALIDA_MUSICA_MS - 200 : apagar ? 6000 : 1500);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apagar, activa]);
-  useEffect(() => () => {
-    if (fundido.current) clearInterval(fundido.current);
-  }, []);
-  if (!ESPERA.musica.length) return null;
+  }, [quiere]);
+  /* Si el navegador la bloqueó, arranca con el primer gesto. */
+  useEffect(() => {
+    if (!bloqueada || !quiere) return;
+    const f = () => tocar();
+    window.addEventListener('pointerdown', f, { once: true });
+    window.addEventListener('keydown', f, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', f);
+      window.removeEventListener('keydown', f);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bloqueada, quiere]);
+  useEffect(
+    () => () => {
+      if (fundido.current) clearInterval(fundido.current);
+      musicaSonando.delete(clave);
+    },
+    [clave],
+  );
+  if (!pistas.length) return null;
   return (
     <>
       <audio
         ref={ref}
-        src={ESPERA.musica[pista % ESPERA.musica.length]}
-        preload="auto"
+        src={pistas[pista % pistas.length]}
+        preload={precarga ? 'auto' : 'none'}
         muted={muda}
         onEnded={() => {
+          if (!bucle && pista + 1 >= pistas.length) {
+            setSonando(false);
+            musicaSonando.delete(clave);
+            return;
+          }
           setPista((p) => p + 1);
           setTimeout(() => ref.current?.play().catch(() => {}), 50);
         }}
@@ -365,7 +430,7 @@ export function MusicaEspera({ activa, apagar, muda }: { activa: boolean; apagar
           if (sonando) parar(1500);
           else tocar();
         }}
-        title={sonando ? 'Apagar la música' : 'Poner música de espera'}
+        title={sonando ? 'Apagar la música' : 'Poner la música'}
       >
         <span className={css.musicaBarras} aria-hidden>
           <i />
@@ -373,7 +438,7 @@ export function MusicaEspera({ activa, apagar, muda }: { activa: boolean; apagar
           <i />
           <i />
         </span>
-        {sonando ? 'Música · sonando' : 'Poner música'}
+        {sonando ? 'Música · sonando' : bloqueada ? 'Pulsa para la música' : 'Poner música'}
       </button>
     </>
   );
@@ -399,18 +464,32 @@ export function Rotador({ frases, activa, ms = 6000 }: { frases: string[]; activ
  * se llega a la diapositiva y se ve igual en las dos ventanas (va en el estado
  * compartido). Pulsarla la reinicia.
  */
-export function CuentaPreguntas({ activa, estatica }: { activa: boolean; estatica: boolean }) {
+export function CuentaPreguntas({
+  activa,
+  estatica,
+  campo = 'preguntasDesde',
+  textos = ['Preguntas y reservas en directo', 'Último minuto · preguntas y reservas', 'Últimas reservas'],
+}: {
+  activa: boolean;
+  estatica: boolean;
+  /** Qué reloj usa: cada diapositiva lleva el suyo. */
+  campo?: 'preguntasDesde' | 'puenteDesde';
+  /** Lo que pone mientras corre, en el último minuto y al terminar. */
+  textos?: [string, string, string];
+}) {
   const { estado, cambiar } = useClase();
   const [ahora, setAhora] = useState(0);
   const total = MINUTOS_PREGUNTAS * 60e3;
+  const desde = estado[campo];
   useEffect(() => {
     if (!activa || estatica) return;
-    if (estado.preguntasDesde == null) cambiar((e) => (e.preguntasDesde == null ? { ...e, preguntasDesde: Date.now() } : e));
+    // Si viene de otro día o del ensayo (hace más de una hora), empieza de cero.
+    const viejo = (x: number | null) => x == null || Date.now() - x > 60 * 60e3;
+    if (viejo(desde)) cambiar((e) => (viejo(e[campo]) ? { ...e, [campo]: Date.now() } : e));
     setAhora(Date.now());
     const id = setInterval(() => setAhora(Date.now()), 250);
     return () => clearInterval(id);
-  }, [activa, estatica, estado.preguntasDesde, cambiar]);
-  const desde = estado.preguntasDesde;
+  }, [activa, estatica, desde, campo, cambiar]);
   const resta = desde && ahora ? Math.max(0, desde + total - ahora) : total;
   const m = Math.floor(resta / 60e3);
   const s = Math.floor((resta % 60e3) / 1000);
@@ -419,12 +498,12 @@ export function CuentaPreguntas({ activa, estatica }: { activa: boolean; estatic
     <button
       type="button"
       className={`${css.cuentaPreguntas} ${fin ? css.cuentaPreguntasFin : ''} ${resta < 60e3 && !fin ? css.cuentaPreguntasUltimo : ''}`}
-      onClick={(e) => (e.stopPropagation(), cambiar((x) => ({ ...x, preguntasDesde: Date.now() })))}
+      onClick={(e) => (e.stopPropagation(), cambiar((x) => ({ ...x, [campo]: Date.now() })))}
       title="Reiniciar los 10 minutos"
     >
       <span className={css.cuentaPreguntasEtiqueta}>
         <Icono n="chat" className={css.chipIcono} />
-        {fin ? 'Últimas reservas' : resta < 60e3 ? 'Último minuto · preguntas y reservas' : 'Preguntas y reservas en directo'}
+        {fin ? textos[2] : resta < 60e3 ? textos[1] : textos[0]}
       </span>
       <b>
         {dos(m)}:{dos(s)}
@@ -521,17 +600,21 @@ export function Mapa({ activa, estatica }: { activa: boolean; estatica: boolean 
   const origen = { x: lx(-3.7), y: ly(40.42) };
   const esp = { x: px(-4), y: py(40) };
 
-  const tierraMain: ReactNode[] = [];
-  const tierraLupa: ReactNode[] = [];
-  if (puntos) {
+  // Los ~4.000 puntos van en un solo trazo (no 4.000 círculos): se ve igual y
+  // se pinta muchísimo más rápido. Se calcula una vez.
+  const [tierraMain, tierraLupa] = useMemo(() => {
+    if (!puntos) return ['', ''];
+    const punto = (x: number, y: number, r: number) => `M${(x - r).toFixed(1)} ${y.toFixed(1)}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`;
+    let main = '';
+    let lupa = '';
     for (let i = 0; i < puntos.length; i += 2) {
       const lng = puntos[i];
       const lat = puntos[i + 1];
-      tierraMain.push(<circle key={i} cx={px(lng)} cy={py(lat)} r={2.3} />);
-      if (lng >= LUPA.lng0 && lng <= LUPA.lng1 && lat >= LUPA.lat0 && lat <= LUPA.lat1)
-        tierraLupa.push(<circle key={i} cx={lx(lng)} cy={ly(lat)} r={6} />);
+      main += punto(px(lng), py(lat), 2.3);
+      if (lng >= LUPA.lng0 && lng <= LUPA.lng1 && lat >= LUPA.lat0 && lat <= LUPA.lat1) lupa += punto(lx(lng), ly(lat), 6);
     }
-  }
+    return [main, lupa];
+  }, [puntos]);
 
   const latam = CIUDADES.filter((c) => c.zona === 'latam');
   const es = CIUDADES.filter((c) => c.zona === 'es');
@@ -539,12 +622,12 @@ export function Mapa({ activa, estatica }: { activa: boolean; estatica: boolean 
   return (
     <div className={css.mapa}>
       <svg viewBox={`0 0 ${MW} ${MH}`} className={css.mapaSvg}>
-        <g className={css.tierra}>{tierraMain}</g>
+        <path d={tierraMain} className={css.tierra} />
         {/* el recuadro de España */}
         <path d={`M${esp.x} ${esp.y} L${LUPA.x + LUPA.w * 0.55} ${LUPA.y}`} className={css.lupaLinea} />
         <circle cx={esp.x} cy={esp.y} r={16} className={css.lupaFoco} />
         <rect x={LUPA.x - 14} y={LUPA.y - 14} width={LUPA.w + 28} height={LUPA.h + 28} rx={22} className={css.lupaCaja} />
-        <g className={css.tierraLupa}>{tierraLupa}</g>
+        <path d={tierraLupa} className={css.tierraLupa} />
         <text x={LUPA.x} y={LUPA.y - 26} className={css.mapaZona}>
           España
         </text>

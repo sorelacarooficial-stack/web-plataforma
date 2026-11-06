@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { DIAPOSITIVAS, type Diapo } from './diapositivas';
 import { ContextoClase, ESTADO_INICIAL, type Cambiar, type EstadoClase } from './estado';
+import { musicaSonando, SALIDA_MUSICA_MS } from './piezas';
 import css from './clase.module.css';
 
 /**
@@ -67,6 +68,8 @@ function Diapositiva({
   qr,
   estatica = false,
   muda = false,
+  saliendo = false,
+  cerca = false,
 }: {
   diapo: Diapo;
   indice: number;
@@ -76,6 +79,10 @@ function Diapositiva({
   estatica?: boolean;
   /** Vista del presentador: los vídeos se ven pero no suenan. */
   muda?: boolean;
+  /** Se va a cambiar: la música baja antes de pasar. */
+  saliendo?: boolean;
+  /** A una o dos diapositivas: se pinta y se precargan sus medios. */
+  cerca?: boolean;
 }) {
   const activa = estado === 'actual';
   const on = (k = 0) => estatica || (activa && paso >= k);
@@ -83,7 +90,7 @@ function Diapositiva({
   const { Vista } = diapo;
   return (
     <section
-      className={`${css.diapo} ${diapo.tema === 'oscuro' ? css.oscuro : css.crema} ${estatica ? css.diapoEstatica : css[estado]}`}
+      className={`${css.diapo} ${diapo.tema === 'oscuro' ? css.oscuro : css.crema} ${estatica ? css.diapoEstatica : css[estado]} ${!estatica && !cerca && estado !== 'actual' ? css.lejos : ''}`}
       aria-hidden={!activa && !estatica}
       aria-label={`${indice + 1} de ${TOTAL}: ${diapo.titulo}`}
     >
@@ -98,7 +105,7 @@ function Diapositiva({
         </div>
       )}
       <div className={css.contenido}>
-        <Vista paso={paso} activa={activa} estatica={estatica} muda={muda} qr={qr} on={on} v={v} />
+        <Vista paso={paso} activa={activa} estatica={estatica} muda={muda} saliendo={saliendo} cerca={cerca} qr={qr} on={on} v={v} />
       </div>
       {!diapo.sinPie && (
         <footer className={css.pie}>
@@ -159,6 +166,21 @@ export default function Deck({ qr, vista }: { qr: string; vista: 'publico' | 'pr
     const h = `#${pos.i + 1}`;
     if (window.location.hash !== h) history.replaceState(null, '', h);
   }, [pos.i, listo]);
+
+  /*
+   * La diapositiva que se ve. Va igual que `pos`, salvo al dejar una con
+   * música sonando: entonces la música baja poco a poco y luego cambia.
+   */
+  const [mostrada, setMostrada] = useState(pos);
+  useEffect(() => {
+    if (pos.i === mostrada.i || !musicaSonando.size) {
+      setMostrada(pos);
+      return;
+    }
+    const t = setTimeout(() => setMostrada(pos), SALIDA_MUSICA_MS);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pos]);
 
   const ir = useCallback((i: number, paso = 0) => {
     const j = Math.max(0, Math.min(TOTAL - 1, i));
@@ -307,8 +329,10 @@ export default function Deck({ qr, vista }: { qr: string; vista: 'publico' | 'pr
               key={dp.id}
               diapo={dp}
               indice={i}
-              estado={i === pos.i ? 'actual' : i < pos.i ? 'antes' : 'despues'}
-              paso={i === pos.i ? pos.paso : i < pos.i ? dp.pasos : 0}
+              estado={i === mostrada.i ? 'actual' : i < mostrada.i ? 'antes' : 'despues'}
+              paso={i === mostrada.i ? mostrada.paso : i < mostrada.i ? dp.pasos : 0}
+              saliendo={i === mostrada.i && pos.i !== mostrada.i}
+              cerca={Math.abs(i - mostrada.i) <= 2 || Math.abs(i - pos.i) <= 1}
               qr={qr}
             />
           ))}
