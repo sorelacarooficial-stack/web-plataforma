@@ -134,34 +134,37 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
         </div>
       </section>
 
-      <section className={css.bloque}>
-        <p className={css.paso}>¿Prefieres estudiar desde casa?</p>
-        <article className={css.horizontal}>
-          <div className={css.horizontalFoto} style={{ backgroundImage: `url(${FOTOS.online})` }} />
-          <div className={css.tarjetaTexto}>
-            <p className={css.tipo}>100 % online · a tu ritmo</p>
-            <h3>Divine® Online</h3>
-            <p className={css.suave}>Para profesionales con experiencia. Con certificado Divine®.</p>
-            <Precio o={online} />
+      <section className={`${css.banda} ${css.bandaOnline}`} style={{ backgroundImage: `url(${FOTOS.online})` }}>
+        <div className={css.bandaVeloClaro} />
+        <div className={css.bandaDentro}>
+          <p className={css.paso}>¿Prefieres estudiar desde casa?</p>
+          <h3 className={css.bandaTitulo}>
+            Divine® <strong>Online</strong>
+          </h3>
+          <p className={css.bandaTexto}>100 % online y a tu ritmo, para profesionales con experiencia. Con certificado Divine®.</p>
+          <Precio o={online} grande />
+          <div className={css.bandaBoton}>
             <Boton o={online} wa={wa} />
           </div>
-        </article>
+        </div>
       </section>
 
-      <section className={css.bloque}>
-        <article className={css.membresia} style={{ backgroundImage: `url(${FOTOS.membresia})` }}>
-          <div className={css.membresiaVelo} />
-          <div className={css.membresiaTexto}>
-            <p className={css.tipo}>Solo terapeutas homologadas</p>
-            <h3>Membresía Divine®</h3>
-            <p className={css.suave}>Clases en directo, comunidad, fichas y tu agente IA adaptado a tu negocio.</p>
-            <p className={css.precioMem}>
-              <strong>{usd(membresia.precio ?? 0)}</strong> este primer mes
-              {membresia.despues ? <span> · después {usd(membresia.despues)}</span> : null}
-            </p>
+      <section className={`${css.banda} ${css.bandaMem}`} style={{ backgroundImage: `url(${FOTOS.membresia})` }}>
+        <div className={css.bandaVeloOscuro} />
+        <div className={css.bandaDentro}>
+          <p className={css.pasoOro}>Solo terapeutas homologadas</p>
+          <h3 className={css.bandaTitulo}>
+            Membresía <strong>Divine®</strong>
+          </h3>
+          <p className={css.bandaTexto}>Clases en directo, comunidad, fichas y tu agente IA adaptado a tu negocio.</p>
+          <p className={css.precioMem}>
+            <strong>{usd(membresia.precio ?? 0)}</strong> este primer mes
+            {membresia.despues ? <span> · después {usd(membresia.despues)}</span> : null}
+          </p>
+          <div className={css.bandaBoton}>
             <Boton o={membresia} wa={wa} />
           </div>
-        </article>
+        </div>
       </section>
 
       {hayOtros && (
