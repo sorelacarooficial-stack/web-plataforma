@@ -219,3 +219,11 @@ cada cambio importante** (una línea por decisión, con la fecha).
   estamos construyendo» y se entrena con cada terapeuta; fuera «¿Y después?»
   y «Comunidad»; «Qué hay dentro» = Membresía, solo homologadas; en «QUIERO»
   escribe «nuestro equipo». Quedan 32 diapositivas.
+- 2026-11-06: fuera «La ficha completa te llega hoy» (no se manda ficha) y la
+  frase de la ficha en «Gracias». Divine® Online empieza con «Si ya tienes muy
+  buenos resultados…» y sin la Comunidad. **Membresía: este primer mes 49 USD,
+  después 98** (`MEMBRESIA` en lib/clase.ts, ahora sí se dice en directo); con
+  las 10 primeras, sesión 1 a 1 para adaptar su agente; el agente se entrena
+  solo para terapeutas y mejora con el uso. `/reserva`: una pantalla, cada
+  opción con su botón de pago (Stripe en `STRIPE`, lib/reserva.ts; sin enlace
+  abre WhatsApp con la elección escrita). Vale hasta el 7 nov 19:00 España.

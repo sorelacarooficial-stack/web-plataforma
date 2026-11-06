@@ -4362,3 +4362,68 @@ button.oscuraCaja {
 .formacionOn .formacionAntes {
   color: rgba(244, 239, 231, 0.55);
 }
+
+/* ---------------------------------------------------------- membresía: precio y 1 a 1 */
+.membresiaPie {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 26px;
+  margin-top: 28px;
+}
+.membresiaPrecio {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  padding: 26px 34px;
+  border-radius: 28px;
+  color: #f4efe7;
+  background: #17140f;
+}
+.membresiaPrecio > span:first-child {
+  width: 100%;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #e2c08a;
+}
+.membresiaPrecio b {
+  font-size: 76px;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.membresiaPrecio b small {
+  font-size: 26px;
+}
+.membresiaPrecio em {
+  font-style: normal;
+  font-size: 20px;
+  color: rgba(244, 239, 231, 0.7);
+}
+.membresiaUno {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 26px 34px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(243, 217, 174, 0.35), rgba(201, 154, 92, 0.18));
+  box-shadow: 0 0 0 1px rgba(154, 115, 64, 0.3) inset;
+}
+.membresiaUno .regaloIcono {
+  flex: none;
+  width: 76px;
+  height: 76px;
+}
+.membresiaUno p {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.35;
+}

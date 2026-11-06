@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { ESPERA, FORMACIONES, ONLINE, PLAZAS, SEDES, VIDEOS } from '@/lib/clase';
+import { ESPERA, FORMACIONES, MEMBRESIA, ONLINE, PLAZAS, SEDES, VIDEOS } from '@/lib/clase';
 import { AntesDespues, Cuenta, CuentaAtras, CuentaPreguntas, Cuerpo, Icono, Mapa, Movil, MusicaEspera, Polvo, Quedan, Rotador, Titulo, useGoteo, VideoModal } from './piezas';
 import { useClase } from './estado';
 import css from './clase.module.css';
@@ -684,10 +684,6 @@ function Lunes({ v, on }: Props) {
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Tu lunes</Eyebrow>
         <Titulo texto={'Antes de tu\npróxima clienta,\n*pregúntate esto*'} on={on(0)} className={css.h2} />
-        <span className={`${css.barraOscura} ${v(0)}`} style={{ ...d(0.8), alignSelf: 'flex-start', marginTop: 40 }}>
-          <Icono n="ficha" className={css.chipIcono} />
-          La ficha completa te llega hoy
-        </span>
       </div>
       <div className={`${css.ficha} ${v(0, css.rArriba)}`} style={d(0.4)}>
         <div className={css.filaEntre}>
@@ -904,16 +900,16 @@ function Online({ v, on }: Props) {
     ['carpeta', 'Dosieres profesionales y material audiovisual.'],
     ['pantalla', 'Una clase en directo con Sorela Caro por cada módulo.'],
     ['mano', 'Clase práctica online con modelo real.'],
-    ['gente', 'Incorporación a la Comunidad Divine®.'],
+    ['chispa', 'Certificado Divine® al terminar.'],
     ['escudo', 'Acompañamiento y apoyo continuado.'],
   ];
   return (
     <div className={css.dosCol} style={{ gridTemplateColumns: '1fr 0.85fr', alignItems: 'center' }}>
       <div className={css.columna}>
-        <Eyebrow className={v(0)}>Para profesionales con experiencia · 100 % online</Eyebrow>
-        <Titulo texto={'Divine® Online:\n*inversión en tu formación*'} on={on(0)} className={css.h2} />
-        <p className={`${css.textoSuave} ${v(0)}`} style={{ ...d(0.6), maxWidth: '44ch' }}>
-          Si ya tienes muy buenos resultados y te gustaría conocer la Técnica Divine®, <b>certificarte y estudiar a tu ritmo</b>, tenemos Divine® Online.
+        <Eyebrow className={v(0)}>Divine® Online · 100 % online</Eyebrow>
+        <Titulo texto={'Si ya tienes\n*muy buenos resultados…*'} on={on(0)} className={css.h2} />
+        <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.7), maxWidth: '40ch' }}>
+          …y te gustaría conocer la Técnica Divine®, tener su certificado y estudiar a tu ritmo, tenemos <b>Divine® Online</b>.
         </p>
         <div className={css.incluye}>
           {incluye.map(([i, t], k) => (
@@ -949,7 +945,7 @@ function Online({ v, on }: Props) {
           <span className={css.brillo} />
         </div>
         <p className={`${css.textoSuave} ${v(3)}`} style={{ margin: 0 }}>
-          <b>Mucho más que una formación.</b> No vienes solamente a aprender una técnica. Vienes a formar parte de una comunidad profesional que te acompaña.
+          <b>Mucho más que una formación.</b> Aprendes la técnica con Sorela a tu lado y terminas con tu certificado Divine®.
         </p>
       </div>
     </div>
@@ -968,7 +964,7 @@ function Dentro({ v, on }: Props) {
     ['chat', 'Canal en la plataforma', 'Consultas y aportes, dentro de la web de Divine®'],
     ['ficha', 'Fichas, vídeos y dossier', 'Fichas descargables y vídeos paso a paso'],
     ['pin', 'Localiza tu terapeuta', 'Si estás homologada por Sorela, apareces en el mapa mundial de terapeutas Divine®'],
-    ['chispa', 'Agente IA para tu negocio', 'Adaptado a tu centro, a tus servicios y a tus clientas'],
+    ['chispa', 'Agente IA para tu negocio', 'Entrenado solo para terapeutas: mejora cada vez más a medida que trabajas con él'],
   ];
   return (
     <div className={css.columna}>
@@ -1001,6 +997,26 @@ function Dentro({ v, on }: Props) {
             )}
           </div>
         ))}
+      </div>
+      <div className={`${css.membresiaPie} ${v(1, css.rArriba)}`}>
+        <div className={css.membresiaPrecio}>
+          <span>Este primer mes</span>
+          <b>
+            {MEMBRESIA.primerMes} <small>USD</small>
+          </b>
+          <em>
+            después {MEMBRESIA.despues} USD al mes
+          </em>
+          <span className={css.brillo} />
+        </div>
+        <div className={css.membresiaUno}>
+          <span className={css.regaloIcono}>
+            <Icono n="gente" />
+          </span>
+          <p>
+            Con las <b>{MEMBRESIA.primeras} primeras terapeutas</b> nos sentamos <b>1 a 1</b> para entender su negocio y adaptar su agente.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -1155,7 +1171,7 @@ function Agente({ activa, estatica, v, on }: Props) {
         <Eyebrow className={v(0)}>Lo estamos construyendo</Eyebrow>
         <Titulo texto={'El Agente IA Divine,\n*adaptado a tu negocio*'} on={on(0)} className={`${css.h2} ${css.h2medio}`} />
         <p className={`${css.texto} ${v(0)}`} style={{ ...d(0.6), maxWidth: '36ch' }}>
-          Con cada terapeuta que entra lo entrenamos con <b>sus servicios y sus necesidades</b>. Se conecta con tu agenda, tu WhatsApp y tus redes, y no solo responde: <b>ejecuta, publica y vende por ti.</b>
+          Un agente <b>entrenado solo para terapeutas</b>: con cada una que entra lo adaptamos a sus servicios, y mejora cada vez más a medida que trabaja con él. Se conecta con tu agenda, tu WhatsApp y tus redes, y no solo responde: <b>ejecuta, publica y vende por ti.</b>
         </p>
         <div className={css.fila} style={{ marginTop: 26, gap: 10 }}>
           {['Responde', 'Ejecuta', 'Publica', 'Crea vídeos', 'Vende'].map((t, i) => (
@@ -1318,7 +1334,7 @@ function Gracias({ activa, estatica, v, on }: Props) {
       <img src="/clase/logo-oro.webp" alt="Sorela Caro · Técnica Divine" className={`${css.logoPortada} ${v(0)}`} />
       <Titulo as="h1" texto="*Gracias.*" on={on(0)} className={css.tituloPortada} retraso={0.3} />
       <p className={`${css.sub} ${v(0)}`} style={d(0.9)}>
-        Tu ficha <b>«Lo que miro antes de tocar»</b> llega hoy a tu email.
+        Gracias por estar aquí. <b>Nos vemos en diciembre.</b>
       </p>
       <div className={css.fila} style={{ justifyContent: 'center' }}>
         <Chip icono="chat" className={v(0)} style={d(1.2)}>
@@ -1430,8 +1446,8 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'datos', titulo: 'Tres datos', tema: 'oscuro', pasos: 2, Vista: Datos, notas: 'Pregunta al chat: ¿cuántas creéis que la tecnología ha cambiado nuestra forma de trabajar? Clic: el 86 % de las empresas cree que la IA transformará su negocio antes de 2030 (WEF). Clic: las que no se suban ahora, se quedarán atrás.' },
   { id: 'costes', titulo: 'Hagamos cuentas', tema: 'crema', pasos: 1, Vista: Costes, notas: 'Hoy todo es por suscripción: CRM para los datos, automatizaciones (emails, reservas, respuestas, agenda), vídeos (programas o un editor cada mes) y un agente IA. Unos 232 USD al mes. Clic: en Divine, todo en el mismo espacio: aprendes, tienes tu comunidad y tu negocio crece.' },
   { id: 'agente', titulo: 'Tu agente Divine', tema: 'oscuro', pasos: 1, Vista: Agente, notas: 'Lo estamos construyendo: con cada terapeuta que entra lo entrenamos con sus servicios y necesidades, y ejecuta, responde, publica y vende. La conversación de la derecha es una demostración (↻ la repite). Clic: incluido en la Membresía, más citas, más ventas.' },
-  { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 0, Vista: Dentro, notas: 'La Membresía Divine®: solo para terapeutas homologadas (formación completa de 3 días). Clases en directo, canal en la plataforma, fichas y vídeos, Localiza tu terapeuta y el agente IA.' },
+  { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 1, Vista: Dentro, notas: 'La Membresía Divine®: solo para terapeutas homologadas (formación completa de 3 días). Clases en directo, canal, fichas y vídeos, Localiza tu terapeuta y el agente IA, entrenado solo para terapeutas y que mejora a medida que trabajan con él. Clic: este primer mes 49 USD (después 98 USD) y con las 10 primeras nos sentamos 1 a 1 para adaptar su agente.' },
   { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Arrancan solos 10 min de preguntas y reservas. Pide que escriban QUIERO en el chat o en el grupo: nuestro equipo les escribe por privado. Último clic: aviso de seguridad.' },
   { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. Recuerda: para reservar, QUIERO.' },
-  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. La ficha llega hoy por email. QUIERO para reservar. Caracas 4-6 dic, Medellín 10-12 dic.' },
+  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. QUIERO para reservar. Caracas 4-6 dic, Medellín 10-12 dic.' },
 ];
