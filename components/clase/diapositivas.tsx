@@ -834,7 +834,7 @@ function Presencial({ v, on }: Props) {
       <div className={css.filaEntre} style={{ alignItems: 'flex-end' }}>
         <div>
           <Eyebrow className={v(0)}>Technique Divine® · Formación presencial premium</Eyebrow>
-          <Titulo texto={'Tres días, *dos ciudades*'} on={on(0)} className={css.h2} />
+          <Titulo texto={'3 días, formación\n*completa premium*'} on={on(0)} className={css.h2} />
           <span className={`${css.plazasAviso} ${v(0)}`} style={d(0.7)}>
             <span className={css.puntoRojo} /> Solo <b>{PLAZAS} plazas</b> por ciudad
           </span>
