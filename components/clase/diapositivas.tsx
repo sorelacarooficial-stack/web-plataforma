@@ -22,6 +22,8 @@ export type Props = {
   muda?: boolean;
   /** Se va a cambiar de diapositiva: la música está bajando. */
   saliendo?: boolean;
+  /** Está a punto de verse (o se ve): ya se pueden ir bajando sus vídeos y música. */
+  cerca?: boolean;
   qr: string;
   /** Visible a partir del paso k. */
   on: (k?: number) => boolean;
@@ -88,11 +90,6 @@ function Portada({ activa, estatica, muda = false, saliendo = false, v, on }: Pr
           <Rotador frases={ESPERA.frases} activa={activa} />
         </div>
       )}
-      <div className={css.fila} style={{ justifyContent: 'center' }}>
-        <Chip icono="chat" className={v(0)} style={d(1.3)}>
-          Escribe en el chat desde dónde nos ves
-        </Chip>
-      </div>
       {!estatica && <Musica pistas={ESPERA.musica} activa={activa} saliendo={saliendo} apagar={empieza} muda={muda} />}
     </div>
   );
@@ -651,10 +648,10 @@ function Casos({ v, on }: Props) {
 
 function Caso2({ v, on }: Props) {
   return (
-    <div className={css.dosCol} style={{ gridTemplateColumns: '0.5fr 1fr' }}>
+    <div className={css.dosCol} style={{ gridTemplateColumns: '0.62fr 1fr' }}>
       <div className={css.columna}>
         <Eyebrow className={v(0)}>Casos reales</Eyebrow>
-        <Titulo texto={'Una sola sesión, cuerpo perfectamente drenado,\n*solo con las manos.*'} on={on(0)} className={css.h2} />
+        <Titulo texto={'Una sola sesión, cuerpo perfectamente drenado,\n*solo con las manos.*'} on={on(0)} className={`${css.h2} ${css.h2caso}`} />
         <div className={css.columna} style={{ gap: 14, marginTop: 40, alignItems: 'flex-start' }}>
           {['Qué observó', 'Qué interpretó', 'Qué decidió'].map((t, k) => (
             <span key={t} className={`${css.chipOscuro} ${v(0, css.rIzq)}`} style={d(0.6 + k * 0.15)}>
@@ -1320,7 +1317,7 @@ function Preguntas({ v, on }: Props) {
 
 /* -------------------------------------------------------------- 28 */
 
-function Gracias({ activa, estatica, muda = false, saliendo = false, v, on }: Props) {
+function Gracias({ activa, estatica, muda = false, saliendo = false, cerca = false, v, on }: Props) {
   return (
     <div className={css.portada}>
       {!estatica && <Polvo activa={activa} cuantas={90} />}
@@ -1343,7 +1340,7 @@ function Gracias({ activa, estatica, muda = false, saliendo = false, v, on }: Pr
           @sorelacaro_
         </Chip>
       </div>
-      {!estatica && <Musica pistas={[DESPEDIDA]} activa={activa} saliendo={saliendo} muda={muda} bucle={false} volumen={0.9} />}
+      {!estatica && <Musica pistas={[DESPEDIDA]} activa={activa} saliendo={saliendo} muda={muda} bucle={false} volumen={0.9} precarga={cerca || activa} />}
     </div>
   );
 }
@@ -1358,7 +1355,7 @@ function Gracias({ activa, estatica, muda = false, saliendo = false, v, on }: Pr
  * se reproduce sin sonido (el audio sale solo por la ventana que se comparte).
  */
 function diapoVideo(src: string, portada: string) {
-  return function DiapoVideo({ activa, estatica, muda = false }: Props) {
+  return function DiapoVideo({ activa, estatica, muda = false, cerca = false }: Props) {
     const ref = useRef<HTMLVideoElement>(null);
     const [bloqueado, setBloqueado] = useState(false);
     useEffect(() => {
@@ -1383,7 +1380,7 @@ function diapoVideo(src: string, portada: string) {
           className={css.videoLleno}
           playsInline
           muted={muda}
-          preload="auto"
+          preload={cerca || activa ? 'auto' : 'none'}
           onClick={(e) => {
             e.stopPropagation();
             const v = e.currentTarget;

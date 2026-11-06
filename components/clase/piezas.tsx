@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { CIUDADES, EMPIEZA, ESPERA, MINUTOS_PREGUNTAS, PLAZAS } from '@/lib/clase';
 import { useClase } from './estado';
 import css from './clase.module.css';
@@ -319,6 +319,7 @@ export function Musica({
   muda,
   bucle = true,
   volumen = 0.8,
+  precarga = true,
 }: {
   pistas: string[];
   activa: boolean;
@@ -327,6 +328,8 @@ export function Musica({
   muda: boolean;
   bucle?: boolean;
   volumen?: number;
+  /** false: no se baja hasta que haga falta (para no cargar la página al abrir). */
+  precarga?: boolean;
 }) {
   const ref = useRef<HTMLAudioElement>(null);
   const [sonando, setSonando] = useState(false);
@@ -407,7 +410,7 @@ export function Musica({
       <audio
         ref={ref}
         src={pistas[pista % pistas.length]}
-        preload="auto"
+        preload={precarga ? 'auto' : 'none'}
         muted={muda}
         onEnded={() => {
           if (!bucle && pista + 1 >= pistas.length) {
@@ -597,17 +600,21 @@ export function Mapa({ activa, estatica }: { activa: boolean; estatica: boolean 
   const origen = { x: lx(-3.7), y: ly(40.42) };
   const esp = { x: px(-4), y: py(40) };
 
-  const tierraMain: ReactNode[] = [];
-  const tierraLupa: ReactNode[] = [];
-  if (puntos) {
+  // Los ~4.000 puntos van en un solo trazo (no 4.000 círculos): se ve igual y
+  // se pinta muchísimo más rápido. Se calcula una vez.
+  const [tierraMain, tierraLupa] = useMemo(() => {
+    if (!puntos) return ['', ''];
+    const punto = (x: number, y: number, r: number) => `M${(x - r).toFixed(1)} ${y.toFixed(1)}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`;
+    let main = '';
+    let lupa = '';
     for (let i = 0; i < puntos.length; i += 2) {
       const lng = puntos[i];
       const lat = puntos[i + 1];
-      tierraMain.push(<circle key={i} cx={px(lng)} cy={py(lat)} r={2.3} />);
-      if (lng >= LUPA.lng0 && lng <= LUPA.lng1 && lat >= LUPA.lat0 && lat <= LUPA.lat1)
-        tierraLupa.push(<circle key={i} cx={lx(lng)} cy={ly(lat)} r={6} />);
+      main += punto(px(lng), py(lat), 2.3);
+      if (lng >= LUPA.lng0 && lng <= LUPA.lng1 && lat >= LUPA.lat0 && lat <= LUPA.lat1) lupa += punto(lx(lng), ly(lat), 6);
     }
-  }
+    return [main, lupa];
+  }, [puntos]);
 
   const latam = CIUDADES.filter((c) => c.zona === 'latam');
   const es = CIUDADES.filter((c) => c.zona === 'es');
@@ -615,12 +622,12 @@ export function Mapa({ activa, estatica }: { activa: boolean; estatica: boolean 
   return (
     <div className={css.mapa}>
       <svg viewBox={`0 0 ${MW} ${MH}`} className={css.mapaSvg}>
-        <g className={css.tierra}>{tierraMain}</g>
+        <path d={tierraMain} className={css.tierra} />
         {/* el recuadro de España */}
         <path d={`M${esp.x} ${esp.y} L${LUPA.x + LUPA.w * 0.55} ${LUPA.y}`} className={css.lupaLinea} />
         <circle cx={esp.x} cy={esp.y} r={16} className={css.lupaFoco} />
         <rect x={LUPA.x - 14} y={LUPA.y - 14} width={LUPA.w + 28} height={LUPA.h + 28} rx={22} className={css.lupaCaja} />
-        <g className={css.tierraLupa}>{tierraLupa}</g>
+        <path d={tierraLupa} className={css.tierraLupa} />
         <text x={LUPA.x} y={LUPA.y - 26} className={css.mapaZona}>
           España
         </text>
