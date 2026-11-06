@@ -25,8 +25,6 @@ export type Props = {
   saliendo?: boolean;
   /** Está a punto de verse (o se ve): ya se pueden ir bajando sus vídeos y música. */
   cerca?: boolean;
-  /** Cuenta para pagar por transferencia (de Vercel, nunca en el código). */
-  transferencia?: string[];
   qr: string;
   /** Visible a partir del paso k. */
   on: (k?: number) => boolean;
@@ -1293,26 +1291,13 @@ function Escanea({ activa, estatica, v, on }: Props) {
 
 /* -------------------------------------------------------------- 27 */
 
-function Preguntas({ v, on, transferencia = [] }: Props) {
+function Preguntas({ v, on }: Props) {
   return (
     <div className={css.preguntas}>
       <div className={css.centro} style={{ flex: 1 }}>
         <Eyebrow className={v(0)}>Preguntas</Eyebrow>
         <Titulo texto={'Pregúntame\n*lo que quieras*'} on={on(0)} className={css.h1crema} paso={0.14} />
       </div>
-      {transferencia.length > 0 && (
-        <div className={`${css.transferBanda} ${v(0, css.rArriba)}`} style={d(1.3)}>
-          <span className={css.transferRotulo}>
-            <Icono n="tarjeta" className={css.chipIcono} /> ¿Prefieres transferencia directa?
-          </span>
-          <span className={css.transferDatos}>
-            {transferencia.map((l, k) => (
-              <span key={k}>{l}</span>
-            ))}
-          </span>
-          <span className={css.transferNota}>Envía el comprobante a nuestro equipo por WhatsApp</span>
-        </div>
-      )}
       <div className={css.filaEntre} style={{ alignItems: 'flex-end' }}>
         <div className={css.fila}>
           <span className={`${css.chipOscuro} ${v(0)}`} style={d(0.8)}>
