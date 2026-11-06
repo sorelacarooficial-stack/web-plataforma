@@ -280,5 +280,5 @@ cada cambio importante** (una línea por decisión, con la fecha).
   público, datos personales de Sorela): variables de Vercel
   `TRANSFERENCIA_COLOMBIA` / `TRANSFERENCIA_VENEZUELA`, líneas separadas por
   «|» (`lib/transferencia.ts`). Salen al pie de /reserva (caja oscura +
-  «Mandar el comprobante por WhatsApp») y en la diapositiva «Preguntas» (31),
-  banda «¿Prefieres transferencia directa?» (solo Colombia). Vacías = no salen.
+  «Mandar el comprobante por WhatsApp»). Solo en /reserva: NUNCA en la
+  presentación (lo pidió Gerson). Vacías = no salen.
