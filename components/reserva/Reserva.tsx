@@ -1,18 +1,31 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { SEDES } from '@/lib/clase';
 import { CRIPTO, OPCIONES, PLAZAS_SEDE, RESERVA_HASTA, TRANSFERENCIA, enlaceStripe, type Opcion } from '@/lib/reserva';
 import css from './reserva.module.css';
 
 const usd = (n: number) => `${n.toLocaleString('es-ES')} USD`;
 const dos = (n: number) => String(Math.max(0, Math.floor(n))).padStart(2, '0');
+const slug = (c: string) => c.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+const FOTOS: Record<string, string> = {
+  completa: '/clase/grupo.webp',
+  intensiva: '/trayectoria/cuerpo-1.webp',
+  especifica: '/trayectoria/rostro-1.webp',
+  online: '/clase/despues.webp',
+  membresia: '/trayectoria/equipo.webp',
+};
+const INCLUYE_COMPLETA = ['3 días con Sorela', 'Abdomen, piernas, glúteos, facial y brazos', 'Cena de gala y certificado', 'Academia online incluida', 'Material, modelos y comida'];
 
 /**
- * Una sola pantalla: cada opción lleva su botón de pago. Con enlace de
- * Stripe, paga ahí mismo; sin él, abre WhatsApp con la elección ya escrita.
+ * Una sola pantalla: eliges ciudad y cada formación lleva su botón de pago.
+ * Con enlace de Stripe paga ahí mismo; sin él, abre WhatsApp con la elección
+ * ya escrita.
  */
 export default function Reserva({ whatsapp }: { whatsapp: string }) {
   const [ahora, setAhora] = useState<number | null>(null);
+  const [sede, setSede] = useState(0);
   const [otros, setOtros] = useState(false);
 
   useEffect(() => {
@@ -24,42 +37,132 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
   const wa = (texto: string) => `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(texto)}`;
   const resta = ahora === null ? null : Date.parse(RESERVA_HASTA) - ahora;
   const cerrado = resta !== null && resta <= 0;
-  const visibles = OPCIONES.filter((o) => o.grupo !== 'Membresía' || enlaceStripe(o) || o.precio);
+  const ciudad = slug(SEDES[sede].ciudad);
+  const de = (id: string) => OPCIONES.find((o) => o.id === id)!;
+  const completa = de(`${ciudad}-completa`);
+  const intensiva = de(`${ciudad}-intensiva`);
+  const especifica = de(`${ciudad}-especifica`);
+  const online = de('online');
+  const membresia = de('membresia');
   const transferencias = TRANSFERENCIA.filter((t) => t.datos);
   const hayOtros = transferencias.length > 0 || !!CRIPTO.direccion;
 
   return (
     <main className={css.pagina}>
-      <header className={css.cabecera}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/clase/logo-tinta.webp" alt="Sorela Caro · Técnica Divine" className={css.logo} />
-        <h1 className={css.titulo}>
-          Reserva tu plaza <strong>ahora</strong>
-        </h1>
-        <div className={`${css.reloj} ${cerrado ? css.relojFin : ''}`}>
-          {resta === null ? (
-            <span>Precio especial durante 24 horas</span>
-          ) : cerrado ? (
-            <span>El precio especial ha terminado. Escríbenos y te ayudamos.</span>
-          ) : (
-            <>
-              <span>El precio especial termina en</span>
-              <b>
-                {dos(resta / 3600e3)}:{dos((resta % 3600e3) / 60e3)}:{dos((resta % 60e3) / 1000)}
-              </b>
-            </>
-          )}
+      <header className={css.hero} style={{ backgroundImage: 'url(/clase/credenciales.webp)' }}>
+        <div className={css.heroVelo} />
+        <div className={css.heroDentro}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/clase/logo-oro.webp" alt="Sorela Caro · Técnica Divine" className={css.logo} />
+          <p className={css.ceja}>Solo para quien estuvo en la masterclass</p>
+          <h1 className={css.titulo}>
+            Reserva tu plaza <strong>ahora</strong>
+          </h1>
+          <div className={`${css.reloj} ${cerrado ? css.relojFin : ''}`}>
+            {resta === null ? (
+              <span>Precio especial durante 24 horas</span>
+            ) : cerrado ? (
+              <span>El precio especial ha terminado. Escríbenos y te ayudamos.</span>
+            ) : (
+              <>
+                <span>El precio especial termina en</span>
+                <b>
+                  {dos(resta / 3600e3)}
+                  <i>h</i> {dos((resta % 3600e3) / 60e3)}
+                  <i>min</i> {dos((resta % 60e3) / 1000)}
+                  <i>s</i>
+                </b>
+              </>
+            )}
+          </div>
         </div>
-        <p className={css.plazas}>
-          <i /> Solo <b>{PLAZAS_SEDE} plazas</b> por ciudad
-        </p>
       </header>
 
-      <div className={css.opciones}>
-        {visibles.map((o) => (
-          <Tarjeta key={o.id} o={o} wa={wa} />
-        ))}
-      </div>
+      <section className={css.bloque}>
+        <p className={css.paso}>1 · Elige tu ciudad</p>
+        <div className={css.sedes}>
+          {SEDES.map((s, k) => (
+            <button key={s.ciudad} type="button" className={`${css.sede} ${k === sede ? css.sedeOn : ''}`} onClick={() => setSede(k)} aria-pressed={k === sede}>
+              <b>{s.ciudad}</b>
+              <span>{s.fechas}</span>
+              <span className={css.plazas}>
+                {Array.from({ length: PLAZAS_SEDE }, (_, i) => (
+                  <i key={i} />
+                ))}
+                <em>Solo {PLAZAS_SEDE} plazas</em>
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className={css.bloque}>
+        <p className={css.paso}>2 · Elige tu formación en {SEDES[sede].ciudad}</p>
+
+        <article className={css.estrella}>
+          <div className={css.estrellaFoto} style={{ backgroundImage: `url(${FOTOS.completa})` }}>
+            <span className={css.cinta}>La más elegida</span>
+          </div>
+          <div className={css.estrellaTexto}>
+            <p className={css.tipo}>Formación completa · premium</p>
+            <h2>
+              {completa.titulo.split(' · ')[1]} <span>3 días</span>
+            </h2>
+            <ul className={css.lista}>
+              {INCLUYE_COMPLETA.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
+            <Precio o={completa} grande />
+            <Boton o={completa} wa={wa} />
+          </div>
+        </article>
+
+        <div className={css.dos}>
+          {[intensiva, especifica].map((o) => (
+            <article key={o.id} className={css.tarjeta}>
+              <div className={css.tarjetaFoto} style={{ backgroundImage: `url(${o.id.endsWith('intensiva') ? FOTOS.intensiva : FOTOS.especifica})` }} />
+              <div className={css.tarjetaTexto}>
+                <p className={css.tipo}>{o.detalle.split(' · ')[1]}</p>
+                <h3>{o.titulo.split(' · ')[1]}</h3>
+                <p className={css.suave}>{o.id.endsWith('intensiva') ? 'Dos zonas, a fondo' : 'Una zona, para empezar'}</p>
+                <Precio o={o} />
+                <Boton o={o} wa={wa} />
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className={css.bloque}>
+        <p className={css.paso}>¿Prefieres estudiar desde casa?</p>
+        <article className={css.horizontal}>
+          <div className={css.horizontalFoto} style={{ backgroundImage: `url(${FOTOS.online})` }} />
+          <div className={css.tarjetaTexto}>
+            <p className={css.tipo}>100 % online · a tu ritmo</p>
+            <h3>Divine® Online</h3>
+            <p className={css.suave}>Para profesionales con experiencia. Con certificado Divine®.</p>
+            <Precio o={online} />
+            <Boton o={online} wa={wa} />
+          </div>
+        </article>
+      </section>
+
+      <section className={css.bloque}>
+        <article className={css.membresia} style={{ backgroundImage: `url(${FOTOS.membresia})` }}>
+          <div className={css.membresiaVelo} />
+          <div className={css.membresiaTexto}>
+            <p className={css.tipo}>Solo terapeutas homologadas</p>
+            <h3>Membresía Divine®</h3>
+            <p className={css.suave}>Clases en directo, comunidad, fichas y tu agente IA adaptado a tu negocio.</p>
+            <p className={css.precioMem}>
+              <strong>{usd(membresia.precio ?? 0)}</strong> este primer mes
+              {membresia.despues ? <span> · después {usd(membresia.despues)}</span> : null}
+            </p>
+            <Boton o={membresia} wa={wa} />
+          </div>
+        </article>
+      </section>
 
       {hayOtros && (
         <section className={css.otros}>
@@ -80,7 +183,7 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
                   <pre>{CRIPTO.direccion}</pre>
                 </div>
               )}
-              <a className={`${css.boton} ${css.botonWa}`} href={wa('Hola, vengo de la masterclass. Ya hice la transferencia: te mando el comprobante.')} target="_blank" rel="noopener noreferrer">
+              <a className={`${css.boton} ${css.botonWa}`} href={wa('Hola, vengo de la masterclass. Ya hice el pago: te mando el comprobante.')} target="_blank" rel="noopener noreferrer">
                 Mandar el comprobante por WhatsApp
               </a>
             </div>
@@ -100,24 +203,24 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
   );
 }
 
-function Tarjeta({ o, wa }: { o: Opcion; wa: (t: string) => string }) {
-  const stripe = enlaceStripe(o);
-  const cobra = o.reserva || o.precio || 0;
-  const href = stripe || wa(`Hola, vengo de la masterclass y quiero reservar: ${o.titulo} (${o.detalle}).`);
+function Precio({ o, grande = false }: { o: Opcion; grande?: boolean }) {
+  if (!o.precio) return null;
   return (
-    <div className={`${css.opcion} ${o.nota ? css.opcionTop : ''}`}>
-      {o.nota && <span className={css.extra}>{o.nota}</span>}
-      <b>{o.titulo}</b>
-      <span>{o.detalle}</span>
-      {o.precio ? (
-        <span className={css.precio}>
-          {o.antes ? <s>{usd(o.antes)}</s> : null} <strong>{usd(o.precio)}</strong>
-          {o.grupo === 'Membresía' && o.despues ? <em> este primer mes · después {usd(o.despues)}</em> : null}
-        </span>
-      ) : null}
-      <a className={css.boton} href={href} target="_blank" rel="noopener noreferrer">
-        {stripe ? (o.reserva ? `Reservar con ${usd(o.reserva)}` : `Pagar ${usd(cobra)}`) : 'Reservar por WhatsApp'}
-      </a>
-    </div>
+    <p className={`${css.precio} ${grande ? css.precioGrande : ''}`}>
+      {o.antes ? <s>{usd(o.antes)}</s> : null}
+      <strong>{usd(o.precio)}</strong>
+    </p>
+  );
+}
+
+function Boton({ o, wa }: { o: Opcion; wa: (t: string) => string }) {
+  const stripe = enlaceStripe(o);
+  const href = stripe || wa(`Hola, vengo de la masterclass y quiero reservar: ${o.titulo} (${o.detalle}).`);
+  const texto = o.reserva ? `Reservar con ${usd(o.reserva)}` : o.precio ? `Empezar por ${usd(o.precio)}` : 'Reservar';
+  return (
+    <a className={css.boton} href={href} target="_blank" rel="noopener noreferrer">
+      {texto}
+      {!stripe && <small>por WhatsApp</small>}
+    </a>
   );
 }
