@@ -288,3 +288,9 @@ cada cambio importante** (una línea por decisión, con la fecha).
   multiplica el volumen propio de cada canción. Tocar la barra no roba las
   flechas a la presentación. Ojo: piezas.tsx quedó con comillas dobles por un
   prettier sin config; no volver a pasarle prettier.
+- 2026-11-06: **Caracas pasa al 18, 19 y 20 de diciembre** (Medellín sigue
+  10-12). Cambiado en `SEDES` (lib/clase.ts: presentación, /reserva, notas),
+  «Gracias», guion y `CONVOCATORIAS_DICIEMBRE`; la convocatoria
+  `caracas-2026-12` de Firestore la corrige el cron de la mañana (paso 1c de
+  lib/puesta-a-punto.ts) si aún tiene 4-6. Las notas antiguas de arriba que
+  dicen «Caracas 4-6 dic» son historia.

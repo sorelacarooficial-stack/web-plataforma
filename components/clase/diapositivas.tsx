@@ -834,7 +834,7 @@ function Presencial({ v, on }: Props) {
       <div className={css.filaEntre} style={{ alignItems: 'flex-end' }}>
         <div>
           <Eyebrow className={v(0)}>Technique Divine® · Formación presencial premium</Eyebrow>
-          <Titulo texto={'Tres días, *dos ciudades*'} on={on(0)} className={css.h2} />
+          <Titulo texto={'3 días, formación\n*completa premium*'} on={on(0)} className={css.h2} />
           <span className={`${css.plazasAviso} ${v(0)}`} style={d(0.7)}>
             <span className={css.puntoRojo} /> Solo <b>{PLAZAS} plazas</b> por ciudad
           </span>
@@ -1337,7 +1337,7 @@ function Gracias({ activa, estatica, muda = false, saliendo = false, cerca = fal
           Para reservar, escribe «QUIERO»
         </Chip>
         <Chip icono="calendario" className={v(0)} style={d(1.3)}>
-          Caracas 4-6 dic · Medellín 10-12 dic
+          Caracas 18-20 dic · Medellín 10-12 dic
         </Chip>
         <Chip className={v(0)} style={d(1.4)}>
           @sorelacaro_
@@ -1436,7 +1436,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'lunes', titulo: 'Tu lunes', tema: 'crema', pasos: 3, Vista: Lunes, notas: 'Una pregunta por clic. Puedes marcar las casillas.' },
   { id: 'prueba', titulo: 'Lo que cambia en tu cabina', tema: 'oscuro', pasos: 3, Vista: Prueba, notas: 'Un escalón por clic. El antes/después se descubre en el primero.' },
   { id: 'puente', titulo: 'Esto es solo el principio', tema: 'oscuro', pasos: 1, Vista: Puente, notas: 'Frase clave: «Toda persona que se somete a este tratamiento obtiene resultados». «Hasta aquí, la parte 1. Ahora, la parte 2.» Arrancan solos 10 min de preguntas y respuestas (pulsar el reloj lo reinicia). Clic: lo que viene (cómo te formas, dónde y cuándo, cuánto cuesta).' },
-  { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Caracas 4, 5 y 6 de diciembre y Medellín 10, 11 y 12. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
+  { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Medellín 10, 11 y 12 de diciembre y Caracas 18, 19 y 20. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
   { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Solo 10 plazas por ciudad. Pulsa Caracas o Medellín arriba. Una formación por clic, con el precio de antes tachado: completa (3 días, incluye cena de gala, certificado y academia online), intensiva (2 días), específica (1 día). Último clic: material, modelos y comida incluidos.' },
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Para quien ya tiene buenos resultados y quiere conocer la técnica, certificarse y estudiar a su ritmo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
   ...(VIDEOS.membresia ? [{ id: 'video-membresia', titulo: 'Vídeo · Membresía Divine', tema: 'oscuro' as const, pasos: 0, sinPie: true, Vista: VideoMembresia, notas: 'Vídeo cinematográfico de la membresía. Empieza solo; al terminar, sigue con «¿Y qué pasa después de formarte?».' }] : []),
@@ -1446,5 +1446,5 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'dentro', titulo: 'Qué hay dentro', tema: 'crema', pasos: 1, Vista: Dentro, notas: 'La Membresía Divine®: solo para terapeutas homologadas (formación completa de 3 días). Clases en directo, canal, fichas y vídeos, Localiza tu terapeuta y el agente IA, entrenado solo para terapeutas y que mejora a medida que trabajan con él. Clic: este primer mes 49 USD (después 98 USD) y con las 10 primeras nos sentamos 1 a 1 para adaptar su agente.' },
   { id: 'reservar', titulo: 'Escribe «QUIERO»', tema: 'oscuro', pasos: 3, Vista: Escanea, notas: 'Arrancan solos 10 min de preguntas y reservas. Pide que escriban QUIERO en el chat o en el grupo: nuestro equipo les escribe por privado. Un clic por paso: escribir, te escribimos, reservas.' },
   { id: 'preguntas', titulo: 'Preguntas', tema: 'crema', pasos: 0, Vista: Preguntas, notas: 'Turno de preguntas. Recuerda: para reservar, QUIERO.' },
-  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. Suena sola «Proceso con Dios» (entra desde abajo hasta la voz) mientras la gente se va. QUIERO para reservar. Caracas 4-6 dic, Medellín 10-12 dic.' },
+  { id: 'gracias', titulo: 'Gracias', tema: 'oscuro', pasos: 0, sinPie: true, Vista: Gracias, notas: 'Cierre. Suena sola «Proceso con Dios» (entra desde abajo hasta la voz) mientras la gente se va. QUIERO para reservar. Caracas 18-20 dic, Medellín 10-12 dic.' },
 ];
