@@ -49,9 +49,16 @@ export const OPCIONES: Opcion[] = [
   { id: 'membresia', grupo: 'Membresía', titulo: 'Membresía Divine®', detalle: 'Solo para terapeutas homologadas por Sorela', reserva: 0, precio: MEMBRESIA.primerMes, despues: MEMBRESIA.despues, stripe: '' },
 ];
 
-/** Enlaces de Stripe por opción: se rellenan aquí (son públicos, no son claves). */
+/**
+ * Enlaces de pago de Stripe, uno por formación (Caracas y Medellín usan el
+ * mismo). Son públicos, no son claves.
+ */
 export const STRIPE: Record<string, string> = {
-  // 'caracas-completa': 'https://buy.stripe.com/...',
+  completa: '',
+  intensiva: '',
+  especifica: '',
+  online: '',
+  membresia: '',
 };
 
 export const TRANSFERENCIA: { pais: string; datos: string }[] = [
@@ -64,5 +71,38 @@ export const CRIPTO = { red: '', direccion: '' };
 export const PLAZAS_SEDE = PLAZAS;
 
 export function enlaceStripe(o: Opcion) {
-  return STRIPE[o.id] || o.stripe;
+  return STRIPE[formacionDe(o)] || o.stripe;
 }
+
+/**
+ * Las cinco cosas que se pagan. Caracas y Medellín comparten enlace de pago:
+ * la ciudad la elige cada alumna después, en /reserva/gracias.
+ */
+export const FORMACIONES_PAGO = [
+  { id: 'completa', nombre: 'Formación Completa · 3 días', presencial: true },
+  { id: 'intensiva', nombre: 'Formación Intensiva · 2 días', presencial: true },
+  { id: 'especifica', nombre: 'Formación Específica · 1 día', presencial: true },
+  { id: 'online', nombre: 'Divine® Online', presencial: false },
+  { id: 'membresia', nombre: 'Membresía Divine®', presencial: false },
+] as const;
+export type FormacionPago = (typeof FORMACIONES_PAGO)[number]['id'];
+
+export function formacionDe(o: Opcion): FormacionPago {
+  if (o.id === 'online' || o.id === 'membresia') return o.id;
+  return o.id.split('-')[1] as FormacionPago;
+}
+
+export const CIUDADES_PAGO = SEDES.map((s) => s.ciudad);
+
+/**
+ * Página de después de pagar: la «URL de confirmación» de cada enlace de pago
+ * de Stripe (Después del pago → Redirigir a tu web). Stripe cambia
+ * {CHECKOUT_SESSION_ID} por el número del pago, que se guarda para cruzarlo.
+ */
+export const URL_WEB = 'https://www.sorelacarodivine.com';
+export function urlGracias(f: FormacionPago) {
+  return `${URL_WEB}/reserva/gracias?f=${f}&s={CHECKOUT_SESSION_ID}`;
+}
+
+/** El grupo de WhatsApp de la Comunidad Divine: el mismo para todas. */
+export const GRUPO_COMUNIDAD = '';
