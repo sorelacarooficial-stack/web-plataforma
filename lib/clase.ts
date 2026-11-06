@@ -26,15 +26,16 @@ export const SEDES = [
 
 /** Formación presencial (Medellín y Caracas). Precios en USD. */
 export const FORMACIONES = [
-  { nombre: 'Completa', dias: '3 días', precio: 2250, reserva: 250 },
-  { nombre: 'Intensiva', dias: '2 días', precio: 1500, reserva: 250 },
-  { nombre: 'Específica', dias: '1 día', precio: 750, reserva: 150 },
+  // `antes` es el precio que sale tachado encima (confirmar con Sorela).
+  { nombre: 'Completa', dias: '3 días', antes: 3000, precio: 2250, reserva: 250 },
+  { nombre: 'Intensiva', dias: '2 días', antes: 2000, precio: 1500, reserva: 250 },
+  { nombre: 'Específica', dias: '1 día', antes: 1000, precio: 750, reserva: 150 },
 ];
 
 /** Divine® Online. Precios en USD. */
 export const ONLINE = { habitual: 900, especial: 750, reserva: 250 };
 
-/** Plazas de fundadora (1 a 1). */
+/** Plazas de la formación presencial, en cada ciudad. */
 export const PLAZAS = 10;
 
 /**
