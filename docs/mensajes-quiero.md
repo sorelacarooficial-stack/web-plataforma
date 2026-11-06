@@ -48,21 +48,21 @@ formación ha elegido y cómo paga: así se filtra solo.*
 > Divine® te da el criterio de qué observar, qué interpretar y qué decidir
 > con cada clienta.
 >
-> ¿Te viene mejor formarte **presencial** (Caracas 4-6 dic o Medellín 10-12
+> ¿Te viene mejor formarte **presencial** (Caracas 18-20 dic o Medellín 10-12
 > dic) o **online** a tu ritmo?
 
 **Está empezando:**
 > Perfecto, la formación está pensada también para ti: empiezas por la base
 > y practicas con modelos reales, con Sorela corrigiéndote.
 >
-> ¿Te viene mejor **presencial** (Caracas 4-6 dic o Medellín 10-12 dic) u
+> ¿Te viene mejor **presencial** (Caracas 18-20 dic o Medellín 10-12 dic) u
 > **online** a tu ritmo?
 
 ## 3 · La oferta
 
 ### Presencial (Caracas o Medellín)
 
-> En [Caracas · 4, 5 y 6 de diciembre / Medellín · 10, 11 y 12 de diciembre]
+> En [Caracas · 18, 19 y 20 de diciembre / Medellín · 10, 11 y 12 de diciembre]
 > tienes tres opciones:
 >
 > ✨ **Completa · 3 días** — abdomen, piernas y glúteos, facial y brazos, con la

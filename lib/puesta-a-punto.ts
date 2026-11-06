@@ -14,7 +14,7 @@ import { CURSO_POR_DEFECTO } from './convocatorias-tipos';
  *
  *  1. Las convocatorias presenciales de diciembre, abiertas pero SIN
  *     publicar en la web (son internas: la venta es en la masterclass):
- *     Caracas 4-6 dic y Medellín 10-12 dic. Con `create` y un id fijo: si ya
+ *     Caracas (ahora 18-20 dic) y Medellín 10-12 dic. Con `create` y un id fijo: si ya
  *     existen (o Sorela las creó a mano con ese id), no se tocan.
  *  2. La masterclass es por Google Meet, no por Zoom. Los correos programados
  *     de la serie ya estaban guardados con «Zoom»: se corrigen, y el botón
@@ -30,7 +30,7 @@ const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
 const MARCA = { coleccion: 'ajustes', doc: 'puesta-a-punto' };
 
 export const CONVOCATORIAS_DICIEMBRE = [
-  { id: 'caracas-2026-12', ciudad: 'Caracas', inicio: '2026-12-04', fin: '2026-12-06' },
+  { id: 'caracas-2026-12', ciudad: 'Caracas', inicio: '2026-12-18', fin: '2026-12-20' },
   { id: 'medellin-2026-12', ciudad: 'Medellín', inicio: '2026-12-10', fin: '2026-12-12' },
 ];
 
@@ -113,6 +113,22 @@ export async function puestaAPunto(): Promise<{ id: string; enviados: number; fa
     if (ocultas) refrescarFormaciones();
     await marca.set({ convocatoriasInternas: FieldValue.serverTimestamp() }, { merge: true });
     informe.push({ id: 'convocatorias-internas', enviados: ocultas, fallidos: 0, omitidos: 0 });
+  }
+
+  /* 1c · 6 nov: Caracas pasa del 4-6 al 18-20 de diciembre. La convocatoria ya
+     estaba creada con las fechas viejas: se cambian solo si siguen siendo esas
+     (si Sorela ya las cambió a mano, no se tocan). */
+  if (!hecho.caracas18) {
+    const ref = convocatorias().doc('caracas-2026-12');
+    const d = await ref.get();
+    let cambiada = 0;
+    if (d.exists && d.get('inicio') === '2026-12-04' && d.get('fin') === '2026-12-06') {
+      await ref.update({ inicio: '2026-12-18', fin: '2026-12-20', actualizada: FieldValue.serverTimestamp() });
+      refrescarFormaciones();
+      cambiada = 1;
+    }
+    await marca.set({ caracas18: FieldValue.serverTimestamp() }, { merge: true });
+    informe.push({ id: 'caracas-18-20-dic', enviados: cambiada, fallidos: 0, omitidos: 1 - cambiada });
   }
 
   /* 2 · Correos programados: de Zoom a Google Meet. */

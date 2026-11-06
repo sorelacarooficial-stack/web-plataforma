@@ -20,7 +20,7 @@ export const EMPIEZA = '2026-11-06T18:00:00Z';
  * de Colombia). `inicio` es el primer día a las 8:00 hora local.
  */
 export const SEDES = [
-  { ciudad: 'Caracas', fechas: '4, 5 y 6 de diciembre', inicio: '2026-12-04T12:00:00Z' },
+  { ciudad: 'Caracas', fechas: '18, 19 y 20 de diciembre', inicio: '2026-12-18T12:00:00Z' },
   { ciudad: 'Medellín', fechas: '10, 11 y 12 de diciembre', inicio: '2026-12-10T13:00:00Z' },
 ];
 
