@@ -80,6 +80,17 @@ export async function GET(peticion: Request) {
 
   for (const d of contactos?.docs ?? []) {
     const v = d.data();
+    if (v.origen === 'reserva-pagada') {
+      novedades.push({
+        id: `contacto:${d.id}`,
+        tipo: 'contacto',
+        titulo: 'Reserva pagada',
+        texto: `${quien(v.nombre, v.correo)} ha pagado${v.reservaPagada?.ciudad ? ` · ${v.reservaPagada.ciudad}` : ''}. Cruza el pago en Stripe.`,
+        cuando: fechaDe(v.creado) ?? desde.toISOString(),
+        ir: 'leads',
+      });
+      continue;
+    }
     // Quien se registra ya sale abajo, como cuenta: no se avisa dos veces.
     if (v.registrada || v.origen === 'invitacion' || v.origen === 'comunidad-plataforma' || ORIGENES[v.origen]) continue;
     novedades.push({

@@ -80,6 +80,7 @@ export const COMO_LLEGO: Record<string, string> = {
   'comunidad-plataforma': 'Pulsó «Quiero ser parte del cambio Divine» dentro de la plataforma',
   invitacion: 'Entró con un enlace de invitación que le mandaste',
   acuerdo: 'Firmó el acuerdo de la formación',
+  'reserva-pagada': 'Pagó la reserva por Stripe y dejó sus datos en /reserva/gracias (cruza el pago en Stripe)',
 };
 
 /**
@@ -95,6 +96,7 @@ export function origenCorto(origen: string | undefined | null): string {
   if (o.endsWith('-registro')) return 'Se registró';
   if (o === 'invitacion') return 'Con tu invitación';
   if (o === 'acuerdo') return 'Acuerdo firmado';
+  if (o === 'reserva-pagada') return 'Pagó la reserva';
   if (o.endsWith('-a-mano') || o === 'a-mano') return 'La apuntaste tú';
   if (o.endsWith('-asistente') || o === 'asistente') return 'Asistente de la web';
   if (o.startsWith('avisar-ciudad')) return 'Aviso de su ciudad';

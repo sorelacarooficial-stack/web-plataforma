@@ -244,7 +244,12 @@ cada cambio importante** (una línea por decisión, con la fecha).
   diapositivas lejanas con `content-visibility: hidden` (`.lejos`); vídeos y
   canción final solo se bajan al acercarse (al abrir: 42 MB → 5 MB); el mapa
   en un solo trazo (5.500 → 1.600 nodos).
-- 2026-11-06: `/reserva/gracias?o=<id>` = página de después de pagar (la
-  «URL de confirmación» de cada enlace de Stripe): gracias + qué reservó +
-  botón al grupo de su formación (`GRUPOS` en lib/reserva.ts: caracas,
-  medellin, online, membresia; vacío = WhatsApp al equipo para que la añadan).
+- 2026-11-06: pagos por **formación, no por ciudad**: 5 enlaces de Stripe
+  (`STRIPE` en lib/reserva.ts: completa, intensiva, especifica, online,
+  membresia), Caracas y Medellín usan el mismo. Después de pagar, Stripe manda
+  a `/reserva/gracias?f=<formación>&s={CHECKOUT_SESSION_ID}`: formulario
+  (nombre, WhatsApp, correo y ciudad si es presencial) que guarda en
+  `reservas_pagadas` y en el contacto del CRM (origen `reserva-pagada`, aviso
+  «Reserva pagada» a Sorela), y luego el botón al grupo único de la
+  **Comunidad Divine** (`GRUPO_COMUNIDAD`; vacío = WhatsApp al equipo). No
+  prueba el pago: cruzar el número `cs_…` en Stripe.
