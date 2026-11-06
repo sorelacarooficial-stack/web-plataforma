@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import QRCode from 'qrcode';
 import Deck from '@/components/clase/Deck';
 import { QR_DESTINO } from '@/lib/clase';
-import { transferencias } from '@/lib/transferencia';
 import css from '@/components/clase/clase.module.css';
 
 /**
@@ -43,7 +42,5 @@ export default async function Clase({ searchParams }: { searchParams: Promise<Re
     color: { dark: '#141210', light: '#00000000' },
   });
 
-  // Solo la de Colombia en la diapositiva «Preguntas» (de Vercel, no del código).
-  const co = transferencias().find((t) => t.pais === 'Colombia');
-  return <Deck qr={qr} vista={q.vista === 'presentador' ? 'presentador' : 'publico'} transferencia={co?.lineas ?? []} />;
+  return <Deck qr={qr} vista={q.vista === 'presentador' ? 'presentador' : 'publico'} />;
 }
