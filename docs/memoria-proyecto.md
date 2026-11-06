@@ -244,3 +244,7 @@ cada cambio importante** (una línea por decisión, con la fecha).
   diapositivas lejanas con `content-visibility: hidden` (`.lejos`); vídeos y
   canción final solo se bajan al acercarse (al abrir: 42 MB → 5 MB); el mapa
   en un solo trazo (5.500 → 1.600 nodos).
+- 2026-11-06: `/reserva/gracias?o=<id>` = página de después de pagar (la
+  «URL de confirmación» de cada enlace de Stripe): gracias + qué reservó +
+  botón al grupo de su formación (`GRUPOS` en lib/reserva.ts: caracas,
+  medellin, online, membresia; vacío = WhatsApp al equipo para que la añadan).

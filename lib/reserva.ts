@@ -66,3 +66,29 @@ export const PLAZAS_SEDE = PLAZAS;
 export function enlaceStripe(o: Opcion) {
   return STRIPE[o.id] || o.stripe;
 }
+
+/**
+ * Página de después de pagar: /reserva/gracias?o=<id>. Es la «URL de
+ * confirmación» que se pone en cada enlace de pago de Stripe (Después del
+ * pago → No mostrar la página de confirmación → Redirigir a tu web).
+ */
+export const URL_WEB = 'https://www.sorelacarodivine.com';
+export function urlGracias(id: string) {
+  return `${URL_WEB}/reserva/gracias?o=${encodeURIComponent(id)}`;
+}
+
+/**
+ * Grupo (o comunidad) de WhatsApp al que entra cada alumna después de pagar.
+ * Vacío = el botón abre WhatsApp con el equipo para que la añadan a mano.
+ */
+export const GRUPOS: Record<'caracas' | 'medellin' | 'online' | 'membresia', string> = {
+  caracas: '',
+  medellin: '',
+  online: '',
+  membresia: '',
+};
+
+export function grupoDe(o: Opcion): keyof typeof GRUPOS {
+  if (o.id === 'online' || o.id === 'membresia') return o.id;
+  return o.id.startsWith('medellin') ? 'medellin' : 'caracas';
+}
