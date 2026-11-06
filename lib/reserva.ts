@@ -75,6 +75,32 @@ export function enlaceStripe(o: Opcion) {
   return STRIPE[formacionDe(o)] || o.stripe;
 }
 
+/** Ciudad de una opción presencial («caracas-completa» → «Caracas»); null si no es presencial. */
+export function ciudadDe(o: Opcion): string | null {
+  if (o.grupo !== 'Presencial') return null;
+  return o.titulo.split(' · ')[0];
+}
+
+/**
+ * El enlace de pago con la reserva dentro: Stripe guarda `client_reference_id`
+ * en el pago (así se cruza con la reserva) y rellena el correo.
+ */
+export function urlPago(o: Opcion, reserva: string, correo: string) {
+  const base = enlaceStripe(o);
+  if (!base) return '';
+  const q = new URLSearchParams({ client_reference_id: reserva, prefilled_email: correo });
+  return `${base}${base.includes('?') ? '&' : '?'}${q}`;
+}
+
+/** Dónde guarda el navegador la reserva en curso, para confirmarla al volver de Stripe. */
+export const CLAVE_RESERVA = 'divine-reserva';
+
+/** Una por cada «Reservar»: datos, plan y si el pago está confirmado. */
+export const COLECCION_RESERVAS = 'reservas_web';
+
+/** Hasta cuándo se puede confirmar una reserva desde la página de gracias. */
+export const HORAS_PARA_CONFIRMAR = 48;
+
 /**
  * Las cinco cosas que se pagan. Caracas y Medellín comparten enlace de pago:
  * la ciudad la elige cada alumna después, en /reserva/gracias.
@@ -97,8 +123,9 @@ export const CIUDADES_PAGO = SEDES.map((s) => s.ciudad);
 
 /**
  * Página de después de pagar: la «URL de confirmación» de cada enlace de pago
- * de Stripe (Después del pago → Redirigir a tu web). Stripe cambia
- * {CHECKOUT_SESSION_ID} por el número del pago, que se guarda para cruzarlo.
+ * de Stripe (Después del pago → Redirigir a tu web). Si se añade
+ * `&s={CHECKOUT_SESSION_ID}`, Stripe pone el número del pago y, con
+ * STRIPE_SECRET_KEY en Vercel, el pago se comprueba de verdad con Stripe.
  */
 export const URL_WEB = 'https://www.sorelacarodivine.com';
 export function urlGracias(f: FormacionPago) {

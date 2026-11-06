@@ -80,12 +80,16 @@ export async function GET(peticion: Request) {
 
   for (const d of contactos?.docs ?? []) {
     const v = d.data();
-    if (v.origen === 'reserva-pagada') {
+    if (v.origen === 'reserva-web' || v.origen === 'reserva-pagada') {
+      const pagada = v.reserva?.pagoConfirmado === true || v.origen === 'reserva-pagada';
+      const donde = v.reserva?.titulo || v.reservaPagada?.ciudad || '';
       novedades.push({
         id: `contacto:${d.id}`,
         tipo: 'contacto',
-        titulo: 'Reserva pagada',
-        texto: `${quien(v.nombre, v.correo)} ha pagado${v.reservaPagada?.ciudad ? ` · ${v.reservaPagada.ciudad}` : ''}. Cruza el pago en Stripe.`,
+        titulo: pagada ? 'Reserva pagada' : 'Reserva sin pagar',
+        texto: pagada
+          ? `${quien(v.nombre, v.correo)} ha pagado${donde ? ` · ${donde}` : ''}.${v.reserva?.pagoVerificado ? ' Comprobado con Stripe.' : ' Míralo en Stripe.'}`
+          : `${quien(v.nombre, v.correo)} dejó sus datos${donde ? ` para ${donde}` : ''} pero aún no ha pagado. Escríbele.`,
         cuando: fechaDe(v.creado) ?? desde.toISOString(),
         ir: 'leads',
       });

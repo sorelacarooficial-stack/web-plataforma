@@ -1298,7 +1298,7 @@ export default function Contactos() {
        de espera, «Ya le escribí» invitaba a marcar a cientos de personas a
        las que nadie tiene que escribir. */
     const boton = g === 'te-necesita' ? (c.situacion ? botonDe(c.situacion) : 'Ya le escribí') : null;
-    const meta = [origenCorto(c.origen), c.ciudad, cuando(c.creado)].filter(Boolean).join(' · ');
+    const meta = [origenCorto(c.origen), c.reserva ? (c.reserva.pagoConfirmado ? 'Pagado ✓' : 'Sin pagar') : '', c.ciudad, cuando(c.creado)].filter(Boolean).join(' · ');
     return (
       <li
         key={c.id}

@@ -35,7 +35,7 @@ export const CORREO_PRIVACIDAD = 'sorelacarooficial@gmail.com';
  * acuerdo de confidencialidad guarda esta fecha como la versión de la política
  * que se le enseñó a quien firma.
  */
-export const REVISADA = '20 de octubre de 2026';
+export const REVISADA = '6 de noviembre de 2026';
 
 export type Tratamiento = {
   /** Para qué formulario o parte de la web. */
@@ -89,6 +89,19 @@ export const TRATAMIENTOS: Tratamiento[] = [
       'El aviso que pides, y solo ese: en el buscador de terapeutas, decirte cuándo hay una terapeuta certificada en Técnica Divine cerca de ti; en la página de formaciones, decirte cuándo hay una convocatoria en tu zona y tener en cuenta tu ciudad al organizar las próximas. No recibes la información general, ni publicidad, ni las campañas de correo.',
     base: 'Tu consentimiento, que puedes retirar cuando quieras.',
     conservacion: 'Hasta que pidas que se borren o retires tu consentimiento.',
+  },
+  {
+    donde: 'Reserva de plaza (/reserva)',
+    datos:
+      'Nombre, WhatsApp, correo electrónico, qué formación eliges y en qué ciudad (si es presencial), si el pago se ha completado y el número de operación que da Stripe (no los datos de tu tarjeta: esos los trata Stripe y Sorela no los ve), la fecha y la versión de esta política que tenías delante. Tu navegador guarda el número de tu reserva hasta que vuelves del pago, para confirmarla.',
+    finalidad:
+      'Prepararte el pago de tu plaza, confirmarlo cuando vuelves de pagar, apuntarte en las fechas de tu ciudad, darte el acceso a la plataforma, escribirte por WhatsApp o por correo sobre tu formación (también si no terminas el pago, para ayudarte) y añadirte al grupo de alumnas.',
+    base: 'Las medidas previas al contrato que pides al reservar y, al pagar, la ejecución de ese contrato (art. 6.1.b RGPD).',
+    baseResumen: 'Contrato',
+    conservacion:
+      'Mientras dure tu formación y tu relación con la Técnica Divine y, después, el tiempo que obligan las leyes fiscales y de consumo para poder acreditar la compra.',
+    quienVe:
+      'Sorela y su equipo. Si entras en el grupo de WhatsApp de la Comunidad Divine, tu número y tu nombre los verán las demás participantes y WhatsApp (Meta).',
   },
   {
     donde: 'Cuenta en la plataforma',
@@ -373,6 +386,14 @@ export const ALMACENAMIENTO: Almacen[] = [
     cuando: 'Si entras con tu cuenta.',
   },
   {
+    nombre: 'divine-reserva',
+    tipo: 'Almacenamiento local',
+    titular: 'Propia',
+    finalidad: 'Recordar el número de tu reserva mientras pagas, para confirmarla al volver a la página de gracias. Técnica.',
+    duracion: 'Se borra al confirmar la reserva (como mucho, hasta que lo borres).',
+    cuando: 'Si reservas tu plaza en /reserva.',
+  },
+  {
     nombre: 'divine-tema',
     tipo: 'Almacenamiento local',
     titular: 'Propia',
@@ -458,6 +479,14 @@ export const CAPA_CUENTA: PrimeraCapa = {
 };
 
 
+
+/** /reserva: los datos que deja quien va a pagar su plaza. */
+export const CAPA_RESERVA_PAGADA: PrimeraCapa = {
+  finalidad:
+    'Preparar y confirmar el pago de tu plaza, apuntarte en las fechas de tu ciudad, darte el acceso a la plataforma y escribirte sobre tu formación (también si no terminas el pago).',
+  base: 'Tu petición de reservar y, al pagar, el contrato.',
+  destinatarios: `${DESTINATARIOS_GENERAL} El pago lo trata Stripe. Si entras en el grupo de WhatsApp, tu número y tu nombre los verán las demás participantes y WhatsApp (Meta).`,
+};
 
 export const CAPA_ACUERDO: PrimeraCapa = {
   finalidad:

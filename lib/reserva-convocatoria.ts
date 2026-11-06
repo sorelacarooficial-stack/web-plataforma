@@ -78,3 +78,51 @@ export async function reservarPlaza(
   if (info) refrescarFormaciones();
   return info;
 }
+
+/**
+ * Quien vuelve de pagar una formación presencial (/reserva/gracias) entra
+ * sola como inscrita en las fechas de su ciudad (las
+ * convocatorias de diciembre, que son internas: por eso aquí no se mira si
+ * está publicada). Así Sorela la ve en «Dar acceso» y le crea el enlace.
+ *
+ * Si Stripe ha confirmado el pago entra con el abono («senal»); si no se ha
+ * podido comprobar, como «pendiente» con una nota para mirarlo en Stripe.
+ */
+export async function inscribirReservaPagada(
+  idConv: string,
+  p: { nombre: string; correo: string; telefono: string; contacto: string; nota: string; estado: 'pendiente' | 'senal'; pagado: number }
+): Promise<'inscrita' | 'ya-estaba' | 'no-existe'> {
+  const ref = coleccion().doc(idConv);
+  const correo = p.correo.trim().toLowerCase();
+  const nuevaId = coleccion().doc().id;
+  const r: { v: 'inscrita' | 'ya-estaba' | 'no-existe' } = { v: 'no-existe' };
+  await ref.firestore.runTransaction(async (t) => {
+    const d = await t.get(ref);
+    if (!d.exists) {
+      r.v = 'no-existe';
+      return;
+    }
+    const c = aConvocatoria(d.id, d.data() ?? {});
+    if (c.inscritas.some((i) => i.correo.trim().toLowerCase() === correo)) {
+      r.v = 'ya-estaba';
+      return;
+    }
+    t.update(ref, {
+      [`inscritas.${nuevaId}`]: {
+        nombre: p.nombre.slice(0, 80),
+        correo: p.correo.slice(0, 160),
+        telefono: p.telefono.slice(0, 32),
+        pagado: p.pagado,
+        estado: p.estado,
+        nota: p.nota.slice(0, 300),
+        contacto: p.contacto,
+        creada: new Date().toISOString(),
+      },
+      ocupadas: c.inscritas.length + 1,
+      actualizada: FieldValue.serverTimestamp(),
+    });
+    r.v = 'inscrita';
+  });
+  if (r.v === 'inscrita') refrescarFormaciones();
+  return r.v;
+}

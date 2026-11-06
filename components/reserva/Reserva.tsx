@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { SEDES } from '@/lib/clase';
 import { CRIPTO, OPCIONES, PLAZAS_SEDE, RESERVA_HASTA, TRANSFERENCIA, enlaceStripe, type Opcion } from '@/lib/reserva';
+import ReservaDatos from './ReservaDatos';
 import css from './reserva.module.css';
 
 const usd = (n: number) => `${n.toLocaleString('es-ES')} USD`;
@@ -27,6 +28,9 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
   const [ahora, setAhora] = useState<number | null>(null);
   const [sede, setSede] = useState(0);
   const [otros, setOtros] = useState(false);
+  const [elegida, setElegida] = useState<Opcion | null>(null);
+  const elegir = useCallback((o: Opcion) => setElegida(o), []);
+  const cerrar = useCallback(() => setElegida(null), []);
 
   useEffect(() => {
     setAhora(Date.now());
@@ -114,7 +118,7 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
               ))}
             </ul>
             <Precio o={completa} grande />
-            <Boton o={completa} wa={wa} />
+            <Boton o={completa} wa={wa} elegir={elegir} />
           </div>
         </article>
 
@@ -127,7 +131,7 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
                 <h3>{o.titulo.split(' · ')[1]}</h3>
                 <p className={css.suave}>{o.id.endsWith('intensiva') ? 'Dos zonas, a fondo' : 'Una zona, para empezar'}</p>
                 <Precio o={o} />
-                <Boton o={o} wa={wa} />
+                <Boton o={o} wa={wa} elegir={elegir} />
               </div>
             </article>
           ))}
@@ -144,7 +148,7 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
           <p className={css.bandaTexto}>100 % online y a tu ritmo, para profesionales con experiencia. Con certificado Divine®.</p>
           <Precio o={online} grande />
           <div className={css.bandaBoton}>
-            <Boton o={online} wa={wa} />
+            <Boton o={online} wa={wa} elegir={elegir} />
           </div>
         </div>
       </section>
@@ -162,7 +166,7 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
             {membresia.despues ? <span> · después {usd(membresia.despues)}</span> : null}
           </p>
           <div className={css.bandaBoton}>
-            <Boton o={membresia} wa={wa} />
+            <Boton o={membresia} wa={wa} elegir={elegir} />
           </div>
         </div>
       </section>
@@ -194,6 +198,8 @@ export default function Reserva({ whatsapp }: { whatsapp: string }) {
         </section>
       )}
 
+      {elegida && <ReservaDatos o={elegida} alCerrar={cerrar} whatsapp={whatsapp} />}
+
       <footer className={css.pie}>
         <a href={wa('Hola, vengo de la masterclass y tengo una duda sobre la reserva.')} target="_blank" rel="noopener noreferrer">
           ¿Dudas? Escríbenos
@@ -213,14 +219,23 @@ function Precio({ o, grande = false }: { o: Opcion; grande?: boolean }) {
   );
 }
 
-function Boton({ o, wa }: { o: Opcion; wa: (t: string) => string }) {
+/**
+ * Con enlace de Stripe: abre los datos (paso 1) y de ahí va a pagar (paso 2).
+ * Sin enlace: WhatsApp con la elección escrita.
+ */
+function Boton({ o, wa, elegir }: { o: Opcion; wa: (t: string) => string; elegir: (o: Opcion) => void }) {
   const stripe = enlaceStripe(o);
-  const href = stripe || wa(`Hola, vengo de la masterclass y quiero reservar: ${o.titulo} (${o.detalle}).`);
   const texto = o.reserva ? `Reservar con ${usd(o.reserva)}` : o.precio ? `Empezar por ${usd(o.precio)}` : 'Reservar';
+  if (stripe)
+    return (
+      <button type="button" className={css.boton} onClick={() => elegir(o)} style={{ width: '100%', border: 0, font: 'inherit', fontWeight: 700, cursor: 'pointer' }}>
+        {texto}
+      </button>
+    );
   return (
-    <a className={css.boton} href={href} target="_blank" rel="noopener noreferrer">
+    <a className={css.boton} href={wa(`Hola, vengo de la masterclass y quiero reservar: ${o.titulo} (${o.detalle}).`)} target="_blank" rel="noopener noreferrer">
       {texto}
-      {!stripe && <small>por WhatsApp</small>}
+      <small>por WhatsApp</small>
     </a>
   );
 }

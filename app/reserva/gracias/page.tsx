@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from 'next';
-import { FORMACIONES_PAGO, type FormacionPago } from '@/lib/reserva';
+import { FORMACIONES_PAGO } from '@/lib/reserva';
 import { WHATSAPP_SORELA } from '@/lib/contenido';
-import GraciasFormulario from '@/components/reserva/GraciasFormulario';
+import GraciasComunidad from '@/components/reserva/GraciasComunidad';
 import css from '@/components/reserva/reserva.module.css';
 
 /**
  * /reserva/gracias?f=<formación>&s=<pago de Stripe>: adonde manda Stripe
- * después de pagar. Da las gracias, pide los datos (y la ciudad si es
- * presencial) y lleva al grupo de la Comunidad Divine. No se indexa.
+ * después de pagar. Da las gracias, confirma el pago de la reserva (los datos
+ * ya se dejaron en /reserva, antes de pagar) y lleva al grupo de la Comunidad
+ * Divine. No se indexa.
  */
 
 export const metadata: Metadata = {
@@ -47,7 +48,7 @@ export default async function Gracias({ searchParams }: { searchParams: Promise<
         </div>
       </header>
 
-      <GraciasFormulario formacion={(formacion?.id as FormacionPago) ?? null} pago={uno(q.s).slice(0, 220)} whatsapp={WHATSAPP_SORELA} />
+      <GraciasComunidad sesion={uno(q.s).slice(0, 220)} whatsapp={WHATSAPP_SORELA} />
 
       <footer className={css.pie}>
         <p>Nos vemos muy pronto. Sorela Caro · Técnica Divine</p>
