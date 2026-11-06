@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { LETRAS } from '@/lib/letras';
 import { DESPEDIDA, ESPERA, FORMACIONES, MEMBRESIA, ONLINE, PLAZAS, SEDES, VIDEOS } from '@/lib/clase';
 import { AntesDespues, Cuenta, CuentaAtras, CuentaPreguntas, Cuerpo, Icono, Mapa, Movil, Musica, Polvo, Quedan, Rotador, Titulo, useGoteo, VideoModal } from './piezas';
 import { useClase } from './estado';
@@ -69,8 +70,10 @@ function Flecha({ className, style }: { className?: string; style?: CSSPropertie
 
 function Portada({ activa, estatica, muda = false, saliendo = false, v, on }: Props) {
   const [empieza, setEmpieza] = useState(false);
+  const [cantando, setCantando] = useState(false);
   return (
-    <div className={css.portada}>
+    // Mientras suena la canción, todo sube un poco para dejar sitio a la letra.
+    <div className={`${css.portada} ${cantando ? css.portadaCantando : ''}`}>
       {!estatica && <Polvo activa={activa} />}
       <div className={css.halo} />
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -86,11 +89,11 @@ function Portada({ activa, estatica, muda = false, saliendo = false, v, on }: Pr
         <CuentaAtras activa={activa && !estatica} alTerminar={setEmpieza} />
       </div>
       {!estatica && (
-        <div className={v(0)} style={d(1.2)}>
-          <Rotador frases={ESPERA.frases} activa={activa} />
+        <div className={v(0)} style={{ ...d(1.2), display: cantando ? 'none' : undefined }}>
+          <Rotador frases={ESPERA.frases} activa={activa && !cantando} />
         </div>
       )}
-      {!estatica && <Musica pistas={ESPERA.musica} activa={activa} saliendo={saliendo} apagar={empieza} muda={muda} />}
+      {!estatica && <Musica pistas={ESPERA.musica} activa={activa} saliendo={saliendo} apagar={empieza} muda={muda} letra={LETRAS.inicio} cancion="Poder en la oración · Natali Apacible" alCantar={setCantando} />}
     </div>
   );
 }
@@ -1340,7 +1343,7 @@ function Gracias({ activa, estatica, muda = false, saliendo = false, cerca = fal
           @sorelacaro_
         </Chip>
       </div>
-      {!estatica && <Musica pistas={[DESPEDIDA]} activa={activa} saliendo={saliendo} muda={muda} bucle={false} volumen={0.9} precarga={cerca || activa} />}
+      {!estatica && <Musica pistas={[DESPEDIDA]} activa={activa} saliendo={saliendo} muda={muda} bucle={false} volumen={0.9} precarga={cerca || activa} letra={LETRAS.despedida} cancion="Proceso con Dios · Cristian Robles" />}
     </div>
   );
 }

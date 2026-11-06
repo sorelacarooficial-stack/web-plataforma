@@ -561,6 +561,11 @@ button.oscuraCaja {
   align-items: center;
   justify-content: center;
   text-align: center;
+  transition: padding 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* Con letra: el bloque sube y deja abajo la franja de la canción. */
+.portadaCantando {
+  padding-bottom: 190px;
 }
 .polvo {
   position: absolute;
@@ -3899,6 +3904,79 @@ button.oscuraCaja {
 @keyframes barraMusica {
   from { height: 4px; }
   to { height: 18px; }
+}
+
+/* ---------------------------------------------------------- letra de las canciones */
+.letra {
+  position: absolute;
+  left: 50%;
+  bottom: 56px;
+  width: 1320px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(243, 217, 174, 0.14);
+  text-align: center;
+  pointer-events: none;
+  animation: letraEntra 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.letraTitulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(243, 217, 174, 0.7);
+}
+.letraTitulo .musicaBarras i {
+  background: currentColor;
+  animation: barraMusica 0.9s ease-in-out infinite alternate;
+}
+.letraTitulo .musicaBarras i:nth-child(2) { animation-delay: 0.2s; }
+.letraTitulo .musicaBarras i:nth-child(3) { animation-delay: 0.45s; }
+.letraTitulo .musicaBarras i:nth-child(4) { animation-delay: 0.1s; }
+/* Alto fijo: dos renglones siempre en el mismo sitio, aunque haya hueco instrumental. */
+.letraHueco {
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+.letraLinea {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 52px;
+  white-space: nowrap;
+  color: rgba(244, 239, 231, 0.38);
+  animation: letraEntra 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.letraLinea span {
+  transition: color 0.25s, text-shadow 0.4s;
+}
+.letraLinea .letraOn {
+  color: #f3d9ae;
+  text-shadow: 0 0 26px rgba(243, 217, 174, 0.3);
+}
+.letraSiguiente {
+  margin: 8px 0 0;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 30px;
+  white-space: nowrap;
+  color: rgba(244, 239, 231, 0.28);
+}
+@keyframes letraEntra {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
 }
 
 /* ---------------------------------------------------------- preguntas y reservas */

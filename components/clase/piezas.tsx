@@ -1,9 +1,24 @@
-'use client';
+"use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { CIUDADES, EMPIEZA, ESPERA, MINUTOS_PREGUNTAS, PLAZAS } from '@/lib/clase';
-import { useClase } from './estado';
-import css from './clase.module.css';
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
+import {
+  CIUDADES,
+  EMPIEZA,
+  ESPERA,
+  MINUTOS_PREGUNTAS,
+  PLAZAS,
+} from "@/lib/clase";
+import type { LineaLetra } from "@/lib/letras";
+import { useClase } from "./estado";
+import css from "./clase.module.css";
 
 /* ================================================================ texto */
 
@@ -18,38 +33,42 @@ export function Titulo({
   className,
   retraso = 0,
   paso = 0.07,
-  as: Etiqueta = 'h2',
+  as: Etiqueta = "h2",
 }: {
   texto: string;
   on: boolean;
   className?: string;
   retraso?: number;
   paso?: number;
-  as?: 'h1' | 'h2' | 'p' | 'blockquote';
+  as?: "h1" | "h2" | "p" | "blockquote";
 }) {
   let n = 0;
-  const lineas = texto.split('\n');
+  const lineas = texto.split("\n");
   return (
     <Etiqueta className={className}>
       {lineas.map((linea, li) => (
         <Fragment key={li}>
-          {linea.split('*').map((trozo, ti) => {
+          {linea.split("*").map((trozo, ti) => {
             const fuerte = ti % 2 === 1;
             const palabras = trozo.split(/(\s+)/).filter((p) => p.length);
             const contenido = palabras.map((p, pi) =>
               /^\s+$/.test(p) ? (
-                ' '
+                " "
               ) : (
                 <span
                   key={pi}
-                  className={`${css.palabra} ${on ? css.on : ''}`}
-                  style={{ '--d': `${retraso + n++ * paso}s` } as CSSProperties}
+                  className={`${css.palabra} ${on ? css.on : ""}`}
+                  style={{ "--d": `${retraso + n++ * paso}s` } as CSSProperties}
                 >
                   {p}
                 </span>
-              )
+              ),
             );
-            return fuerte ? <strong key={ti}>{contenido}</strong> : <Fragment key={ti}>{contenido}</Fragment>;
+            return fuerte ? (
+              <strong key={ti}>{contenido}</strong>
+            ) : (
+              <Fragment key={ti}>{contenido}</Fragment>
+            );
           })}
           {li < lineas.length - 1 && <br />}
         </Fragment>
@@ -59,7 +78,19 @@ export function Titulo({
 }
 
 /** Número que sube de 0 a `a` cuando se enciende. */
-export function Cuenta({ a, on, ms = 1600, miles = true, decimales = 0 }: { a: number; on: boolean; ms?: number; miles?: boolean; decimales?: number }) {
+export function Cuenta({
+  a,
+  on,
+  ms = 1600,
+  miles = true,
+  decimales = 0,
+}: {
+  a: number;
+  on: boolean;
+  ms?: number;
+  miles?: boolean;
+  decimales?: number;
+}) {
   const [v, setV] = useState(on ? a : 0);
   useEffect(() => {
     if (!on) {
@@ -78,8 +109,10 @@ export function Cuenta({ a, on, ms = 1600, miles = true, decimales = 0 }: { a: n
   }, [on, a, ms]);
   const txt = decimales ? v.toFixed(decimales) : Math.round(v).toString();
   /* A mano: es-ES no pone el punto en los números de 4 cifras (2250). */
-  const [entero, dec] = txt.split('.');
-  const conPuntos = miles ? entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : entero;
+  const [entero, dec] = txt.split(".");
+  const conPuntos = miles
+    ? entero.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+    : entero;
   return <>{dec ? `${conPuntos},${dec}` : conPuntos}</>;
 }
 
@@ -118,8 +151,12 @@ const TRAZOS: Record<string, ReactNode> = {
       <rect x="14" y="7" width="7" height="10" rx="1.5" />
     </>
   ),
-  mano: <path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11m0-1V4.5a1.5 1.5 0 0 1 3 0V11m0-5.5a1.5 1.5 0 0 1 3 0V12m0-3.5a1.5 1.5 0 0 1 3 0V15a7 7 0 0 1-7 7h-1.5a6 6 0 0 1-5-2.7L3 15.5a1.6 1.6 0 0 1 2.6-1.9L8 16" />,
-  oreja: <path d="M7 9a5 5 0 1 1 10 0c0 3-3 4-3 7a3 3 0 0 1-5.5 1.6M10 9a2 2 0 1 1 4 0" />,
+  mano: (
+    <path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11m0-1V4.5a1.5 1.5 0 0 1 3 0V11m0-5.5a1.5 1.5 0 0 1 3 0V12m0-3.5a1.5 1.5 0 0 1 3 0V15a7 7 0 0 1-7 7h-1.5a6 6 0 0 1-5-2.7L3 15.5a1.6 1.6 0 0 1 2.6-1.9L8 16" />
+  ),
+  oreja: (
+    <path d="M7 9a5 5 0 1 1 10 0c0 3-3 4-3 7a3 3 0 0 1-5.5 1.6M10 9a2 2 0 1 1 4 0" />
+  ),
   reloj: (
     <>
       <circle cx="12" cy="12" r="9" />
@@ -148,7 +185,9 @@ const TRAZOS: Record<string, ReactNode> = {
       <circle cx="12" cy="9" r="2.5" />
     </>
   ),
-  chispa: <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6" />,
+  chispa: (
+    <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6" />
+  ),
   calendario: (
     <>
       <rect x="3" y="5" width="18" height="16" rx="2" />
@@ -159,14 +198,18 @@ const TRAZOS: Record<string, ReactNode> = {
   carpeta: <path d="M3 6h6l2 2h10v11H3V6Z" />,
   escudo: <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z" />,
   play: <path d="M8 5v14l11-7L8 5Z" />,
-  libro: <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Zm0 14a2 2 0 0 1 2-2h13" />,
+  libro: (
+    <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Zm0 14a2 2 0 0 1 2-2h13" />
+  ),
   gente: (
     <>
       <circle cx="9" cy="8" r="3.5" />
       <path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6" />
     </>
   ),
-  qr: <path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z" />,
+  qr: (
+    <path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z" />
+  ),
   tarjeta: (
     <>
       <rect x="2.5" y="5" width="19" height="14" rx="2" />
@@ -181,9 +224,24 @@ const TRAZOS: Record<string, ReactNode> = {
   ),
 };
 
-export function Icono({ n, className }: { n: keyof typeof TRAZOS | string; className?: string }) {
+export function Icono({
+  n,
+  className,
+}: {
+  n: keyof typeof TRAZOS | string;
+  className?: string;
+}) {
   return (
-    <svg viewBox="0 0 24 24" className={className ?? css.icono} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      className={className ?? css.icono}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       {TRAZOS[n]}
     </svg>
   );
@@ -192,12 +250,20 @@ export function Icono({ n, className }: { n: keyof typeof TRAZOS | string; class
 /* ======================================================= polvo de oro */
 
 /** Partículas doradas que suben despacio. Solo se mueven en la diapositiva activa. */
-export function Polvo({ activa, cuantas = 70, rafaga = false }: { activa: boolean; cuantas?: number; rafaga?: boolean }) {
+export function Polvo({
+  activa,
+  cuantas = 70,
+  rafaga = false,
+}: {
+  activa: boolean;
+  cuantas?: number;
+  rafaga?: boolean;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const c = ref.current;
     if (!c || !activa) return;
-    const ctx = c.getContext('2d');
+    const ctx = c.getContext("2d");
     if (!ctx) return;
     const W = (c.width = 1920);
     const H = (c.height = 1080);
@@ -230,7 +296,7 @@ export function Polvo({ activa, cuantas = 70, rafaga = false }: { activa: boolea
         const al = p.a * (0.55 + 0.45 * Math.sin(p.f));
         const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
         g.addColorStop(0, `rgba(243,217,174,${al})`);
-        g.addColorStop(1, 'rgba(201,154,92,0)');
+        g.addColorStop(1, "rgba(201,154,92,0)");
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2);
@@ -246,14 +312,20 @@ export function Polvo({ activa, cuantas = 70, rafaga = false }: { activa: boolea
 
 /* ===================================================== cuentas atrás */
 
-const dos = (n: number) => String(Math.max(0, Math.floor(n))).padStart(2, '0');
+const dos = (n: number) => String(Math.max(0, Math.floor(n))).padStart(2, "0");
 
 /**
  * La cuenta atrás de la portada. Si faltan menos de 60 min para las 19:00 del
  * día 6, cuenta hasta esa hora. Si no (ensayos, otra hora), cuenta 10 minutos
  * desde que se abre la diapositiva. Pulsarla la reinicia.
  */
-export function CuentaAtras({ activa, alTerminar }: { activa: boolean; alTerminar?: (ya: boolean) => void }) {
+export function CuentaAtras({
+  activa,
+  alTerminar,
+}: {
+  activa: boolean;
+  alTerminar?: (ya: boolean) => void;
+}) {
   const [fin, setFin] = useState<number | null>(null);
   const [ahora, setAhora] = useState(0);
   const reiniciar = () => {
@@ -278,8 +350,15 @@ export function CuentaAtras({ activa, alTerminar }: { activa: boolean; alTermina
     alTerminar?.(ya);
   }, [ya, alTerminar]);
   return (
-    <button type="button" className={css.cuentaAtras} onClick={reiniciar} title="Reiniciar la cuenta atrás">
-      <span className={css.cuentaEtiqueta}>{ya ? 'Empezamos' : 'Empezamos en'}</span>
+    <button
+      type="button"
+      className={css.cuentaAtras}
+      onClick={reiniciar}
+      title="Reiniciar la cuenta atrás"
+    >
+      <span className={css.cuentaEtiqueta}>
+        {ya ? "Empezamos" : "Empezamos en"}
+      </span>
       {ya ? (
         <span className={css.cuentaYa}>ya</span>
       ) : (
@@ -320,6 +399,9 @@ export function Musica({
   bucle = true,
   volumen = 0.8,
   precarga = true,
+  letra,
+  cancion,
+  alCantar,
 }: {
   pistas: string[];
   activa: boolean;
@@ -330,6 +412,12 @@ export function Musica({
   volumen?: number;
   /** false: no se baja hasta que haga falta (para no cargar la página al abrir). */
   precarga?: boolean;
+  /** Letra de la primera pista, que sale palabra a palabra mientras suena. */
+  letra?: LineaLetra[];
+  /** «Título · Artista», encima de la letra. */
+  cancion?: string;
+  /** Avisa cuando empieza o deja de verse la letra (la portada esconde sus frases). */
+  alCantar?: (si: boolean) => void;
 }) {
   const ref = useRef<HTMLAudioElement>(null);
   const [sonando, setSonando] = useState(false);
@@ -338,7 +426,12 @@ export function Musica({
   const fundido = useRef<ReturnType<typeof setInterval> | null>(null);
   const clave = pistas[0];
   const quiere = activa && !saliendo && !apagar;
-  const lleva = (a: HTMLAudioElement, hasta: number, ms: number, luego?: () => void) => {
+  const lleva = (
+    a: HTMLAudioElement,
+    hasta: number,
+    ms: number,
+    luego?: () => void,
+  ) => {
     if (fundido.current) clearInterval(fundido.current);
     const desde = a.volume;
     const t0 = Date.now();
@@ -382,18 +475,19 @@ export function Musica({
       tocar();
       return;
     }
-    if (ref.current && !ref.current.paused) parar(saliendo ? SALIDA_MUSICA_MS - 200 : apagar ? 6000 : 1500);
+    if (ref.current && !ref.current.paused)
+      parar(saliendo ? SALIDA_MUSICA_MS - 200 : apagar ? 6000 : 1500);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quiere]);
   /* Si el navegador la bloqueó, arranca con el primer gesto. */
   useEffect(() => {
     if (!bloqueada || !quiere) return;
     const f = () => tocar();
-    window.addEventListener('pointerdown', f, { once: true });
-    window.addEventListener('keydown', f, { once: true });
+    window.addEventListener("pointerdown", f, { once: true });
+    window.addEventListener("keydown", f, { once: true });
     return () => {
-      window.removeEventListener('pointerdown', f);
-      window.removeEventListener('keydown', f);
+      window.removeEventListener("pointerdown", f);
+      window.removeEventListener("keydown", f);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bloqueada, quiere]);
@@ -404,13 +498,22 @@ export function Musica({
     },
     [clave],
   );
+  const conLetra =
+    Boolean(letra?.length) && sonando && pista % pistas.length === 0;
+  useEffect(() => {
+    alCantar?.(conLetra);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conLetra]);
   if (!pistas.length) return null;
   return (
     <>
+      {conLetra && letra && (
+        <Letra lineas={letra} audio={ref} cancion={cancion} />
+      )}
       <audio
         ref={ref}
         src={pistas[pista % pistas.length]}
-        preload={precarga ? 'auto' : 'none'}
+        preload={precarga ? "auto" : "none"}
         muted={muda}
         onEnded={() => {
           if (!bucle && pista + 1 >= pistas.length) {
@@ -424,13 +527,13 @@ export function Musica({
       />
       <button
         type="button"
-        className={`${css.musicaBoton} ${sonando ? css.musicaOn : ''}`}
+        className={`${css.musicaBoton} ${sonando ? css.musicaOn : ""}`}
         onClick={(e) => {
           e.stopPropagation();
           if (sonando) parar(1500);
           else tocar();
         }}
-        title={sonando ? 'Apagar la música' : 'Poner la música'}
+        title={sonando ? "Apagar la música" : "Poner la música"}
       >
         <span className={css.musicaBarras} aria-hidden>
           <i />
@@ -438,14 +541,26 @@ export function Musica({
           <i />
           <i />
         </span>
-        {sonando ? 'Música · sonando' : bloqueada ? 'Pulsa para la música' : 'Poner música'}
+        {sonando
+          ? "Música · sonando"
+          : bloqueada
+            ? "Pulsa para la música"
+            : "Poner música"}
       </button>
     </>
   );
 }
 
 /** Frases que van cambiando cada pocos segundos, con fundido. */
-export function Rotador({ frases, activa, ms = 6000 }: { frases: string[]; activa: boolean; ms?: number }) {
+export function Rotador({
+  frases,
+  activa,
+  ms = 6000,
+}: {
+  frases: string[];
+  activa: boolean;
+  ms?: number;
+}) {
   const [i, setI] = useState(0);
   useEffect(() => {
     if (!activa || frases.length < 2) return;
@@ -460,6 +575,65 @@ export function Rotador({ frases, activa, ms = 6000 }: { frases: string[]; activ
 }
 
 /**
+ * Karaoke: la línea que se canta, con cada palabra encendiéndose en oro al
+ * sonar, y debajo, más suave, la que viene. Lee el tiempo del propio audio,
+ * así que va sincronizada aunque la música se pause o se reinicie.
+ */
+function Letra({
+  lineas,
+  audio,
+  cancion,
+}: {
+  lineas: LineaLetra[];
+  audio: React.RefObject<HTMLAudioElement | null>;
+  cancion?: string;
+}) {
+  const [t, setT] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setT(audio.current?.currentTime ?? 0), 80);
+    return () => clearInterval(id);
+  }, [audio]);
+  // La línea que toca: desde un poco antes de que entre hasta que entra la siguiente
+  // (o hasta 2 s después de acabar, si hay un hueco instrumental).
+  let k = -1;
+  for (let i = 0; i < lineas.length; i++) if (t >= lineas[i].t - 0.35) k = i;
+  const actual = k >= 0 && t <= lineas[k].fin + 2 ? lineas[k] : null;
+  const siguiente =
+    lineas[k + 1] && lineas[k + 1].t - t < 6 ? lineas[k + 1] : null;
+  return (
+    <div className={css.letra} aria-hidden>
+      {cancion && (
+        <p className={css.letraTitulo}>
+          <span className={css.musicaBarras}>
+            <i />
+            <i />
+            <i />
+            <i />
+          </span>
+          {cancion}
+        </p>
+      )}
+      <div className={css.letraHueco}>
+        {actual && (
+          <p key={actual.t} className={css.letraLinea}>
+            {actual.p.map(([w, a], i) => (
+              <span key={i} className={t >= a ? css.letraOn : ""}>
+                {w}{" "}
+              </span>
+            ))}
+          </p>
+        )}
+        {siguiente && siguiente !== actual && (
+          <p key={`s${siguiente.t}`} className={css.letraSiguiente}>
+            {siguiente.p.map(([w]) => w).join(" ")}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
  * Cuenta de 10 min para preguntas y reservas. Arranca sola la primera vez que
  * se llega a la diapositiva y se ve igual en las dos ventanas (va en el estado
  * compartido). Pulsarla la reinicia.
@@ -467,13 +641,17 @@ export function Rotador({ frases, activa, ms = 6000 }: { frases: string[]; activ
 export function CuentaPreguntas({
   activa,
   estatica,
-  campo = 'preguntasDesde',
-  textos = ['Preguntas y reservas en directo', 'Último minuto · preguntas y reservas', 'Últimas reservas'],
+  campo = "preguntasDesde",
+  textos = [
+    "Preguntas y reservas en directo",
+    "Último minuto · preguntas y reservas",
+    "Últimas reservas",
+  ],
 }: {
   activa: boolean;
   estatica: boolean;
   /** Qué reloj usa: cada diapositiva lleva el suyo. */
-  campo?: 'preguntasDesde' | 'puenteDesde';
+  campo?: "preguntasDesde" | "puenteDesde";
   /** Lo que pone mientras corre, en el último minuto y al terminar. */
   textos?: [string, string, string];
 }) {
@@ -485,7 +663,8 @@ export function CuentaPreguntas({
     if (!activa || estatica) return;
     // Si viene de otro día o del ensayo (hace más de una hora), empieza de cero.
     const viejo = (x: number | null) => x == null || Date.now() - x > 60 * 60e3;
-    if (viejo(desde)) cambiar((e) => (viejo(e[campo]) ? { ...e, [campo]: Date.now() } : e));
+    if (viejo(desde))
+      cambiar((e) => (viejo(e[campo]) ? { ...e, [campo]: Date.now() } : e));
     setAhora(Date.now());
     const id = setInterval(() => setAhora(Date.now()), 250);
     return () => clearInterval(id);
@@ -497,8 +676,11 @@ export function CuentaPreguntas({
   return (
     <button
       type="button"
-      className={`${css.cuentaPreguntas} ${fin ? css.cuentaPreguntasFin : ''} ${resta < 60e3 && !fin ? css.cuentaPreguntasUltimo : ''}`}
-      onClick={(e) => (e.stopPropagation(), cambiar((x) => ({ ...x, [campo]: Date.now() })))}
+      className={`${css.cuentaPreguntas} ${fin ? css.cuentaPreguntasFin : ""} ${resta < 60e3 && !fin ? css.cuentaPreguntasUltimo : ""}`}
+      onClick={(e) => (
+        e.stopPropagation(),
+        cambiar((x) => ({ ...x, [campo]: Date.now() }))
+      )}
       title="Reiniciar los 10 minutos"
     >
       <span className={css.cuentaPreguntasEtiqueta}>
@@ -547,7 +729,7 @@ let tierra: number[] | null = null;
 let pidiendo: Promise<number[]> | null = null;
 function cargarTierra() {
   if (tierra) return Promise.resolve(tierra);
-  pidiendo ??= fetch('/clase/tierra.json')
+  pidiendo ??= fetch("/clase/tierra.json")
     .then((r) => r.json())
     .then((d: number[]) => (tierra = d));
   return pidiendo;
@@ -559,43 +741,68 @@ const px = (lng: number) => ((lng + 120) / 128) * MW;
 const py = (lat: number) => ((50 - lat) / 92) * MH;
 
 /** El recuadro ampliado de España, abajo a la derecha. */
-const LUPA = { x: 600, y: 430, w: 380, h: 250, lng0: -10, lng1: 4.5, lat0: 35.5, lat1: 44.2 };
-const lx = (lng: number) => LUPA.x + ((lng - LUPA.lng0) / (LUPA.lng1 - LUPA.lng0)) * LUPA.w;
-const ly = (lat: number) => LUPA.y + ((LUPA.lat1 - lat) / (LUPA.lat1 - LUPA.lat0)) * LUPA.h;
+const LUPA = {
+  x: 600,
+  y: 430,
+  w: 380,
+  h: 250,
+  lng0: -10,
+  lng1: 4.5,
+  lat0: 35.5,
+  lat1: 44.2,
+};
+const lx = (lng: number) =>
+  LUPA.x + ((lng - LUPA.lng0) / (LUPA.lng1 - LUPA.lng0)) * LUPA.w;
+const ly = (lat: number) =>
+  LUPA.y + ((LUPA.lat1 - lat) / (LUPA.lat1 - LUPA.lat0)) * LUPA.h;
 
 /** Dónde va cada etiqueta para que no se pisen. */
-const LADO: Record<string, [number, number, 'start' | 'end']> = {
-  Medellín: [-12, -6, 'end'],
-  Cali: [-12, 10, 'end'],
-  Bogotá: [12, 2, 'start'],
-  Caracas: [12, -4, 'start'],
-  Quito: [-12, 6, 'end'],
-  Lima: [-12, 4, 'end'],
-  Guadalajara: [-12, 4, 'end'],
-  'Ciudad de México': [12, 6, 'start'],
-  Santiago: [-12, 4, 'end'],
-  'Córdoba (AR)': [12, -8, 'start'],
-  'Buenos Aires': [12, 2, 'start'],
-  Montevideo: [12, 14, 'start'],
-  Vigo: [-12, 4, 'end'],
-  Bilbao: [12, -4, 'start'],
-  Barcelona: [12, 4, 'start'],
-  Madrid: [12, 4, 'start'],
-  Valencia: [12, 4, 'start'],
-  Sevilla: [-12, 4, 'end'],
-  Málaga: [12, 10, 'start'],
+const LADO: Record<string, [number, number, "start" | "end"]> = {
+  Medellín: [-12, -6, "end"],
+  Cali: [-12, 10, "end"],
+  Bogotá: [12, 2, "start"],
+  Caracas: [12, -4, "start"],
+  Quito: [-12, 6, "end"],
+  Lima: [-12, 4, "end"],
+  Guadalajara: [-12, 4, "end"],
+  "Ciudad de México": [12, 6, "start"],
+  Santiago: [-12, 4, "end"],
+  "Córdoba (AR)": [12, -8, "start"],
+  "Buenos Aires": [12, 2, "start"],
+  Montevideo: [12, 14, "start"],
+  Vigo: [-12, 4, "end"],
+  Bilbao: [12, -4, "start"],
+  Barcelona: [12, 4, "start"],
+  Madrid: [12, 4, "start"],
+  Valencia: [12, 4, "start"],
+  Sevilla: [-12, 4, "end"],
+  Málaga: [12, 10, "start"],
 };
 
-export function Mapa({ activa, estatica }: { activa: boolean; estatica: boolean }) {
+export function Mapa({
+  activa,
+  estatica,
+}: {
+  activa: boolean;
+  estatica: boolean;
+}) {
   const { estado, cambiar } = useClase();
   const [puntos, setPuntos] = useState<number[] | null>(tierra);
   useEffect(() => {
-    if (!puntos) cargarTierra().then(setPuntos).catch(() => {});
+    if (!puntos)
+      cargarTierra()
+        .then(setPuntos)
+        .catch(() => {});
   }, [puntos]);
 
   const encendidas = new Set(estado.ciudades);
   const alternar = (n: string) =>
-    cambiar((e) => ({ ...e, ciudades: e.ciudades.includes(n) ? e.ciudades.filter((c) => c !== n) : [...e.ciudades, n] }));
+    cambiar((e) => ({
+      ...e,
+      ciudades: e.ciudades.includes(n)
+        ? e.ciudades.filter((c) => c !== n)
+        : [...e.ciudades, n],
+    }));
 
   const origen = { x: lx(-3.7), y: ly(40.42) };
   const esp = { x: px(-4), y: py(40) };
@@ -603,30 +810,47 @@ export function Mapa({ activa, estatica }: { activa: boolean; estatica: boolean 
   // Los ~4.000 puntos van en un solo trazo (no 4.000 círculos): se ve igual y
   // se pinta muchísimo más rápido. Se calcula una vez.
   const [tierraMain, tierraLupa] = useMemo(() => {
-    if (!puntos) return ['', ''];
-    const punto = (x: number, y: number, r: number) => `M${(x - r).toFixed(1)} ${y.toFixed(1)}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`;
-    let main = '';
-    let lupa = '';
+    if (!puntos) return ["", ""];
+    const punto = (x: number, y: number, r: number) =>
+      `M${(x - r).toFixed(1)} ${y.toFixed(1)}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`;
+    let main = "";
+    let lupa = "";
     for (let i = 0; i < puntos.length; i += 2) {
       const lng = puntos[i];
       const lat = puntos[i + 1];
       main += punto(px(lng), py(lat), 2.3);
-      if (lng >= LUPA.lng0 && lng <= LUPA.lng1 && lat >= LUPA.lat0 && lat <= LUPA.lat1) lupa += punto(lx(lng), ly(lat), 6);
+      if (
+        lng >= LUPA.lng0 &&
+        lng <= LUPA.lng1 &&
+        lat >= LUPA.lat0 &&
+        lat <= LUPA.lat1
+      )
+        lupa += punto(lx(lng), ly(lat), 6);
     }
     return [main, lupa];
   }, [puntos]);
 
-  const latam = CIUDADES.filter((c) => c.zona === 'latam');
-  const es = CIUDADES.filter((c) => c.zona === 'es');
+  const latam = CIUDADES.filter((c) => c.zona === "latam");
+  const es = CIUDADES.filter((c) => c.zona === "es");
 
   return (
     <div className={css.mapa}>
       <svg viewBox={`0 0 ${MW} ${MH}`} className={css.mapaSvg}>
         <path d={tierraMain} className={css.tierra} />
         {/* el recuadro de España */}
-        <path d={`M${esp.x} ${esp.y} L${LUPA.x + LUPA.w * 0.55} ${LUPA.y}`} className={css.lupaLinea} />
+        <path
+          d={`M${esp.x} ${esp.y} L${LUPA.x + LUPA.w * 0.55} ${LUPA.y}`}
+          className={css.lupaLinea}
+        />
         <circle cx={esp.x} cy={esp.y} r={16} className={css.lupaFoco} />
-        <rect x={LUPA.x - 14} y={LUPA.y - 14} width={LUPA.w + 28} height={LUPA.h + 28} rx={22} className={css.lupaCaja} />
+        <rect
+          x={LUPA.x - 14}
+          y={LUPA.y - 14}
+          width={LUPA.w + 28}
+          height={LUPA.h + 28}
+          rx={22}
+          className={css.lupaCaja}
+        />
         <path d={tierraLupa} className={css.tierraLupa} />
         <text x={LUPA.x} y={LUPA.y - 26} className={css.mapaZona}>
           España
@@ -642,22 +866,38 @@ export function Mapa({ activa, estatica }: { activa: boolean; estatica: boolean 
             const y = py(c.lat);
             const cx = (esp.x + x) / 2;
             const cy = Math.min(esp.y, y) - 160;
-            return <path key={c.nombre} d={`M${esp.x} ${esp.y} Q${cx} ${cy} ${x} ${y}`} className={css.arco} />;
+            return (
+              <path
+                key={c.nombre}
+                d={`M${esp.x} ${esp.y} Q${cx} ${cy} ${x} ${y}`}
+                className={css.arco}
+              />
+            );
           })}
-        {[...latam.map((c) => ({ c, x: px(c.lng), y: py(c.lat) })), ...es.map((c) => ({ c, x: lx(c.lng), y: ly(c.lat) }))].map(({ c, x, y }, i) => {
+        {[
+          ...latam.map((c) => ({ c, x: px(c.lng), y: py(c.lat) })),
+          ...es.map((c) => ({ c, x: lx(c.lng), y: ly(c.lat) })),
+        ].map(({ c, x, y }, i) => {
           const on = encendidas.has(c.nombre);
-          const [dx, dy, ancla] = LADO[c.nombre] ?? [12, 4, 'start'];
+          const [dx, dy, ancla] = LADO[c.nombre] ?? [12, 4, "start"];
           return (
             <g
               key={c.nombre}
-              className={`${css.pin} ${on ? css.pinOn : ''}`}
+              className={`${css.pin} ${on ? css.pinOn : ""}`}
               onClick={() => alternar(c.nombre)}
-              style={{ '--d': `${0.4 + i * 0.05}s` } as CSSProperties}
+              style={{ "--d": `${0.4 + i * 0.05}s` } as CSSProperties}
             >
               <circle cx={x} cy={y} r={22} className={css.pinZona} />
-              {on && !estatica && activa && <circle cx={x} cy={y} r={8} className={css.pinOnda} />}
+              {on && !estatica && activa && (
+                <circle cx={x} cy={y} r={8} className={css.pinOnda} />
+              )}
               <circle cx={x} cy={y} r={on ? 7 : 5} className={css.pinPunto} />
-              <text x={x + dx} y={y + dy} textAnchor={ancla} className={css.pinTexto}>
+              <text
+                x={x + dx}
+                y={y + dy}
+                textAnchor={ancla}
+                className={css.pinTexto}
+              >
                 {c.nombre}
               </text>
             </g>
@@ -671,10 +911,16 @@ export function Mapa({ activa, estatica }: { activa: boolean; estatica: boolean 
 
 /* ============================================================== cuerpo */
 
-export type Punto = { x: number; y: number; etiqueta?: string; lado?: 'izq' | 'der'; tono?: 'oro' | 'rojo' };
+export type Punto = {
+  x: number;
+  y: number;
+  etiqueta?: string;
+  lado?: "izq" | "der";
+  tono?: "oro" | "rojo";
+};
 
 const SILUETA =
-  'M100 70 C72 70 58 78 54 96 L42 192 C40 203 48 207 52 196 L66 116 L68 222 L72 418 C72 430 90 430 90 418 L96 252 L104 252 L110 418 C110 430 128 430 128 418 L132 222 L134 116 L148 196 C152 207 160 203 158 192 L146 96 C142 78 128 70 100 70 Z';
+  "M100 70 C72 70 58 78 54 96 L42 192 C40 203 48 207 52 196 L66 116 L68 222 L72 418 C72 430 90 430 90 418 L96 252 L104 252 L110 418 C110 430 128 430 128 418 L132 222 L134 116 L148 196 C152 207 160 203 158 192 L146 96 C142 78 128 70 100 70 Z";
 
 /** Silueta de línea fina con puntos que laten. Pulsar un punto lo destaca. */
 export function Cuerpo({
@@ -692,24 +938,47 @@ export function Cuerpo({
 }) {
   const [foco, setFoco] = useState<number | null>(null);
   return (
-    <svg viewBox="0 0 200 440" className={`${css.cuerpo} ${oscuro ? css.cuerpoOscuro : ''} ${className ?? ''}`}>
+    <svg
+      viewBox="0 0 200 440"
+      className={`${css.cuerpo} ${oscuro ? css.cuerpoOscuro : ""} ${className ?? ""}`}
+    >
       <circle cx="100" cy="40" r="25" className={css.silueta} />
       <path d="M92 64 L92 72 M108 64 L108 72" className={css.silueta} />
       <path d={SILUETA} className={css.silueta} />
       {linfa && (
         <g className={css.linfa}>
-          <path id="via-izq" d="M94 68 L76 112 L88 190 L86 240 L84 330 L82 410" />
-          <path id="via-der" d="M106 68 L124 112 L112 190 L114 240 L116 330 L118 410" />
+          <path
+            id="via-izq"
+            d="M94 68 L76 112 L88 190 L86 240 L84 330 L82 410"
+          />
+          <path
+            id="via-der"
+            d="M106 68 L124 112 L112 190 L114 240 L116 330 L118 410"
+          />
           {on &&
             [0, 1, 2, 3, 4].map((k) => (
               <Fragment key={k}>
                 <circle r="2.6" className={css.linfaGota}>
-                  <animateMotion dur="5s" begin={`${k}s`} repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">
+                  <animateMotion
+                    dur="5s"
+                    begin={`${k}s`}
+                    repeatCount="indefinite"
+                    keyPoints="1;0"
+                    keyTimes="0;1"
+                    calcMode="linear"
+                  >
                     <mpath href="#via-izq" />
                   </animateMotion>
                 </circle>
                 <circle r="2.6" className={css.linfaGota}>
-                  <animateMotion dur="5s" begin={`${k + 0.5}s`} repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">
+                  <animateMotion
+                    dur="5s"
+                    begin={`${k + 0.5}s`}
+                    repeatCount="indefinite"
+                    keyPoints="1;0"
+                    keyTimes="0;1"
+                    calcMode="linear"
+                  >
                     <mpath href="#via-der" />
                   </animateMotion>
                 </circle>
@@ -726,23 +995,38 @@ export function Cuerpo({
             [84, 330],
             [116, 330],
           ].map(([x, y], i) => (
-            <circle key={i} cx={x} cy={y} r={4.5} className={`${css.ganglio} ${on ? css.on : ''}`} style={{ '--d': `${0.3 + i * 0.12}s` } as CSSProperties} />
+            <circle
+              key={i}
+              cx={x}
+              cy={y}
+              r={4.5}
+              className={`${css.ganglio} ${on ? css.on : ""}`}
+              style={{ "--d": `${0.3 + i * 0.12}s` } as CSSProperties}
+            />
           ))}
         </g>
       )}
       {puntos.map((p, i) => (
         <g
           key={i}
-          className={`${css.punto} ${p.tono === 'rojo' ? css.puntoRojo : ''} ${on ? css.on : ''} ${foco === i ? css.puntoFoco : ''}`}
-          style={{ '--d': `${0.5 + i * 0.25}s` } as CSSProperties}
+          className={`${css.punto} ${p.tono === "rojo" ? css.puntoRojo : ""} ${on ? css.on : ""} ${foco === i ? css.puntoFoco : ""}`}
+          style={{ "--d": `${0.5 + i * 0.25}s` } as CSSProperties}
           onClick={() => setFoco(foco === i ? null : i)}
         >
           <circle cx={p.x} cy={p.y} r={22} className={css.puntoHalo} />
           <circle cx={p.x} cy={p.y} r={6} className={css.puntoCentro} />
           {p.etiqueta && (
             <>
-              <path d={`M${p.x + (p.lado === 'izq' ? -10 : 10)} ${p.y} L${p.lado === 'izq' ? 18 : 182} ${p.y}`} className={css.puntoLinea} />
-              <text x={p.lado === 'izq' ? 14 : 186} y={p.y + 4} textAnchor={p.lado === 'izq' ? 'end' : 'start'} className={css.puntoTexto}>
+              <path
+                d={`M${p.x + (p.lado === "izq" ? -10 : 10)} ${p.y} L${p.lado === "izq" ? 18 : 182} ${p.y}`}
+                className={css.puntoLinea}
+              />
+              <text
+                x={p.lado === "izq" ? 14 : 186}
+                y={p.y + 4}
+                textAnchor={p.lado === "izq" ? "end" : "start"}
+                className={css.puntoTexto}
+              >
                 {p.etiqueta}
               </text>
             </>
@@ -759,7 +1043,19 @@ export function Cuerpo({
  * Comparador que se arrastra. Al encenderse, la línea barre sola hasta la
  * mitad; después, Sorela puede arrastrarla (o pulsar en cualquier punto).
  */
-export function AntesDespues({ antes, despues, on, alto = 520, className }: { antes: string; despues: string; on: boolean; alto?: number; className?: string }) {
+export function AntesDespues({
+  antes,
+  despues,
+  on,
+  alto = 520,
+  className,
+}: {
+  antes: string;
+  despues: string;
+  on: boolean;
+  alto?: number;
+  className?: string;
+}) {
   const [pos, setPos] = useState(on ? 50 : 100);
   const caja = useRef<HTMLDivElement>(null);
   const arrastrando = useRef(false);
@@ -779,8 +1075,8 @@ export function AntesDespues({ antes, despues, on, alto = 520, className }: { an
   return (
     <div
       ref={caja}
-      className={`${css.ad} ${arrastrando.current ? css.adMueve : ''} ${className ?? ''}`}
-      style={{ height: alto, '--pos': `${pos}%` } as CSSProperties}
+      className={`${css.ad} ${arrastrando.current ? css.adMueve : ""} ${className ?? ""}`}
+      style={{ height: alto, "--pos": `${pos}%` } as CSSProperties}
       onPointerDown={(e) => {
         e.stopPropagation();
         arrastrando.current = true;
@@ -792,7 +1088,12 @@ export function AntesDespues({ antes, despues, on, alto = 520, className }: { an
       onClick={(e) => e.stopPropagation()}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={despues} alt="Después" className={css.adImg} draggable={false} />
+      <img
+        src={despues}
+        alt="Después"
+        className={css.adImg}
+        draggable={false}
+      />
       <div className={css.adAntes}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={antes} alt="Antes" className={css.adImg} draggable={false} />
@@ -809,21 +1110,30 @@ export function AntesDespues({ antes, despues, on, alto = 520, className }: { an
 /* ============================================================== plazas */
 
 /** Las 10 plazas de fundadora. Pulsar una la llena (o la vacía). Compartido entre ventanas. */
-export function Plazas({ grande = false, on = true }: { grande?: boolean; on?: boolean }) {
+export function Plazas({
+  grande = false,
+  on = true,
+}: {
+  grande?: boolean;
+  on?: boolean;
+}) {
   const { estado, cambiar } = useClase();
   return (
-    <div className={`${css.plazas} ${grande ? css.plazasGrande : ''}`}>
+    <div className={`${css.plazas} ${grande ? css.plazasGrande : ""}`}>
       {Array.from({ length: PLAZAS }, (_, i) => {
         const llena = i < estado.plazas;
         return (
           <button
             key={i}
             type="button"
-            className={`${css.plaza} ${llena ? css.plazaLlena : ''} ${on ? css.on : ''}`}
-            style={{ '--d': `${0.2 + i * 0.06}s` } as CSSProperties}
+            className={`${css.plaza} ${llena ? css.plazaLlena : ""} ${on ? css.on : ""}`}
+            style={{ "--d": `${0.2 + i * 0.06}s` } as CSSProperties}
             onClick={(e) => {
               e.stopPropagation();
-              cambiar((s) => ({ ...s, plazas: llena && i === s.plazas - 1 ? i : i + 1 }));
+              cambiar((s) => ({
+                ...s,
+                plazas: llena && i === s.plazas - 1 ? i : i + 1,
+              }));
             }}
             aria-label={`Plaza ${i + 1}`}
           >
@@ -837,9 +1147,15 @@ export function Plazas({ grande = false, on = true }: { grande?: boolean; on?: b
 
 /* ============================================================== móvil */
 
-export function Movil({ children, className }: { children: ReactNode; className?: string }) {
+export function Movil({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={`${css.movil} ${className ?? ''}`}>
+    <div className={`${css.movil} ${className ?? ""}`}>
       <div className={css.movilIsla} />
       <div className={css.movilPantalla}>{children}</div>
     </div>
@@ -847,7 +1163,13 @@ export function Movil({ children, className }: { children: ReactNode; className?
 }
 
 /** Va soltando `n` elementos, uno cada `ms`, mientras la diapositiva está activa. Vuelve a empezar al volver. */
-export function useGoteo(n: number, activa: boolean, ms = 1100, inicio = 600, semilla = 0) {
+export function useGoteo(
+  n: number,
+  activa: boolean,
+  ms = 1100,
+  inicio = 600,
+  semilla = 0,
+) {
   const [k, setK] = useState(0);
   useEffect(() => {
     setK(0);
@@ -867,7 +1189,13 @@ export function useGoteo(n: number, activa: boolean, ms = 1100, inicio = 600, se
 
 /* ======================================================= vídeo emergente */
 
-export function VideoModal({ src, onCerrar }: { src: string; onCerrar: () => void }) {
+export function VideoModal({
+  src,
+  onCerrar,
+}: {
+  src: string;
+  onCerrar: () => void;
+}) {
   return (
     <div
       className={css.modal}
@@ -876,7 +1204,14 @@ export function VideoModal({ src, onCerrar }: { src: string; onCerrar: () => voi
         onCerrar();
       }}
     >
-      <video src={src} className={css.modalVideo} controls autoPlay playsInline onClick={(e) => e.stopPropagation()} />
+      <video
+        src={src}
+        className={css.modalVideo}
+        controls
+        autoPlay
+        playsInline
+        onClick={(e) => e.stopPropagation()}
+      />
     </div>
   );
 }

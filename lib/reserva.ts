@@ -54,11 +54,12 @@ export const OPCIONES: Opcion[] = [
  * mismo). Son públicos, no son claves.
  */
 export const STRIPE: Record<string, string> = {
-  completa: '',
-  intensiva: '',
-  especifica: '',
-  online: '',
-  membresia: '',
+  // Asignados por el orden en que se crearon en Stripe (…00 el primero), sin poder abrirlos: CONFIRMAR.
+  completa: 'https://buy.stripe.com/5kQ4gzdjTdIH7OV8rWaZi00',
+  intensiva: 'https://buy.stripe.com/3cIeVdenXeML5GN8rWaZi01',
+  especifica: 'https://buy.stripe.com/4gMfZh3Jj7kj4CJ23yaZi02',
+  online: 'https://buy.stripe.com/6oU14ngw5dIHfhn5fKaZi03',
+  membresia: 'https://buy.stripe.com/14A28r3Jj7kj3yF37CaZi04',
 };
 
 export const TRANSFERENCIA: { pais: string; datos: string }[] = [
