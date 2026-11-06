@@ -260,12 +260,19 @@ cada cambio importante** (una línea por decisión, con la fecha).
   ElevenLabs sobre los mismos mp3): la línea que se canta se enciende en oro
   palabra a palabra y debajo va la siguiente; en la portada sustituye a las
   frases que rotan mientras suena «Poder en la oración».
-- 2026-11-06: `/reserva/gracias` con casilla obligatoria de privacidad + aviso
-  legal y primera capa (`CAPA_RESERVA_PAGADA`; nuevo tratamiento «Datos
-  después de pagar una reserva» en lib/privacidad.ts, REVISADA → 6 nov). Se
-  guarda la prueba (`consentimiento.version`). Las presenciales entran solas
-  en `caracas-2026-12` / `medellin-2026-12` como «pendiente» con la nota del
-  pago (`inscribirReservaPagada`): Sorela las ve en Cuentas → Dar acceso →
-  esas fechas y crea el enlace. Online y Membresía: en Contactos («Pagó la
-  reserva»); en Dar acceso, «otra persona» con su correo. No hay
-  «Condiciones de contratación»: las tiene que redactar/fijar Sorela.
+- 2026-11-06: **flujo de la reserva: datos → pago → gracias.** En /reserva,
+  «Reservar» abre una hoja con nombre, WhatsApp, correo y casilla de
+  privacidad + aviso legal (`ReservaDatos`). `POST /api/reserva` guarda
+  `reservas_web/{id}` con `pagoConfirmado: false` (y la prueba del
+  consentimiento) y el contacto (origen `reserva-web`, campo `reserva`), y
+  devuelve el enlace de Stripe con `client_reference_id=<id>` y el correo
+  rellenado. El navegador guarda el id (`divine-reserva`, declarado en
+  cookies). `/reserva/gracias` ya no tiene formulario: confirma
+  (`POST /api/reserva/confirmar`, máx. 48 h) y enseña el botón de la Comunidad.
+  Al confirmar: `pagoConfirmado: true` en reserva y contacto; si hay
+  `STRIPE_SECRET_KEY` en Vercel y el enlace trae `&s={CHECKOUT_SESSION_ID}`,
+  se comprueba con Stripe (`pagoVerificado`). Presenciales entran en
+  `caracas-2026-12` / `medellin-2026-12` («senal» si Stripe lo comprobó,
+  «pendiente» si no). En Contactos: «Pagado ✓ / Sin pagar» y sección
+  «Reserva» en la ficha; aviso «Reserva pagada / Reserva sin pagar». No hay
+  «Condiciones de contratación»: las tiene que fijar Sorela.

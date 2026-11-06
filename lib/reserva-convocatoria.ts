@@ -80,17 +80,17 @@ export async function reservarPlaza(
 }
 
 /**
- * Quien deja sus datos en /reserva/gracias después de pagar una formación
- * presencial entra sola como inscrita en las fechas de su ciudad (las
+ * Quien vuelve de pagar una formación presencial (/reserva/gracias) entra
+ * sola como inscrita en las fechas de su ciudad (las
  * convocatorias de diciembre, que son internas: por eso aquí no se mira si
  * está publicada). Así Sorela la ve en «Dar acceso» y le crea el enlace.
  *
- * Entra como «pendiente» con una nota: el formulario no prueba el pago, eso se
- * cruza en Stripe con el número `cs_…` antes de darle el acceso.
+ * Si Stripe ha confirmado el pago entra con el abono («senal»); si no se ha
+ * podido comprobar, como «pendiente» con una nota para mirarlo en Stripe.
  */
 export async function inscribirReservaPagada(
   idConv: string,
-  p: { nombre: string; correo: string; telefono: string; contacto: string; nota: string }
+  p: { nombre: string; correo: string; telefono: string; contacto: string; nota: string; estado: 'pendiente' | 'senal'; pagado: number }
 ): Promise<'inscrita' | 'ya-estaba' | 'no-existe'> {
   const ref = coleccion().doc(idConv);
   const correo = p.correo.trim().toLowerCase();
@@ -112,8 +112,8 @@ export async function inscribirReservaPagada(
         nombre: p.nombre.slice(0, 80),
         correo: p.correo.slice(0, 160),
         telefono: p.telefono.slice(0, 32),
-        pagado: 0,
-        estado: 'pendiente',
+        pagado: p.pagado,
+        estado: p.estado,
         nota: p.nota.slice(0, 300),
         contacto: p.contacto,
         creada: new Date().toISOString(),

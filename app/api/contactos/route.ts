@@ -251,6 +251,17 @@ export async function GET(peticion: Request) {
       ciudad: v.ciudad ?? '',
       nota: v.nota ?? '',
       origen: v.origen ?? 'web',
+      // La reserva de /reserva (app/api/reserva): qué eligió y si pagó.
+      reserva:
+        v.reserva && typeof v.reserva === 'object'
+          ? {
+              titulo: typeof v.reserva.titulo === 'string' ? v.reserva.titulo : 'Reserva',
+              reservaUSD: Number(v.reserva.reservaUSD) || 0,
+              pagoConfirmado: v.reserva.pagoConfirmado === true,
+              pagoVerificado: v.reserva.pagoVerificado === true,
+              pago: typeof v.reserva.pago === 'string' ? v.reserva.pago : null,
+            }
+          : null,
       /* Un estado vacío o desconocido es alguien a quien nadie ha atendido.
          Con `?? 'Nuevo'` el texto vacío —que es lo que traían los contactos
          de la lista de espera— pasaba tal cual, y el tablero los escondía en

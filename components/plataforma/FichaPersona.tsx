@@ -48,6 +48,8 @@ export type Persona = {
   registrada?: boolean;
   /** El grupo de WhatsApp de la masterclass: si pulsó el botón, si se le recordó y si Sorela la marcó dentro. */
   grupo?: { pulso: boolean; medido: boolean; recordada: boolean; dentro: boolean };
+  /** La reserva de /reserva: qué eligió y si el pago está confirmado. */
+  reserva?: { titulo: string; reservaUSD: number; pagoConfirmado: boolean; pagoVerificado: boolean; pago: string | null } | null;
 };
 
 /* Mismos nombres y mismo orden que la lista y que la API. Si aquí se colara
@@ -441,6 +443,28 @@ export default function FichaPersona({
           </div>
           <p className={css.parrafo}>{QUE_QUIERE[tipo]}</p>
         </header>
+
+        {persona.reserva && (
+          <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <h3 className={css.rotuloSeccion}>Reserva</h3>
+            <p className={css.parrafo}>
+              <b>{persona.reserva.titulo}</b>
+              {persona.reserva.reservaUSD ? ` · ${persona.reserva.reservaUSD} USD` : ''}
+            </p>
+            <p className={css.parrafo}>
+              Pago confirmado:{' '}
+              <span className={`${css.estado} ${persona.reserva.pagoConfirmado ? css.estadoOro : css.estadoApagado}`}>
+                {persona.reserva.pagoConfirmado ? 'Sí' : 'No'}
+              </span>{' '}
+              {persona.reserva.pagoConfirmado
+                ? persona.reserva.pagoVerificado
+                  ? 'Comprobado con Stripe.'
+                  : 'Volvió de Stripe a la página de gracias: míralo en Stripe antes de dar el acceso.'
+                : 'Dejó sus datos pero no ha terminado el pago. Escríbele para ayudarla.'}
+            </p>
+            {persona.reserva.pago && <p className={css.parrafo}>Número de pago en Stripe: {persona.reserva.pago}</p>}
+          </section>
+        )}
 
         <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <h3 className={css.rotuloSeccion}>Cómo llegó</h3>
