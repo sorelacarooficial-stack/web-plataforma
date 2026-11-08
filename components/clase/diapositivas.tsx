@@ -1064,36 +1064,54 @@ function Beca({ v, on }: Props) {
       <Eyebrow className={v(0)}>
         Formación presencial <span className={css.premium}>Premium</span> · Solo para Venezuela
       </Eyebrow>
-      <Titulo texto={'Una *beca especial*\npara ti'} on={on(0)} className={`${css.h1crema} ${css.becaTitulo}`} paso={0.12} />
+      <Titulo texto={'Una *beca especial* para ti'} on={on(0)} className={`${css.h1crema} ${css.becaTitulo}`} paso={0.1} />
       <div className={css.becaIncluye}>
         {BECA.incluye.map((t, k) => (
-          <div key={t} className={`${css.becaItem} ${v(0, css.rArriba)}`} style={d(0.7 + k * 0.15)}>
+          <div key={t} className={`${css.becaItem} ${v(0, css.rArriba)}`} style={d(0.6 + k * 0.15)}>
             <Icono n={iconos[k] ?? 'chispa'} className={css.becaIcono} />
             <span>{t}</span>
           </div>
         ))}
       </div>
+      {/* Clic 1: el precio. El de antes, grande y tachado; la beca, enorme y en oro. */}
       {BECA.precio > 0 && (
-        <p className={`${css.becaTotal} ${v(1)}`}>
-          Antes <s>{miles(BECA.antes)} USD</s> » Beca hoy <b>{miles(BECA.precio)} USD</b>
-        </p>
+        <div className={css.becaPrecios}>
+          <div className={`${css.becaAntes} ${v(1, css.rIzq)}`}>
+            <span>Antes</span>
+            <s>
+              {miles(BECA.antes)} <small>USD</small>
+            </s>
+          </div>
+          <span className={`${css.becaFlecha} ${v(1)}`} style={d(0.25)}>
+            »
+          </span>
+          <div className={`${css.becaHoy} ${v(1, css.rEscala)}`} style={d(0.4)}>
+            <span>Beca hoy</span>
+            <b>
+              {miles(BECA.precio)} <small>USD</small>
+            </b>
+          </div>
+        </div>
       )}
-      <div className={`${css.becaPrecio} ${v(1, css.rEscala)}`}>
-        <span className={css.becaRotulo}>Reserva tu beca con</span>
-        <b>
-          {BECA.reserva} <small>USD</small>
-        </b>
-        <span className={css.becaSede}>
-          <Icono n="pin" className={css.chipIcono} /> {sede.ciudad} · {sede.fechas}
-        </span>
-      </div>
-      <div className={`${css.fila} ${v(2)}`} style={{ justifyContent: 'center', marginTop: 34 }}>
-        <span className={css.becaPlazasClase}>
-          <span className={css.puntoRojo} /> Solo <b>{BECA.plazas} plazas</b> con beca
-        </span>
-        <span className={css.chipOscuro}>
-          <Icono n="chat" className={css.chipIcono} /> Escribe «QUIERO» en el chat
-        </span>
+      {/* Clic 2, lo último: la reserva. */}
+      <div className={`${css.becaReserva} ${v(2, css.rArriba)}`}>
+        <div className={css.becaPrecio}>
+          <span className={css.becaRotulo}>Reserva tu plaza con</span>
+          <b>
+            {BECA.reserva} <small>USD</small>
+          </b>
+          <span className={css.becaSede}>
+            <Icono n="pin" className={css.chipIcono} /> {sede.ciudad} · {sede.fechas}
+          </span>
+        </div>
+        <div className={css.becaLados}>
+          <span className={css.becaPlazasClase}>
+            <span className={css.puntoRojo} /> Solo <b>{BECA.plazas} plazas</b> con beca
+          </span>
+          <span className={css.chipOscuro}>
+            <Icono n="chat" className={css.chipIcono} /> Escribe «QUIERO» en el chat
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -1488,7 +1506,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Medellín 10, 11 y 12 de diciembre y Caracas 18, 19 y 20. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
   // Con la beca activa, su diapositiva va en lugar de la de precios presenciales (2.250 / reserva 250).
   ...(BECA.activa ? [] : [{ id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema' as const, pasos: 3, Vista: Presencial, notas: 'Solo 10 plazas por ciudad. Pulsa Caracas o Medellín arriba. Una formación por clic, con el precio de antes tachado: completa (3 días, incluye cena de gala, certificado y academia online), intensiva (2 días), específica (1 día). Último clic: material, modelos y estación de snacks incluidos.' }]),
-  { id: 'beca', titulo: 'Beca especial · Venezuela', tema: 'oscuro', pasos: 2, Vista: Beca, notas: 'La sorpresa de hoy: beca especial para Venezuela. Incluye formación online completa, 3 días presenciales con Sorela en Caracas (18, 19 y 20 de diciembre) y certificación. Clic: se reserva con 150 USD. Clic: solo 10 plazas, que escriban QUIERO.' },
+  { id: 'beca', titulo: 'Beca especial · Venezuela', tema: 'oscuro', pasos: 2, Vista: Beca, notas: 'La sorpresa de hoy: beca especial para Venezuela. Incluye formación online completa, 3 días presenciales con Sorela en Caracas (18, 19 y 20 de diciembre) y certificación. Clic: antes 2.250, beca hoy 1.950 USD. Clic (lo último): reserva con 150 USD, solo 10 plazas, que escriban QUIERO.' },
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Para quien ya tiene buenos resultados y quiere conocer la técnica, certificarse y estudiar a su ritmo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
   ...(VIDEOS.membresia ? [{ id: 'video-membresia', titulo: 'Vídeo · Membresía Divine', tema: 'oscuro' as const, pasos: 0, sinPie: true, Vista: VideoMembresia, notas: 'Vídeo cinematográfico de la membresía. Empieza solo; al terminar, sigue con «¿Y qué pasa después de formarte?».' }] : []),
   { id: 'datos', titulo: 'Tres datos', tema: 'oscuro', pasos: 2, Vista: Datos, notas: 'Pregunta al chat: ¿cuántas creéis que la tecnología ha cambiado nuestra forma de trabajar? Clic: el 86 % de las empresas cree que la IA transformará su negocio antes de 2030 (WEF). Clic: las que no se suban ahora, se quedarán atrás.' },

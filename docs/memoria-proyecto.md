@@ -316,3 +316,7 @@ cada cambio importante** (una línea por decisión, con la fecha).
   https://buy.stripe.com/14AbJ11Bb9sr2uB37CaZi05 (`STRIPE.beca`). Con
   `BECA.activa`, /reserva enseña solo la beca, Divine® Online y la Membresía
   (fuera el selector de ciudad y Completa/Intensiva/Específica).
+- 2026-11-08: diapositiva de la beca rehecha: título en una línea; clic 1 =
+  «Antes 2.250 USD» grande con raya roja en diagonal que se dibuja » «Beca hoy
+  1.950 USD» enorme en oro; clic 2 (lo último) = caja «Reserva tu plaza con
+  150 USD» con plazas y QUIERO al lado.
