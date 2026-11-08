@@ -4565,12 +4565,13 @@ button.oscuraCaja {
 
 /* ---------------------------------------------------------- beca Venezuela */
 .becaTitulo {
-  font-size: 128px;
+  font-size: 112px;
+  white-space: nowrap;
 }
 .becaIncluye {
   display: flex;
   gap: 22px;
-  margin-top: 46px;
+  margin-top: 34px;
 }
 .becaItem {
   display: flex;
@@ -4594,7 +4595,6 @@ button.oscuraCaja {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  margin-top: 44px;
   padding: 26px 64px 24px;
   border-radius: 30px;
   color: #17140f;
@@ -4655,4 +4655,94 @@ button.oscuraCaja {
   font-size: 44px;
   font-weight: 600;
   color: #f3d9ae;
+}
+
+/* Precio de la beca: el de antes tachado y la beca, grandes. */
+.becaPrecios {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 44px;
+  margin-top: 40px;
+}
+.becaAntes,
+.becaHoy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.becaAntes span,
+.becaHoy span {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 231, 0.6);
+}
+.becaHoy span {
+  color: #f3d9ae;
+}
+.becaAntes s {
+  position: relative;
+  font-size: 92px;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: rgba(244, 239, 231, 0.5);
+  text-decoration: none;
+}
+/* El tachado: una raya roja gruesa en diagonal, que se dibuja al aparecer. */
+.becaAntes s::after {
+  content: '';
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  top: 52%;
+  height: 8px;
+  border-radius: 8px;
+  background: #e0503f;
+  box-shadow: 0 0 22px rgba(224, 80, 63, 0.6);
+  transform: rotate(-8deg) scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.6s cubic-bezier(0.7, 0, 0.2, 1) 0.5s;
+}
+.on .becaAntes s::after,
+.becaAntes.on s::after {
+  transform: rotate(-8deg) scaleX(1);
+}
+.becaAntes small,
+.becaHoy small {
+  font-size: 0.36em;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.becaFlecha {
+  font-size: 80px;
+  font-weight: 300;
+  color: #c99a5c;
+}
+.becaHoy b {
+  font-size: 150px;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 10px 30px rgba(201, 154, 92, 0.35));
+}
+/* Lo último: la reserva, con las plazas y el QUIERO al lado. */
+.becaReserva {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-top: 40px;
+}
+.becaLados {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
 }
