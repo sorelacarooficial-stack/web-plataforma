@@ -44,6 +44,8 @@ export type Diapo = {
 };
 
 const d = (s: number) => ({ '--d': `${s}s` }) as CSSProperties;
+/** 2250 → «2.250» (el formato español no pone el punto en números de 4 cifras). */
+const miles = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
 function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {
   return <p className={`${css.eyebrow} ${className ?? ''}`}>{children}</p>;
@@ -1071,6 +1073,11 @@ function Beca({ v, on }: Props) {
           </div>
         ))}
       </div>
+      {BECA.precio > 0 && (
+        <p className={`${css.becaTotal} ${v(1)}`}>
+          Antes <s>{miles(BECA.antes)} USD</s> » Beca hoy <b>{miles(BECA.precio)} USD</b>
+        </p>
+      )}
       <div className={`${css.becaPrecio} ${v(1, css.rEscala)}`}>
         <span className={css.becaRotulo}>Reserva tu beca con</span>
         <b>

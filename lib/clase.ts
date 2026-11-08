@@ -33,6 +33,10 @@ export const BECA = {
   /** Mientras está activa, la diapositiva de la beca sustituye a la de precios presenciales. */
   activa: true,
   ciudad: 'Caracas',
+  /** Precio total con beca (USD). 0 = todavía no se enseña. */
+  precio: 1950,
+  /** Precio normal de la formación completa, que sale tachado al lado. */
+  antes: 2250,
   reserva: 150,
   plazas: 10,
   incluye: ['Formación online completa', '3 días presenciales con Sorela Caro', 'Certificación Technique Divine®'],
