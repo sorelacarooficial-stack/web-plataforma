@@ -307,3 +307,7 @@ cada cambio importante** (una línea por decisión, con la fecha).
   hasta el 9 nov 23:59 de Caracas (`RESERVA_HASTA`). El doctor no está: la
   tarjeta dice «Damos paso a una invitada especial». La cuenta atrás de la
   portada, con la fecha ya pasada, cuenta 10 min al abrir (pulsar reinicia).
+- 2026-11-08: masterclass repetida hoy a las 22:00 España / 17:00 Venezuela / 18:00 Argentina (`EMPIEZA` = 2026-11-08T21:00Z): la cuenta atrás de la portada va a esa hora cuando falta menos de una hora.
+- 2026-11-08: con `BECA.activa` la diapositiva de precios presenciales
+  (2.250 / reserva 250) no sale: la beca va en su lugar (23 de 32). Para
+  volver a la presentación normal, `activa: false`.
