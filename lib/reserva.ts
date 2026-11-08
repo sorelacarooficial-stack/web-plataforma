@@ -42,11 +42,9 @@ function presencial(sede: (typeof SEDES)[number]): Opcion[] {
   ];
 }
 
-const sedeBeca = SEDES.find((x) => x.ciudad === BECA.ciudad) ?? SEDES[0];
-
 export const OPCIONES: Opcion[] = [
-  // La beca de Venezuela: la formación completa de Caracas, se reserva con 150 USD.
-  { id: 'caracas-beca', grupo: 'Presencial', titulo: `${sedeBeca.ciudad} · Beca especial`, detalle: `${sedeBeca.fechas} · online + 3 días + certificado`, reserva: BECA.reserva, ...(BECA.precio > 0 ? { precio: BECA.precio, antes: BECA.antes } : {}), stripe: '' },
+  // La beca: formación completa en Medellín (28-30 de enero), se reserva con 150 USD.
+  { id: 'beca', grupo: 'Presencial', titulo: `${BECA.ciudad} · Beca especial`, detalle: `${BECA.fechas} · online + 3 días + certificado`, reserva: BECA.reserva, ...(BECA.precio > 0 ? { precio: BECA.precio, antes: BECA.antes } : {}), stripe: '' },
   ...SEDES.flatMap(presencial),
   { id: 'online', grupo: 'Online', titulo: 'Divine® Online', detalle: 'A tu ritmo · para profesionales con experiencia', reserva: ONLINE.reserva, precio: ONLINE.especial, antes: ONLINE.habitual, stripe: '' },
   // La membresía es solo para terapeutas homologadas.
@@ -110,7 +108,7 @@ export const HORAS_PARA_CONFIRMAR = 48;
  * la ciudad la elige cada alumna después, en /reserva/gracias.
  */
 export const FORMACIONES_PAGO = [
-  { id: 'beca', nombre: 'Beca especial · Formación completa en Caracas', presencial: true },
+  { id: 'beca', nombre: 'Beca especial · Formación completa en Medellín', presencial: true },
   { id: 'completa', nombre: 'Formación Completa · 3 días', presencial: true },
   { id: 'intensiva', nombre: 'Formación Intensiva · 2 días', presencial: true },
   { id: 'especifica', nombre: 'Formación Específica · 1 día', presencial: true },
@@ -120,7 +118,7 @@ export const FORMACIONES_PAGO = [
 export type FormacionPago = (typeof FORMACIONES_PAGO)[number]['id'];
 
 export function formacionDe(o: Opcion): FormacionPago {
-  if (o.id === 'online' || o.id === 'membresia') return o.id;
+  if (o.id === 'online' || o.id === 'membresia' || o.id === 'beca') return o.id;
   return o.id.split('-')[1] as FormacionPago;
 }
 
