@@ -30,6 +30,8 @@ export const SEDES = [
  * El precio total con beca no se ha fijado: no se enseña.
  */
 export const BECA = {
+  /** Mientras está activa, la diapositiva de la beca sustituye a la de precios presenciales. */
+  activa: true,
   ciudad: 'Caracas',
   reserva: 150,
   plazas: 10,
