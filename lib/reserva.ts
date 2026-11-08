@@ -46,7 +46,7 @@ const sedeBeca = SEDES.find((x) => x.ciudad === BECA.ciudad) ?? SEDES[0];
 
 export const OPCIONES: Opcion[] = [
   // La beca de Venezuela: la formación completa de Caracas, se reserva con 150 USD.
-  { id: 'caracas-beca', grupo: 'Presencial', titulo: `${sedeBeca.ciudad} · Beca especial`, detalle: `${sedeBeca.fechas} · online + 3 días + certificado`, reserva: BECA.reserva, stripe: '' },
+  { id: 'caracas-beca', grupo: 'Presencial', titulo: `${sedeBeca.ciudad} · Beca especial`, detalle: `${sedeBeca.fechas} · online + 3 días + certificado`, reserva: BECA.reserva, ...(BECA.precio > 0 ? { precio: BECA.precio, antes: BECA.antes } : {}), stripe: '' },
   ...SEDES.flatMap(presencial),
   { id: 'online', grupo: 'Online', titulo: 'Divine® Online', detalle: 'A tu ritmo · para profesionales con experiencia', reserva: ONLINE.reserva, precio: ONLINE.especial, antes: ONLINE.habitual, stripe: '' },
   // La membresía es solo para terapeutas homologadas.

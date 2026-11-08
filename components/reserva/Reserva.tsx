@@ -7,7 +7,7 @@ import type { Transferencia } from '@/lib/transferencia';
 import ReservaDatos from './ReservaDatos';
 import css from './reserva.module.css';
 
-const usd = (n: number) => `${n.toLocaleString('es-ES')} USD`;
+const usd = (n: number) => `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} USD`;
 const dos = (n: number) => String(Math.max(0, Math.floor(n))).padStart(2, '0');
 const slug = (c: string) => c.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
@@ -94,6 +94,7 @@ export default function Reserva({ whatsapp, transferencias }: { whatsapp: string
             <li key={x}>{x}</li>
           ))}
         </ul>
+        {BECA.precio > 0 && <Precio o={beca} grande />}
         <p className={css.becaPlazas}>Solo {BECA.plazas} plazas con beca</p>
         <Boton o={beca} wa={wa} elegir={elegir} />
       </section>
