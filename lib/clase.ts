@@ -11,8 +11,8 @@
  * diapositivas.
  */
 
-/** Viernes 6 nov 2026, 19:00 en España (CET, UTC+1). */
-export const EMPIEZA = '2026-11-06T18:00:00Z';
+/** Domingo 8 nov 2026 (masterclass repetida, beca Venezuela): 22:00 España (UTC+1) = 17:00 Venezuela = 18:00 Argentina. */
+export const EMPIEZA = '2026-11-08T21:00:00Z';
 
 /**
  * Sedes de la formación presencial (reunión del 4 nov: se cambia Bogotá por
