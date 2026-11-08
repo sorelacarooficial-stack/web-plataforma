@@ -833,7 +833,9 @@ function Presencial({ v, on }: Props) {
     <div className={css.columna}>
       <div className={css.filaEntre} style={{ alignItems: 'flex-end' }}>
         <div>
-          <Eyebrow className={v(0)}>Technique Divine® · Formación presencial premium</Eyebrow>
+          <Eyebrow className={v(0)}>
+            Technique Divine® · Formación presencial <span className={css.premium}>Premium</span>
+          </Eyebrow>
           <Titulo texto={'3 días, formación\n*completa premium*'} on={on(0)} className={css.h2} />
           <span className={`${css.plazasAviso} ${v(0)}`} style={d(0.7)}>
             <span className={css.puntoRojo} /> Solo <b>{PLAZAS} plazas</b> por ciudad
@@ -886,7 +888,7 @@ function Presencial({ v, on }: Props) {
       </div>
       <div className={`${css.zonas} ${v(3)}`} style={d(0.6)}>
         <span className={css.zona}>
-          <Icono n="gente" className={css.chipIcono} /> Material, modelos y comida incluidos: solo tienes que llegar
+          <Icono n="gente" className={css.chipIcono} /> Material, modelos y estación de snacks incluidos: solo tienes que llegar
         </span>
       </div>
     </div>
@@ -1437,7 +1439,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'prueba', titulo: 'Lo que cambia en tu cabina', tema: 'oscuro', pasos: 3, Vista: Prueba, notas: 'Un escalón por clic. El antes/después se descubre en el primero.' },
   { id: 'puente', titulo: 'Esto es solo el principio', tema: 'oscuro', pasos: 1, Vista: Puente, notas: 'Frase clave: «Toda persona que se somete a este tratamiento obtiene resultados». «Hasta aquí, la parte 1. Ahora, la parte 2.» Arrancan solos 10 min de preguntas y respuestas (pulsar el reloj lo reinicia). Clic: lo que viene (cómo te formas, dónde y cuándo, cuánto cuesta).' },
   { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Medellín 10, 11 y 12 de diciembre y Caracas 18, 19 y 20. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
-  { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Solo 10 plazas por ciudad. Pulsa Caracas o Medellín arriba. Una formación por clic, con el precio de antes tachado: completa (3 días, incluye cena de gala, certificado y academia online), intensiva (2 días), específica (1 día). Último clic: material, modelos y comida incluidos.' },
+  { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Solo 10 plazas por ciudad. Pulsa Caracas o Medellín arriba. Una formación por clic, con el precio de antes tachado: completa (3 días, incluye cena de gala, certificado y academia online), intensiva (2 días), específica (1 día). Último clic: material, modelos y estación de snacks incluidos.' },
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Para quien ya tiene buenos resultados y quiere conocer la técnica, certificarse y estudiar a su ritmo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
   ...(VIDEOS.membresia ? [{ id: 'video-membresia', titulo: 'Vídeo · Membresía Divine', tema: 'oscuro' as const, pasos: 0, sinPie: true, Vista: VideoMembresia, notas: 'Vídeo cinematográfico de la membresía. Empieza solo; al terminar, sigue con «¿Y qué pasa después de formarte?».' }] : []),
   { id: 'datos', titulo: 'Tres datos', tema: 'oscuro', pasos: 2, Vista: Datos, notas: 'Pregunta al chat: ¿cuántas creéis que la tecnología ha cambiado nuestra forma de trabajar? Clic: el 86 % de las empresas cree que la IA transformará su negocio antes de 2030 (WEF). Clic: las que no se suban ahora, se quedarán atrás.' },
