@@ -47,7 +47,7 @@ export default function Reserva({ whatsapp, transferencias }: { whatsapp: string
   const completa = de(`${ciudad}-completa`);
   const intensiva = de(`${ciudad}-intensiva`);
   const especifica = de(`${ciudad}-especifica`);
-  const beca = de('caracas-beca');
+  const beca = de('beca');
   const online = de('online');
   const membresia = de('membresia');
   const hayOtros = transferencias.length > 0 || !!CRIPTO.direccion;
@@ -88,7 +88,7 @@ export default function Reserva({ whatsapp, transferencias }: { whatsapp: string
         <h2 className={css.becaTitulo}>
           Beca <strong>especial</strong>
         </h2>
-        <p className={css.becaSub}>{beca.detalle.split(' · ')[0]} · Caracas</p>
+        <p className={css.becaSub}>{BECA.fechas} · {BECA.ciudad}</p>
         <ul className={css.becaLista}>
           {BECA.incluye.map((x) => (
             <li key={x}>{x}</li>

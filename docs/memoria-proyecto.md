@@ -320,3 +320,8 @@ cada cambio importante** (una línea por decisión, con la fecha).
   «Antes 2.250 USD» grande con raya roja en diagonal que se dibuja » «Beca hoy
   1.950 USD» enorme en oro; clic 2 (lo último) = caja «Reserva tu plaza con
   150 USD» con plazas y QUIERO al lado.
+- 2026-11-08: **la beca pasa a Medellín, 28, 29 y 30 de enero de 2027**
+  (`BECA.ciudad/fechas/inicio`, fechas propias: las sedes de diciembre no se
+  tocan). Opción `beca` (antes `caracas-beca`). Con la beca activa, Metodología,
+  Preguntas y Gracias enseñan solo la beca y sus fechas (`SEDES_HOY`). La beca
+  no entra en las convocatorias de diciembre al confirmar el pago.

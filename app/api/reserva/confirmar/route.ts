@@ -90,7 +90,8 @@ export async function POST(peticion: Request) {
   }
 
   // Presencial: entra en las fechas de su ciudad, para darle el acceso desde «Dar acceso».
-  const conv = typeof v.ciudad === 'string' ? CONVOCATORIA[v.ciudad] : null;
+  // La beca va en otras fechas (enero): no entra en las convocatorias de diciembre.
+  const conv = v.formacion !== 'beca' && typeof v.ciudad === 'string' ? CONVOCATORIA[v.ciudad] : null;
   if (conv) {
     try {
       await inscribirReservaPagada(conv, {

@@ -32,7 +32,10 @@ export const SEDES = [
 export const BECA = {
   /** Mientras está activa, la diapositiva de la beca sustituye a la de precios presenciales. */
   activa: true,
-  ciudad: 'Caracas',
+  ciudad: 'Medellín',
+  /** Fechas propias de la beca (no son las de la sede de diciembre). */
+  fechas: '28, 29 y 30 de enero',
+  inicio: '2027-01-28T12:00:00Z',
   /** Precio total con beca (USD). 0 = todavía no se enseña. */
   precio: 1950,
   /** Precio normal de la formación completa, que sale tachado al lado. */

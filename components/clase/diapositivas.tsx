@@ -44,6 +44,8 @@ export type Diapo = {
 };
 
 const d = (s: number) => ({ '--d': `${s}s` }) as CSSProperties;
+/** Las sedes que se enseñan hoy: con la beca activa, solo la de la beca y sus fechas. */
+const SEDES_HOY = BECA.activa ? [{ ciudad: BECA.ciudad, fechas: BECA.fechas, inicio: BECA.inicio }] : SEDES;
 /** 2250 → «2.250» (el formato español no pone el punto en números de 4 cifras). */
 const miles = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
@@ -778,7 +780,7 @@ function Metodologia({ activa, estatica, v, on }: Props) {
         <Eyebrow className={v(0)}>Metodología Divine® · Formación premium</Eyebrow>
         <Titulo texto={'Una formación *premium*.\nAprende online. *Practica conmigo.*'} on={on(0)} className={css.h2} />
         <div className={css.fila} style={{ marginTop: 26 }}>
-          {SEDES.map((s, k) => (
+          {SEDES_HOY.map((s, k) => (
             <span key={s.ciudad} className={`${css.chipOscuro} ${css.chipGrande} ${v(0)}`} style={d(0.8 + k * 0.15)}>
               <Icono n="pin" className={css.chipIcono} /> {s.ciudad} · {s.fechas}
               {k === 0 && !estatica && (
@@ -805,7 +807,7 @@ function Metodologia({ activa, estatica, v, on }: Props) {
         </div>
         <Flecha className={v(2)} style={{ width: 90, flex: 'none' }} />
         <div className={`${css.oscuraCaja} ${css.faseCaja} ${css.faseCajaOro} ${v(2, css.rDer)}`}>
-          <span className={css.faseNum}>Fase 2 · Caracas o Medellín</span>
+          <span className={css.faseNum}>{BECA.activa ? `Fase 2 · ${BECA.ciudad}` : 'Fase 2 · Caracas o Medellín'}</span>
           <h3>Formación presencial</h3>
           <div className={css.dias}>
             {dias.map(([f, t, s], k) => (
@@ -1057,7 +1059,6 @@ function Puente({ activa, estatica, v, on }: Props) {
 /* -------------------------------------------------------------- beca Venezuela */
 
 function Beca({ v, on }: Props) {
-  const sede = SEDES.find((s) => s.ciudad === BECA.ciudad) ?? SEDES[0];
   const iconos = ['pantalla', 'gente', 'ficha'];
   return (
     <div className={css.centro}>
@@ -1101,7 +1102,7 @@ function Beca({ v, on }: Props) {
             {BECA.reserva} <small>USD</small>
           </b>
           <span className={css.becaSede}>
-            <Icono n="pin" className={css.chipIcono} /> {sede.ciudad} · {sede.fechas}
+            <Icono n="pin" className={css.chipIcono} /> {BECA.ciudad} · {BECA.fechas}
           </span>
         </div>
         <div className={css.becaLados}>
@@ -1370,7 +1371,7 @@ function Preguntas({ v, on }: Props) {
           <span className={`${css.chipOscuro} ${v(0)}`} style={d(0.8)}>
             <Icono n="pantalla" className={css.chipIcono} /> Divine® Online · {ONLINE.especial} USD
           </span>
-          {SEDES.map((s, k) => (
+          {SEDES_HOY.map((s, k) => (
             <span key={s.ciudad} className={`${css.chipOscuro} ${v(0)}`} style={d(0.9 + k * 0.1)}>
               <Icono n="pin" className={css.chipIcono} /> {s.ciudad} · {s.fechas}
             </span>
@@ -1404,7 +1405,7 @@ function Gracias({ activa, estatica, muda = false, saliendo = false, cerca = fal
           Para reservar, escribe «QUIERO»
         </Chip>
         <Chip icono="calendario" className={v(0)} style={d(1.3)}>
-          Caracas 18-20 dic · Medellín 10-12 dic
+          {BECA.activa ? `${BECA.ciudad} · ${BECA.fechas}` : 'Caracas 18-20 dic · Medellín 10-12 dic'}
         </Chip>
         <Chip className={v(0)} style={d(1.4)}>
           @sorelacaro_
@@ -1506,7 +1507,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Medellín 10, 11 y 12 de diciembre y Caracas 18, 19 y 20. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
   // Con la beca activa, su diapositiva va en lugar de la de precios presenciales (2.250 / reserva 250).
   ...(BECA.activa ? [] : [{ id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema' as const, pasos: 3, Vista: Presencial, notas: 'Solo 10 plazas por ciudad. Pulsa Caracas o Medellín arriba. Una formación por clic, con el precio de antes tachado: completa (3 días, incluye cena de gala, certificado y academia online), intensiva (2 días), específica (1 día). Último clic: material, modelos y estación de snacks incluidos.' }]),
-  { id: 'beca', titulo: 'Beca especial · Venezuela', tema: 'oscuro', pasos: 2, Vista: Beca, notas: 'La sorpresa de hoy: beca especial para Venezuela. Incluye formación online completa, 3 días presenciales con Sorela en Caracas (18, 19 y 20 de diciembre) y certificación. Clic: antes 2.250, beca hoy 1.950 USD. Clic (lo último): reserva con 150 USD, solo 10 plazas, que escriban QUIERO.' },
+  { id: 'beca', titulo: 'Beca especial · Venezuela', tema: 'oscuro', pasos: 2, Vista: Beca, notas: 'La sorpresa de hoy: beca especial para Venezuela. Incluye formación online completa, 3 días presenciales con Sorela en Medellín (28, 29 y 30 de enero) y certificación. Clic: antes 2.250, beca hoy 1.950 USD. Clic (lo último): reserva con 150 USD, solo 10 plazas, que escriban QUIERO.' },
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Para quien ya tiene buenos resultados y quiere conocer la técnica, certificarse y estudiar a su ritmo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
   ...(VIDEOS.membresia ? [{ id: 'video-membresia', titulo: 'Vídeo · Membresía Divine', tema: 'oscuro' as const, pasos: 0, sinPie: true, Vista: VideoMembresia, notas: 'Vídeo cinematográfico de la membresía. Empieza solo; al terminar, sigue con «¿Y qué pasa después de formarte?».' }] : []),
   { id: 'datos', titulo: 'Tres datos', tema: 'oscuro', pasos: 2, Vista: Datos, notas: 'Pregunta al chat: ¿cuántas creéis que la tecnología ha cambiado nuestra forma de trabajar? Clic: el 86 % de las empresas cree que la IA transformará su negocio antes de 2030 (WEF). Clic: las que no se suban ahora, se quedarán atrás.' },
