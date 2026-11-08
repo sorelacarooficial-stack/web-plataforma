@@ -1,4 +1,4 @@
-import { FORMACIONES, MEMBRESIA, ONLINE, PLAZAS, SEDES } from './clase';
+import { BECA, FORMACIONES, MEMBRESIA, ONLINE, PLAZAS, SEDES } from './clase';
 
 /**
  * /reserva: la página que el equipo manda por WhatsApp a quien escribe
@@ -11,8 +11,8 @@ import { FORMACIONES, MEMBRESIA, ONLINE, PLAZAS, SEDES } from './clase';
  * transferencia y la dirección de cripto. Lo que esté vacío no sale.
  */
 
-/** Hasta cuándo vale la oferta: sábado 7 nov 2026, 19:00 en España. */
-export const RESERVA_HASTA = '2026-11-07T18:00:00Z';
+/** Hasta cuándo vale la oferta (beca Venezuela): domingo 9 nov 2026, 23:59 en Caracas. */
+export const RESERVA_HASTA = '2026-11-10T03:59:00Z';
 
 export type Opcion = {
   id: string;
@@ -42,7 +42,11 @@ function presencial(sede: (typeof SEDES)[number]): Opcion[] {
   ];
 }
 
+const sedeBeca = SEDES.find((x) => x.ciudad === BECA.ciudad) ?? SEDES[0];
+
 export const OPCIONES: Opcion[] = [
+  // La beca de Venezuela: la formación completa de Caracas, se reserva con 150 USD.
+  { id: 'caracas-beca', grupo: 'Presencial', titulo: `${sedeBeca.ciudad} · Beca especial`, detalle: `${sedeBeca.fechas} · online + 3 días + certificado`, reserva: BECA.reserva, stripe: '' },
   ...SEDES.flatMap(presencial),
   { id: 'online', grupo: 'Online', titulo: 'Divine® Online', detalle: 'A tu ritmo · para profesionales con experiencia', reserva: ONLINE.reserva, precio: ONLINE.especial, antes: ONLINE.habitual, stripe: '' },
   // La membresía es solo para terapeutas homologadas.
@@ -55,6 +59,8 @@ export const OPCIONES: Opcion[] = [
  */
 export const STRIPE: Record<string, string> = {
   // Asignados por el orden en que se crearon en Stripe (…00 el primero), sin poder abrirlos: CONFIRMAR.
+  // La beca de Venezuela (reserva de 150 USD): falta el enlace.
+  beca: '',
   completa: 'https://buy.stripe.com/5kQ4gzdjTdIH7OV8rWaZi00',
   intensiva: 'https://buy.stripe.com/3cIeVdenXeML5GN8rWaZi01',
   especifica: 'https://buy.stripe.com/4gMfZh3Jj7kj4CJ23yaZi02',
@@ -104,6 +110,7 @@ export const HORAS_PARA_CONFIRMAR = 48;
  * la ciudad la elige cada alumna después, en /reserva/gracias.
  */
 export const FORMACIONES_PAGO = [
+  { id: 'beca', nombre: 'Beca especial · Formación completa en Caracas', presencial: true },
   { id: 'completa', nombre: 'Formación Completa · 3 días', presencial: true },
   { id: 'intensiva', nombre: 'Formación Intensiva · 2 días', presencial: true },
   { id: 'especifica', nombre: 'Formación Específica · 1 día', presencial: true },

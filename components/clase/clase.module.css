@@ -4549,3 +4549,92 @@ button.oscuraCaja {
   font-size: 26px;
   line-height: 1.35;
 }
+
+/* «Premium» en oro, en la diapositiva de la presencial. */
+.premium {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 5px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #17140f;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  box-shadow: 0 10px 24px -12px rgba(201, 154, 92, 0.9);
+}
+
+/* ---------------------------------------------------------- beca Venezuela */
+.becaTitulo {
+  font-size: 128px;
+}
+.becaIncluye {
+  display: flex;
+  gap: 22px;
+  margin-top: 46px;
+}
+.becaItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 28px;
+  border-radius: 22px;
+  font-size: 24px;
+  font-weight: 500;
+  color: #f4efe7;
+  background: rgba(255, 240, 220, 0.06);
+  box-shadow: 0 0 0 1px rgba(243, 217, 174, 0.2) inset;
+}
+.becaIcono {
+  width: 30px;
+  height: 30px;
+  color: #f3d9ae;
+}
+.becaPrecio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 44px;
+  padding: 26px 64px 24px;
+  border-radius: 30px;
+  color: #17140f;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  box-shadow: 0 30px 70px -30px rgba(201, 154, 92, 0.85);
+}
+.becaRotulo {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.becaPrecio b {
+  font-size: 96px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.becaPrecio b small {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.becaSede {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* En la beca (fondo oscuro), el aviso de plazas en claro. */
+.becaPlazasClase {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 20px;
+  color: #f4efe7;
+  background: rgba(220, 80, 60, 0.16);
+  box-shadow: 0 0 0 1px rgba(240, 120, 100, 0.35) inset;
+}

@@ -76,8 +76,8 @@ export default function ReservaDatos({ o, alCerrar, whatsapp }: { o: Opcion; alC
   );
 
   return (
-    <div style={estilo.fondo} onClick={alCerrar} role="dialog" aria-modal="true" aria-label={`Reservar ${o.titulo}`}>
-      <form onSubmit={enviar} onClick={(e) => e.stopPropagation()} style={estilo.hoja}>
+    <div className={css.hojaFondo} onClick={alCerrar} role="dialog" aria-modal="true" aria-label={`Reservar ${o.titulo}`}>
+      <form onSubmit={enviar} onClick={(e) => e.stopPropagation()} className={css.hoja}>
         <button type="button" onClick={alCerrar} aria-label="Cerrar" style={estilo.cerrar}>
           ×
         </button>
@@ -144,8 +144,6 @@ export default function ReservaDatos({ o, alCerrar, whatsapp }: { o: Opcion; alC
 }
 
 const estilo: Record<string, React.CSSProperties> = {
-  fondo: { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(23,20,15,0.55)', backdropFilter: 'blur(4px)' },
-  hoja: { position: 'relative', width: '100%', maxWidth: 520, maxHeight: '92dvh', overflowY: 'auto', padding: '26px 18px 22px', borderRadius: '24px 24px 0 0', background: '#f4efe7', color: '#141210', boxShadow: '0 -20px 60px -20px rgba(0,0,0,0.5)' },
   cerrar: { position: 'absolute', top: 12, right: 12, width: 40, height: 40, border: 0, borderRadius: 999, background: 'rgba(20,18,16,0.06)', fontSize: 26, lineHeight: 1, cursor: 'pointer', color: '#141210' },
   campo: { display: 'flex', flexDirection: 'column', gap: 6, marginTop: 14 },
   etiqueta: { fontSize: 14, fontWeight: 600 },
