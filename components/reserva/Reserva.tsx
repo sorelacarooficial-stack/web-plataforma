@@ -99,6 +99,9 @@ export default function Reserva({ whatsapp, transferencias }: { whatsapp: string
         <Boton o={beca} wa={wa} elegir={elegir} />
       </section>
 
+      {/* Mientras dura la beca, las presenciales normales (ciudad + Completa/Intensiva/Específica) no salen. */}
+      {!BECA.activa && (
+      <>
       <section className={css.bloque}>
         <p className={css.paso}>¿Prefieres otra formación? · 1 · Elige tu ciudad</p>
         <div className={css.sedes}>
@@ -156,6 +159,9 @@ export default function Reserva({ whatsapp, transferencias }: { whatsapp: string
           ))}
         </div>
       </section>
+
+      </>
+      )}
 
       <section className={`${css.banda} ${css.bandaOnline}`} style={{ backgroundImage: `url(${FOTOS.online})` }}>
         <div className={css.bandaVeloClaro} />

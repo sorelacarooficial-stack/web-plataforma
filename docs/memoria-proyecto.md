@@ -312,3 +312,7 @@ cada cambio importante** (una línea por decisión, con la fecha).
   (2.250 / reserva 250) no sale: la beca va en su lugar (23 de 32). Para
   volver a la presentación normal, `activa: false`.
 - 2026-11-08: precio de la beca: **antes 2.250 → beca hoy 1.950 USD**, reserva 150 (`BECA.precio` / `BECA.antes`). Sale en la diapositiva y en la tarjeta de /reserva. Miles con punto a mano (`miles`, `usd`): `toLocaleString('es-ES')` no pone el punto en números de 4 cifras.
+- 2026-11-08: enlace de Stripe de la beca (150 USD):
+  https://buy.stripe.com/14AbJ11Bb9sr2uB37CaZi05 (`STRIPE.beca`). Con
+  `BECA.activa`, /reserva enseña solo la beca, Divine® Online y la Membresía
+  (fuera el selector de ciudad y Completa/Intensiva/Específica).
