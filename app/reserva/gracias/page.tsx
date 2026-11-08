@@ -24,6 +24,7 @@ export default async function Gracias({ searchParams }: { searchParams: Promise<
   const q = await searchParams;
   const formacion = FORMACIONES_PAGO.find((x) => x.id === uno(q.f));
   const membresia = formacion?.id === 'membresia';
+  const beca = formacion?.id === 'beca';
 
   return (
     <main className={css.pagina}>
@@ -37,6 +38,10 @@ export default async function Gracias({ searchParams }: { searchParams: Promise<
             {membresia ? (
               <>
                 Bienvenida a la <strong>Membresía</strong>
+              </>
+            ) : beca ? (
+              <>
+                Tu <strong>beca</strong> está reservada
               </>
             ) : (
               <>

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { LETRAS } from '@/lib/letras';
-import { DESPEDIDA, ESPERA, FORMACIONES, MEMBRESIA, ONLINE, PLAZAS, SEDES, VIDEOS } from '@/lib/clase';
+import { BECA, DESPEDIDA, ESPERA, FORMACIONES, MEMBRESIA, ONLINE, PLAZAS, SEDES, VIDEOS } from '@/lib/clase';
 import { AntesDespues, Cuenta, CuentaAtras, CuentaPreguntas, Cuerpo, Icono, Mapa, Movil, Musica, Polvo, Quedan, Rotador, Titulo, useGoteo, VideoModal } from './piezas';
 import { useClase } from './estado';
 import css from './clase.module.css';
@@ -441,7 +441,7 @@ function NoTocar({ v, on }: Props) {
           <span className={css.regaloIcono}>
             <Icono n="gente" />
           </span>
-          <h3>Doctor Achile</h3>
+          <h3>Damos paso a una invitada especial</h3>
           <p>Le damos la palabra para hablar de los límites médicos.</p>
           <span className={css.brillo} />
         </div>
@@ -1052,6 +1052,44 @@ function Puente({ activa, estatica, v, on }: Props) {
   );
 }
 
+/* -------------------------------------------------------------- beca Venezuela */
+
+function Beca({ v, on }: Props) {
+  const sede = SEDES.find((s) => s.ciudad === BECA.ciudad) ?? SEDES[0];
+  const iconos = ['pantalla', 'gente', 'ficha'];
+  return (
+    <div className={css.centro}>
+      <Eyebrow className={v(0)}>Solo para Venezuela · Hoy</Eyebrow>
+      <Titulo texto={'Una *beca especial*\npara ti'} on={on(0)} className={`${css.h1crema} ${css.becaTitulo}`} paso={0.12} />
+      <div className={css.becaIncluye}>
+        {BECA.incluye.map((t, k) => (
+          <div key={t} className={`${css.becaItem} ${v(0, css.rArriba)}`} style={d(0.7 + k * 0.15)}>
+            <Icono n={iconos[k] ?? 'chispa'} className={css.becaIcono} />
+            <span>{t}</span>
+          </div>
+        ))}
+      </div>
+      <div className={`${css.becaPrecio} ${v(1, css.rEscala)}`}>
+        <span className={css.becaRotulo}>Reserva tu beca con</span>
+        <b>
+          {BECA.reserva} <small>USD</small>
+        </b>
+        <span className={css.becaSede}>
+          <Icono n="pin" className={css.chipIcono} /> {sede.ciudad} · {sede.fechas}
+        </span>
+      </div>
+      <div className={`${css.fila} ${v(2)}`} style={{ justifyContent: 'center', marginTop: 34 }}>
+        <span className={css.becaPlazasClase}>
+          <span className={css.puntoRojo} /> Solo <b>{BECA.plazas} plazas</b> con beca
+        </span>
+        <span className={css.chipOscuro}>
+          <Icono n="chat" className={css.chipIcono} /> Escribe «QUIERO» en el chat
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------- datos */
 
 function Datos({ v, on }: Props) {
@@ -1428,7 +1466,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'credenciales', titulo: 'Por qué puedo enseñarte esto', tema: 'crema', pasos: 0, Vista: Credenciales, notas: '30 años y más de 25.000 casos en cabina, junto a tus alumnas.' },
   { id: 'metodo', titulo: 'El método', tema: 'crema', pasos: 3, Vista: Metodo, notas: 'Un paso por clic: Observar, Interpretar, Decidir.' },
   { id: 'observar', titulo: 'Paso 1 · Mira y escucha', tema: 'crema', fase: 1, pasos: 1, Vista: Observar, notas: 'Los puntos del cuerpo se pueden pulsar. Clic: «Mira» (piel, postura, respiración, dónde retiene). Las manos son un escáner: localizan nudos, bloqueos y atascos.' },
-  { id: 'no-tocar', titulo: 'Cuándo no tocar', tema: 'oscuro', fase: 1, pasos: 1, Vista: NoTocar, notas: 'Contraindicaciones: primero su médico (cáncer, enfermedades terminales, problemas cardíacos, infecciones). Clic: damos la palabra al Doctor Achile.' },
+  { id: 'no-tocar', titulo: 'Cuándo no tocar', tema: 'oscuro', fase: 1, pasos: 1, Vista: NoTocar, notas: 'Contraindicaciones: primero su médico (cáncer, enfermedades terminales, problemas cardíacos, infecciones). Clic: damos paso a una invitada especial.' },
   { id: 'interpretar', titulo: 'Paso 2 · El cuerpo expresa', tema: 'oscuro', fase: 2, pasos: 3, Vista: Interpretar, notas: 'El cuerpo expresa lo que esconde el alma. Clic: clienta A, el punto sube al pecho (estrés). Clic: B, baja a las piernas. Clic: «Misma queja. Distinto origen».' },
   { id: 'noventa', titulo: 'El drenaje de hace 90 años', tema: 'crema', fase: 2, pasos: 2, Vista: Noventa, notas: 'La linfa se mueve hacia los ganglios. Clic: Hoy. Clic: Divine.' },
   { id: 'secuencia', titulo: 'Paso 3 · La secuencia', tema: 'crema', fase: 3, pasos: 3, Vista: Secuencia, notas: 'Un paso por clic: estimulación ganglionar (~10 min; nunca «abrir» ganglios), ritmo y velocidad, arrastre hasta la estación más cercana.' },
@@ -1440,6 +1478,7 @@ export const DIAPOSITIVAS: Diapo[] = [
   { id: 'puente', titulo: 'Esto es solo el principio', tema: 'oscuro', pasos: 1, Vista: Puente, notas: 'Frase clave: «Toda persona que se somete a este tratamiento obtiene resultados». «Hasta aquí, la parte 1. Ahora, la parte 2.» Arrancan solos 10 min de preguntas y respuestas (pulsar el reloj lo reinicia). Clic: lo que viene (cómo te formas, dónde y cuándo, cuánto cuesta).' },
   { id: 'metodologia', titulo: 'Metodología Divine®', tema: 'oscuro', pasos: 3, Vista: Metodologia, notas: 'Aprende online, practica presencialmente. Dos sedes: Medellín 10, 11 y 12 de diciembre y Caracas 18, 19 y 20. Clic: fase 1 online. Clic: los tres días presenciales. Clic: tres días para aprender, practicar y ganar seguridad.' },
   { id: 'presencial', titulo: 'Formación presencial · Medellín y Caracas', tema: 'crema', pasos: 3, Vista: Presencial, notas: 'Solo 10 plazas por ciudad. Pulsa Caracas o Medellín arriba. Una formación por clic, con el precio de antes tachado: completa (3 días, incluye cena de gala, certificado y academia online), intensiva (2 días), específica (1 día). Último clic: material, modelos y estación de snacks incluidos.' },
+  { id: 'beca', titulo: 'Beca especial · Venezuela', tema: 'oscuro', pasos: 2, Vista: Beca, notas: 'La sorpresa de hoy: beca especial para Venezuela. Incluye formación online completa, 3 días presenciales con Sorela en Caracas (18, 19 y 20 de diciembre) y certificación. Clic: se reserva con 150 USD. Clic: solo 10 plazas, que escriban QUIERO.' },
   { id: 'online', titulo: 'Divine® Online', tema: 'crema', pasos: 3, Vista: Online, notas: 'Para quien ya tiene buenos resultados y quiere conocer la técnica, certificarse y estudiar a su ritmo. Clic: el precio (900 se tacha, 750). Clic: reserva con 250 USD. Clic: mucho más que una formación.' },
   ...(VIDEOS.membresia ? [{ id: 'video-membresia', titulo: 'Vídeo · Membresía Divine', tema: 'oscuro' as const, pasos: 0, sinPie: true, Vista: VideoMembresia, notas: 'Vídeo cinematográfico de la membresía. Empieza solo; al terminar, sigue con «¿Y qué pasa después de formarte?».' }] : []),
   { id: 'datos', titulo: 'Tres datos', tema: 'oscuro', pasos: 2, Vista: Datos, notas: 'Pregunta al chat: ¿cuántas creéis que la tecnología ha cambiado nuestra forma de trabajar? Clic: el 86 % de las empresas cree que la IA transformará su negocio antes de 2030 (WEF). Clic: las que no se suban ahora, se quedarán atrás.' },

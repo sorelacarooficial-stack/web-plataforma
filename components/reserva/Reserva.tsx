@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { SEDES } from '@/lib/clase';
+import { BECA, SEDES } from '@/lib/clase';
 import { CRIPTO, OPCIONES, PLAZAS_SEDE, RESERVA_HASTA, enlaceStripe, type Opcion } from '@/lib/reserva';
 import type { Transferencia } from '@/lib/transferencia';
 import ReservaDatos from './ReservaDatos';
@@ -47,6 +47,7 @@ export default function Reserva({ whatsapp, transferencias }: { whatsapp: string
   const completa = de(`${ciudad}-completa`);
   const intensiva = de(`${ciudad}-intensiva`);
   const especifica = de(`${ciudad}-especifica`);
+  const beca = de('caracas-beca');
   const online = de('online');
   const membresia = de('membresia');
   const hayOtros = transferencias.length > 0 || !!CRIPTO.direccion;
@@ -82,8 +83,23 @@ export default function Reserva({ whatsapp, transferencias }: { whatsapp: string
         </div>
       </header>
 
+      <section className={css.beca}>
+        <p className={css.pasoOro}>Solo para Venezuela</p>
+        <h2 className={css.becaTitulo}>
+          Beca <strong>especial</strong>
+        </h2>
+        <p className={css.becaSub}>{beca.detalle.split(' · ')[0]} · Caracas</p>
+        <ul className={css.becaLista}>
+          {BECA.incluye.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+        <p className={css.becaPlazas}>Solo {BECA.plazas} plazas con beca</p>
+        <Boton o={beca} wa={wa} elegir={elegir} />
+      </section>
+
       <section className={css.bloque}>
-        <p className={css.paso}>1 · Elige tu ciudad</p>
+        <p className={css.paso}>¿Prefieres otra formación? · 1 · Elige tu ciudad</p>
         <div className={css.sedes}>
           {SEDES.map((s, k) => (
             <button key={s.ciudad} type="button" className={`${css.sede} ${k === sede ? css.sedeOn : ''}`} onClick={() => setSede(k)} aria-pressed={k === sede}>

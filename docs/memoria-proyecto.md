@@ -296,3 +296,14 @@ cada cambio importante** (una línea por decisión, con la fecha).
   dicen «Caracas 4-6 dic» son historia.
 - 2026-11-06: grupo de la Comunidad Divine (`GRUPO_COMUNIDAD`, lib/reserva.ts):
   https://chat.whatsapp.com/DC5UtdoCLJBKtU2gnSfZj9 — botón de /reserva/gracias.
+- 2026-11-08: **masterclass repetida para Venezuela con «Beca especial»** (el
+  6 nov no hubo ventas). `BECA` en lib/clase.ts: formación online completa +
+  3 días presenciales en Caracas (18-20 dic) + certificación, se reserva con
+  **150 USD**, 10 plazas; el precio total con beca no se ha fijado (no se
+  enseña). Diapositiva nueva «Beca especial · Venezuela» después de la
+  presencial; opción `caracas-beca` arriba del todo en /reserva (las demás
+  siguen debajo); `STRIPE.beca` vacío hasta tener el enlace (mientras, el
+  botón va por WhatsApp); gracias: `/reserva/gracias?f=beca`. La oferta vale
+  hasta el 9 nov 23:59 de Caracas (`RESERVA_HASTA`). El doctor no está: la
+  tarjeta dice «Damos paso a una invitada especial». La cuenta atrás de la
+  portada, con la fecha ya pasada, cuenta 10 min al abrir (pulsar reinicia).

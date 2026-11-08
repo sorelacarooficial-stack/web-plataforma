@@ -24,6 +24,18 @@ export const SEDES = [
   { ciudad: 'Medellín', fechas: '10, 11 y 12 de diciembre', inicio: '2026-12-10T13:00:00Z' },
 ];
 
+/**
+ * Beca especial Venezuela (masterclass repetida el 8 nov 2026, tras no haber
+ * ventas el 6): la formación completa de Caracas se reserva con 150 USD.
+ * El precio total con beca no se ha fijado: no se enseña.
+ */
+export const BECA = {
+  ciudad: 'Caracas',
+  reserva: 150,
+  plazas: 10,
+  incluye: ['Formación online completa', '3 días presenciales con Sorela Caro', 'Certificación Technique Divine®'],
+};
+
 /** Formación presencial (Medellín y Caracas). Precios en USD. */
 export const FORMACIONES = [
   // `antes` es el precio que sale tachado encima (confirmar con Sorela).
