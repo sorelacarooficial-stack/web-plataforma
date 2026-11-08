@@ -4638,3 +4638,21 @@ button.oscuraCaja {
   background: rgba(220, 80, 60, 0.16);
   box-shadow: 0 0 0 1px rgba(240, 120, 100, 0.35) inset;
 }
+
+.becaTotal {
+  margin: 40px 0 -18px;
+  font-size: 30px;
+  color: rgba(244, 239, 231, 0.85);
+}
+.becaTotal s {
+  margin: 0 10px;
+  color: rgba(244, 239, 231, 0.45);
+  text-decoration-color: #e0705f;
+  text-decoration-thickness: 3px;
+}
+.becaTotal b {
+  margin-right: 8px;
+  font-size: 44px;
+  font-weight: 600;
+  color: #f3d9ae;
+}

@@ -311,3 +311,4 @@ cada cambio importante** (una línea por decisión, con la fecha).
 - 2026-11-08: con `BECA.activa` la diapositiva de precios presenciales
   (2.250 / reserva 250) no sale: la beca va en su lugar (23 de 32). Para
   volver a la presentación normal, `activa: false`.
+- 2026-11-08: precio de la beca: **antes 2.250 → beca hoy 1.950 USD**, reserva 150 (`BECA.precio` / `BECA.antes`). Sale en la diapositiva y en la tarjeta de /reserva. Miles con punto a mano (`miles`, `usd`): `toLocaleString('es-ES')` no pone el punto en números de 4 cifras.
