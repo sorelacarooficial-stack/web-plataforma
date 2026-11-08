@@ -60,7 +60,7 @@ export const OPCIONES: Opcion[] = [
 export const STRIPE: Record<string, string> = {
   // Asignados por el orden en que se crearon en Stripe (…00 el primero), sin poder abrirlos: CONFIRMAR.
   // La beca de Venezuela (reserva de 150 USD): falta el enlace.
-  beca: '',
+  beca: 'https://buy.stripe.com/14AbJ11Bb9sr2uB37CaZi05',
   completa: 'https://buy.stripe.com/5kQ4gzdjTdIH7OV8rWaZi00',
   intensiva: 'https://buy.stripe.com/3cIeVdenXeML5GN8rWaZi01',
   especifica: 'https://buy.stripe.com/4gMfZh3Jj7kj4CJ23yaZi02',
