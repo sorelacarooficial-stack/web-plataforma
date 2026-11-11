@@ -947,3 +947,44 @@
   flex: none;
   margin-top: 2px;
 }
+
+/* El botón de los vídeos largos: «Ver toda la técnica completa». */
+.tecnicaCompleta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 0;
+  border-radius: 20px;
+  font: inherit;
+  text-align: left;
+  color: #141210;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  box-shadow: 0 16px 34px -20px rgba(138, 106, 50, 0.9);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.tecnicaCompleta:hover {
+  transform: translateY(-2px);
+}
+.tecnicaCompleta strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.tecnicaCompleta small {
+  font-size: 13px;
+  font-weight: 400;
+}
+.tecnicaIcono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: #f3d9ae;
+  background: #17140f;
+}

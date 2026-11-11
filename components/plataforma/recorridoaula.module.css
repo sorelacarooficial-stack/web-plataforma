@@ -1,0 +1,368 @@
+/* El camino de la academia: banda oscura de la marca, oro y crema. */
+.marco {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 26px;
+  color: #f4efe7;
+  background:
+    radial-gradient(80% 120% at 100% 0%, rgba(243, 217, 174, 0.14), transparent 60%),
+    radial-gradient(60% 90% at 0% 100%, rgba(201, 154, 92, 0.1), transparent 60%),
+    #17140f;
+  box-shadow: inset 0 0 0 1px rgba(243, 217, 174, 0.14), 0 24px 48px -30px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- Los cuatro módulos ---------- */
+.camino {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.modulo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(244, 239, 231, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(244, 239, 231, 0.08);
+}
+.modulo[data-estado='abierto'] {
+  background: rgba(243, 217, 174, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(243, 217, 174, 0.45);
+}
+.modulo[data-estado='cerrado'] {
+  opacity: 0.55;
+}
+.moduloBoton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.moduloBoton:disabled {
+  cursor: not-allowed;
+}
+.numero {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e6c491;
+  box-shadow: inset 0 0 0 1px rgba(243, 217, 174, 0.35);
+}
+.modulo[data-estado='hecho'] .numero {
+  color: #141210;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  box-shadow: none;
+}
+.moduloTexto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.moduloTexto strong {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.moduloTexto small {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: rgba(244, 239, 231, 0.62);
+}
+.barra {
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(244, 239, 231, 0.12);
+  overflow: hidden;
+}
+.barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f3d9ae, #c99a5c);
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- El siguiente paso ---------- */
+.paso {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 20px 20px 44px;
+  border-radius: 20px;
+  background: rgba(244, 239, 231, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(243, 217, 174, 0.22);
+}
+.pulso {
+  position: absolute;
+  left: 18px;
+  top: 26px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e6c491;
+  animation: latir 1.8s infinite;
+}
+@keyframes latir {
+  0% {
+    box-shadow: 0 0 0 0 rgba(230, 196, 145, 0.7);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 12px rgba(230, 196, 145, 0);
+  }
+}
+.pasoTexto {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.rotulo {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #e6c491;
+}
+.titulo {
+  margin: 4px 0 6px;
+  font-size: clamp(21px, 2.6vw, 28px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+}
+.texto {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: rgba(244, 239, 231, 0.74);
+}
+.citaPuesta {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #f3d9ae;
+}
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 22px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #141210;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  box-shadow: 0 10px 26px -10px rgba(201, 154, 92, 0.8);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.boton:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+.boton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ---------- Ventanas: la celebración y pedir la reunión ---------- */
+.fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(20, 18, 16, 0.62);
+  backdrop-filter: blur(6px);
+}
+.fiesta,
+.hoja {
+  position: relative;
+  width: min(480px, 100%);
+  max-height: calc(100dvh - 36px);
+  overflow: auto;
+  padding: 30px 26px 24px;
+  border-radius: 26px;
+  background: #f4efe7;
+  color: #141210;
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.6);
+}
+.fiesta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+.sello {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  color: #141210;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+}
+.onda {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #c99a5c;
+  animation: onda 1.8s ease-out infinite;
+}
+.onda + .onda {
+  animation-delay: 0.9s;
+}
+@keyframes onda {
+  from {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+.fiestaTitulo,
+.hojaTitulo {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+}
+.hojaTitulo strong {
+  font-weight: 600;
+}
+.fiestaTexto,
+.hojaTexto {
+  margin: 0 0 8px;
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #4b443b;
+}
+.luego {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: #6b6257;
+  cursor: pointer;
+}
+.cerrar {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(20, 18, 16, 0.06);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.rotuloOscuro {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8a6a32;
+}
+.hoja .hojaTitulo {
+  margin: 6px 0 8px;
+}
+.paso1 {
+  margin: 14px 0 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #141210;
+}
+.dias,
+.horas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dia,
+.hora {
+  padding: 9px 13px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: #141210;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(20, 18, 16, 0.14);
+  cursor: pointer;
+  text-transform: capitalize;
+}
+.dia[data-activo],
+.hora[data-activo] {
+  color: #f4efe7;
+  font-weight: 600;
+  background: #141210;
+  box-shadow: none;
+}
+.resumen {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  background: rgba(138, 106, 50, 0.12);
+}
+.fallo {
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  color: #a0392b;
+}
+.hoja .boton {
+  width: 100%;
+  margin-top: 16px;
+  color: #f4efe7;
+  background: #141210;
+  box-shadow: none;
+}
+
+@media (max-width: 720px) {
+  .camino {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .paso .boton {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulso,
+  .onda {
+    animation: none;
+  }
+}

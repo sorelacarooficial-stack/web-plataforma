@@ -4,6 +4,8 @@ import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebas
 import { accesosDe, sesionActual } from '@/lib/sesion-servidor';
 import { esVideoPropio, puedeVerla } from '@/lib/aula';
 import type { Acceso } from '@/lib/accesos';
+import { recorridoDe } from '@/lib/avance-servidor';
+import { videoCerradoPorModulo } from '@/lib/avance';
 
 /**
  * El enlace para ver un vídeo del almacén propio.
@@ -44,6 +46,11 @@ export async function GET(peticion: Request) {
     const accesos = await accesosDe(sesion.uid);
     if (v.publicada === false || !puedeVerla(v.para as Acceso, accesos)) {
       return NextResponse.json({ ok: false, motivo: 'sin-permiso' }, { status: 403 });
+    }
+    // La academia por módulos: el vídeo no se da hasta leer el dosier de su módulo.
+    const recorrido = await recorridoDe(sesion.uid, accesos);
+    if (recorrido && videoCerradoPorModulo(recorrido, v.para as Acceso, v.modulo as string | undefined)) {
+      return NextResponse.json({ ok: false, motivo: 'modulo-cerrado' }, { status: 403 });
     }
   }
 

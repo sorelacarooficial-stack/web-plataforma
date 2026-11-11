@@ -12,6 +12,8 @@ import {
 } from '@/lib/aula';
 import { Lector, TarjetasMaterial, type DocumentoVisible } from './Material';
 import { moduloOficial } from '@/lib/material';
+import { esTecnicaCompleta, type Recorrido } from '@/lib/avance';
+import RecorridoAula from './RecorridoAula';
 import VideoYoutube from '@/components/VideoYoutube';
 import css from './plataforma.module.css';
 import a from './aula.module.css';
@@ -104,6 +106,8 @@ export default function Aula({ correo }: { correo?: string | null }) {
   const [inicioYoutube, setInicioYoutube] = useState(0);
   const [documentos, setDocumentos] = useState<DocumentoVisible[]>([]);
   const [leyendo, setLeyendo] = useState<{ id: string; desde: number } | null>(null);
+  /* El camino por módulos de la academia (null: lo ve todo abierto). */
+  const [recorrido, setRecorrido] = useState<Recorrido | null>(null);
   const video = useRef<HTMLVideoElement>(null);
   const ultimoGuardado = useRef(0);
   /* Por dónde iba al renovar el enlace, para seguir en el mismo segundo. */
@@ -131,6 +135,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
         return;
       }
       setLecciones(cl.lecciones ?? []);
+      setRecorrido(cl.recorrido ?? null);
       setProgreso(cp.ok ? cp.progreso ?? {} : {});
     } catch {
       setFallo('No hay conexión con el servidor.');
@@ -173,7 +178,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
 
   /* Con solo el abono, las clases salen bloqueadas: se ven, pero el vídeo se
      desbloquea al completar la parte práctica. */
-  const soloPrecurso = ordenadas.some((l) => l.bloqueada);
+  const soloPrecurso = ordenadas.some((l) => l.bloqueada && l.motivo !== 'modulo');
   const abiertas = ordenadas.filter((l) => !l.bloqueada);
   /* Se abre en la primera que no ha terminado: entrar es seguir. */
   const siguiente = abiertas.find((l) => !progreso[l.id]?.completada) ?? abiertas[0] ?? ordenadas[0];
@@ -250,9 +255,14 @@ export default function Aula({ correo }: { correo?: string | null }) {
       // Solo la PRIMERA vez que se termina una clase hay algo que celebrar:
       // pasado el 90 % el vídeo repite «terminada» cada diez segundos, y el
       // servidor dice con `nueva` cuál de todas es la de verdad.
-      .then((j) => j?.nueva === true && window.dispatchEvent(new Event('divine:logros')))
+      .then((j) => {
+        if (j?.nueva !== true) return;
+        window.dispatchEvent(new Event('divine:logros'));
+        // Terminar un vídeo puede abrir el módulo siguiente: se vuelve a preguntar.
+        cargar();
+      })
       .catch(() => {});
-  }, []);
+  }, [cargar]);
 
   const abrir = (id: string) => {
     setActualId(id);
@@ -277,7 +287,48 @@ export default function Aula({ correo }: { correo?: string | null }) {
   const abrirMaterial = (id: string, desde = 1) => setLeyendo({ id, desde });
   const docLeyendo = documentos.find((d) => d.id === leyendo?.id);
   const lector = docLeyendo && leyendo && (
-    <Lector doc={docLeyendo} correo={correo} desde={leyendo.desde} cerrar={() => setLeyendo(null)} />
+    <Lector
+      doc={docLeyendo}
+      correo={correo}
+      desde={leyendo.desde}
+      cerrar={() => {
+        setLeyendo(null);
+        // Leer un dosier hasta el final abre su vídeo o el paso siguiente.
+        if (recorrido) cargar();
+      }}
+    />
+  );
+  /* Los vídeos largos, para estudiar sola: van aparte, detrás de un botón. */
+  const completas = ordenadas.filter((l) => esTecnicaCompleta(l.modulo) && !l.bloqueada);
+  const verCompleta = () => {
+    if (!completas.length) return;
+    setModulo(completas[0].modulo as string);
+    abrir(completas[0].id);
+  };
+  const camino = (recorrido || completas.length > 0) && (
+    <>
+      {recorrido && (
+        <RecorridoAula
+          recorrido={recorrido}
+          leer={(id, pagina) => abrirMaterial(id, pagina)}
+          verClase={(id) => abrir(id)}
+          recargar={cargar}
+        />
+      )}
+      {completas.length > 0 && (
+        <button type="button" className={a.tecnicaCompleta} onClick={verCompleta}>
+          <span className={a.tecnicaIcono} aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg>
+          </span>
+          <span>
+            <strong>Ver toda la técnica completa</strong>
+            <small>
+              {completas.length === 1 ? 'El tratamiento entero' : `${completas.length} tratamientos enteros`}, paso a paso. Puedes repetirlo las veces que quieras.
+            </small>
+          </span>
+        </button>
+      )}
+    </>
   );
   const seccionMaterial = documentos.length > 0 && (
     <section className={a.bloque} id="aula-material">
@@ -311,6 +362,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
             </button>
           </p>
         )}
+        {camino}
         {/* Vacío: icono, un título corto y una frase útil (no un párrafo gris suelto). */}
         <section className={a.vacio}>
           <span className={a.vacioIcono} aria-hidden="true">
@@ -349,6 +401,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
       )}
 
       <div className={a.principal}>
+        {camino}
         {/* ---------- El vídeo ---------- */}
         <section className={a.reproductor} id="aula-reproductor" aria-label="Clase">
           <div className={a.pantalla} onContextMenu={(e) => e.preventDefault()}>
@@ -363,7 +416,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
                     <IconoCandado tam={22} />
                   </span>
                   <strong>Clase bloqueada</strong>
-                  <span>Disponible una vez terminada la clase presencial.</span>
+                  <span>{actual.motivo === 'modulo' ? 'Se abre cuando leas el dosier de su módulo.' : 'Disponible una vez terminada la clase presencial.'}</span>
                 </div>
               </div>
             ) : esVideoPropio(actual.video) ? (
@@ -575,7 +628,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
                       </span>
                       <span className={a.claseProgreso}>
                         {l.bloqueada ? (
-                          <span className={a.chipBloqueo}>Tras la presencial</span>
+                          <span className={a.chipBloqueo}>{l.motivo === 'modulo' ? 'Lee antes el módulo' : 'Tras la presencial'}</span>
                         ) : p?.completada ? (
                           <span className={a.hecha} aria-label="Completada">
                             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
