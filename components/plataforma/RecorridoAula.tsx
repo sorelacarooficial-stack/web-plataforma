@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import type { Recorrido } from '@/lib/avance';
-import { horaColombia } from '@/lib/citas';
+import { horaEn, PAISES_CITA } from '@/lib/citas';
 import r from './recorridoaula.module.css';
 
 /**
@@ -32,12 +32,13 @@ type Props = {
 };
 
 const DIA = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-const DIA_CORTO = new Intl.DateTimeFormat('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
 const HORA = new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit' });
-const claveDia = (iso: string) => {
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-};
+/* Los días se cuentan en hora de Colombia, que es donde está el horario de Sorela. */
+const DIA_CO = new Intl.DateTimeFormat('es-ES', { timeZone: 'America/Bogota', weekday: 'short', day: 'numeric', month: 'short' });
+const DIA_CO_LARGO = new Intl.DateTimeFormat('es-ES', { timeZone: 'America/Bogota', weekday: 'long', day: 'numeric', month: 'long' });
+const claveDia = (iso: string) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date(iso));
+/** «06:00 Colombia · 07:00 Venezuela · 12:00 España». */
+const enLosTres = (iso: string) => PAISES_CITA.map((p) => `${horaEn(iso, p.zona)} ${p.nombre}`).join(' · ');
 
 function Candado() {
   return (
@@ -190,7 +191,7 @@ export default function RecorridoAula({ recorrido, leer, verClase, recargar, mue
             <p className={r.texto}>{paso.texto}</p>
             {citaFutura && (
               <p className={r.citaPuesta}>
-                Tu reunión con Sorela: <strong>{DIA.format(new Date(citaFutura.cuando))}</strong> a las {HORA.format(new Date(citaFutura.cuando))} (tu hora). Está en tu agenda.
+                Tu reunión con Sorela: <strong>{DIA.format(new Date(citaFutura.cuando))}</strong> a las {HORA.format(new Date(citaFutura.cuando))} (tu hora) · {enLosTres(citaFutura.cuando)}. Está en tu agenda.
               </p>
             )}
           </div>
@@ -331,7 +332,7 @@ function PedirCita({ cerrar, hecha, muestra }: { cerrar: () => void; hecha: () =
         <h3 id="cita-titulo" className={r.hojaTitulo}>
           Tu reunión con <strong>Sorela</strong>
         </h3>
-        <p className={r.hojaTexto}>Elige el día y después la hora. Las horas salen en la hora de tu país.</p>
+        <p className={r.hojaTexto}>Elige el día y después la hora. Cada hora sale en Colombia, Venezuela y España: mira la de tu país.</p>
 
         {libres === null ? (
           <p className={r.hojaTexto}>Buscando horas libres…</p>
@@ -352,17 +353,33 @@ function PedirCita({ cerrar, hecha, muestra }: { cerrar: () => void; hecha: () =
                     setHora(null);
                   }}
                 >
-                  {DIA_CORTO.format(new Date(hs[0]))}
+                  {DIA_CO.format(new Date(hs[0]))}
                 </button>
               ))}
             </div>
             {dia && (
               <>
                 <h4 className={r.paso1}>2 · La hora</h4>
-                <div className={r.horas}>
+                <div className={r.tablaHoras} role="radiogroup" aria-label="La hora">
+                  <span className={r.tablaCabeza} aria-hidden="true">
+                    {PAISES_CITA.map((p) => (
+                      <span key={p.id}>{p.nombre}</span>
+                    ))}
+                  </span>
                   {horas.map((h) => (
-                    <button key={h} type="button" className={r.hora} data-activo={hora === h ? '' : undefined} onClick={() => setHora(h)}>
-                      {HORA.format(new Date(h))}
+                    <button
+                      key={h}
+                      type="button"
+                      role="radio"
+                      aria-checked={hora === h}
+                      aria-label={enLosTres(h)}
+                      className={r.filaHora}
+                      data-activo={hora === h ? '' : undefined}
+                      onClick={() => setHora(h)}
+                    >
+                      {PAISES_CITA.map((p) => (
+                        <span key={p.id}>{horaEn(h, p.zona)}</span>
+                      ))}
                     </button>
                   ))}
                 </div>
@@ -373,7 +390,14 @@ function PedirCita({ cerrar, hecha, muestra }: { cerrar: () => void; hecha: () =
 
         {hora && (
           <p className={r.resumen}>
-            <strong>{DIA.format(new Date(hora))}</strong>, a las <strong>{HORA.format(new Date(hora))}</strong> (tu hora) · {horaColombia(hora)} en Colombia
+            <strong>{DIA_CO_LARGO.format(new Date(hora))}</strong>
+            <br />
+            {PAISES_CITA.map((p, k) => (
+              <span key={p.id}>
+                {k > 0 ? ' · ' : ''}
+                <strong>{horaEn(hora, p.zona)}</strong> {p.nombre}
+              </span>
+            ))}
           </p>
         )}
         {fallo && (
