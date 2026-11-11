@@ -49,7 +49,7 @@ export async function GET(peticion: Request) {
     }
     // La academia por módulos: el vídeo no se da hasta leer el dosier de su módulo.
     const recorrido = await recorridoDe(sesion.uid, accesos);
-    if (recorrido && videoCerradoPorModulo(recorrido, v.para as Acceso, v.modulo as string | undefined)) {
+    if (recorrido && videoCerradoPorModulo(recorrido, v.para as Acceso, v.modulo as string | undefined, v.titulo as string | undefined)) {
       return NextResponse.json({ ok: false, motivo: 'modulo-cerrado' }, { status: 403 });
     }
   }

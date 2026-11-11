@@ -2,7 +2,7 @@ import 'server-only';
 import { baseDeDatos, COLECCIONES } from './firebase-servidor';
 import { CURSO_DIVINE, revisarAccesos, type Acceso } from './accesos';
 import { clave } from './aula';
-import { leerLectura } from './material';
+import { leerLectura, moduloDeClase } from './material';
 import { calcularRecorrido, esTecnicaCompleta, llevaRecorrido, type Recorrido } from './avance';
 
 /**
@@ -30,7 +30,7 @@ export async function recorridoDe(uid: string, accesosYa?: Acceso[]): Promise<Re
       const para = d.get('para') as Acceso | undefined;
       return d.get('publicada') !== false && para?.tipo === 'curso' && clave(para.nombre) === clave(CURSO_DIVINE) && !esTecnicaCompleta(d.get('modulo'));
     })
-    .map((d) => ({ id: d.id, modulo: d.get('modulo') as string | undefined, completada: hechas.has(d.id) }));
+    .map((d) => ({ id: d.id, modulo: moduloDeClase(d.get('modulo'), d.get('titulo')).nombre, completada: hechas.has(d.id) }));
 
   const c = ficha.get('citaSorela') as { cuando?: unknown } | undefined;
   const curso = accesos.find((a) => a.tipo === 'curso' && clave(a.nombre) === clave(CURSO_DIVINE));

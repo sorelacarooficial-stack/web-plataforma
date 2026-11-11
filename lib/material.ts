@@ -165,6 +165,25 @@ function normal(n: string | undefined): string {
   return (n || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * El módulo de una CLASE, mirando también su título.
+ *
+ * Lo que decidió Sorela (11 nov): el vídeo de abdomen va en el Módulo 02, el
+ * de piernas y glúteos en el 03 y el facial en el 04. Hay clases subidas con
+ * el apartado escrito de otra forma («Día 1 · Desbloqueo» para el de piernas),
+ * y así salían en el módulo que no era. Si el título nombra uno de los tres
+ * protocolos, manda el título. Los vídeos largos («Técnica completa») no se
+ * tocan: van aparte.
+ */
+export function moduloDeClase(modulo: string | undefined, titulo: string | undefined): { nombre: string; puesto: number } {
+  const m = normal(modulo);
+  if (/(tecnica|clase|curso|tratamiento) complet/.test(m)) return { nombre: modulo || '', puesto: 99 };
+  const t = normal(titulo);
+  const porTitulo = /abdomen/.test(t) ? 1 : /pierna|gluteo/.test(t) ? 2 : /facial|rostro/.test(t) ? 3 : -1;
+  if (porTitulo >= 0) return { nombre: DOCUMENTOS[porTitulo].modulo, puesto: porTitulo };
+  return moduloOficial(modulo);
+}
+
 /** Dónde vive cada página en el almacén. */
 export const rutaDePagina = (id: string, n: number) => `material/${id}/${String(n).padStart(3, '0')}.webp`;
 

@@ -11,10 +11,12 @@ import {
   type Progreso,
 } from '@/lib/aula';
 import { Lector, TarjetasMaterial, type DocumentoVisible } from './Material';
-import { moduloOficial } from '@/lib/material';
+import { moduloDeClase, moduloOficial } from '@/lib/material';
 import { calcularRecorrido, esTecnicaCompleta, videoCerradoPorModulo, type Recorrido } from '@/lib/avance';
 import type { Lectura } from '@/lib/material';
 import RecorridoAula from './RecorridoAula';
+import TecnicaCompleta from './TecnicaCompleta';
+import { TECNICA_COMPLETA } from '@/lib/tecnica-completa';
 import VideoYoutube from '@/components/VideoYoutube';
 import css from './plataforma.module.css';
 import a from './aula.module.css';
@@ -115,6 +117,7 @@ export default function Aula({ correo, muestra = false }: { correo?: string | nu
   const [citaPrueba, setCitaPrueba] = useState<{ cuando: string } | null>(null);
   /* Cada vez que sube, el camino abre la ventana de pedir la reunión. */
   const [pedirCita, setPedirCita] = useState(0);
+  const [verTecnica, setVerTecnica] = useState(false);
   const video = useRef<HTMLVideoElement>(null);
   const ultimoGuardado = useRef(0);
   /* Por dónde iba al renovar el enlace, para seguir en el mismo segundo. */
@@ -163,7 +166,7 @@ export default function Aula({ correo, muestra = false }: { correo?: string | nu
     return porBloques(lecciones).flatMap((b) =>
       b.lecciones
         .map((l) => {
-          const m = moduloOficial(l.modulo || b.nombre);
+          const m = moduloDeClase(l.modulo || b.nombre, l.titulo);
           return { ...l, modulo: m.nombre, puesto: m.puesto };
         })
         .sort((x, z) => x.puesto - z.puesto)
@@ -382,12 +385,16 @@ export default function Aula({ correo, muestra = false }: { correo?: string | nu
   );
   /* Los vídeos largos, para estudiar sola: van aparte, detrás de un botón. */
   const completas = ordenadas.filter((l) => esTecnicaCompleta(l.modulo) && !l.bloqueada);
+  /* Los de Drive (lib/tecnica-completa.ts) en su ventana; si no hay, los subidos al almacén. */
+  const hayTecnica = TECNICA_COMPLETA.length > 0 && (documentos.length > 0 || ordenadas.some((l) => l.para?.tipo === 'curso'));
+  const totalTecnica = hayTecnica ? TECNICA_COMPLETA.length : completas.length;
   const verCompleta = () => {
+    if (hayTecnica) return setVerTecnica(true);
     if (!completas.length) return;
     setModulo(completas[0].modulo as string);
     abrir(completas[0].id);
   };
-  const camino = (recorrido || completas.length > 0) && (
+  const camino = (recorrido || totalTecnica > 0) && (
     <>
       {recorrido && (
         <RecorridoAula
@@ -399,7 +406,8 @@ export default function Aula({ correo, muestra = false }: { correo?: string | nu
           muestra={muestra ? { pedirCita: (cuando) => setCitaPrueba({ cuando }) } : undefined}
         />
       )}
-      {completas.length > 0 && (
+      {verTecnica && <TecnicaCompleta cerrar={() => setVerTecnica(false)} />}
+      {totalTecnica > 0 && (
         <button type="button" className={a.tecnicaCompleta} onClick={verCompleta}>
           <span className={a.tecnicaIcono} aria-hidden="true">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg>
@@ -407,7 +415,7 @@ export default function Aula({ correo, muestra = false }: { correo?: string | nu
           <span>
             <strong>Ver toda la técnica completa</strong>
             <small>
-              {completas.length === 1 ? 'El tratamiento entero' : `${completas.length} tratamientos enteros`}, paso a paso. Puedes repetirlo las veces que quieras.
+              {totalTecnica === 1 ? 'El tratamiento entero' : `${totalTecnica} tratamientos enteros`}, de principio a fin. Puedes repetirlo las veces que quieras.
             </small>
           </span>
         </button>
