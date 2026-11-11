@@ -1,0 +1,111 @@
+/* Las novedades de la agenda: banda oscura de la marca, oro y crema. */
+.marco {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 28px 28px 22px;
+  color: #f4efe7;
+  background:
+    radial-gradient(90% 120% at 100% 0%, rgba(243, 217, 174, 0.16), transparent 60%),
+    radial-gradient(60% 80% at 0% 100%, rgba(201, 154, 92, 0.12), transparent 60%),
+    #17140f;
+  box-shadow: inset 0 0 0 1px rgba(243, 217, 174, 0.14), 0 24px 48px -28px rgba(0, 0, 0, 0.55);
+}
+.diapositiva {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 168px;
+  cursor: grab;
+  touch-action: pan-y;
+}
+.diapositiva:active {
+  cursor: grabbing;
+}
+.etiqueta {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #e6c491;
+}
+.titulo {
+  margin: 2px 0 0;
+  font-size: clamp(24px, 3.4vw, 34px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+.titulo strong {
+  font-weight: 600;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.fecha {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.detalle {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: rgba(244, 239, 231, 0.68);
+}
+.cuenta {
+  align-self: flex-start;
+  margin-top: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #141210;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+}
+.mandos {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+.flecha {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(243, 217, 174, 0.3);
+  background: transparent;
+  color: #f4efe7;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.flecha:hover {
+  background: rgba(243, 217, 174, 0.1);
+}
+.puntos {
+  display: flex;
+  gap: 6px;
+}
+.punto {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(244, 239, 231, 0.3);
+  cursor: pointer;
+  transition: width 0.3s, background 0.3s;
+}
+.punto[data-activo] {
+  width: 22px;
+  background: #e6c491;
+}
+@media (max-width: 560px) {
+  .marco {
+    padding: 22px 18px 18px;
+  }
+}
