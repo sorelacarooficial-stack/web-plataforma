@@ -6,6 +6,7 @@ import CalendarioMes, { claveDia, inicioDeMes, primerDiaVisible } from './Calend
 /* Del calendario se usan aquí solo las tres clases que reparten el sitio entre
    él y la lista: la mitad del acuerdo la pone cada lado. */
 import cal from './calendario.module.css';
+import NovedadesAgenda, { type Novedad } from './NovedadesAgenda';
 
 /**
  * La agenda, la misma pantalla para todo el mundo.
@@ -152,6 +153,7 @@ export default function Agenda({
   const [lista, setLista] = useState<Evento[] | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
   const [verPasado, setVerPasado] = useState(false);
+  const [novedades, setNovedades] = useState<Novedad[]>([]);
 
   /* El calendario: qué mes se está viendo y qué día está marcado. Viven aquí y
      no dentro del calendario porque los usan los dos: el mes decide hasta dónde
@@ -222,6 +224,7 @@ export default function Agenda({
         return;
       }
       setLista(c.eventos);
+      setNovedades(Array.isArray(c.novedades) ? c.novedades : []);
     } catch {
       if (mio !== turno.current) return;
       setFallo('No hay conexión con el servidor.');
@@ -427,6 +430,17 @@ export default function Agenda({
 
   return (
     <div className={css.columna}>
+      <section className={css.tarjeta}>
+        <h2 className={css.h3}>Tu agenda</h2>
+        <p className={css.apunte} style={{ fontSize: 14, lineHeight: 1.55, marginTop: 6 }}>
+          {esSorela
+            ? 'Aquí tienes todo lo que tienes apuntado: sesiones, formaciones, llamadas y reuniones, y las citas que te piden desde la web.'
+            : 'Aquí encontrarás todos los eventos: las reuniones con Sorela, tus formaciones y clases en directo, y todo lo que necesites apuntar. Lo que pone Sorela sale arriba, en novedades. Lo tuyo lo apuntas tú abajo.'}
+        </p>
+      </section>
+
+      <NovedadesAgenda novedades={novedades} />
+
       <div className={css.rejillaKpis}>
         {resumen.map((k) => (
           <article key={k.label} className={css.kpi}>

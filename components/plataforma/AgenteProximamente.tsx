@@ -61,8 +61,25 @@ export default function AgenteProximamente() {
   return (
     <>
       <button type="button" className={css.pastilla} onClick={() => setAbierto(true)}>
-        <span className={css.chispa} aria-hidden />
-        Agente IA <em>Pronto</em>
+        <span className={css.borde} aria-hidden />
+        <span className={css.icono} aria-hidden>
+          <svg viewBox="1 1 22 22" width="22" height="22">
+            <defs>
+              <linearGradient id="agente-chispa" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#fff3dc" />
+                <stop offset="1" stopColor="#c99a5c" />
+              </linearGradient>
+            </defs>
+            <path
+              className={css.chispaGrande}
+              d="M12 2.5c.6 4.6 2.9 6.9 7.5 7.5-4.6.6-6.9 2.9-7.5 7.5-.6-4.6-2.9-6.9-7.5-7.5 4.6-.6 6.9-2.9 7.5-7.5Z"
+              fill="url(#agente-chispa)"
+            />
+            <path className={css.chispaPeque} d="M19 15.5c.25 1.9 1.1 2.75 3 3-1.9.25-2.75 1.1-3 3-.25-1.9-1.1-2.75-3-3 1.9-.25 2.75-1.1 3-3Z" fill="#f3d9ae" />
+          </svg>
+        </span>
+        <span className={css.texto}>Agente IA</span>
+        <em>Pronto</em>
       </button>
 
       {abierto && (

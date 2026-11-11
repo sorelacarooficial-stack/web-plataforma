@@ -315,14 +315,24 @@ export async function GET(peticion: Request) {
     };
   });
 
-  /* Las fechas de la formación presencial a la que Sorela le ha dado acceso
-     desde una convocatoria: salen en su agenda sin que tenga que apuntarlas.
-     No se guardan en su agenda (si Sorela cambia la fecha, cambia aquí
-     sola): se calculan al pedirla y van marcadas como fijas. */
-  const deCurso = await fechasDeFormacion(guardia.sesion.uid, guardia.sesion.correo ?? '', corte).catch(() => []);
-  const todas = [...eventos, ...deCurso].sort((a, b) => String(a.cuando).localeCompare(String(b.cuando)));
+  /* Las novedades: la formación presencial a la que Sorela le ha dado acceso
+     y la próxima clase en directo. Ya NO van mezcladas en la lista (allí solo
+     está lo que apunta cada una): salen arriba, en diapositivas. Se calculan
+     al pedirlas, así que si Sorela cambia una fecha, cambia aquí sola. */
+  const [formaciones, clase] = await Promise.all([
+    formacionesDe(guardia.sesion.uid, guardia.sesion.correo ?? '').catch(() => []),
+    proximaClase().catch(() => null),
+  ]);
+  const novedades = [...(clase ? [clase] : []), ...formaciones];
 
-  return NextResponse.json({ ok: true, eventos: todas, total: todas.length });
+  return NextResponse.json({ ok: true, eventos, total: eventos.length, novedades });
+}
+
+/** La próxima clase en directo que Sorela tiene puesta en Comunidad (sin el enlace: ese está en Comunidad). */
+async function proximaClase() {
+  const pc = (await baseDeDatos().collection(COLECCIONES.ajustes).doc('comunidad').get()).data()?.proximaClase;
+  if (!pc?.cuando || new Date(pc.cuando).getTime() < Date.now() - 3 * 3600_000) return null;
+  return { id: 'clase-en-directo', tipo: 'clase' as const, titulo: String(pc.titulo ?? 'Clase en directo'), cuando: String(pc.cuando) };
 }
 
 /** «2026-10-24» + «08:00» en hora de España, como instante. */
@@ -337,7 +347,11 @@ function enMadrid(dia: string, hora: string): Date {
   return new Date(tentativa.getTime() - (visto - tentativa.getTime()));
 }
 
-async function fechasDeFormacion(uid: string, correo: string, corte: Date) {
+/**
+ * Las formaciones presenciales que son suyas, una por convocatoria, con sus
+ * días. Solo las que aún no han terminado.
+ */
+async function formacionesDe(uid: string, correo: string) {
   const mio = correo.trim().toLowerCase();
   /* La convocatoria que trae su acceso al curso (el enlace la lleva puesta):
      es la forma directa. Lo de las inscritas cubre los accesos de antes. */
@@ -345,7 +359,15 @@ async function fechasDeFormacion(uid: string, correo: string, corte: Date) {
     (await accesosDe(uid)).flatMap((a) => (a.tipo === 'curso' && a.convocatoria ? [a.convocatoria] : []))
   );
   const snap = await coleccionConvocatorias().get();
-  const salida: Array<Record<string, unknown>> = [];
+  const hoy = inicioDeHoy().getTime();
+  const salida: Array<{
+    id: string;
+    tipo: 'formacion';
+    titulo: string;
+    ciudad: string;
+    lugar: string;
+    dias: { dia: string; cuando: string; desde: string; hasta: string }[];
+  }> = [];
   for (const d of snap.docs) {
     const v = d.data();
     const c = aConvocatoria(d.id, v);
@@ -356,32 +378,15 @@ async function fechasDeFormacion(uid: string, correo: string, corte: Date) {
       return (a.tipo === 'cuenta' && a.uid === uid) || (!!mio && String(x?.correo ?? '').trim().toLowerCase() === mio);
     });
     if (!suya) continue;
-    const dias = diasEntre(c.inicio, c.fin);
-    dias.forEach((dia, i) => {
+    const dias = diasEntre(c.inicio, c.fin).map((dia) => {
       const j = c.horario[dia];
       const desde = j?.desde ?? '09:00';
-      const cuando = enMadrid(dia, desde);
-      if (cuando.getTime() < corte.getTime() - 86_400_000) return;
-      const [h1, m1] = desde.split(':').map(Number);
-      const [h2, m2] = (j?.hasta ?? '').split(':').map(Number);
-      const duracion = j && !Number.isNaN(h2) ? (h2 * 60 + m2) - (h1 * 60 + m1) : 480;
-      salida.push({
-        id: `formacion-${d.id}-${dia}`,
-        titulo: `Formación presencial${dias.length > 1 ? ` · día ${i + 1}` : ''}`,
-        cuando: cuando.toISOString(),
-        duracionMin: duracion > 0 ? duracion : 480,
-        tipo: 'Formación',
-        lugar: [c.ciudad, c.lugar].filter(Boolean).join(' · '),
-        nota: '',
-        conQuien: 'Sorela Caro',
-        telefono: '',
-        estado: 'Pendiente',
-        creado: null,
-        fija: true,
-      });
+      return { dia, cuando: enMadrid(dia, desde).toISOString(), desde, hasta: j?.hasta ?? '' };
     });
+    if (!dias.length || new Date(dias[dias.length - 1].cuando).getTime() < hoy) continue;
+    salida.push({ id: `formacion-${d.id}`, tipo: 'formacion', titulo: 'Formación presencial', ciudad: c.ciudad ?? '', lugar: c.lugar ?? '', dias });
   }
-  return salida;
+  return salida.sort((x, z) => x.dias[0].cuando.localeCompare(z.dias[0].cuando));
 }
 
 export async function POST(peticion: Request) {

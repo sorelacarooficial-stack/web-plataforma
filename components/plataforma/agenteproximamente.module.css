@@ -1,49 +1,169 @@
+@property --giro {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* La pastilla: cristal oscuro, borde de luz que gira, chispa de IA que
+   respira y un brillo que barre el «Pronto». */
 .pastilla {
   position: fixed;
   right: 18px;
   bottom: 18px;
   z-index: 60;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 11px 18px 11px 14px;
+  padding: 10px 12px 10px 10px;
   border: 0;
   border-radius: 999px;
   font: inherit;
   font-size: 14px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: #f4efe7;
-  background: #17140f;
-  box-shadow: 0 0 0 1px rgba(243, 217, 174, 0.3), 0 18px 40px -16px rgba(0, 0, 0, 0.6);
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(243, 217, 174, 0.16), transparent 55%),
+    linear-gradient(180deg, rgba(36, 31, 24, 0.92), rgba(18, 15, 11, 0.96));
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 243, 220, 0.12),
+    0 0 24px -6px rgba(201, 154, 92, 0.55),
+    0 18px 40px -16px rgba(0, 0, 0, 0.7);
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s;
 }
 .pastilla:hover {
   transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 243, 220, 0.16),
+    0 0 34px -4px rgba(201, 154, 92, 0.75),
+    0 22px 44px -16px rgba(0, 0, 0, 0.75);
 }
+.pastilla:focus-visible {
+  outline: 2px solid #f3d9ae;
+  outline-offset: 3px;
+}
+
+/* El borde: un degradado cónico que gira, recortado a 1,5 px. */
+.borde {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--giro),
+    rgba(243, 217, 174, 0.08) 0deg,
+    #f3d9ae 60deg,
+    #c99a5c 110deg,
+    rgba(243, 217, 174, 0.08) 180deg,
+    rgba(243, 217, 174, 0.08) 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: girar 4s linear infinite;
+  pointer-events: none;
+}
+@keyframes girar {
+  to {
+    --giro: 360deg;
+  }
+}
+
+.icono {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, rgba(243, 217, 174, 0.38), rgba(201, 154, 92, 0.08) 72%);
+  box-shadow: inset 0 0 0 1px rgba(243, 217, 174, 0.22);
+}
+.chispaGrande {
+  transform-origin: 12px 10px;
+  animation: respirar 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px rgba(255, 236, 200, 0.9));
+}
+.chispaPeque {
+  transform-origin: 19px 18.5px;
+  animation: respirar 2.4s ease-in-out 1.2s infinite;
+}
+@keyframes respirar {
+  0%,
+  100% {
+    transform: scale(0.86) rotate(0deg);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.06) rotate(12deg);
+    opacity: 1;
+  }
+}
+
+.texto {
+  background: linear-gradient(90deg, #f4efe7 0%, #f4efe7 40%, #f3d9ae 50%, #f4efe7 60%, #f4efe7 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: barrido 3.6s ease-in-out infinite;
+}
+
 .pastilla em {
+  position: relative;
+  overflow: hidden;
   font-style: normal;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 3px 8px;
+  padding: 4px 9px;
   border-radius: 999px;
   color: #141210;
   background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  box-shadow: 0 0 12px -2px rgba(243, 217, 174, 0.6);
 }
-.chispa {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #e6c491;
-  box-shadow: 0 0 0 0 rgba(230, 196, 145, 0.7);
-  animation: latido 1.8s infinite;
+.pastilla em::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.75) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: brillo 3.6s ease-in-out infinite;
 }
-@keyframes latido {
+@keyframes barrido {
+  0%,
+  20% {
+    background-position: 100% 0;
+  }
   70%,
   100% {
-    box-shadow: 0 0 0 10px rgba(230, 196, 145, 0);
+    background-position: 0% 0;
+  }
+}
+@keyframes brillo {
+  0%,
+  45% {
+    transform: translateX(-120%);
+  }
+  75%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .borde,
+  .chispaGrande,
+  .chispaPeque,
+  .texto,
+  .pastilla em::after {
+    animation: none;
   }
 }
 
