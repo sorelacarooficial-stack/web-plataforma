@@ -4,6 +4,8 @@ import { baseDeDatos, hayFirebase, COLECCIONES } from './firebase-servidor';
 import { COLECCION_CAMPANAS } from './campanas';
 import { coleccion as convocatorias, refrescarFormaciones } from './convocatorias';
 import { CURSO_POR_DEFECTO } from './convocatorias-tipos';
+import { almacen } from './aula-almacen';
+import { CURSO_DIVINE } from './accesos';
 
 /**
  * Cambios de datos que no se pueden hacer desde el código porque viven en
@@ -212,6 +214,67 @@ export async function puestaAPunto(): Promise<{ id: string; enviados: number; fa
     refrescarFormaciones();
     await marca.set({ diciembreCancelado: FieldValue.serverTimestamp() }, { merge: true });
     informe.push({ id: 'diciembre-cancelado', enviados: movidas, fallidos: 0, omitidos: 0 });
+  }
+
+  /* 1e · 11 nov: el vídeo de abdomen (Módulo 02 de la academia) no salía en
+     el aula. Si hay una clase del curso con «abdomen» en el título que se
+     quedó en borrador, se publica. Las de la Comunidad no se tocan. */
+  if (!hecho.abdomenPublicado) {
+    let publicadas = 0;
+    const clases = await db.collection(COLECCIONES.lecciones).get();
+    for (const d of clases.docs) {
+      const titulo = String(d.get('titulo') ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+      const para = d.get('para') as { tipo?: string } | undefined;
+      if (/abdomen/.test(titulo) && para?.tipo === 'curso' && d.get('publicada') === false) {
+        await d.ref.update({ publicada: true });
+        publicadas++;
+      }
+    }
+    await marca.set({ abdomenPublicado: FieldValue.serverTimestamp() }, { merge: true });
+    informe.push({ id: 'abdomen-publicado', enviados: publicadas, fallidos: 0, omitidos: 0 });
+  }
+
+  /* 1f · 11 nov: el vídeo de abdomen está en el almacén
+     (clases/abdomen-desbloqueo.mp4) pero sin ficha de clase, así que no salía
+     en ningún sitio. Se crea su clase en el Módulo 02 del curso, publicada,
+     la primera del curso. Si ya hay una clase del curso con ese vídeo o con
+     «abdomen» en el título, no se crea otra. */
+  if (!hecho.abdomenCreado) {
+    let creada = 0;
+    const ruta = 'clases/abdomen-desbloqueo.mp4';
+    const [existe] = await almacen().file(ruta).exists().catch(() => [false]);
+    const clases = await db.collection(COLECCIONES.lecciones).get();
+    const yaHay = clases.docs.some((d) => {
+      const para = d.get('para') as { tipo?: string } | undefined;
+      const titulo = String(d.get('titulo') ?? '').toLowerCase();
+      return d.get('video') === `propio:${ruta}` || (para?.tipo === 'curso' && /abdomen/.test(titulo));
+    });
+    if (existe && !yaHay) {
+      const [meta] = await almacen().file(ruta).getMetadata().catch(() => [{} as { size?: unknown }]);
+      const ordenes = clases.docs.map((d) => Number(d.get('orden'))).filter((n) => Number.isFinite(n));
+      const ok = await db
+        .collection(COLECCIONES.lecciones)
+        .doc('protocolo-abdomen')
+        .create({
+          titulo: 'Protocolo de abdomen',
+          descripcion: 'El desbloqueo del abdomen, paso a paso: activación de ganglios, abdomen bajo, abdomen alto y laterales.',
+          video: `propio:${ruta}`,
+          para: { tipo: 'curso', nombre: CURSO_DIVINE },
+          orden: (ordenes.length ? Math.min(...ordenes) : 0) - 1,
+          modulo: 'Módulo 02 · Desbloqueo',
+          ...(Number(meta?.size) > 0 ? { tamano: Number(meta.size) } : {}),
+          publicada: true,
+          creado: FieldValue.serverTimestamp(),
+        })
+        .then(() => true)
+        .catch(() => false);
+      if (ok) creada = 1;
+    }
+    await marca.set({ abdomenCreado: FieldValue.serverTimestamp() }, { merge: true });
+    informe.push({ id: 'abdomen-creado', enviados: creada, fallidos: existe ? 0 : 1, omitidos: yaHay ? 1 : 0 });
   }
 
   /* 2 · Correos programados: de Zoom a Google Meet. */
