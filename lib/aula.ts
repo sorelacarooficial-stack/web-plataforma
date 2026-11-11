@@ -57,6 +57,8 @@ export type Leccion = {
    * parte práctica, cuando Sorela la marca «Pagado».
    */
   bloqueada?: boolean;
+  /** Por qué está bloqueada: `modulo` = aún no ha leído el dosier de su módulo (lib/avance.ts). Sin él, es el abono. */
+  motivo?: 'modulo';
 };
 
 export type Capitulo = { t: number; titulo: string };

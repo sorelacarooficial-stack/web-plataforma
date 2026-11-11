@@ -352,3 +352,22 @@ cada cambio importante** (una línea por decisión, con la fecha).
   `ajustes/copia-convocatorias-diciembre` y borra las de diciembre. La
   agenda ya trata diciembre como enero sin esperar al cron. Al confirmar un
   pago, la beca entra en `medellin-2027-01`.
+- 2026-11-11 (reunión con Sorela): **academia online por módulos**
+  (lib/avance.ts; la técnica grabada se vende online, 750 USD, el precio no
+  sale en la plataforma). Solo para accesos al curso SIN fechas presenciales,
+  completos y dados desde el 11 nov (`llevaRecorrido`); las de antes, la beca
+  y las homologadas siguen igual. Módulo 01 abierto → al terminarlo pide
+  **reunión con Sorela** (se abre el 02 al pedirla) → al leer el dosier de un
+  módulo se abre su vídeo (02 abdomen, 03 piernas y glúteos, 04 facial) → al
+  ver el vídeo se abre el siguiente → al final, prácticas con Sorela (otra
+  reunión). Lo cierra el servidor (/api/material, /api/lecciones y
+  /api/lecciones/video); el aula lo pinta con `RecorridoAula` (camino con
+  candados, «tu siguiente paso» y celebración al terminar cada módulo).
+- 2026-11-11: **reuniones con Sorela** (/api/citas, lib/citas.ts): la alumna
+  elige día y hora; lunes a viernes, 6:00-15:00 de Colombia, 1 hora, hasta 21
+  días vista. Un hueco = un documento de `citas_sorela`. Queda en su agenda y
+  en la de Sorela. Una por delante como mucho; para cambiarla, por WhatsApp.
+  Enlace fijo de la videollamada: variable `ENLACE_REUNIONES` en Vercel
+  (vacía = «Videollamada»). Los vídeos largos se suben con el módulo
+  «Técnica completa»: salen tras el botón «Ver toda la técnica completa» y
+  no entran en el recorrido.

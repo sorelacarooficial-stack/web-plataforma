@@ -16,7 +16,7 @@ import m from './material.module.css';
  * eso la marca de agua, para que esa foto diga de quién salió.
  */
 
-export type DocumentoVisible = Omit<Documento, 'para'> & { portadaUrl: string };
+export type DocumentoVisible = Omit<Documento, 'para'> & { portadaUrl: string; /** Módulo aún sin abrir (lib/avance.ts). */ cerrado?: boolean };
 
 /** La marca de agua: el correo en diagonal, como fondo que se repite. */
 function fondoDeMarca(correo: string) {
@@ -35,7 +35,7 @@ export function TarjetasMaterial({
   return (
     <div className={m.tarjetas}>
       {documentos.map((d) => (
-        <button key={d.id} type="button" className={m.tarjeta} onClick={() => abrir(d.id)}>
+        <button key={d.id} type="button" className={m.tarjeta} data-cerrado={d.cerrado ? '' : undefined} disabled={d.cerrado} onClick={() => abrir(d.id)}>
           <span className={m.portada} onContextMenu={(e) => e.preventDefault()}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={d.portadaUrl} alt="" draggable={false} loading="lazy" />
@@ -45,7 +45,7 @@ export function TarjetasMaterial({
             <span className={m.tarjetaSub}>{d.subtitulo}</span>
             <span className={m.tarjetaMeta}>
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 3h8l4 4v14H6z" strokeLinejoin="round" /><path d="M14 3v4h4" strokeLinejoin="round" /></svg>
-              {d.paginas} páginas · Leer
+              {d.cerrado ? 'Con candado · se abre al terminar el módulo anterior' : `${d.paginas} páginas · Leer`}
             </span>
           </span>
         </button>

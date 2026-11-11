@@ -6,6 +6,7 @@ import { sesionActual } from '@/lib/sesion-servidor';
 import { puedeVerla, tieneElCurso } from '@/lib/aula';
 import { revisarAccesos, type Acceso } from '@/lib/accesos';
 import { DOCUMENTOS, leerLectura, rutaDePagina, type Documento, type Lectura } from '@/lib/material';
+import { recorridoDe } from '@/lib/avance-servidor';
 
 /**
  * El material del curso.
@@ -59,6 +60,10 @@ export async function GET(peticion: Request) {
   const ficha = sesion.rol === 'sorela' ? null : await baseDeDatos().collection(COLECCIONES.usuarios).doc(sesion.uid).get().catch(() => null);
   const accesos = sesion.rol === 'sorela' ? null : revisarAccesos(ficha?.get('accesos'));
   const puede = (d: Documento) => puedeLeer(d, accesos);
+  /* La academia por módulos: un dosier cerrado sale en la lista (con candado)
+     pero sus páginas no se firman. */
+  const recorrido = accesos ? await recorridoDe(sesion.uid, accesos) : null;
+  const cerrado = (d: Documento) => Boolean(recorrido && !recorrido.modulos[DOCUMENTOS.indexOf(d)]?.abierto);
   const caduca = Date.now() + VIGENCIA_MS;
   const id = new URL(peticion.url).searchParams.get('id');
 
@@ -67,6 +72,7 @@ export async function GET(peticion: Request) {
       const doc = DOCUMENTOS.find((d) => d.id === id);
       if (!doc) return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
       if (!puede(doc)) return NextResponse.json({ ok: false, motivo: 'sin-permiso' }, { status: 403 });
+      if (cerrado(doc)) return NextResponse.json({ ok: false, motivo: 'modulo-cerrado' }, { status: 403 });
       const paginas = await Promise.all(
         Array.from({ length: doc.paginas }, (_, i) => firmar(rutaDePagina(doc.id, i + 1), caduca))
       );
@@ -77,12 +83,13 @@ export async function GET(peticion: Request) {
       DOCUMENTOS.filter(puede).map(async ({ para: _para, ...d }) => ({
         ...d,
         portadaUrl: await firmar(rutaDePagina(d.id, d.portada), caduca),
+        cerrado: cerrado(DOCUMENTOS.find((x) => x.id === d.id)!),
       }))
     );
     // Lo leído, solo de lo que puede ver.
     const leido = leerLectura(ficha?.get('lectura'));
     const lectura: Record<string, Lectura> = Object.fromEntries(Object.entries(leido).filter(([id]) => documentos.some((d) => d.id === id)));
-    return NextResponse.json({ ok: true, documentos, lectura }, { headers: SIN_CACHE });
+    return NextResponse.json({ ok: true, documentos, lectura, recorrido }, { headers: SIN_CACHE });
   } catch (error) {
     console.error('[material] no se han podido firmar las páginas', error);
     return NextResponse.json({ ok: false, motivo: 'sin-almacen' }, { status: 503 });
@@ -110,6 +117,11 @@ export async function POST(peticion: Request) {
 
   const db = baseDeDatos();
   const ref = db.collection(COLECCIONES.usuarios).doc(sesion.uid);
+  // Un módulo cerrado no se puede dar por leído desde fuera.
+  const recorrido = await recorridoDe(sesion.uid).catch(() => null);
+  if (recorrido && !recorrido.modulos[DOCUMENTOS.indexOf(doc)]?.abierto) {
+    return NextResponse.json({ ok: false, motivo: 'modulo-cerrado' }, { status: 403 });
+  }
   try {
     const r = await db.runTransaction(async (t) => {
       const ficha = await t.get(ref);

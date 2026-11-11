@@ -6,6 +6,8 @@ import { accesosDe, sesionActual } from '@/lib/sesion-servidor';
 import { TOPE_VIDEO, carpetaDeClase, clave, esVideoPropio, puedeVerla, tieneElCurso, type Leccion } from '@/lib/aula';
 import { almacen, borrarArchivosDeClase, firmarPortada } from '@/lib/aula-almacen';
 import { revisarAccesos, type Acceso } from '@/lib/accesos';
+import { recorridoDe } from '@/lib/avance-servidor';
+import { videoCerradoPorModulo } from '@/lib/avance';
 
 /**
  * Las clases del aula.
@@ -151,13 +153,20 @@ export async function GET() {
      almacén no le sirve a la alumna para nada (el enlace lo pide por id a
      /api/lecciones/video): se queda solo la marca de «vídeo propio», para no
      enseñar cómo está organizado el almacén por dentro. */
+  /* La academia por módulos: los vídeos de un módulo se abren al leer su
+     dosier. Hasta entonces salen con candado y sin vídeo (`motivo: 'modulo'`).
+     Lo mismo comprueba /api/lecciones/video antes de dar el enlace. */
+  const recorrido = await recorridoDe(sesion.uid, accesos).catch(() => null);
+  const porModulo = (l: Leccion) => recorrido !== null && videoCerradoPorModulo(recorrido, l.para, l.modulo);
   const lecciones = (await conPortadas(suyas)).map((l) =>
     bloqueadas.has(l.id)
       ? { ...l, tamano: undefined, video: '', bloqueada: true }
-      : { ...l, tamano: undefined, video: esVideoPropio(l.video) ? 'propio:' : l.video }
+      : porModulo(l)
+        ? { ...l, tamano: undefined, video: '', bloqueada: true, motivo: 'modulo' as const }
+        : { ...l, tamano: undefined, video: esVideoPropio(l.video) ? 'propio:' : l.video }
   );
 
-  return NextResponse.json({ ok: true, lecciones, esSorela: false });
+  return NextResponse.json({ ok: true, lecciones, esSorela: false, recorrido });
 }
 
 export async function POST(peticion: Request) {

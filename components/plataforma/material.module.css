@@ -368,3 +368,10 @@
     display: none !important;
   }
 }
+
+/* Un módulo que aún no toca: apagado y sin clic. */
+.tarjeta[data-cerrado] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+}

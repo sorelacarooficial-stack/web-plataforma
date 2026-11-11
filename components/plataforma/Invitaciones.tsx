@@ -159,7 +159,9 @@ export default function Invitaciones() {
               inscritaActual ? 'Se le abren solos cuando la marques «Pagado» en Formaciones.' : 'Cuando pague el resto, se los abres en su cuenta › Gestionar acceso.'
             }`
           : conCurso
-            ? 'Verá todo el curso, también los vídeos.'
+            ? convActual
+              ? 'Verá todo el curso, también los vídeos.'
+              : 'Academia online (sin fechas presenciales): los módulos se le abren en orden. Al terminar el Módulo 01 pide su reunión contigo y sigue; cada vídeo se abre al leer su módulo.'
             : '',
         destino ? `Le llega el enlace a ${destino}.` : 'Sin correo: copia el enlace y mándaselo por WhatsApp.',
         'Si ya tiene cuenta, entra con su contraseña de siempre.',
