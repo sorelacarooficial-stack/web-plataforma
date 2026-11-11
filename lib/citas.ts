@@ -42,3 +42,19 @@ export function horaColombia(iso: string): string {
   const d = new Date(new Date(iso).getTime() + UTC_COLOMBIA * 3600_000);
   return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
 }
+
+/**
+ * Los tres países de las alumnas. Cada hora se enseña en los tres a la vez,
+ * para que nadie se líe: Colombia (UTC−5) y Venezuela (UTC−4) no cambian la
+ * hora en todo el año; España sí (verano/invierno), por eso va con su zona.
+ */
+export const PAISES_CITA = [
+  { id: 'co', nombre: 'Colombia', zona: 'America/Bogota' },
+  { id: 've', nombre: 'Venezuela', zona: 'America/Caracas' },
+  { id: 'es', nombre: 'España', zona: 'Europe/Madrid' },
+] as const;
+
+/** «08:00» en la zona dada. */
+export function horaEn(iso: string, zona: string): string {
+  return new Intl.DateTimeFormat('es-ES', { timeZone: zona, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(iso));
+}

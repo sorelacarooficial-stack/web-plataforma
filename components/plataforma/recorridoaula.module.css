@@ -376,3 +376,53 @@
   background: rgba(243, 217, 174, 0.08);
   box-shadow: inset 0 0 0 1px rgba(243, 217, 174, 0.25);
 }
+
+/* Las horas en los tres países: una fila por hora, una columna por país. */
+.tablaHoras {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.tablaCabeza,
+.filaHora {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+.tablaCabeza {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 4px 0 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a6a32;
+  background: #f4efe7;
+}
+.filaHora {
+  padding: 10px 6px;
+  border: 0;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 14.5px;
+  font-variant-numeric: tabular-nums;
+  color: #141210;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(20, 18, 16, 0.12);
+  cursor: pointer;
+}
+.filaHora:hover {
+  box-shadow: inset 0 0 0 1px rgba(138, 106, 50, 0.6);
+}
+.filaHora[data-activo] {
+  color: #f4efe7;
+  font-weight: 600;
+  background: #141210;
+  box-shadow: none;
+}

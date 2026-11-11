@@ -384,3 +384,8 @@ cada cambio importante** (una línea por decisión, con la fecha).
   lector un aviso con el siguiente paso (`alTerminar`): en el Módulo 01 de la
   academia online, «Pedir mi reunión con Sorela» (abre la ventana de la
   reunión sin la celebración repetida); en los demás, «Ver el vídeo».
+- 2026-11-11: al pedir la reunión, **cada hora sale en Colombia, Venezuela y
+  España a la vez** (tabla de tres columnas; `PAISES_CITA` y `horaEn` en
+  lib/citas.ts, España con su zona por el cambio de hora). Los días se
+  cuentan en hora de Colombia. La nota de la cita en la agenda lleva también
+  las tres horas.

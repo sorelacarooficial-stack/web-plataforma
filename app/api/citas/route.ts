@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
-import { CITA_MIN, horaColombia, huecosDeCita, idDeHueco } from '@/lib/citas';
+import { CITA_MIN, horaEn, huecosDeCita, idDeHueco, PAISES_CITA } from '@/lib/citas';
 
 /**
  * Las reuniones con Sorela.
@@ -65,6 +65,7 @@ export async function POST(peticion: Request) {
   const id = idDeHueco(cuando);
   const nombre = String(ficha.get('nombre') ?? '').trim() || sesion.correo || 'Alumna';
   const instante = Timestamp.fromDate(new Date(cuando));
+  const enLosTres = PAISES_CITA.map((p) => `${horaEn(cuando, p.zona)} ${p.nombre}`).join(' · ');
   try {
     await db.collection(CITAS).doc(id).create({ cuando: instante, uid: sesion.uid, nombre, correo: sesion.correo ?? '', pedida: FieldValue.serverTimestamp() });
   } catch {
@@ -88,14 +89,14 @@ export async function POST(peticion: Request) {
     ...evento,
     titulo: 'Reunión con Sorela',
     conQuien: 'Sorela Caro',
-    nota: `Videollamada de ${CITA_MIN} minutos. ${horaColombia(cuando)} hora de Colombia.`,
+    nota: `Videollamada de ${CITA_MIN} minutos. ${enLosTres}.`,
   });
   for (const s of sorelas.docs) {
     lote.set(s.ref.collection(COLECCIONES.agenda).doc(`cita-${id}`), {
       ...evento,
       titulo: `Reunión con ${nombre}`,
       conQuien: nombre,
-      nota: `La ha pedido ella desde la plataforma (${sesion.correo ?? 'sin correo'}). ${horaColombia(cuando)} hora de Colombia.`,
+      nota: `La ha pedido ella desde la plataforma (${sesion.correo ?? 'sin correo'}). ${enLosTres}.`,
     });
   }
   await lote.commit();
