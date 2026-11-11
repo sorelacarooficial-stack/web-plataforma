@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { accesoGuardado, aConvocatoria, coleccion as coleccionConvocatorias } from '@/lib/convocatorias';
 import { diasEntre } from '@/lib/convocatorias-tipos';
+import { CONVOCATORIA_BECA, CONVOCATORIAS_DICIEMBRE } from '@/lib/puesta-a-punto';
 import { FieldValue, Timestamp, type Query } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { accesosDe, sesionActual } from '@/lib/sesion-servidor';
@@ -355,8 +356,14 @@ async function formacionesDe(uid: string, correo: string) {
   const mio = correo.trim().toLowerCase();
   /* La convocatoria que trae su acceso al curso (el enlace la lleva puesta):
      es la forma directa. Lo de las inscritas cubre los accesos de antes. */
+  /* Diciembre se canceló (11 nov): quien la tenía puesta va a la beca de
+     enero. Lo pasa también el cron de la mañana en los datos; esto lo cubre
+     desde ya. */
+  const dic = new Set(CONVOCATORIAS_DICIEMBRE.map((c) => c.id));
   const compradas = new Set(
-    (await accesosDe(uid)).flatMap((a) => (a.tipo === 'curso' && a.convocatoria ? [a.convocatoria] : []))
+    (await accesosDe(uid)).flatMap((a) =>
+      a.tipo === 'curso' && a.convocatoria ? [dic.has(a.convocatoria) ? CONVOCATORIA_BECA.id : a.convocatoria] : []
+    )
   );
   const snap = await coleccionConvocatorias().get();
   const hoy = inicioDeHoy().getTime();
@@ -369,6 +376,7 @@ async function formacionesDe(uid: string, correo: string) {
     dias: { dia: string; cuando: string; desde: string; hasta: string }[];
   }> = [];
   for (const d of snap.docs) {
+    if (dic.has(d.id)) continue;
     const v = d.data();
     const c = aConvocatoria(d.id, v);
     const crudas = (v.inscritas ?? {}) as Record<string, { acceso?: unknown; correo?: unknown }>;

@@ -344,3 +344,11 @@ cada cambio importante** (una línea por decisión, con la fecha).
 - 2026-11-11: pastilla «Agente IA · Pronto» más tecnológica: cristal oscuro,
   borde de luz dorada que gira, chispa de IA que respira y brillo en «Pronto»
   (quieta con «reducir movimiento»).
+- 2026-11-11: **diciembre cancelado** (Caracas y Medellín). Solo queda la
+  beca: convocatoria `medellin-2027-01` (28-30 ene 2027, 10 plazas, 1.950
+  USD, interna). Paso 1d de lib/puesta-a-punto.ts (cron de la mañana, una
+  vez): crea la de enero con las inscritas de diciembre, pasa a ella los
+  accesos y enlaces que apuntaban a diciembre, guarda copia en
+  `ajustes/copia-convocatorias-diciembre` y borra las de diciembre. La
+  agenda ya trata diciembre como enero sin esperar al cron. Al confirmar un
+  pago, la beca entra en `medellin-2027-01`.
