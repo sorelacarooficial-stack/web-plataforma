@@ -404,3 +404,10 @@ cada cambio importante** (una línea por decisión, con la fecha).
   la mañana, una vez): publica las clases del curso con «abdomen» en el
   título que estén en borrador. Si no existe, hay que subirlo en Contenido ›
   Clases con «abdomen» en el título.
+- 2026-11-11: el vídeo de abdomen estaba en el almacén
+  (`clases/abdomen-desbloqueo.mp4`) sin ficha de clase. Paso 1f de
+  lib/puesta-a-punto.ts (cron de la mañana, una vez): crea la clase
+  `protocolo-abdomen` («Protocolo de abdomen», curso, Módulo 02, publicada,
+  la primera del curso) con `video: propio:clases/…`, que se sirve con
+  enlace firmado. Nunca se usa el enlace público con token (Sorela lo pasó
+  por el chat: hay que revocarlo en la consola de Firebase).
