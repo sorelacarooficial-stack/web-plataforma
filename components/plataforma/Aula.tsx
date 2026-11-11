@@ -645,7 +645,7 @@ export default function Aula({ correo, muestra = false }: { correo?: string | nu
                   onClick={() => setModulo(modulo === m.nombre ? null : m.nombre)}
                 >
                   <span className={a.moduloIcono} data-n={i % 4}>
-                    {String(i + 1).padStart(2, '0')}
+                    {String((moduloOficial(m.nombre).puesto < 99 ? moduloOficial(m.nombre).puesto : i) + 1).padStart(2, '0')}
                   </span>
                   <span className={a.moduloTexto}>
                     <span className={a.moduloNombre}>{m.nombre}</span>
