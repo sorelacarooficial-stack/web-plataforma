@@ -399,3 +399,8 @@ cada cambio importante** (una línea por decisión, con la fecha).
   debajo. Tienen que estar compartidos «Cualquier persona con el enlace».
   No caben en el almacén tal cual; el de Andrea no se pudo abrir desde la
   sesión (comprobar el enlace).
+- 2026-11-11: el vídeo de abdomen no salía en el aula (la sesión no tiene
+  acceso a Firebase para mirarlo). Paso 1e de lib/puesta-a-punto.ts (cron de
+  la mañana, una vez): publica las clases del curso con «abdomen» en el
+  título que estén en borrador. Si no existe, hay que subirlo en Contenido ›
+  Clases con «abdomen» en el título.

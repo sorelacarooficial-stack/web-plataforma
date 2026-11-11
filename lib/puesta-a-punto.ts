@@ -214,6 +214,27 @@ export async function puestaAPunto(): Promise<{ id: string; enviados: number; fa
     informe.push({ id: 'diciembre-cancelado', enviados: movidas, fallidos: 0, omitidos: 0 });
   }
 
+  /* 1e · 11 nov: el vídeo de abdomen (Módulo 02 de la academia) no salía en
+     el aula. Si hay una clase del curso con «abdomen» en el título que se
+     quedó en borrador, se publica. Las de la Comunidad no se tocan. */
+  if (!hecho.abdomenPublicado) {
+    let publicadas = 0;
+    const clases = await db.collection(COLECCIONES.lecciones).get();
+    for (const d of clases.docs) {
+      const titulo = String(d.get('titulo') ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+      const para = d.get('para') as { tipo?: string } | undefined;
+      if (/abdomen/.test(titulo) && para?.tipo === 'curso' && d.get('publicada') === false) {
+        await d.ref.update({ publicada: true });
+        publicadas++;
+      }
+    }
+    await marca.set({ abdomenPublicado: FieldValue.serverTimestamp() }, { merge: true });
+    informe.push({ id: 'abdomen-publicado', enviados: publicadas, fallidos: 0, omitidos: 0 });
+  }
+
   /* 2 · Correos programados: de Zoom a Google Meet. */
   if (!hecho.correosMeet) {
     const programadas = await db.collection(COLECCION_CAMPANAS).where('estado', 'in', ['programada', 'pausada', 'borrador']).get();
