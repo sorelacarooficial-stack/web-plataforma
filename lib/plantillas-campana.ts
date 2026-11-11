@@ -21,9 +21,25 @@ export const AUDIENCIAS = {
   comunidad: 'Miembros de la Comunidad Divine',
   contactos: 'Todos los contactos del CRM',
   todos: 'Todo el mundo (contactos y cuentas)',
+  /* Las personas que Sorela elige en Contactos (filtro y pestaña): van en
+     `anadir`, ya revisadas (permiso y bajas) al crear el borrador. */
+  grupo: 'Un grupo elegido en Contactos',
 } as const;
 
 export type Audiencia = keyof typeof AUDIENCIAS;
+
+/**
+ * Los grupos de captación: gente que todavía no ha comprado. Regla del
+ * proyecto: a ellas el precio de la formación NO se les pone por correo (se
+ * cuenta en directo o por WhatsApp). A alumnas y miembros, sí se puede.
+ */
+export const AUDIENCIAS_CAPTACION: readonly Audiencia[] = ['espera', 'contactos', 'todos', 'grupo'];
+
+/** Si un texto lleva un precio: «1.950 USD», «150 $», «49 €», «USD 750», «98 dólares». */
+export function llevaPrecio(...textos: string[]): boolean {
+  const t = textos.join(' ');
+  return /\d[\d.,]*\s*(usd|us\$|\$|€|eur\b|euros?\b|d[oó]lares?\b)|(usd|us\$|\$|€)\s*\d/i.test(t);
+}
 
 export type EstadoCampana = 'borrador' | 'programada' | 'enviada' | 'pausada' | 'caducada';
 
@@ -52,6 +68,8 @@ export type Campana = {
   /** Ajustes a mano de la audiencia: correos que se quitan y personas que se añaden. */
   excluir?: string[];
   anadir?: { correo: string; nombre: string | null }[];
+  /** Audiencia `grupo`: cómo se llamaba el grupo en Contactos («Interesadas · Colombia»). */
+  grupoNombre?: string | null;
 };
 
 /** Un botón con texto y sin enlace es un correo a medias (el de Zoom antes de tenerlo): no sale. */

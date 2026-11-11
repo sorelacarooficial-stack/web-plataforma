@@ -17,7 +17,7 @@
 
 .embudo {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: clamp(10px, 1.4vw, 18px);
 }
 
@@ -46,7 +46,7 @@
   transition: border-color 0.25s, box-shadow 0.25s;
 }
 
-.paso[data-columna='masterclass'] {
+.paso[data-columna='interesada'] {
   --color: #8f8578;
   --tinta: var(--ink-3, #4f4840);
 }
@@ -56,7 +56,13 @@
   --tinta: var(--oro-letra, #6f5323);
 }
 
-.paso[data-columna='cerrado'] {
+.paso[data-columna='reservo'] {
+  --color: #c4573a;
+  --tinta: #9a3f22;
+}
+
+.paso[data-columna='pago'],
+.paso[data-columna='alumna'] {
   --color: #6f8a63;
   --tinta: var(--bien-letra, #3d5a33);
 }
@@ -274,7 +280,7 @@
 
 .tablero {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: clamp(10px, 1.4vw, 18px);
   align-items: start;
 }
@@ -602,6 +608,7 @@
 
 .pie {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
@@ -698,16 +705,25 @@
 
 /* ---------- Móvil: el embudo hace de pestañas ---------- */
 
-/* Con cuatro columnas, entre tableta y portátil pequeño no caben: dos y dos. */
+/* Con cinco pasos, entre tableta y portátil no caben enteros. Los pasos de
+   arriba siguen en una fila (sin la explicación, que va en el `title` del
+   paso en la lista) y las columnas se deslizan de lado dentro del tablero,
+   sin mover la página. */
 @media (min-width: 901px) and (max-width: 1560px) {
-  .embudo,
-  .tablero {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .pasoPista {
+    display: none;
   }
 
-  /* En dos filas la flecha de un paso al siguiente ya no señala nada. */
   .flecha {
     display: none;
+  }
+
+  .tablero {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(330px, 1fr);
+    overflow-x: auto;
+    padding-bottom: 6px;
   }
 }
 

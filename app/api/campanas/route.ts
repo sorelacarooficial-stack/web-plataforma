@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
-import { COLECCION_CAMPANAS, aCampana, cuantos, enviarCampana, listarCampanas, sembrarSerie } from '@/lib/campanas';
+import { COLECCION_CAMPANAS, aCampana, borradorDesdeContactos, cuantos, enviarCampana, listarCampanas, sembrarSerie } from '@/lib/campanas';
 import { AUDIENCIAS, plantillaCampana, type Audiencia } from '@/lib/plantillas-campana';
 import { correoDeSorela, enlaceBaja, mandarCorreo } from '@/lib/correos';
 import { diaDe } from '@/lib/metricas';
@@ -17,6 +17,8 @@ import { diaDe } from '@/lib/metricas';
  *   DELETE ?id=                          → borrar una que no se ha enviado
  *   POST  { accion: 'enviar', id }       → mandarla ya
  *   POST  { accion: 'prueba', campana }  → mandarle a Sorela cómo quedaría
+ *   POST  { accion: 'desde-contactos', ids, nombre }
+ *                                        → borrador para un grupo elegido en Contactos
  */
 
 export const runtime = 'nodejs';
@@ -92,6 +94,13 @@ export async function POST(peticion: Request) {
     if (!ID.test(id)) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
     const r = await enviarCampana(id);
     if (r.motivo) return NextResponse.json({ ok: false, ...r }, { status: 409 });
+    return NextResponse.json({ ok: true, ...r });
+  }
+
+  if (c.accion === 'desde-contactos') {
+    const ids = Array.isArray(c.ids) ? c.ids.map(String) : [];
+    if (!ids.length) return NextResponse.json({ ok: false, motivo: 'datos' }, { status: 400 });
+    const r = await borradorDesdeContactos(ids, texto(c.nombre, 120), diaDe());
     return NextResponse.json({ ok: true, ...r });
   }
 

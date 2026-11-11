@@ -88,7 +88,9 @@ export function probarRegla() {
   };
   const donde = (s) => `${s.grupo}${s.motivo ? `/${s.motivo}` : ''}`;
 
-  const VACIO = { deBaja: false, miembro: false, convocatorias: [], ciudades: {} };
+  // Con `hoy` antes del cierre de la captación: los casos de abajo son de cuando estaba abierta.
+  const VACIO = { deBaja: false, miembro: false, convocatorias: [], ciudades: {}, hoy: '2026-10-20' };
+  const DESPUES = { ...VACIO, hoy: '2026-11-11' };
   const VIGO = { id: 'vigo1', ciudad: 'Vigo', inicio: '2026-10-24', fin: '2026-10-25' };
   const CON_VIGO = { ...VACIO, convocatorias: [VIGO], ciudades: { vigo1: 'Vigo', AbC9: 'Bogotá' } };
   const DE_BAJA = { ...VACIO, deBaja: true };
@@ -213,6 +215,17 @@ export function probarRegla() {
   caso('correo de la lista fallido → «no salió»', () => {
     const s = A.situacion(yo({ origen: 'lista-comunidad', correoLista: { plantilla: 'lista-espera', estado: 'fallido', por: 'bienvenida', cuando: '2026-10-14' } }), VACIO);
     igual(A.textoMotivo(s).detalle, 'no salió');
+  });
+  caso('cerrada la captación: la bienvenida que no llegó ya no pide nada → lista', () => {
+    const v = yo({ origen: 'web', lista: true, correoLista: { plantilla: 'informacion', estado: 'enviado', por: 'bienvenida', cuando: '2026-10-13T18:59:00Z' } });
+    igual(donde(A.situacion(v, DESPUES)), 'lista');
+    const viejo = yo({ origen: 'lista-comunidad', correoMal: { entrega: 'rebotado', cuando: '2026-10-14T09:00:00Z' } });
+    igual(donde(A.situacion(viejo, { ...DESPUES, deBaja: true })), 'sin-correos');
+  });
+  caso('cerrada la captación: un rebote NUEVO sí avisa', () => {
+    const s = A.situacion(yo({ origen: 'lista-comunidad', correoMal: { entrega: 'spam', cuando: '2026-11-10T09:00:00Z' } }), DESPUES);
+    igual(donde(s), 'te-necesita/correo-no-llego');
+    igual(s.dato.fallo, 'spam');
   });
   caso('sin correoLista no es «no le llegó» (no consta)', () => igual(donde(A.situacion(yo({ origen: 'lista-comunidad' }), VACIO)), 'lista'));
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AUDIENCIAS, faltaEnlace, plantillaCampana, type Audiencia, type Campana, type EstadoCampana } from '@/lib/plantillas-campana';
+import { AUDIENCIAS, AUDIENCIAS_CAPTACION, faltaEnlace, llevaPrecio, plantillaCampana, type Audiencia, type Campana, type EstadoCampana } from '@/lib/plantillas-campana';
 import { IMAGENES_CORREO, type ImagenCorreo } from '@/lib/marca-correo';
 import k from './programados.module.css';
 
@@ -24,7 +24,14 @@ type Borrador = {
   audiencia: Audiencia;
   fecha: string;
   cuando: 'borrador' | 'programada';
+  /** Audiencia `grupo`: cuántas personas eligió en Contactos y cómo se llamaba el grupo. */
+  personas: number;
+  grupoNombre: string | null;
 };
+
+/** Cuántas recibirían una campaña: las del grupo de Contactos van en `anadir`. */
+const personasDe = (audiencia: Audiencia, anadir: number, grupos: Record<Audiencia, number> | null) =>
+  audiencia === 'grupo' ? anadir : (grupos?.[audiencia] ?? 0);
 
 const ESTADO: Record<EstadoCampana, string> = {
   borrador: 'Borrador',
@@ -51,6 +58,8 @@ const vacio = (hoy: string): Borrador => ({
   audiencia: 'espera',
   fecha: hoy,
   cuando: 'programada',
+  personas: 0,
+  grupoNombre: null,
 });
 
 const deCampana = (c: Campana): Borrador => ({
@@ -64,6 +73,8 @@ const deCampana = (c: Campana): Borrador => ({
   audiencia: c.audiencia,
   fecha: c.fecha,
   cuando: c.estado === 'borrador' ? 'borrador' : 'programada',
+  personas: c.anadir?.length ?? 0,
+  grupoNombre: c.grupoNombre ?? null,
 });
 
 const aCuerpo = (b: Borrador) => ({
@@ -105,6 +116,23 @@ export default function Programados({ alCambiar }: { alCambiar?: () => void }) {
     cargar();
   }, [cargar]);
 
+  /* Desde Contactos se llega con `?campana=<id>` (el borrador de un grupo):
+     se abre directamente para escribirlo. Una vez, y se quita de la URL. */
+  useEffect(() => {
+    if (!lista) return;
+    const q = new URLSearchParams(window.location.search);
+    const id = q.get('campana');
+    if (!id) return;
+    const c = lista.find((x) => x.id === id);
+    q.delete('campana');
+    window.history.replaceState(null, '', `${window.location.pathname}?${q}`);
+    if (c && c.estado !== 'enviada') {
+      setSoloLectura(false);
+      setErrores({});
+      setEditando(deCampana(c));
+    }
+  }, [lista]);
+
   useEffect(() => {
     if (!aviso) return;
     const t = setTimeout(() => setAviso(null), 7000);
@@ -144,8 +172,8 @@ export default function Programados({ alCambiar }: { alCambiar?: () => void }) {
     }
   }
 
-  async function enviarYa(id: string, asunto: string, audiencia: Audiencia) {
-    const n = grupos?.[audiencia] ?? 0;
+  async function enviarYa(id: string, asunto: string, audiencia: Audiencia, anadir = 0) {
+    const n = personasDe(audiencia, anadir, grupos);
     if (!window.confirm(`¿Mandar ahora «${asunto}» a ${n} ${n === 1 ? 'persona' : 'personas'} (${AUDIENCIAS[audiencia]})?`)) return;
     setOcupado(`enviar:${id}`);
     try {
@@ -155,7 +183,11 @@ export default function Programados({ alCambiar }: { alCambiar?: () => void }) {
           ? `Enviado a ${j.enviados}.${j.fallidos ? ` ${j.fallidos} no salieron: míralos en el historial.` : ''}${j.omitidos ? ` ${j.omitidos} no hacía falta (ya lo tenían o se dieron de baja).` : ''}`
           : j.motivo === 'falta-enlace'
             ? 'No ha salido: al botón le falta el enlace. Pulsa «Editar», pégalo y vuelve a enviarlo.'
-            : 'No se ha podido enviar.'
+            : j.motivo === 'vacia'
+              ? 'No ha salido: le falta el asunto o el texto. Pulsa «Editar» y escríbelo.'
+              : j.motivo === 'precio'
+                ? 'No ha salido: lleva un precio. A quien aún no ha comprado no se le pone el precio por correo. Quítalo y vuelve a enviarlo.'
+                : 'No se ha podido enviar.'
       );
       await cargar();
       alCambiar?.();
@@ -169,7 +201,7 @@ export default function Programados({ alCambiar }: { alCambiar?: () => void }) {
     const id = await guardar();
     if (id) {
       setEditando(null);
-      await enviarYa(id, editando.asunto, editando.audiencia);
+      await enviarYa(id, editando.asunto, editando.audiencia, editando.personas);
     }
   }
 
@@ -242,11 +274,11 @@ export default function Programados({ alCambiar }: { alCambiar?: () => void }) {
         <span className={k.texto}>
           {c.etiqueta && <span className={k.etiqueta}>{c.etiqueta}</span>}
           <button type="button" className={k.asunto} onClick={() => { setSoloLectura(pasada); setErrores({}); setEditando(deCampana(c)); }}>
-            {c.asunto}
+            {c.asunto || 'Sin asunto todavía'}
           </button>
           <span className={k.meta}>
-            {AUDIENCIAS[c.audiencia]}
-            {grupos && !pasada && ` · ${grupos[c.audiencia]} personas`}
+            {c.audiencia === 'grupo' && c.grupoNombre ? `Contactos: ${c.grupoNombre}` : AUDIENCIAS[c.audiencia]}
+            {grupos && !pasada && ` · ${personasDe(c.audiencia, c.anadir?.length ?? 0, grupos)} personas`}
             {c.resultado && ` · enviado a ${c.resultado.enviados}${c.resultado.fallidos ? `, ${c.resultado.fallidos} fallaron` : ''}`}
           </span>
         </span>
@@ -421,14 +453,29 @@ export default function Programados({ alCambiar }: { alCambiar?: () => void }) {
                   </label>
                   <label className={k.campo}>
                     <span>A quién</span>
-                    <select value={editando.audiencia} onChange={(e) => campo('audiencia', e.target.value)}>
-                      {(Object.keys(AUDIENCIAS) as Audiencia[]).map((a) => (
-                        <option key={a} value={a}>
-                          {AUDIENCIAS[a]}
-                          {grupos ? ` (${grupos[a]})` : ''}
-                        </option>
-                      ))}
-                    </select>
+                    {/* El grupo de Contactos ya trae a sus personas: no se cambia
+                        aquí (cambiarlo sumaría las elegidas a otro grupo). */}
+                    {editando.audiencia === 'grupo' ? (
+                      <input
+                        readOnly
+                        value={`${editando.grupoNombre ? `Contactos: ${editando.grupoNombre}` : AUDIENCIAS.grupo} (${editando.personas})`}
+                      />
+                    ) : (
+                      <select value={editando.audiencia} onChange={(e) => campo('audiencia', e.target.value)}>
+                        {(Object.keys(AUDIENCIAS) as Audiencia[])
+                          .filter((a) => a !== 'grupo')
+                          .map((a) => (
+                            <option key={a} value={a}>
+                              {AUDIENCIAS[a]}
+                              {grupos ? ` (${grupos[a]})` : ''}
+                            </option>
+                          ))}
+                      </select>
+                    )}
+                    {AUDIENCIAS_CAPTACION.includes(editando.audiencia) &&
+                      llevaPrecio(editando.asunto, editando.cuerpo, editando.etiqueta, editando.botonTexto) && (
+                        <em>Lleva un precio. A quien aún no ha comprado no se le pone por correo: así no saldrá.</em>
+                      )}
                   </label>
                   <div className={k.dosCampos}>
                     <label className={k.campo}>

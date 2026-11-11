@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ETIQUETA_TIPO, QUE_QUIERE, comoLlego, tipoDeOrigen, type Tipo } from '@/lib/origenes';
 import { ETIQUETA_CORREO } from '@/lib/automatizaciones';
+import { PASTILLA_ETAPA, SIGUIENTE_PASO, etapaDe, mensajeEtapa } from '@/lib/embudo';
 import css from './plataforma.module.css';
 
 /**
@@ -50,6 +51,14 @@ export type Persona = {
   grupo?: { pulso: boolean; medido: boolean; recordada: boolean; dentro: boolean };
   /** La reserva de /reserva: qué eligió y si el pago está confirmado. */
   reserva?: { titulo: string; reservaUSD: number; pagoConfirmado: boolean; pagoVerificado: boolean; pago: string | null } | null;
+  /** Su cuenta de la plataforma, para el camino de venta (lib/embudo.ts). Sin cuenta, null. */
+  cuenta?: { alumna: boolean; homologada: boolean } | null;
+  /** Está en la lista de bajas de los correos. */
+  deBaja?: boolean;
+  /** Aceptó recibir novedades (false = la dejó sin marcar). */
+  comercial?: boolean;
+  /** Último cambio de estado, en ISO. */
+  estadoCambiado?: string | null;
 };
 
 /* Mismos nombres y mismo orden que la lista y que la API. Si aquí se colara
@@ -284,7 +293,11 @@ export default function FichaPersona({
     : [...ESTADOS, estadoActual];
 
   const telefono = numeroWhatsapp(persona.whatsapp);
-  const textoWhatsapp = mensajeWhatsapp(persona.nombre, tipo);
+  /* El mensaje del paso en que está (lib/embudo.ts): no es lo mismo escribir
+     a una interesada que a quien reservó sin pagar. Sin paso que proponer
+     (sin interés), el saludo de siempre. */
+  const etapa = etapaDe(persona);
+  const textoWhatsapp = mensajeEtapa(persona) || mensajeWhatsapp(persona.nombre, tipo);
   const enlaceWhatsapp = `https://wa.me/${telefono}?text=${encodeURIComponent(textoWhatsapp)}`;
 
   /* La dirección va dentro de un mailto con asunto y cuerpo detrás del «?».
@@ -530,6 +543,9 @@ export default function FichaPersona({
 
         <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <h3 className={css.rotuloSeccion}>Escribirle</h3>
+          <p className={css.apunte}>
+            <strong>{PASTILLA_ETAPA[etapa]}.</strong> {SIGUIENTE_PASO[etapa]}
+          </p>
           {!telefono && !persona.correo ? (
             <p className={css.avisoFallo}>
               No dejó ni teléfono ni correo: por aquí no hay forma de llegar a ella.

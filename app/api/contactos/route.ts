@@ -7,6 +7,7 @@ import { PERFILES, normalizarTelefono, revisar as revisarComoLaWeb } from '@/lib
 import { mandarInformacion } from '@/lib/enviar-informacion';
 import { contextoAtencion } from '@/lib/atencion-servidor';
 import { situacion, type DatosAtencion } from '@/lib/atencion';
+import { CURSO_DIVINE, cursosDe, esCompleto, revisarAccesos, tieneMembresia } from '@/lib/accesos';
 
 /**
  * Los contactos, para verlos y trabajarlos desde la plataforma.
@@ -206,6 +207,24 @@ function revisar(entrada: Record<string, unknown>, parcial: boolean): Revision {
  * en una factura: a partir de ahí haría falta buscar en el servidor y no en el
  * navegador, que es otra cosa.
  */
+/**
+ * Lo que dice su cuenta para el CRM (lib/embudo.ts).
+ *  - alumna: tiene algún curso o la membresía.
+ *  - homologada: ya es miembro, o tiene la «Formación Técnica Divine»
+ *    (la completa) pagada entera. La Membresía solo se ofrece a homologadas;
+ *    ante la duda, no lo es: un curso online o un abono no cuentan.
+ * Sin cuenta (o bloqueada), null.
+ */
+const sinTildes = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+function cuentaDe(u: { accesos?: unknown; bloqueada?: unknown } | undefined) {
+  if (!u || u.bloqueada) return null;
+  const accesos = revisarAccesos(u.accesos);
+  const cursos = cursosDe(accesos);
+  const miembro = tieneMembresia(accesos);
+  const completa = cursos.some((a) => esCompleto(a) && sinTildes(a.nombre ?? '') === sinTildes(CURSO_DIVINE));
+  return { alumna: cursos.length > 0 || miembro, homologada: miembro || completa };
+}
+
 const TOPE_DE_SALIDA = 1000;
 const TOPE_MAXIMO = 5000;
 
@@ -316,6 +335,13 @@ export async function GET(peticion: Request) {
       },
       // Si le llegó el correo de la lista (bienvenida de la masterclass).
       correoLista: typeof v.correoLista?.estado === 'string' ? (v.correoLista.estado as string) : null,
+
+      /* Para el camino de venta (lib/embudo.ts): su cuenta de la plataforma,
+         si está de baja de los correos y si aceptó las novedades. */
+      cuenta: cuentaDe(ctx?.usuarios.get(String(v.correo ?? '').trim().toLowerCase())),
+      deBaja: ctx ? ctx(v.correo).deBaja : false,
+      estadoCambiado: v.estadoCambiado?.toDate?.().toISOString() ?? null,
+      comercial: v.comercial !== false,
     };
   });
 

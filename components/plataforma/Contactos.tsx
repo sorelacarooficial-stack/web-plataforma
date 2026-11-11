@@ -5,7 +5,19 @@ import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import FichaPersona, { type Persona } from './FichaPersona';
 import { ETIQUETA_TIPO, TIPOS, comoLlego, origenCorto, type Tipo } from '@/lib/origenes';
 import { PERFILES } from '@/lib/captacion';
-import { botonDe, diasEsperando, textoMotivo, type Grupo, type Motivo, type Situacion } from '@/lib/atencion';
+import { irA } from '@/lib/navegar';
+import { diasEsperando, textoMotivo, type Grupo, type Motivo, type Situacion } from '@/lib/atencion';
+import {
+  CAMINO,
+  EXPLICA_ETAPA,
+  PASTILLA_ETAPA,
+  TITULO_ETAPA,
+  enlaceWhatsapp,
+  etapaDe,
+  paisDe,
+  porQueHoy,
+  type Etapa,
+} from '@/lib/embudo';
 import css from './plataforma.module.css';
 import k from './crm.module.css';
 import l from './crmlista.module.css';
@@ -43,24 +55,26 @@ type Estado = (typeof ESTADOS)[number];
 type Contacto = Persona & { estado: Estado; tipo: Tipo; situacion?: Situacion | null };
 
 /**
- * Las pestañas de la lista, una por situación.
+ * Las pestañas de la lista: el camino de venta (lib/embudo.ts).
  *
- * Son las de lib/atencion.ts y no las columnas del tablero porque responden a
- * la pregunta que de verdad se hace Sorela al entrar —«¿a quién tengo que
- * escribir?»— y no a «¿en qué estado guardé a cada una?». Con mil personas en
- * la lista de espera, el tablero ponía las mil en «Por atender» aunque ninguna
- * esperase nada de ella. «Sin correos» solo sale si hay alguien así: es poca
- * gente y una pestaña siempre vacía es ruido.
+ * Desde el 11 de noviembre ya no van por «qué espera de ti» (la captación de
+ * la masterclass ha terminado) sino por en qué punto de la compra está cada
+ * persona. La primera, «Escribir hoy», junta a quien de verdad toca escribir:
+ * quien te escribió, quien reservó sin pagar, quien pagó sin acceso y con
+ * quien hablas y lleva días sin noticias. «Sin interés» va casi al final para
+ * no estorbar, pero se puede ver.
  */
-const PESTANAS: { id: string; titulo: string; grupos: Grupo[] | null; soloSiHay?: boolean }[] = [
-  { id: 'te-necesita', titulo: 'Te necesitan', grupos: ['te-necesita'] },
-  { id: 'lista', titulo: 'Masterclass', grupos: ['lista'] },
-  { id: 'avisar', titulo: 'Esperan aviso', grupos: ['avisar'] },
-  { id: 'hablando', titulo: 'Hablando', grupos: ['hablando'] },
-  { id: 'cerradas', titulo: 'Cerradas / Descartadas', grupos: ['cerrado', 'descartado'] },
-  { id: 'sin-correos', titulo: 'Sin correos', grupos: ['sin-correos'], soloSiHay: true },
-  { id: 'todas', titulo: 'Todas', grupos: null },
+type Pestana = { id: 'hoy' | Etapa | 'todas'; titulo: string; explica: string };
+const PESTANAS: Pestana[] = [
+  { id: 'hoy', titulo: 'Escribir hoy', explica: 'A quien toca escribir hoy. Al pulsar «Ya le escribí» sale de aquí.' },
+  ...CAMINO.map((e) => ({ id: e, titulo: TITULO_ETAPA[e], explica: EXPLICA_ETAPA[e] })),
+  { id: 'fuera', titulo: TITULO_ETAPA.fuera, explica: EXPLICA_ETAPA.fuera },
+  { id: 'todas', titulo: 'Todas', explica: 'Todas las personas del CRM.' },
 ];
+
+/* El orden dentro de «Escribir hoy»: primero quien te escribió, luego la
+   reserva sin pagar, el pago sin acceso y, al final, quien se enfría. */
+const ORDEN_HOY = { necesita: 0, reservo: 1, pago: 2, frio: 3 } as const;
 
 /** Cuántas filas se pintan de cada tanda. Mil filas de golpe atascan el móvil. */
 const TANDA = 50;
@@ -666,7 +680,7 @@ export default function Contactos() {
   const [lista, setLista] = useState<Contacto[] | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
-  const [pestana, setPestana] = useState('atender');
+  const [pestana, setPestana] = useState<string>('interesada');
   const [menu, setMenu] = useState<string | null>(null);
   const [arrastrando, setArrastrando] = useState<string | null>(null);
   const [encima, setEncima] = useState<string | null>(null);
@@ -693,6 +707,8 @@ export default function Contactos() {
   const [pestanaLista, setPestanaLista] = useState<string | null>(null);
   /* Desde qué red o buscador llegó: el segundo filtro de procedencia. */
   const [deFuente, setDeFuente] = useState<string | null>(null);
+  /** País por el prefijo de su WhatsApp (lib/embudo.ts). «?» = no se sabe. */
+  const [dePais, setDePais] = useState<string | null>(null);
   const [verFiltros, setVerFiltros] = useState(false);
   /** Cuántas filas se pintan ahora; crece de TANDA en TANDA. */
   const [cuantas, setCuantas] = useState(TANDA);
@@ -850,7 +866,10 @@ export default function Contactos() {
     // La situación también se guarda, para deshacerla igual que el estado.
     const situacionAntes = antes?.situacion;
     setLista(
-      (l) => l?.map((c) => (c.id === id ? { ...c, estado, situacion: situacionTras(c.situacion, estado) } : c)) ?? l
+      (l) =>
+        l?.map((c) =>
+          c.id === id ? { ...c, estado, estadoCambiado: new Date().toISOString(), situacion: situacionTras(c.situacion, estado) } : c
+        ) ?? l
     );
     try {
       const r = await fetch('/api/contactos', {
@@ -1007,13 +1026,66 @@ export default function Contactos() {
     }
   }
 
+  /**
+   * Prepara un correo para las personas que se ven ahora (la pestaña y los
+   * filtros puestos) y lleva a Correos para escribirlo. No manda nada: crea
+   * un borrador. El servidor quita a quien no dio permiso o se dio de baja
+   * (lib/campanas.ts, `borradorDesdeContactos`), así que aquí no hace falta
+   * filtrar a mano.
+   */
+  const [preparando, setPreparando] = useState(false);
+  async function correoAlGrupo() {
+    const gente = vista === 'lista' ? enPestana : visibles;
+    if (!gente.length || preparando) return;
+    const nombre = [
+      vista === 'lista' ? pestanaActiva.titulo : 'Todas',
+      tipo !== 'Todos' ? ETIQUETA_TIPO[tipo] : '',
+      dePais ? (dePais === '?' ? 'país sin saber' : dePais) : '',
+      deDonde ?? '',
+      deFuente ? `desde ${deFuente}` : '',
+      busca.trim() ? `«${busca.trim()}»` : '',
+    ]
+      .filter(Boolean)
+      .join(' · ');
+    const n = gente.length;
+    if (
+      !window.confirm(
+        `¿Preparar un correo para ${n === 1 ? 'esta persona' : `estas ${n} personas`} (${nombre})?\n\n` +
+          'No se manda nada todavía: te llevo a Correos para escribirlo. Quien no dio permiso o se dio de baja se queda fuera sola.'
+      )
+    )
+      return;
+    setPreparando(true);
+    try {
+      const r = await fetch('/api/campanas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accion: 'desde-contactos', ids: gente.map((c) => c.id), nombre }),
+      });
+      const j = await r.json().catch(() => ({ ok: false }));
+      if (!j.ok) {
+        setFallo(motivoEnPalabras(j.motivo));
+        return;
+      }
+      const fuera = j.fuera ? j.fuera.baja + j.fuera.sinPermiso + j.fuera.descartada + j.fuera.sinCorreo + j.fuera.noExiste : 0;
+      window.alert(
+        `Listo: el correo irá a ${j.incluidas} ${j.incluidas === 1 ? 'persona' : 'personas'}.` +
+          (fuera ? ` ${fuera} se quedan fuera (no dieron permiso, se dieron de baja o no tienen correo).` : '') +
+          '\n\nAhora escribe el asunto y el texto. Recuerda: sin precios.'
+      );
+      irA('correos', { campana: j.id });
+    } finally {
+      setPreparando(false);
+    }
+  }
+
   /** Descarga la lista tal como se ve, para abrirla en una hoja de cálculo. */
   function exportar() {
     /* «Tal como se ve»: en la lista, la pestaña entera (no solo las filas ya
        pintadas); en el tablero, todo lo que pasa los filtros. */
     const aExportar = vista === 'lista' ? enPestana : visibles;
     if (!aExportar.length) return;
-    const cabecera = ['Fecha', 'Nombre', 'Correo', 'Teléfono', 'Ciudad', 'A qué se dedica', 'De dónde viene', 'Estado', 'Nota'];
+    const cabecera = ['Fecha', 'Nombre', 'Correo', 'Teléfono', 'País', 'Ciudad', 'A qué se dedica', 'De dónde viene', 'Paso', 'Reserva', 'Estado', 'Nota'];
     /*
      * Escapar un campo del CSV son DOS cosas, no una.
      *
@@ -1057,7 +1129,20 @@ export default function Contactos() {
           });
     };
     const filas = aExportar.map((c) =>
-      [fecha(c.creado), c.nombre, c.correo, c.whatsapp, c.ciudad, c.perfil, c.origen, c.estado, c.nota]
+      [
+        fecha(c.creado),
+        c.nombre,
+        c.correo,
+        c.whatsapp,
+        paisDe(c.whatsapp) ?? '',
+        c.ciudad,
+        c.perfil,
+        c.origen,
+        PASTILLA_ETAPA[etapa(c)],
+        c.reserva ? `${c.reserva.titulo} (${c.reserva.pagoConfirmado ? 'pagado' : 'sin pagar'})` : '',
+        c.estado,
+        c.nota,
+      ]
         .map(escapa)
         .join(',')
     );
@@ -1073,17 +1158,31 @@ export default function Contactos() {
 
   const visibles = useMemo(() => {
     const t = busca.trim().toLowerCase();
+    const tDigitos = t.replace(/\D/g, '');
     return (lista ?? []).filter(
       (c) =>
         (tipo === 'Todos' || c.tipo === tipo) &&
         (!deDonde || origenCorto(c.origen) === deDonde) &&
         (!deFuente || c.fuente === deFuente) &&
+        (!dePais || (paisDe(c.whatsapp) ?? '?') === dePais) &&
         (!t ||
           c.nombre.toLowerCase().includes(t) ||
           c.correo.toLowerCase().includes(t) ||
-          c.ciudad.toLowerCase().includes(t))
+          c.ciudad.toLowerCase().includes(t) ||
+          (tDigitos.length >= 3 && c.whatsapp.replace(/\D/g, '').includes(tDigitos)))
     );
-  }, [lista, tipo, busca, deDonde, deFuente]);
+  }, [lista, tipo, busca, deDonde, deFuente, dePais]);
+
+  /* De qué país son, por el prefijo del WhatsApp. Para Latam es la mejor
+     pista que hay: la ciudad casi nadie la escribe. */
+  const paises = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const c of lista ?? []) {
+      const p = paisDe(c.whatsapp) ?? '?';
+      m.set(p, (m.get(p) ?? 0) + 1);
+    }
+    return [...m.entries()].sort((a, b) => (a[0] === '?' ? 1 : b[0] === '?' ? -1 : b[1] - a[1]));
+  }, [lista]);
 
   /* Cuántas han entrado por cada sitio, de más a menos. Es la respuesta a «de
      dónde me llega la gente» sin abrir ninguna ficha. */
@@ -1105,46 +1204,58 @@ export default function Contactos() {
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [lista]);
 
-  /* Cuántas hay en cada grupo, ya con el buscador y los filtros puestos: el
+  /* El paso de cada persona y si toca escribirle hoy, calculados una vez. */
+  const camino = useMemo(() => {
+    const ahora = new Date();
+    const m = new Map<string, { etapa: Etapa; hoy: ReturnType<typeof porQueHoy> }>();
+    for (const c of lista ?? []) m.set(c.id, { etapa: etapaDe(c), hoy: porQueHoy(c, ahora) });
+    return m;
+  }, [lista]);
+  const etapa = (c: Contacto): Etapa => camino.get(c.id)?.etapa ?? etapaDe(c);
+  const hoyDe = (c: Contacto) => camino.get(c.id)?.hoy ?? null;
+  const esDe = (p: Pestana, c: Contacto) => (p.id === 'todas' ? true : p.id === 'hoy' ? hoyDe(c) !== null : etapa(c) === p.id);
+
+  /* Cuántas hay en cada pestaña, ya con el buscador y los filtros puestos: el
      número de cada pestaña es lo que vas a encontrar al pulsarla. */
-  const porGrupo = useMemo(() => {
-    const m = new Map<Grupo, Contacto[]>();
+  const cuentas = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const p of PESTANAS) m[p.id] = 0;
     for (const c of visibles) {
-      const g = grupoDe(c);
-      const ya = m.get(g);
-      if (ya) ya.push(c);
-      else m.set(g, [c]);
+      m.todas++;
+      const e = camino.get(c.id);
+      if (!e) continue;
+      m[e.etapa]++;
+      if (e.hoy) m.hoy++;
     }
     return m;
-  }, [visibles]);
+  }, [visibles, camino]);
 
-  const cuentaPestana = (p: (typeof PESTANAS)[number]) =>
-    p.grupos ? p.grupos.reduce((s, g) => s + (porGrupo.get(g)?.length ?? 0), 0) : visibles.length;
+  const cuentaPestana = (p: Pestana) => cuentas[p.id] ?? 0;
 
   const pestanaActiva =
-    PESTANAS.find((p) => p.id === pestanaLista) ??
-    PESTANAS.find((p) => p.id === ((porGrupo.get('te-necesita')?.length ?? 0) > 0 ? 'te-necesita' : 'todas'))!;
+    PESTANAS.find((p) => p.id === pestanaLista) ?? PESTANAS.find((p) => p.id === (cuentas.hoy > 0 ? 'hoy' : 'todas'))!;
 
-  /* Las de la pestaña, en su orden. En «Te necesitan» primero quien más
-     lleva esperando, que es a quien hay que escribir antes; en las demás, la
-     última que entró arriba, como llegan del servidor. */
+  /* Las de la pestaña, en su orden. En «Escribir hoy», lo más urgente
+     primero y, dentro, quien más lleva esperando; en las demás, la última
+     que entró arriba, como llegan del servidor. */
   const enPestana = useMemo(() => {
-    const grupos = pestanaActiva.grupos;
-    const suyas = grupos ? visibles.filter((c) => grupos.includes(grupoDe(c))) : visibles;
-    if (pestanaActiva.id !== 'te-necesita') return suyas;
+    const suyas = visibles.filter((c) => esDe(pestanaActiva, c));
+    if (pestanaActiva.id !== 'hoy') return suyas;
     const desde = (c: Contacto) => {
-      const t = Date.parse(c.situacion?.desde ?? c.creado ?? '');
+      const t = Date.parse(c.situacion?.desde ?? c.estadoCambiado ?? c.creado ?? '');
       return Number.isNaN(t) ? Infinity : t;
     };
-    return [...suyas].sort((a, b) => desde(a) - desde(b));
-  }, [visibles, pestanaActiva]);
+    const orden = (c: Contacto) => ORDEN_HOY[hoyDe(c)?.motivo ?? 'frio'];
+    return [...suyas].sort((a, b) => orden(a) - orden(b) || desde(a) - desde(b));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibles, pestanaActiva, camino]);
 
   /* Al cambiar de pestaña o de filtro se vuelve a la primera tanda: seguir
      con 400 filas pintadas de la búsqueda anterior no tiene sentido. */
   useEffect(() => {
     setCuantas(TANDA);
     setCuantasTablero({});
-  }, [pestanaActiva.id, busca, tipo, deDonde, deFuente, vista]);
+  }, [pestanaActiva.id, busca, tipo, deDonde, deFuente, dePais, vista]);
 
   const hayMas = enPestana.length > cuantas;
 
@@ -1164,24 +1275,26 @@ export default function Contactos() {
   }, [centinela, hayMas]);
 
   /** Cuántos filtros hay puestos, para decirlo en el botón aunque estén plegados. */
-  const filtrosPuestos = (tipo !== 'Todos' ? 1 : 0) + (deDonde ? 1 : 0) + (deFuente ? 1 : 0);
+  const filtrosPuestos = (tipo !== 'Todos' ? 1 : 0) + (deDonde ? 1 : 0) + (deFuente ? 1 : 0) + (dePais ? 1 : 0);
 
   /* El tablero: tres columnas y nada más.
      «Hablando» junta «Contactado» y «En conversación»: para Sorela es el mismo
      momento —ya le ha escrito y está esperando o charlando—, y separarlos en
      dos columnas era obligarla a decidir algo que no le sirve. El estado fino
      se sigue guardando y se ve como una etiqueta pequeña en la tarjeta. */
-  /* «Te necesitan» y «Masterclass» comparten el estado «Nuevo» y se separan
-     por la situación (lib/atencion.ts): la primera es quien espera respuesta
-     de Sorela; la segunda, las apuntadas a la masterclass, que van solas con
-     los correos y el grupo. Antes iban juntas en «Por atender» y el tablero
-     decía «157 sin atender» de gente a la que no había que escribir. */
-  const COLUMNAS: { id: string; titulo: string; pista: string; es: (c: Contacto) => boolean; alSoltar: Estado }[] = [
-    { id: 'atender', titulo: 'Te necesitan', pista: 'Esperan tu respuesta', es: (c) => c.estado === 'Nuevo' && grupoDe(c) === 'te-necesita', alSoltar: 'Nuevo' },
-    { id: 'masterclass', titulo: 'Masterclass', pista: 'Van solas: correos y grupo', es: (c) => c.estado === 'Nuevo' && grupoDe(c) !== 'te-necesita', alSoltar: 'Nuevo' },
-    { id: 'hablando', titulo: 'Hablando', pista: 'Ya les has escrito', es: (c) => c.estado === 'Contactado' || c.estado === 'En conversación', alSoltar: 'Contactado' },
-    { id: 'cerrado', titulo: 'Cerrado', pista: 'Compraron o reservaron', es: (c) => c.estado === 'Cerrado', alSoltar: 'Cerrado' },
-  ];
+  /* El tablero es el camino de venta, paso a paso. Se arrastra a
+     Interesada, Hablando o Pagó (cambia el estado); «Reservaron» y «Alumnas»
+     salen de los datos (la reserva de la web y el acceso a la plataforma) y
+     no se pueden forzar arrastrando. */
+  const COLUMNAS: { id: Etapa; titulo: string; pista: string; es: (c: Contacto) => boolean; alSoltar: Estado | null }[] = CAMINO.map(
+    (e) => ({
+      id: e,
+      titulo: TITULO_ETAPA[e],
+      pista: EXPLICA_ETAPA[e],
+      es: (c: Contacto) => etapa(c) === e,
+      alSoltar: e === 'interesada' ? 'Nuevo' : e === 'hablando' ? 'Contactado' : e === 'pago' ? 'Cerrado' : null,
+    })
+  );
 
   const siguiente = (e: Estado): Estado | null =>
     e === 'Nuevo' ? 'Contactado' : e === 'Contactado' || e === 'En conversación' ? 'Cerrado' : null;
@@ -1205,10 +1318,6 @@ export default function Contactos() {
       .slice(0, 2)
       .map((t) => t[0]?.toUpperCase() ?? '')
       .join('') || '·';
-
-  /** Días que lleva esperando alguien sin respuesta: lo que pide atención. */
-  const espera = (c: Contacto) =>
-    c.estado === 'Nuevo' && c.creado ? Math.floor((Date.now() - new Date(c.creado).getTime()) / 86400000) : 0;
 
   /* El menú «⋯» de una persona. Lo comparten la tarjeta del tablero y la fila
      de la lista: editar, descartar y borrar no están en la ficha, y sin él
@@ -1247,39 +1356,58 @@ export default function Contactos() {
   }
 
   /**
-   * La pastilla de situación de una fila: qué toca con ella, en dos o tres
-   * palabras, y un tono que solo se calienta cuando de verdad espera.
-   *
-   * Quien está en la lista de espera dice «En automático» y nunca «Esperando
-   * N días»: le llegan solos los correos de la masterclass y Sorela no tiene
-   * nada que hacer. Era justo lo que hacía que el tablero pareciera un
-   * incendio con cientos de personas tranquilas dentro.
+   * La pastilla de una fila: en qué paso está o, si toca escribirle hoy, por
+   * qué. Solo se calienta (rojo) cuando de verdad espera: te escribió hace
+   * días o reservó sin pagar. Las apuntadas a la masterclass que no han
+   * hecho nada más son «Interesada», en neutro: ya no hay avisos de captación.
    */
   function pastillaDe(c: Contacto): { texto: string; tono: string; mini?: string } {
-    const s = c.situacion;
-    switch (grupoDe(c)) {
-      case 'te-necesita': {
-        const corto = s ? textoMotivo(s)?.corto ?? 'Te necesita' : 'Sin atender';
-        /* `mini` es lo que cabe en el móvil: el motivo en una o dos palabras
-           y los días en «d». El texto entero sigue en el ordenador. */
-        const mini = s?.motivo ? MOTIVO_MINI[s.motivo] : corto;
-        const dias = s ? diasEsperando(s.desde) : espera(c);
-        return dias >= 2
-          ? { texto: `${corto} · ${dias} días`, mini: `${mini} · ${dias} d`, tono: 'urgente' }
-          : { texto: corto, mini, tono: 'necesita' };
-      }
-      case 'lista':
-        return { texto: 'En automático', tono: 'auto' };
-      case 'avisar':
-        return { texto: 'Espera aviso', tono: 'neutro' };
+    const e = etapa(c);
+    const h = hoyDe(c);
+    if (h?.motivo === 'necesita') {
+      const s = c.situacion;
+      const corto = s ? textoMotivo(s)?.corto ?? h.texto : h.texto;
+      const mini = s?.motivo ? MOTIVO_MINI[s.motivo] : corto;
+      const dias = s ? diasEsperando(s.desde) : 0;
+      return dias >= 2
+        ? { texto: `${corto} · ${dias} días`, mini: `${mini} · ${dias} d`, tono: 'urgente' }
+        : { texto: corto, mini, tono: 'necesita' };
+    }
+    if (h?.motivo === 'reservo') return { texto: h.texto, mini: 'Sin pagar', tono: 'urgente' };
+    if (h) return { texto: h.texto, mini: h.motivo === 'pago' ? 'Dar acceso' : 'Se enfría', tono: 'necesita' };
+    switch (e) {
       case 'hablando':
         return { texto: c.estado === 'En conversación' ? 'En conversación' : 'Le escribiste', tono: 'oro' };
-      case 'cerrado':
-        return { texto: 'Cerrado', tono: 'bien' };
-      case 'descartado':
-        return { texto: 'Descartado', tono: 'apagado' };
+      case 'reservo':
+        return { texto: PASTILLA_ETAPA.reservo, mini: 'Sin pagar', tono: 'oro' };
+      case 'pago':
+        return { texto: c.reserva?.pagoVerificado ? 'Pagó ✓ (Stripe)' : 'Pagó', tono: 'bien' };
+      case 'alumna':
+        return { texto: c.cuenta?.homologada ? 'Homologada' : 'Alumna', tono: 'bien' };
+      case 'fuera':
+        return { texto: c.deBaja && c.estado !== 'Descartado' ? 'De baja' : 'Sin interés', tono: 'apagado' };
       default:
-        return { texto: 'Sin correos', tono: 'apagado' };
+        return { texto: grupoDe(c) === 'avisar' ? 'Interesada · espera aviso' : 'Interesada', mini: 'Interesada', tono: 'neutro' };
+    }
+  }
+
+  /**
+   * «Ya le escribí»: lo que pasa al pulsarlo depende del paso. A quien está
+   * sin hablar todavía la pasa a «Hablando»; a quien ya está más adelante le
+   * apunta una nota (así sale de «Escribir hoy» tres días y no se toca su
+   * paso: una reserva sigue siendo una reserva).
+   */
+  async function yaLeEscribi(c: Contacto) {
+    if (c.estado === 'Nuevo') {
+      mover(c.id, 'Contactado');
+      setAviso(`${c.nombre || 'Esa persona'} pasa a «Hablando».`);
+      return;
+    }
+    try {
+      await apuntar(c.id, 'Le escribí por WhatsApp.');
+      setAviso(`Apuntado: le escribiste a ${c.nombre || 'esa persona'}.`);
+    } catch {
+      setFallo('No se ha podido apuntar. Vuelve a intentarlo.');
     }
   }
 
@@ -1292,13 +1420,17 @@ export default function Contactos() {
    * de filas, cada efecto por fila se paga al hacer scroll.
    */
   function fila(c: Contacto) {
-    const g = grupoDe(c);
     const { texto, tono, mini } = pastillaDe(c);
-    /* El botón de avanzar solo cuando alguien espera respuesta. En la lista
-       de espera, «Ya le escribí» invitaba a marcar a cientos de personas a
-       las que nadie tiene que escribir. */
-    const boton = g === 'te-necesita' ? (c.situacion ? botonDe(c.situacion) : 'Ya le escribí') : null;
-    const meta = [origenCorto(c.origen), c.reserva ? (c.reserva.pagoConfirmado ? 'Pagado ✓' : 'Sin pagar') : '', c.ciudad, cuando(c.creado)].filter(Boolean).join(' · ');
+    const e = etapa(c);
+    const h = hoyDe(c);
+    /* El botón solo donde toca escribir: hoy, o una interesada a la que
+       todavía no le has escrito (es la que pasa a «Hablando»). */
+    const boton = h || e === 'interesada' ? (h?.motivo === 'necesita' && c.situacion?.motivo === 'mensaje' ? 'Ya le contesté' : 'Ya le escribí') : null;
+    const pais = paisDe(c.whatsapp);
+    const wa = e === 'fuera' ? '' : enlaceWhatsapp(c);
+    const meta = [c.reserva ? `${c.reserva.titulo}${c.reserva.pagoConfirmado ? ' · pagado' : ' · sin pagar'}` : origenCorto(c.origen), pais ?? '', c.ciudad, cuando(c.creado)]
+      .filter(Boolean)
+      .join(' · ');
     return (
       <li
         key={c.id}
@@ -1329,8 +1461,8 @@ export default function Contactos() {
           <span className={l.pastillaCorta}>{mini ?? texto}</span>
         </span>
         <span className={l.acciones}>
-          {c.whatsapp && (
-            <a className={l.icono} data-canal="whatsapp" href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp a ${c.nombre}`} title="WhatsApp">
+          {wa && (
+            <a className={l.icono} data-canal="whatsapp" href={wa} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp a ${c.nombre}, con el mensaje ya escrito`} title="WhatsApp con el mensaje ya escrito">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.3-.4.8-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z" /></svg>
             </a>
           )}
@@ -1343,10 +1475,7 @@ export default function Contactos() {
             <button
               type="button"
               className={l.avanzar}
-              onClick={() => {
-                mover(c.id, 'Contactado');
-                setAviso(`${c.nombre || 'Esa persona'} pasa a «Hablando».`);
-              }}
+              onClick={() => yaLeEscribi(c)}
               aria-label={`${boton}: ${c.nombre || 'este contacto'}`}
             >
               {boton}
@@ -1377,11 +1506,13 @@ export default function Contactos() {
      componente nuevo en cada repintado y desmontaría la tarjeta a mitad de un
      arrastre. */
   function tarjeta(c: Contacto) {
-    /* A las de la masterclass no hay que escribirles una a una: ni «Ya le
-       escribí» ni «Esperando N días». En su lugar, cómo va lo del grupo. */
-    const auto = c.estado === 'Nuevo' && grupoDe(c) !== 'te-necesita';
-    const sig = auto ? null : siguiente(c.estado);
-    const dias = auto ? 0 : espera(c);
+    /* En el tablero, el botón lleva al paso siguiente que se mueve a mano:
+       de Interesada a Hablando, y de Hablando o Reservó a Pagó. */
+    const e = etapa(c);
+    const sig = e === 'interesada' || e === 'hablando' || e === 'reservo' ? siguiente(c.estado === 'Nuevo' && e === 'reservo' ? 'Contactado' : c.estado) : null;
+    const h = hoyDe(c);
+    const dias = h?.motivo === 'necesita' && c.situacion ? diasEsperando(c.situacion.desde) : 0;
+    const wa = e === 'fuera' ? '' : enlaceWhatsapp(c);
     return (
       <motion.div
         key={c.id}
@@ -1445,23 +1576,12 @@ export default function Contactos() {
 
           <div className={k.pie}>
             <span className={k.tiempo} data-urgente={dias >= 2 ? '' : undefined}>
-              {dias >= 2 ? `Esperando ${dias} días` : cuando(c.creado)}
+              {h ? (dias >= 2 ? `${h.texto} · ${dias} días` : h.texto) : cuando(c.creado)}
               {c.estado === 'En conversación' && ' · en conversación'}
             </span>
-            {auto && c.grupo && (
-              <button
-                type="button"
-                className={k.marcarGrupo}
-                aria-pressed={c.grupo.dentro}
-                onClick={() => marcarGrupo(c.id, !c.grupo!.dentro)}
-                title={c.grupo.pulso ? 'Pulsó el botón del grupo' : 'No consta que haya pulsado el botón del grupo'}
-              >
-                {c.grupo.dentro ? '✓ En el grupo' : c.grupo.pulso ? 'Pulsó · ¿dentro?' : '¿En el grupo?'}
-              </button>
-            )}
             <span className={k.iconos}>
-              {c.whatsapp && (
-                <a className={k.icono} data-canal="whatsapp" href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp a ${c.nombre}`} title="WhatsApp">
+              {wa && (
+                <a className={k.icono} data-canal="whatsapp" href={wa} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp a ${c.nombre}, con el mensaje ya escrito`} title="WhatsApp con el mensaje ya escrito">
                   <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.3-.4.8-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z" /></svg>
                 </a>
               )}
@@ -1557,7 +1677,7 @@ export default function Contactos() {
         <label className={`${k.buscar} ${l.buscar}`}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M16.5 16.5L21 21" strokeLinecap="round" /></svg>
           <input
-            placeholder="Buscar por nombre, correo o ciudad"
+            placeholder="Buscar por nombre, correo, teléfono o ciudad"
             aria-label="Buscar contacto"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
@@ -1609,6 +1729,17 @@ export default function Contactos() {
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" strokeLinecap="round" strokeLinejoin="round" /></svg>
             <span className={l.textoBoton}>Excel</span>
           </button>
+          <button
+            type="button"
+            className={`${k.excel} ${l.botonCompacto}`}
+            onClick={correoAlGrupo}
+            disabled={preparando || !(vista === 'lista' ? enPestana : visibles).length}
+            aria-label="Preparar un correo para las personas que ves"
+            title="Preparar un correo para las personas que ves"
+          >
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+            <span className={l.textoBoton}>{preparando ? 'Preparando…' : 'Correo'}</span>
+          </button>
         </div>
       </div>
 
@@ -1625,6 +1756,7 @@ export default function Contactos() {
                 setTipo('Todos');
                 setDeDonde(null);
                 setDeFuente(null);
+                setDePais(null);
               }}
             >
               Quitar filtros
@@ -1647,6 +1779,16 @@ export default function Contactos() {
               {procedencias.map(([o, n]) => (
                 <button key={o} type="button" className={l.chip} aria-pressed={deDonde === o} onClick={() => setDeDonde(deDonde === o ? null : o)}>
                   {o} <span className={l.chipNumero}>{n}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {paises.length > 1 && (
+            <div className={l.chipsFila} role="group" aria-label="País (por el prefijo del WhatsApp)">
+              <span className={l.chipsTitulo}>País</span>
+              {paises.map(([p, n]) => (
+                <button key={p} type="button" className={l.chip} aria-pressed={dePais === p} onClick={() => setDePais(dePais === p ? null : p)}>
+                  {p === '?' ? 'Sin saber' : p} <span className={l.chipNumero}>{n}</span>
                 </button>
               ))}
             </div>
@@ -1678,7 +1820,6 @@ export default function Contactos() {
           <div className={l.pestanas} role="tablist" aria-label="Qué toca con cada persona">
             {PESTANAS.map((p) => {
               const n = cuentaPestana(p);
-              if (p.soloSiHay && n === 0 && pestanaActiva.id !== p.id) return null;
               const activa = pestanaActiva.id === p.id;
               return (
                 <button
@@ -1689,6 +1830,7 @@ export default function Contactos() {
                   className={l.pestana}
                   data-id={p.id}
                   data-hay={n > 0 ? '' : undefined}
+                  title={p.explica}
                   onClick={() => setPestanaLista(p.id)}
                 >
                   {p.titulo}
@@ -1702,8 +1844,8 @@ export default function Contactos() {
             <p className={l.vacio}>
               {busca || filtrosPuestos
                 ? 'Nadie con ese filtro.'
-                : pestanaActiva.id === 'te-necesita'
-                  ? 'Nadie espera respuesta tuya. Bien hecho.'
+                : pestanaActiva.id === 'hoy'
+                  ? 'Hoy no tienes que escribir a nadie. Bien hecho.'
                   : 'Aquí no hay nadie ahora.'}
             </p>
           ) : (
@@ -1793,7 +1935,7 @@ export default function Contactos() {
                       setArrastrando(null);
                       const id = e.dataTransfer.getData('text/plain');
                       const c = lista.find((x) => x.id === id);
-                      if (c && !col.es(c)) mover(id, col.alSoltar);
+                      if (c && !col.es(c) && col.alSoltar) mover(id, col.alSoltar);
                     }}
                     aria-label={col.titulo}
                   >
@@ -1814,11 +1956,9 @@ export default function Contactos() {
                         <p className={k.vacio}>
                           {busca || filtrosPuestos
                             ? 'Nadie con ese filtro.'
-                            : col.id === 'atender'
-                              ? 'Nadie espera respuesta. Bien hecho.'
-                              : col.id === 'masterclass'
-                                ? 'Aquí aparecen las apuntadas a la masterclass.'
-                              : 'Arrastra aquí una tarjeta.'}
+                            : col.alSoltar
+                              ? 'Arrastra aquí una tarjeta.'
+                              : 'Nadie en este paso.'}
                         </p>
                       )}
                     </div>

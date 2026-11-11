@@ -136,7 +136,18 @@ export type ContextoAtencion = {
   convocatorias: ConvocatoriaAbierta[];
   /** id → ciudad de TODAS las convocatorias, para el texto de una reserva. */
   ciudades: Record<string, string>;
+  /** El día de hoy (Madrid, AAAA-MM-DD). Sin él, se calcula. Decide si la captación sigue abierta. */
+  hoy?: string;
 };
+
+/**
+ * El día en que se cerró la captación de la masterclass (la repetición fue el
+ * 8 de noviembre). Desde entonces, que no le llegara el correo de bienvenida
+ * de la lista ya no pide nada: ese correo hablaba de la masterclass. Solo
+ * cuenta un rebote o una queja de spam POSTERIOR, de un correo nuevo. Los
+ * datos (`correoLista`, `correoMal`) no se borran. (2026-11-11)
+ */
+export const FIN_CAPTACION = '2026-11-09';
 
 /** Lo que hace falta para escribir el motivo con sus datos («Pidió plaza en Vigo»). */
 export type DatoMotivo = {
@@ -188,7 +199,7 @@ export type Situacion = {
 export const TITULO_GRUPO: Record<Grupo, string> = {
   'te-necesita': 'Te necesitan',
   avisar: 'Esperan un aviso',
-  lista: 'En la lista de espera',
+  lista: 'Apuntadas a la masterclass',
   'sin-correos': 'Sin correos',
   hablando: 'Hablando',
   cerrado: 'Cerrado',
@@ -199,7 +210,7 @@ export const TITULO_GRUPO: Record<Grupo, string> = {
 export const PASTILLA_GRUPO: Record<Grupo, string> = {
   'te-necesita': 'Te necesita',
   avisar: 'Espera un aviso',
-  lista: 'Lista de espera',
+  lista: 'Masterclass',
   'sin-correos': 'Sin correos',
   hablando: 'Hablando',
   cerrado: 'Cerrado',
@@ -213,7 +224,7 @@ export const PASTILLA_GRUPO: Record<Grupo, string> = {
 export const EXPLICA_GRUPO: Record<Grupo, string> = {
   'te-necesita': 'Te ha escrito o pedido algo concreto después de la última vez que hiciste algo con ella.',
   avisar: 'Pidió que la avises cuando haya terapeuta, o fecha, en su ciudad. No hay nada que hacer hasta entonces.',
-  lista: 'Les llegan solos los correos de la masterclass. No tienes que hacer nada.',
+  lista: 'Se apuntaron a la masterclass y no han pedido nada más. La masterclass ya pasó: ya no reciben correos solos.',
   'sin-correos': 'Se dio de baja o no está en ninguna lista, y no espera nada de ti.',
   hablando: 'Ya les has escrito.',
   cerrado: 'Compraron o reservaron.',
@@ -617,7 +628,15 @@ export function motivosDe(v: DatosAtencion, ctx: ContextoAtencion): MotivoConFec
   if (v.aMano && !v.pidioInformacion) salida.push({ motivo: 'a-mano', cuando: aFecha(v.creado), dato: null });
 
   // 7. Es de la lista y su correo no le llegó. Sin descontar bajas: un rebote da de baja.
-  if (enListaDeEspera(v)) {
+  //    Cerrada la captación, solo cuenta un rebote o spam de después (ver FIN_CAPTACION).
+  const captacion = (ctx.hoy ?? hoyMadrid()) < FIN_CAPTACION;
+  if (!captacion) {
+    const mal = v.correoMal ?? null;
+    const cuando = mal ? aFecha(mal.cuando) : null;
+    if (mal && cuando && diaDe(cuando) >= FIN_CAPTACION) {
+      salida.push({ motivo: 'correo-no-llego', cuando, dato: { fallo: mal.entrega === 'spam' ? 'spam' : 'rebotado' } });
+    }
+  } else if (enListaDeEspera(v)) {
     const cl = v.correoLista ?? null;
     const fallos: { fallo: FalloCorreo; cuando: Date | null }[] = [];
     if (cl?.entrega === 'spam' || cl?.entrega === 'rebotado') fallos.push({ fallo: cl.entrega, cuando: aFecha(cl.cuando) });
@@ -783,7 +802,7 @@ export function contextoDesde(
 
   const de = (correo: unknown): ContextoAtencion => {
     const c = correoLimpio(correo);
-    return { deBaja: bajas.has(c), miembro: miembros.has(c), convocatorias, ciudades };
+    return { deBaja: bajas.has(c), miembro: miembros.has(c), convocatorias, ciudades, hoy };
   };
   return Object.assign(de, { hoy, bajas, miembros, usuarios, convocatorias, ciudades });
 }

@@ -574,9 +574,12 @@ export function PanelSorela({ ir }: { ir: (v: Vista) => void }) {
 
   const kpis = [
     { label: 'Te necesitan', valor: lista === null ? '·' : String(teNecesitan), nota: teNecesitan ? 'te escribieron o pidieron algo' : 'nadie espera respuesta', urgente: teNecesitan > 0 },
-    { label: 'En la masterclass', valor: lista === null ? '·' : String(enMasterclass), nota: 'van solas: correos y grupo' },
+    { label: 'Apuntadas a la masterclass', valor: lista === null ? '·' : String(enMasterclass), nota: 'ya pasó: escríbeles desde Contactos' },
     { label: 'Esta semana', valor: lista === null ? '·' : String(semana), nota: `nuevas · ${l.length} en total` },
-    { label: 'Masterclass', valor: faltan === 0 ? 'Hoy' : `${faltan} días`, nota: `${DIA_APERTURA}, ${HORA_ESPANA}` },
+    // Pasado el día, «Hoy» para siempre mentía: se dice que ya fue.
+    ahora > new Date(APERTURA).getTime() + DIA
+      ? { label: 'Masterclass', valor: 'Hecha', nota: 'ahora toca vender: Contactos' }
+      : { label: 'Masterclass', valor: faltan === 0 ? 'Hoy' : `${faltan} días`, nota: `${DIA_APERTURA}, ${HORA_ESPANA}` },
   ];
 
   const redactar = useCallback(async (id: string, canal: 'whatsapp' | 'correo') => {

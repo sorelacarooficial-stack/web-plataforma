@@ -7,7 +7,7 @@ import { diaDe } from './metricas';
 import { enlaceBaja, estaDeBaja, mandarCorreo } from './correos';
 import { listaDeEspera } from './automatizar';
 import { correoBienvenidaPorOrigen } from './plantillas-bienvenida';
-import { AUDIENCIAS, faltaEnlace, plantillaCampana, type Audiencia, type Campana, type EstadoCampana } from './plantillas-campana';
+import { AUDIENCIAS, AUDIENCIAS_CAPTACION, faltaEnlace, llevaPrecio, plantillaCampana, type Audiencia, type Campana, type EstadoCampana } from './plantillas-campana';
 import { esSoloSuDia, serieLanzamiento } from './serie-lanzamiento';
 import { idContacto, marcarCorreoLista } from './atencion-servidor';
 import { soloAviso } from './enviar-informacion';
@@ -59,6 +59,7 @@ export function aCampana(id: string, v: FirebaseFirestore.DocumentData): Campana
           .filter((x: { correo?: unknown }) => typeof x?.correo === 'string' && x.correo.includes('@'))
           .map((x: { correo: string; nombre?: unknown }) => ({ correo: x.correo.toLowerCase().trim(), nombre: x.nombre ? String(x.nombre) : null }))
       : [],
+    grupoNombre: typeof v.grupoNombre === 'string' ? v.grupoNombre : null,
     resultado: r
       ? { enviados: r.enviados ?? 0, fallidos: r.fallidos ?? 0, omitidos: r.omitidos ?? 0, cuando: r.cuando?.toDate?.().toISOString() ?? null }
       : null,
@@ -93,9 +94,33 @@ export async function listarCampanas(): Promise<Campana[]> {
 
 type Persona = { correo: string; nombre: string | null };
 
+/**
+ * Si a un contacto se le puede mandar una campaña (publicidad). Sin mirar
+ * bajas: eso lo mira `estaDeBaja` y, otra vez, `mandarCorreo` al enviar.
+ * Devuelve el motivo si NO se puede, o null si se puede.
+ */
+export function porQueNoCampana(v: FirebaseFirestore.DocumentData): 'sin-correo' | 'sin-permiso' | 'descartada' | null {
+  if (!String(v.correo ?? '').includes('@')) return 'sin-correo';
+  /* Quien dejó su correo en «avísame cuando haya terapeuta (o
+     convocatoria) en mi ciudad», en la web o en el asistente, pidió UN
+     aviso, no publicidad: escribirle una campaña sería una comunicación
+     comercial sin consentimiento (art. 21 LSSI). */
+  if (soloAviso(String(v.origen ?? ''))) return 'sin-permiso';
+  /* Apuntada a mano por Sorela sin marcar que pidió la información. */
+  if (v.aMano && !v.pidioInformacion) return 'sin-permiso';
+  /* Dejó sin marcar la casilla de novedades. Los contactos anteriores a
+     esa casilla no llevan el campo: aceptaron un texto que ya incluía las
+     formaciones, así que solo se excluye el `false` explícito. */
+  if (v.comercial === false) return 'sin-permiso';
+  if (v.estado === 'Descartado') return 'descartada';
+  return null;
+}
+
 export async function destinatarios(a: Audiencia): Promise<Persona[]> {
   if (!hayFirebase()) return [];
   if (a === 'espera') return listaDeEspera();
+  // El grupo de Contactos no tiene base: las personas van en `anadir`.
+  if (a === 'grupo') return [];
 
   const db = baseDeDatos();
   const salida = new Map<string, Persona>();
@@ -119,21 +144,79 @@ export async function destinatarios(a: Audiencia): Promise<Persona[]> {
     const cs = await db.collection(COLECCIONES.contactos).get();
     for (const c of cs.docs) {
       const v = c.data();
-      /* Quien dejó su correo en «avísame cuando haya terapeuta (o
-         convocatoria) en mi ciudad», en la web o en el asistente, pidió UN
-         aviso, no publicidad: escribirle una campaña sería una comunicación
-         comercial sin consentimiento (art. 21 LSSI). */
-      if (soloAviso(String(v.origen ?? ''))) continue;
-      /* Apuntada a mano por Sorela sin marcar que pidió la información. */
-      if (v.aMano && !v.pidioInformacion) continue;
-      /* Dejó sin marcar la casilla de novedades. Los contactos anteriores a
-         esa casilla no llevan el campo: aceptaron un texto que ya incluía las
-         formaciones, así que solo se excluye el `false` explícito. */
-      if (v.comercial === false) continue;
-      if (v.estado !== 'Descartado') meter(v.correo, v.nombre);
+      if (!porQueNoCampana(v)) meter(v.correo, v.nombre);
     }
   }
   return [...salida.values()];
+}
+
+/* ------------------------------------------- un grupo desde Contactos */
+
+export type GrupoDesdeContactos = {
+  id: string;
+  /** Las que recibirán el correo. */
+  incluidas: number;
+  /** Las que se quedan fuera, y por qué. */
+  fuera: { baja: number; sinPermiso: number; descartada: number; sinCorreo: number; noExiste: number };
+};
+
+/** Más que esto de una vez no tiene sentido elegirlo a mano: es «Todos los contactos». */
+export const MAXIMO_GRUPO = 3000;
+
+/**
+ * Crea un borrador de campaña para las personas elegidas en Contactos (sus
+ * ids de ficha). Se revisan AQUÍ, en el servidor, con las mismas reglas que
+ * «Todos los contactos»: sin permiso, descartadas o de baja se quedan fuera.
+ * El borrador nace sin asunto ni texto (no sale hasta tenerlos) y con la
+ * audiencia `grupo`; las personas van en `anadir`.
+ */
+export async function borradorDesdeContactos(ids: string[], nombre: string, hoy: string): Promise<GrupoDesdeContactos> {
+  const db = baseDeDatos();
+  const unicos = [...new Set(ids.filter((x) => typeof x === 'string' && x && !x.includes('/')))].slice(0, MAXIMO_GRUPO);
+  const fuera = { baja: 0, sinPermiso: 0, descartada: 0, sinCorreo: 0, noExiste: 0 };
+  const anadir = new Map<string, { correo: string; nombre: string | null }>();
+  for (let i = 0; i < unicos.length; i += 300) {
+    const refs = unicos.slice(i, i + 300).map((id) => db.collection(COLECCIONES.contactos).doc(id));
+    const docs = refs.length ? await db.getAll(...refs) : [];
+    for (const d of docs) {
+      if (!d.exists) {
+        fuera.noExiste++;
+        continue;
+      }
+      const v = d.data() ?? {};
+      const no = porQueNoCampana(v);
+      if (no === 'sin-correo') fuera.sinCorreo++;
+      else if (no === 'sin-permiso') fuera.sinPermiso++;
+      else if (no === 'descartada') fuera.descartada++;
+      else {
+        const correo = String(v.correo).toLowerCase().trim();
+        if (anadir.has(correo)) continue;
+        if (await estaDeBaja(correo)) fuera.baja++;
+        else anadir.set(correo, { correo, nombre: v.nombre ? String(v.nombre) : null });
+      }
+    }
+  }
+  const id = `grupo-${createHash('sha256').update(`${Date.now()}:${Math.random()}`).digest('hex').slice(0, 10)}`;
+  await col()
+    .doc(id)
+    .set({
+      etiqueta: '',
+      asunto: '',
+      cuerpo: '',
+      boton: null,
+      imagen: 'equipo',
+      audiencia: 'grupo',
+      fecha: hoy,
+      estado: 'borrador',
+      serie: null,
+      plantilla: null,
+      excluir: [],
+      anadir: [...anadir.values()],
+      grupoNombre: nombre.slice(0, 120),
+      resultado: null,
+      creado: FieldValue.serverTimestamp(),
+    });
+  return { id, incluidas: anadir.size, fuera };
 }
 
 /** Cuántas personas recibirían cada audiencia ahora mismo (quitando bajas). */
@@ -150,7 +233,7 @@ export async function cuantos(): Promise<Record<Audiencia, number>> {
 
 /* ------------------------------------------------------------ envío */
 
-export type InformeCampana = { id: string; enviados: number; fallidos: number; omitidos: number; motivo?: 'falta-enlace' };
+export type InformeCampana = { id: string; enviados: number; fallidos: number; omitidos: number; motivo?: 'falta-enlace' | 'vacia' | 'precio' };
 
 /** Manda una campaña a su audiencia. Se puede repetir: solo escribe a quien le falte. */
 export async function enviarCampana(id: string): Promise<InformeCampana> {
@@ -161,6 +244,12 @@ export async function enviarCampana(id: string): Promise<InformeCampana> {
   const c = aCampana(id, d.data() ?? {});
   // No sale nada con un botón vacío: se queda programada hasta que tenga enlace.
   if (faltaEnlace(c)) return { ...r, motivo: 'falta-enlace' };
+  // Ni un borrador recién creado desde Contactos, sin asunto o sin texto.
+  if (!c.asunto.trim() || !c.cuerpo.trim()) return { ...r, motivo: 'vacia' };
+  // A quien aún no ha comprado, nunca con el precio de la formación.
+  if (AUDIENCIAS_CAPTACION.includes(c.audiencia) && llevaPrecio(c.asunto, c.cuerpo, c.etiqueta, c.boton?.texto ?? '')) {
+    return { ...r, motivo: 'precio' };
+  }
 
   /* La audiencia, con los ajustes a mano de esta campaña: quien ya tiene lo
      que dice el correo se quita, y alguien concreto se puede añadir. */

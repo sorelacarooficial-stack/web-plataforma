@@ -352,3 +352,25 @@ cada cambio importante** (una línea por decisión, con la fecha).
   `ajustes/copia-convocatorias-diciembre` y borra las de diciembre. La
   agenda ya trata diciembre como enero sin esperar al cron. Al confirmar un
   pago, la beca entra en `medellin-2027-01`.
+- 2026-11-11: **CRM después de la masterclass** (rama `claude/crm-post-masterclass`).
+  Contactos va ahora por el **camino de venta** (`lib/embudo.ts`): Interesadas →
+  Hablando → Reservaron (reserva web sin pagar) → Pagaron (`pagoConfirmado` o
+  «Cerrado» a mano) → Alumnas (cuenta con curso o membresía), más «Sin interés»
+  (descartada o de baja). Primera pestaña **«Escribir hoy»**: te escribió, reservó
+  sin pagar, pagó sin acceso, o hablando sin nota tuya en 3 días; «Ya le escribí»
+  pasa a Hablando o apunta una nota. Sin casilla de «vino a la masterclass»
+  (Sorela no la quiere). Filtro por **país** (prefijo del WhatsApp) y buscador por
+  teléfono. El icono de WhatsApp abre el **mensaje del paso** ya escrito: a
+  interesadas sin precio ni Comunidad; la Membresía solo a homologadas
+  (miembro, o «Formación Técnica Divine» pagada entera). Solo firma Sorela.
+- 2026-11-11: **fin de la captación** (`FIN_CAPTACION` = 9 nov, lib/atencion.ts):
+  «No le llegó su correo» de la bienvenida de la lista ya no sale en ningún sitio
+  (datos intactos); solo avisa un rebote o spam de después. La pestaña
+  «Masterclass · van solas» desaparece; las apuntadas son «Interesadas».
+- 2026-11-11: **correo a un grupo del CRM**: botón «Correo» en Contactos crea un
+  borrador (audiencia `grupo`, personas en `anadir`) con lo que se ve (pestaña +
+  filtros) y abre Correos (`?campana=<id>`). El servidor quita a quien no dio
+  permiso, descartadas y bajas (`porQueNoCampana`, lib/campanas.ts). A grupos de
+  captación (lista, contactos, todos, grupo) **no sale ningún correo con precio**
+  (`llevaPrecio`, motivo `precio`); a alumnas y miembros sí. Pruebas:
+  `node pruebas/embudo.mjs`.
