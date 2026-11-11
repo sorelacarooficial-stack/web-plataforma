@@ -325,3 +325,10 @@ cada cambio importante** (una línea por decisión, con la fecha).
   tocan). Opción `beca` (antes `caracas-beca`). Con la beca activa, Metodología,
   Preguntas y Gracias enseñan solo la beca y sus fechas (`SEDES_HOY`). La beca
   no entra en las convocatorias de diciembre al confirmar el pago.
+- 2026-11-11: **módulos del aula en el orden de Sorela**: 01 Precurso
+  (Fundamentos anatómicos y fisiológicos), 02 Desbloqueo, 03 Tonificación y
+  moldeo, 04 Facial & Brazos (`DOCUMENTOS` en lib/material.ts). Las clases ya
+  subidas con el nombre antiguo («Día 1 · Desbloqueo»…) se traducen solas
+  (`alias`, `moduloOficial`) y el aula ordena por módulo, no por fecha de
+  subida. Ojo: las páginas de «Brazos» siguen dentro del dosier del día 2
+  (pág. 33-36); moverlas al módulo 4 pide volver a subir las imágenes.

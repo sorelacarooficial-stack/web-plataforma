@@ -375,7 +375,7 @@ function NuevaClase({ est, datos }: { est: Estado; datos: Respuesta }) {
               <input
                 value={b.modulo}
                 onChange={(e) => editar({ modulo: e.target.value })}
-                placeholder={apartados[0] ?? 'Día 1 · Desbloqueo'}
+                placeholder={apartados[0] ?? 'Módulo 02 · Desbloqueo'}
                 className={s.caja}
                 maxLength={80}
                 list={apartados.length ? `${id}-apartados` : undefined}

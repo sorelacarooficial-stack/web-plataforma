@@ -9,7 +9,7 @@ import type { ProximaClase, Publicacion } from '@/lib/comunidad-tipos';
 import Noticias from './Noticias';
 import { PUNTOS, calcularPuntos, formatoPuntos, nivelDe, type ResumenPuntos } from '@/lib/puntos-tipos';
 import { LOGROS, OROS_PARA_DIVINE, type EstadoLogro } from '@/lib/logros-tipos';
-import type { Lectura } from '@/lib/material';
+import { moduloOficial, type Lectura } from '@/lib/material';
 import { irA } from '@/lib/navegar';
 import {
   BarraNivel,
@@ -1102,7 +1102,17 @@ export default function PanelAlumna({
   }, [brilla]);
 
   const ordenadas = useMemo(
-    () => (lecciones ? porBloques(lecciones).flatMap((b) => b.lecciones.map((l) => ({ ...l, modulo: l.modulo || b.nombre }))) : []),
+    () =>
+      lecciones
+        ? porBloques(lecciones).flatMap((b) =>
+            b.lecciones
+              .map((l) => {
+                const m = moduloOficial(l.modulo || b.nombre);
+                return { ...l, modulo: m.nombre, puesto: m.puesto };
+              })
+              .sort((x, z) => x.puesto - z.puesto)
+          )
+        : [],
     [lecciones]
   );
   // Los vídeos del curso esperan a la parte práctica si todos los suyos salen bloqueados.
