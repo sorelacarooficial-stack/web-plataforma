@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { CONVOCATORIA_BECA } from '@/lib/puesta-a-punto';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { COLECCION_RESERVAS, HORAS_PARA_CONFIRMAR } from '@/lib/reserva';
@@ -26,7 +27,6 @@ export const dynamic = 'force-dynamic';
 
 const ID = /^[A-Za-z0-9]{20}$/;
 const SESION = /^cs_[A-Za-z0-9_]{10,200}$/;
-const CONVOCATORIA: Record<string, string> = { Caracas: 'caracas-2026-12', Medellín: 'medellin-2026-12' };
 
 /** ¿Stripe dice que esa sesión está pagada y es de esta reserva? null = no se puede saber. */
 async function verificarConStripe(sesion: string, reserva: string): Promise<boolean | null> {
@@ -90,8 +90,8 @@ export async function POST(peticion: Request) {
   }
 
   // Presencial: entra en las fechas de su ciudad, para darle el acceso desde «Dar acceso».
-  // La beca va en otras fechas (enero): no entra en las convocatorias de diciembre.
-  const conv = v.formacion !== 'beca' && typeof v.ciudad === 'string' ? CONVOCATORIA[v.ciudad] : null;
+  // Diciembre se canceló (11 nov): la única presencial es la beca de enero.
+  const conv = v.formacion === 'beca' ? CONVOCATORIA_BECA.id : null;
   if (conv) {
     try {
       await inscribirReservaPagada(conv, {

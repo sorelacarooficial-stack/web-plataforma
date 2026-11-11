@@ -1,6 +1,6 @@
 import 'server-only';
 import { FieldValue } from 'firebase-admin/firestore';
-import { baseDeDatos, hayFirebase } from './firebase-servidor';
+import { baseDeDatos, hayFirebase, COLECCIONES } from './firebase-servidor';
 import { COLECCION_CAMPANAS } from './campanas';
 import { coleccion as convocatorias, refrescarFormaciones } from './convocatorias';
 import { CURSO_POR_DEFECTO } from './convocatorias-tipos';
@@ -28,6 +28,12 @@ import { CURSO_POR_DEFECTO } from './convocatorias-tipos';
 
 const WEB = process.env.NEXT_PUBLIC_WEB || 'https://sorelacarodivine.com';
 const MARCA = { coleccion: 'ajustes', doc: 'puesta-a-punto' };
+
+/**
+ * 11 nov 2026: las presenciales de diciembre se cancelan. Solo queda la beca:
+ * Medellín, 28, 29 y 30 de enero de 2027 (BECA en lib/clase.ts).
+ */
+export const CONVOCATORIA_BECA = { id: 'medellin-2027-01', ciudad: 'Medellín', inicio: '2027-01-28', fin: '2027-01-30' };
 
 export const CONVOCATORIAS_DICIEMBRE = [
   { id: 'caracas-2026-12', ciudad: 'Caracas', inicio: '2026-12-18', fin: '2026-12-20' },
@@ -64,7 +70,7 @@ export async function puestaAPunto(): Promise<{ id: string; enviados: number; fa
   const informe: { id: string; enviados: number; fallidos: number; omitidos: number }[] = [];
 
   /* 1 · Convocatorias de diciembre. */
-  if (!hecho.convocatoriasDiciembre) {
+  if (!hecho.convocatoriasDiciembre && !hecho.diciembreCancelado) {
     let creadas = 0;
     for (const c of CONVOCATORIAS_DICIEMBRE) {
       const ok = await convocatorias()
@@ -129,6 +135,83 @@ export async function puestaAPunto(): Promise<{ id: string; enviados: number; fa
     }
     await marca.set({ caracas18: FieldValue.serverTimestamp() }, { merge: true });
     informe.push({ id: 'caracas-18-20-dic', enviados: cambiada, fallidos: 0, omitidos: 1 - cambiada });
+  }
+
+  /* 1d · 11 nov: diciembre se cancela. Se crea la convocatoria de la beca
+     (Medellín, 28-30 enero), se le pasan las inscritas de diciembre, los
+     accesos y los enlaces sin usar que apuntaban a diciembre pasan a ella, y
+     las de diciembre se borran. Antes de borrar se guarda una copia entera en
+     ajustes/copia-convocatorias-diciembre, por si hiciera falta algo. */
+  if (!hecho.diciembreCancelado) {
+    const idsDic = CONVOCATORIAS_DICIEMBRE.map((c) => c.id);
+    const refBeca = convocatorias().doc(CONVOCATORIA_BECA.id);
+    const viejas = await Promise.all(idsDic.map((id) => convocatorias().doc(id).get()));
+    const copia: Record<string, unknown> = {};
+    const inscritas: Record<string, unknown> = {};
+    for (const d of viejas) {
+      if (!d.exists) continue;
+      copia[d.id] = d.data();
+      Object.assign(inscritas, (d.get('inscritas') ?? {}) as Record<string, unknown>);
+    }
+    await db.collection('ajustes').doc('copia-convocatorias-diciembre').set({ ...copia, guardada: FieldValue.serverTimestamp() }, { merge: true });
+
+    const beca = await refBeca.get();
+    if (!beca.exists) {
+      await refBeca.set({
+        curso: CURSO_POR_DEFECTO.id,
+        inicio: CONVOCATORIA_BECA.inicio,
+        fin: CONVOCATORIA_BECA.fin,
+        horario: {},
+        ciudad: CONVOCATORIA_BECA.ciudad,
+        lugar: '',
+        plazas: 10,
+        // Beca: 1.950 USD (en céntimos). Nunca sale en la web.
+        precio: 195000,
+        moneda: 'USD',
+        abierta: true,
+        publicada: false,
+        inscritas,
+        ocupadas: Object.keys(inscritas).length,
+        creadaPor: 'puesta-a-punto',
+        creada: FieldValue.serverTimestamp(),
+        actualizada: FieldValue.serverTimestamp(),
+      });
+    } else if (Object.keys(inscritas).length) {
+      const ya = (beca.get('inscritas') ?? {}) as Record<string, unknown>;
+      const juntas = { ...inscritas, ...ya };
+      await refBeca.update({ inscritas: juntas, ocupadas: Object.keys(juntas).length, actualizada: FieldValue.serverTimestamp() });
+    }
+
+    // Los accesos de las cuentas que apuntaban a diciembre.
+    let movidas = 0;
+    const usuarios = await db.collection(COLECCIONES.usuarios).select('accesos').get();
+    for (const u of usuarios.docs) {
+      const accesos = u.get('accesos');
+      if (!Array.isArray(accesos)) continue;
+      let cambia = false;
+      const nuevos = accesos.map((a: Record<string, unknown>) => {
+        if (a && a.tipo === 'curso' && typeof a.convocatoria === 'string' && idsDic.includes(a.convocatoria)) {
+          cambia = true;
+          return { ...a, convocatoria: CONVOCATORIA_BECA.id };
+        }
+        return a;
+      });
+      if (cambia) {
+        await u.ref.update({ accesos: nuevos });
+        movidas++;
+      }
+    }
+
+    // Los enlaces de invitación que llevaban diciembre.
+    for (const id of idsDic) {
+      const invs = await db.collection(COLECCIONES.invitaciones).where('convocatoria', '==', id).get();
+      for (const i of invs.docs) await i.ref.update({ convocatoria: CONVOCATORIA_BECA.id });
+    }
+
+    for (const d of viejas) if (d.exists) await d.ref.delete();
+    refrescarFormaciones();
+    await marca.set({ diciembreCancelado: FieldValue.serverTimestamp() }, { merge: true });
+    informe.push({ id: 'diciembre-cancelado', enviados: movidas, fallidos: 0, omitidos: 0 });
   }
 
   /* 2 · Correos programados: de Zoom a Google Meet. */
