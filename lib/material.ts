@@ -22,6 +22,12 @@ export type Documento = {
   subtitulo: string;
   /** El apartado del aula al que acompaña. Debe coincidir con el `modulo` de sus clases. */
   modulo: string;
+  /**
+   * Nombres antiguos del mismo módulo. Las clases ya subidas guardan el
+   * `modulo` escrito a mano; con esto siguen cayendo en su sitio aunque se
+   * llamen como antes («Día 1 · Desbloqueo»).
+   */
+  alias?: string[];
   paginas: number;
   /** Qué página se enseña en la tarjeta. */
   portada: number;
@@ -38,9 +44,10 @@ const FORMACION: Acceso[] = [{ tipo: 'curso', nombre: CURSO_DIVINE }, { tipo: 'm
 export const DOCUMENTOS: Documento[] = [
   {
     id: 'precurso',
-    titulo: 'Precurso oficial',
-    subtitulo: 'Para leer antes de la formación presencial',
-    modulo: 'Precurso',
+    titulo: 'Módulo 01 · Precurso',
+    subtitulo: 'Fundamentos anatómicos y fisiológicos',
+    modulo: 'Módulo 01 · Precurso',
+    alias: ['Precurso', 'Precurso oficial'],
     paginas: 35,
     portada: 3,
     para: FORMACION,
@@ -61,9 +68,10 @@ export const DOCUMENTOS: Documento[] = [
   },
   {
     id: 'dia-1-desbloqueo',
-    titulo: 'Día 1 · Desbloqueo',
-    subtitulo: 'Linfodrenaje de abdomen, piernas y glúteos',
-    modulo: 'Día 1 · Desbloqueo',
+    titulo: 'Módulo 02 · Desbloqueo',
+    subtitulo: 'Fundamentos y ejecución de la metodología desde el interior',
+    modulo: 'Módulo 02 · Desbloqueo',
+    alias: ['Día 1 · Desbloqueo', 'Desbloqueo'],
     paginas: 38,
     portada: 1,
     para: FORMACION,
@@ -86,9 +94,10 @@ export const DOCUMENTOS: Documento[] = [
   },
   {
     id: 'dia-2-tonificacion-y-moldeo',
-    titulo: 'Día 2 · Tonificación y moldeo',
-    subtitulo: 'Body Sculpt: abdomen, piernas, glúteos y brazos',
-    modulo: 'Día 2 · Tonificación y moldeo',
+    titulo: 'Módulo 03 · Tonificación y moldeo',
+    subtitulo: 'Aplicación de la metodología Divine® desde el exterior',
+    modulo: 'Módulo 03 · Tonificación y moldeo',
+    alias: ['Día 2 · Tonificación y moldeo', 'Tonificación y moldeo'],
     paginas: 42,
     portada: 4,
     para: FORMACION,
@@ -113,9 +122,10 @@ export const DOCUMENTOS: Documento[] = [
   },
   {
     id: 'facial-divine',
-    titulo: 'Facial Divine',
-    subtitulo: 'Técnica Divine holística facial',
-    modulo: 'Facial Divine',
+    titulo: 'Módulo 04 · Facial & Brazos',
+    subtitulo: 'Rejuvenecimiento, tonificación y remodelación estética holística',
+    modulo: 'Módulo 04 · Facial & Brazos',
+    alias: ['Facial Divine', 'Facial', 'Facial & Brazos', 'Facial y brazos'],
     paginas: 24,
     portada: 1,
     para: FORMACION,
@@ -134,6 +144,26 @@ export const DOCUMENTOS: Documento[] = [
     ],
   },
 ];
+
+/**
+ * El nombre oficial del módulo de una clase, y su puesto (0, 1, 2…).
+ *
+ * El `modulo` de cada clase lo escribe Sorela al subirla, y las ya subidas
+ * pueden llevar el nombre antiguo. Aquí se traduce al de la lista de arriba
+ * (sin mirar tildes ni mayúsculas) para que el aula los enseñe en el orden de
+ * Sorela —Precurso, Desbloqueo, Tonificación y moldeo, Facial & Brazos— y no
+ * en el orden en que se subieron. Lo que no está en la lista se queda igual y
+ * va detrás (puesto 99).
+ */
+export function moduloOficial(nombre: string | undefined): { nombre: string; puesto: number } {
+  const k = normal(nombre);
+  const i = DOCUMENTOS.findIndex((d) => [d.modulo, ...(d.alias ?? [])].some((n) => normal(n) === k));
+  return i >= 0 ? { nombre: DOCUMENTOS[i].modulo, puesto: i } : { nombre: nombre || '', puesto: 99 };
+}
+
+function normal(n: string | undefined): string {
+  return (n || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
 
 /** Dónde vive cada página en el almacén. */
 export const rutaDePagina = (id: string, n: number) => `material/${id}/${String(n).padStart(3, '0')}.webp`;

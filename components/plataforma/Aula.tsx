@@ -11,6 +11,7 @@ import {
   type Progreso,
 } from '@/lib/aula';
 import { Lector, TarjetasMaterial, type DocumentoVisible } from './Material';
+import { moduloOficial } from '@/lib/material';
 import VideoYoutube from '@/components/VideoYoutube';
 import css from './plataforma.module.css';
 import a from './aula.module.css';
@@ -144,8 +145,16 @@ export default function Aula({ correo }: { correo?: string | null }) {
   /* Todas las clases en el orden del curso, y su módulo. */
   const ordenadas = useMemo(() => {
     if (!lecciones) return [];
+    /* Dentro de cada curso, los módulos en el orden de Sorela (lib/material.ts):
+       Precurso, Desbloqueo, Tonificación y moldeo, Facial & Brazos. Dentro de
+       cada módulo, el orden de las clases. El sort es estable. */
     return porBloques(lecciones).flatMap((b) =>
-      b.lecciones.map((l) => ({ ...l, modulo: l.modulo || b.nombre }))
+      b.lecciones
+        .map((l) => {
+          const m = moduloOficial(l.modulo || b.nombre);
+          return { ...l, modulo: m.nombre, puesto: m.puesto };
+        })
+        .sort((x, z) => x.puesto - z.puesto)
     );
   }, [lecciones]);
 
@@ -326,7 +335,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
     (l) => (!modulo || l.modulo === modulo) && (!t || l.titulo.toLowerCase().includes(t))
   );
   const pActual = progreso[actual.id];
-  const dossier = documentos.find((d) => d.modulo === actual.modulo);
+  const dossier = documentos.find((d) => moduloOficial(d.modulo).nombre === actual.modulo);
 
   return (
     <div className={a.aula}>
