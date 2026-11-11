@@ -88,7 +88,7 @@ export async function alCambiarAccesos(
       });
     }
     // Tenía solo el precurso y ya ha pagado el resto: se le abre todo.
-    if (cursoAntes?.completo === false && cursoDespues && cursoDespues.completo !== false && (await estaActiva('acceso-formacion'))) {
+    if (cursoAntes?.completo === false && cursoDespues && cursoDespues.completo !== false && !cursoDespues.online && (await estaActiva('acceso-formacion'))) {
       await mandarCorreo({ para: persona.correo, ...correoAccesoFormacion(persona.nombre, null, 'desbloqueo') }, {
         tipo: 'acceso-formacion',
         clave: `acceso-formacion-completo:${persona.uid}`,

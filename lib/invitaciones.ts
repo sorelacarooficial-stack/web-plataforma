@@ -61,6 +61,8 @@ export type Invitacion = {
    * enlaces de antes no lo llevan y dan el curso completo, como daban.
    */
   completo: boolean;
+  /** Solo con curso: academia online, por módulos. */
+  online: boolean;
 };
 
 type Datos = FirebaseFirestore.DocumentData;
@@ -92,17 +94,19 @@ export function aInvitacion(codigo: string, v: Datos): Invitacion {
     convocatoria: typeof v.convocatoria === 'string' ? v.convocatoria : null,
     inscrita: typeof v.inscrita === 'string' ? v.inscrita : null,
     completo: v.nivel !== 'precurso',
+    online: v.nivel === 'online',
   };
 }
 
 /** Lo que da un enlace, como accesos de la ficha. */
-export function accesosDe(que: QueDa[], curso: { convocatoria?: string | null; completo?: boolean } = {}): Acceso[] {
+export function accesosDe(que: QueDa[], curso: { convocatoria?: string | null; completo?: boolean; online?: boolean } = {}): Acceso[] {
   const hoy = new Date().toISOString();
   return que.map((q) => {
     if (q === 'membresia') return { tipo: 'membresia' as const, desde: hoy };
     const a: Acceso = { tipo: 'curso', nombre: CURSO_DIVINE, desde: hoy };
     if (curso.convocatoria) a.convocatoria = curso.convocatoria;
     if (curso.completo === false) a.completo = false;
+    if (curso.online) a.online = true;
     return a;
   });
 }
@@ -174,7 +178,7 @@ export async function canjear(
     const antes = usuario.exists ? revisarAccesos(usuario.data()?.accesos) : [];
     const accesos = revisarAccesos([
       ...antes,
-      ...accesosDe(que, { convocatoria: inv2.convocatoria, completo: inv2.completo }),
+      ...accesosDe(que, { convocatoria: inv2.convocatoria, completo: inv2.completo, online: inv2.online }),
     ]);
     if (refConv && conv?.exists) {
       const enCuenta = { tipo: 'cuenta', uid: persona.uid, en: new Date().toISOString() };

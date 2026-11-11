@@ -49,6 +49,11 @@ export type Acceso = {
    * siguen igual los accesos que ya estaban dados antes de existir esto.
    */
   completo?: boolean;
+  /**
+   * Solo cursos. La academia ONLINE: los módulos se le abren en orden, con
+   * su reunión con Sorela al terminar el primero (lib/avance.ts).
+   */
+  online?: true;
 };
 
 /** Si un acceso de curso abre ya las clases en vídeo (el material lo abre siempre, también con el abono). */
@@ -115,6 +120,7 @@ export function revisarAccesos(crudo: unknown): Acceso[] {
     const crudoConv = (item as { convocatoria?: unknown }).convocatoria;
     const convocatoria = typeof crudoConv === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(crudoConv) ? crudoConv : undefined;
     const completo = (item as { completo?: unknown }).completo === false ? false : undefined;
+    const online = (item as { online?: unknown }).online === true ? (true as const) : undefined;
     const clave = nombre.toLowerCase();
     if (cursosVistos.has(clave)) {
       /* El mismo curso dos veces (p. ej. el abono y luego el pago completo):
@@ -123,12 +129,14 @@ export function revisarAccesos(crudo: unknown): Acceso[] {
       const ya = salida.find((a) => a.tipo === 'curso' && a.nombre?.toLowerCase() === clave)!;
       if (completo === undefined) delete ya.completo;
       if (!ya.convocatoria && convocatoria) ya.convocatoria = convocatoria;
+      if (online) ya.online = true;
       continue;
     }
     cursosVistos.add(clave);
     const acceso: Acceso = { tipo: 'curso', nombre, desde: fecha((item as { desde?: unknown }).desde) };
     if (convocatoria) acceso.convocatoria = convocatoria;
     if (completo === false) acceso.completo = false;
+    if (online) acceso.online = true;
     salida.push(acceso);
   }
 
