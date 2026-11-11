@@ -30,9 +30,10 @@ type Invitacion = {
   usadaPor: { correo: string; nombre: string | null; en: string | null } | null;
   convocatoria: string | null;
   completo: boolean;
+  online?: boolean;
 };
 
-type Nivel = 'precurso' | 'completo';
+type Nivel = 'precurso' | 'completo' | 'online';
 type InscritaOpcion = { id: string; nombre: string; correo: string; estado: 'pagado' | 'senal' | 'pendiente'; acceso: string };
 type ConvOpcion = { id: string; ciudad: string; inicio: string; fin: string; inscritas: InscritaOpcion[] };
 
@@ -44,6 +45,11 @@ const QUE: { id: QueDa; titulo: string; texto: string }[] = [
 const NIVELES: { id: Nivel; titulo: string; texto: string }[] = [
   { id: 'precurso', titulo: 'Solo el abono', texto: 'Ve el precurso, los dosieres y sus fechas. Los vídeos, bloqueados hasta terminar la clase presencial.' },
   { id: 'completo', titulo: 'Todo el curso', texto: 'Ve todo, también las clases en vídeo.' },
+  {
+    id: 'online',
+    titulo: 'Academia online',
+    texto: 'La técnica grabada, sin fechas presenciales. Los módulos se abren en orden y al terminar el primero pide su reunión contigo.',
+  },
 ];
 
 const PAGO: Record<InscritaOpcion['estado'], string> = { pagado: 'ha pagado todo', senal: 'ha dejado el abono', pendiente: 'sin pagar' };
@@ -58,7 +64,9 @@ const ETIQUETA: Record<QueDa, string> = { curso: 'Curso', membresia: 'Comunidad 
 
 /** Lo que da, con el nivel del curso: «Curso · solo el abono». */
 const queDa = (inv: Invitacion) =>
-  inv.que.map((q) => (q === 'curso' ? (inv.completo ? 'Curso completo' : 'Curso · solo el abono') : ETIQUETA[q])).join(' + ');
+  inv.que
+    .map((q) => (q === 'curso' ? (inv.online ? 'Academia online' : inv.completo ? 'Curso completo' : 'Curso · solo el abono') : ETIQUETA[q]))
+    .join(' + ');
 
 const fecha = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '';
@@ -66,7 +74,7 @@ const fecha = (iso: string | null) =>
 function mensajeWhatsapp(inv: Invitacion) {
   const pila = inv.nombre?.trim().split(/\s+/)[0];
   const que = inv.que
-    .map((q) => (q === 'curso' ? (inv.completo ? `el curso ${CURSO_DIVINE}` : `el precurso de la ${CURSO_DIVINE}`) : 'la membresía de la Comunidad Divine'))
+    .map((q) => (q === 'curso' ? (inv.online ? `la academia online de la ${CURSO_DIVINE}` : inv.completo ? `el curso ${CURSO_DIVINE}` : `el precurso de la ${CURSO_DIVINE}`) : 'la membresía de la Comunidad Divine'))
     .join(' y ');
   return `${pila ? `Hola ${pila}! ` : 'Hola! '}Aquí tienes tu acceso a ${que}. Entra en este enlace, crea tu contraseña y ya estás dentro: ${inv.enlace}`;
 }
@@ -152,9 +160,11 @@ export default function Invitaciones() {
     ? null
     : [
         conCurso
-          ? `${quien || 'Quien abra el enlace'} entra en la ${CURSO_DIVINE}${convActual ? ` (${convActual.ciudad}, ${dias(convActual)})` : ''}.`
+          ? `${quien || 'Quien abra el enlace'} entra en la ${CURSO_DIVINE}${convActual && nivel !== 'online' ? ` (${convActual.ciudad}, ${dias(convActual)})` : ''}.`
           : `${quien || 'Quien abra el enlace'} entra en la Comunidad Divine. No incluye el curso.`,
-        conCurso && nivel === 'precurso'
+        conCurso && nivel === 'online'
+          ? 'Academia online: empieza por el Módulo 01. Al leerlo entero pide su reunión contigo y se abre el 02; cada vídeo se abre al leer su módulo, y al verlo se abre el siguiente.'
+          : conCurso && nivel === 'precurso'
           ? `Verá el precurso, los dosieres y sus fechas; los vídeos, bloqueados hasta terminar la clase presencial. ${
               inscritaActual ? 'Se le abren solos cuando la marques «Pagado» en Formaciones.' : 'Cuando pague el resto, se los abres en su cuenta › Gestionar acceso.'
             }`
@@ -182,7 +192,11 @@ export default function Invitaciones() {
           que: [que],
           nombre,
           correo,
-          ...(conCurso ? { convocatoria: conv || null, inscrita: conv ? inscrita || null : null, nivel } : {}),
+          ...(conCurso
+            ? nivel === 'online'
+              ? { convocatoria: null, inscrita: null, nivel }
+              : { convocatoria: conv || null, inscrita: conv ? inscrita || null : null, nivel }
+            : {}),
         }),
       });
       const j = await r.json();
@@ -372,6 +386,7 @@ export default function Invitaciones() {
                   aria-checked={nivel === n.id}
                   className={i.opcion}
                   data-on={nivel === n.id ? '' : undefined}
+                  style={n.id === 'online' ? { gridColumn: '1 / -1' } : undefined}
                   onClick={() => setNivel(n.id)}
                 >
                   <Marca on={nivel === n.id} />

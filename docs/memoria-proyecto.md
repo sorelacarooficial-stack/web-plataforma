@@ -371,3 +371,10 @@ cada cambio importante** (una línea por decisión, con la fecha).
   (vacía = «Videollamada»). Los vídeos largos se suben con el módulo
   «Técnica completa»: salen tras el botón «Ver toda la técnica completa» y
   no entran en el recorrido.
+- 2026-11-11: la academia online va **marcada a propósito** en el acceso
+  (`online: true`, lib/accesos.ts): en Dar acceso › ¿Qué ha pagado? hay una
+  tercera opción «Academia online» (sin fechas), y en Cuentas › Gestionar
+  acceso «Pasar a academia online» para las ya creadas. Sin esa marca no hay
+  recorrido (fuera la regla de «completo, sin fechas y desde el 11 nov»).
+  En «Ver como · Miembro» el aula enseña el recorrido de prueba (lo leído y
+  la reunión no se guardan): el servidor a Sorela se lo abre todo.

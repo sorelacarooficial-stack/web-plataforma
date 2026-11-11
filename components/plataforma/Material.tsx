@@ -59,11 +59,14 @@ export function Lector({
   correo,
   desde = 1,
   cerrar,
+  alAvanzar,
 }: {
   doc: DocumentoVisible;
   correo?: string | null;
   desde?: number;
   cerrar: () => void;
+  /** Cada vez que llega más lejos (la vista de prueba de Sorela lo usa para su recorrido). */
+  alAvanzar?: (pagina: number) => void;
 }) {
   const [paginas, setPaginas] = useState<string[] | null>(null);
   const [fallo, setFallo] = useState(false);
@@ -146,6 +149,7 @@ export function Lector({
     (pagina: number) => {
       if (pagina <= enviada.current) return;
       enviada.current = pagina;
+      alAvanzar?.(pagina);
       fetch('/api/material', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -154,7 +158,7 @@ export function Lector({
         keepalive: true,
       }).catch(() => {});
     },
-    [doc.id]
+    [doc.id, alAvanzar]
   );
   useEffect(() => {
     if (paginas) apuntar(maxima.current);

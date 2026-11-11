@@ -499,7 +499,7 @@ export default function Plataforma({
             ) : (
               <Proximamente accesos={accesosVistos} nombre={usuario} />
             ))}
-          {!esAdmin && actual === 'aula' && <Aula correo={sesion.correo} />}
+          {!esAdmin && actual === 'aula' && <Aula correo={sesion.correo} muestra={puedeVerComo} />}
           {/* La misma pantalla que la de Sorela, y a propósito: la agenda de
               una terapeuta y la de Sorela son la misma cosa. Cada una ve solo
               la suya porque el servidor cuelga cada agenda de su persona, no

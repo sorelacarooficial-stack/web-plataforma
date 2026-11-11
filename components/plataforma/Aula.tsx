@@ -12,7 +12,8 @@ import {
 } from '@/lib/aula';
 import { Lector, TarjetasMaterial, type DocumentoVisible } from './Material';
 import { moduloOficial } from '@/lib/material';
-import { esTecnicaCompleta, type Recorrido } from '@/lib/avance';
+import { calcularRecorrido, esTecnicaCompleta, videoCerradoPorModulo, type Recorrido } from '@/lib/avance';
+import type { Lectura } from '@/lib/material';
 import RecorridoAula from './RecorridoAula';
 import VideoYoutube from '@/components/VideoYoutube';
 import css from './plataforma.module.css';
@@ -94,7 +95,7 @@ function IconoCandado({ tam = 15 }: { tam?: number }) {
   );
 }
 
-export default function Aula({ correo }: { correo?: string | null }) {
+export default function Aula({ correo, muestra = false }: { correo?: string | null; /** Sorela mirando «Ver como»: recorrido de prueba. */ muestra?: boolean }) {
   const [lecciones, setLecciones] = useState<Leccion[] | null>(null);
   const [progreso, setProgreso] = useState<Mapa>({});
   const [fallo, setFallo] = useState<string | null>(null);
@@ -107,7 +108,11 @@ export default function Aula({ correo }: { correo?: string | null }) {
   const [documentos, setDocumentos] = useState<DocumentoVisible[]>([]);
   const [leyendo, setLeyendo] = useState<{ id: string; desde: number } | null>(null);
   /* El camino por módulos de la academia (null: lo ve todo abierto). */
-  const [recorrido, setRecorrido] = useState<Recorrido | null>(null);
+  const [recorridoServidor, setRecorrido] = useState<Recorrido | null>(null);
+  /* La vista de prueba: Sorela lo ve todo abierto en el servidor, así que el
+     recorrido se calcula aquí con lo que lea en esta visita (no se guarda). */
+  const [lecturaPrueba, setLecturaPrueba] = useState<Record<string, Lectura>>({});
+  const [citaPrueba, setCitaPrueba] = useState<{ cuando: string } | null>(null);
   const video = useRef<HTMLVideoElement>(null);
   const ultimoGuardado = useRef(0);
   /* Por dónde iba al renovar el enlace, para seguir en el mismo segundo. */
@@ -148,7 +153,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
   }, [cargar]);
 
   /* Todas las clases en el orden del curso, y su módulo. */
-  const ordenadas = useMemo(() => {
+  const ordenadasBase = useMemo(() => {
     if (!lecciones) return [];
     /* Dentro de cada curso, los módulos en el orden de Sorela (lib/material.ts):
        Precurso, Desbloqueo, Tonificación y moldeo, Facial & Brazos. Dentro de
@@ -162,6 +167,32 @@ export default function Aula({ correo }: { correo?: string | null }) {
         .sort((x, z) => x.puesto - z.puesto)
     );
   }, [lecciones]);
+
+  const recorrido: Recorrido | null = useMemo(() => {
+    if (!muestra) return recorridoServidor;
+    return calcularRecorrido({
+      lectura: lecturaPrueba,
+      cita: citaPrueba,
+      conVideos: true,
+      clases: ordenadasBase
+        .filter((l) => l.para?.tipo === 'curso' && !esTecnicaCompleta(l.modulo))
+        .map((l) => ({ id: l.id, modulo: l.modulo, completada: Boolean(progreso[l.id]?.completada) })),
+    });
+  }, [muestra, recorridoServidor, lecturaPrueba, citaPrueba, ordenadasBase, progreso]);
+
+  /* En la prueba, los candados se ponen aquí (en el servidor ella lo tiene todo). */
+  const ordenadas = useMemo(
+    () =>
+      muestra && recorrido
+        ? ordenadasBase.map((l) => (videoCerradoPorModulo(recorrido, l.para, l.modulo) ? { ...l, bloqueada: true, motivo: 'modulo' as const } : l))
+        : ordenadasBase,
+    [muestra, recorrido, ordenadasBase]
+  );
+  /* Los dosieres cerrados: en la prueba se marcan aquí; si no, ya vienen del servidor. */
+  const documentosVistos = useMemo(
+    () => (muestra && recorrido ? documentos.map((d) => ({ ...d, cerrado: !recorrido.modulos.find((m) => m.id === d.id)?.abierto })) : documentos),
+    [muestra, recorrido, documentos]
+  );
 
   const modulos = useMemo(() => {
     const m = new Map<string, Leccion[]>();
@@ -294,8 +325,18 @@ export default function Aula({ correo }: { correo?: string | null }) {
       cerrar={() => {
         setLeyendo(null);
         // Leer un dosier hasta el final abre su vídeo o el paso siguiente.
-        if (recorrido) cargar();
+        if (recorrido && !muestra) cargar();
       }}
+      alAvanzar={
+        muestra
+          ? (pagina) =>
+              setLecturaPrueba((l) => {
+                const antes = l[docLeyendo.id]?.pagina ?? 0;
+                if (pagina <= antes) return l;
+                return { ...l, [docLeyendo.id]: { pagina, leido: pagina >= docLeyendo.paginas } };
+              })
+          : undefined
+      }
     />
   );
   /* Los vídeos largos, para estudiar sola: van aparte, detrás de un botón. */
@@ -313,6 +354,7 @@ export default function Aula({ correo }: { correo?: string | null }) {
           leer={(id, pagina) => abrirMaterial(id, pagina)}
           verClase={(id) => abrir(id)}
           recargar={cargar}
+          muestra={muestra ? { pedirCita: (cuando) => setCitaPrueba({ cuando }) } : undefined}
         />
       )}
       {completas.length > 0 && (
@@ -330,10 +372,10 @@ export default function Aula({ correo }: { correo?: string | null }) {
       )}
     </>
   );
-  const seccionMaterial = documentos.length > 0 && (
+  const seccionMaterial = documentosVistos.length > 0 && (
     <section className={a.bloque} id="aula-material">
       <h3 className={a.rotulo}>Material del curso</h3>
-      <TarjetasMaterial documentos={documentos} abrir={abrirMaterial} />
+      <TarjetasMaterial documentos={documentosVistos} abrir={abrirMaterial} />
     </section>
   );
 

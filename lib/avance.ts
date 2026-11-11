@@ -20,13 +20,6 @@ import { DOCUMENTOS, moduloOficial, type Lectura } from './material';
  * aula, que la pinta.
  */
 
-/**
- * Desde cuándo aplica. Las alumnas que ya tenían el curso antes de esta fecha
- * siguen con todo abierto, como lo tenían: cerrarles de golpe lo que ya
- * estaban viendo sería quitarles algo.
- */
-export const RECORRIDO_DESDE = '2026-11-11T00:00:00Z';
-
 /** El apartado de los vídeos largos, para estudiar sola. No entra en el recorrido. */
 export const MODULO_COMPLETA = 'Técnica completa';
 const ALIAS_COMPLETA = ['tecnica completa', 'clase completa', 'clases completas', 'curso completo', 'tratamiento completo'];
@@ -68,12 +61,10 @@ export type Recorrido = {
 export function llevaRecorrido(accesos: Acceso[]): boolean {
   // Las homologadas (membresía) lo tienen todo abierto: ya pasaron por aquí.
   if (accesos.some((a) => a.tipo === 'membresia')) return false;
-  const curso = accesos.find((a) => a.tipo === 'curso' && clave(a.nombre) === clave(CURSO_DIVINE));
-  if (!curso?.desde || curso.desde < RECORRIDO_DESDE) return false;
-  /* Solo la academia ONLINE. Las de la presencial (la beca) se reconocen
-     porque su acceso lleva fechas (convocatoria) o es solo el abono: esas
-     siguen como estaban, leen todo y los vídeos se abren al pagar el resto. */
-  return !curso.convocatoria && curso.completo !== false;
+  /* Solo la academia ONLINE, marcada a propósito al dar el acceso («Academia
+     online» en Dar acceso, o «Pasar a academia online» en Gestionar). Las de
+     la presencial y las de antes siguen como estaban. */
+  return accesos.some((a) => a.tipo === 'curso' && clave(a.nombre) === clave(CURSO_DIVINE) && a.online === true);
 }
 
 export type ClaseDelRecorrido = { id: string; modulo?: string; completada: boolean };

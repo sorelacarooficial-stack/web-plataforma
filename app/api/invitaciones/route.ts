@@ -127,7 +127,7 @@ export async function POST(peticion: Request) {
      «Pagado» abre todo). Sin inscrita y sin elegir, precurso: es lo seguro. */
   const nivel = !conCurso
     ? null
-    : cuerpo.nivel === 'completo' || cuerpo.nivel === 'precurso'
+    : cuerpo.nivel === 'completo' || cuerpo.nivel === 'precurso' || cuerpo.nivel === 'online'
       ? cuerpo.nivel
       : estadoPago === 'pagado'
         ? 'completo'
@@ -147,10 +147,11 @@ export async function POST(peticion: Request) {
     usada: null,
     anulada: false,
     ...(nivel ? { nivel } : {}),
-    ...(convocatoria ? { convocatoria } : {}),
-    ...(inscrita ? { inscrita } : {}),
+    // La academia online no lleva fechas presenciales.
+    ...(convocatoria && nivel !== 'online' ? { convocatoria } : {}),
+    ...(inscrita && nivel !== 'online' ? { inscrita } : {}),
   });
-  if (convocatoria && inscrita) {
+  if (convocatoria && inscrita && nivel !== 'online') {
     // Su fila de la convocatoria dice «Enlace sin usar», y el de antes deja de valer.
     await coleccionConvocatorias()
       .doc(convocatoria)
@@ -170,7 +171,13 @@ export async function POST(peticion: Request) {
     codigo,
     correo,
     nombre,
-    que: que.map((q) => (q === 'curso' && nivel === 'precurso' ? `el precurso y los dosieres de la ${CURSO_DIVINE}` : ETIQUETA_QUE_DA[q])),
+    que: que.map((q) =>
+      q === 'curso' && nivel === 'precurso'
+        ? `el precurso y los dosieres de la ${CURSO_DIVINE}`
+        : q === 'curso' && nivel === 'online'
+          ? `la academia online de la ${CURSO_DIVINE}`
+          : ETIQUETA_QUE_DA[q]
+    ),
     caduca: invitacion.caduca,
     enlace,
   });

@@ -224,6 +224,18 @@ export default function Cuentas() {
     );
   }
 
+  /** La pasa a la academia online: curso completo, sin fechas presenciales, módulos en orden. */
+  async function pasarAOnline(c: Cuenta) {
+    await guardarAccesos(
+      c,
+      c.accesos.map((a) => {
+        if (a.tipo !== 'curso' || clave(a.nombre) !== clave(CURSO_DIVINE)) return a;
+        const { completo: _c, convocatoria: _v, ...resto } = a;
+        return { ...resto, online: true as const };
+      })
+    );
+  }
+
   async function guardarAccesos(c: Cuenta, nuevos: Acceso[]) {
     /* Se guarda SOLO lo de esta persona, no la lista entera.
        Guardando la lista entera y restaurándola al fallar, un error aquí
@@ -540,7 +552,7 @@ export default function Cuentas() {
                       {cursosDe(c.accesos).map((a) => (
                         <span key={a.nombre} className={css.selloCurso}>
                           Curso · {a.nombre}
-                          {a.completo === false ? ' · vídeos bloqueados' : ''}
+                          {a.online ? ' · academia online' : a.completo === false ? ' · vídeos bloqueados' : ''}
                         </span>
                       ))}
                     </span>
@@ -599,6 +611,12 @@ export default function Cuentas() {
                             <button type="button" role="menuitem" onClick={() => { setGestion(null); abrirCompleto(c); }}>
                               <strong>Abrirle los vídeos del curso</strong>
                               <small>Ha pagado el resto: ve el curso completo y le llega un correo.</small>
+                            </button>
+                          )}
+                          {cursosDe(c.accesos).some((x) => clave(x.nombre) === clave(CURSO_DIVINE) && !x.online) && (
+                            <button type="button" role="menuitem" onClick={() => { setGestion(null); pasarAOnline(c); }}>
+                              <strong>Pasar a academia online</strong>
+                              <small>Sin fechas presenciales. Los módulos se le abren en orden, con su reunión contigo.</small>
                             </button>
                           )}
                           {tieneMembresia(c.accesos) && (

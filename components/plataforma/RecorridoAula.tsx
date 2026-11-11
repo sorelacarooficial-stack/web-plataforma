@@ -25,6 +25,8 @@ type Props = {
   verClase: (idClase: string) => void;
   /** Tras pedir la reunión: que el aula vuelva a preguntar qué hay abierto. */
   recargar: () => void;
+  /** Vista de prueba de Sorela («Ver como»): la reunión no se pide de verdad. */
+  muestra?: { pedirCita: (cuando: string) => void };
 };
 
 const DIA = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -51,7 +53,7 @@ function Visto() {
   );
 }
 
-export default function RecorridoAula({ recorrido, leer, verClase, recargar }: Props) {
+export default function RecorridoAula({ recorrido, leer, verClase, recargar, muestra }: Props) {
   const quieto = useReducedMotion();
   const { modulos, siguiente, cita } = recorrido;
   const [pidiendo, setPidiendo] = useState(false);
@@ -132,6 +134,11 @@ export default function RecorridoAula({ recorrido, leer, verClase, recargar }: P
 
   return (
     <section className={r.marco} aria-label="Tu camino en la academia">
+      {muestra && (
+        <p className={r.aviso}>
+          Vista de prueba: así lo ve una alumna de la academia online. Lo que leas y la reunión que pidas aquí no se guardan.
+        </p>
+      )}
       <ol className={r.camino}>
         {modulos.map((m, i) => {
           const estado = m.completo ? 'hecho' : m.abierto ? 'abierto' : 'cerrado';
@@ -185,6 +192,7 @@ export default function RecorridoAula({ recorrido, leer, verClase, recargar }: P
 
       {pidiendo && (
         <PedirCita
+          muestra={muestra?.pedirCita}
           cerrar={() => setPidiendo(false)}
           hecha={() => {
             setPidiendo(false);
@@ -238,7 +246,7 @@ export default function RecorridoAula({ recorrido, leer, verClase, recargar }: P
    Pedir la reunión: primero el día, luego la hora, y confirmar.
    ========================================================================== */
 
-function PedirCita({ cerrar, hecha }: { cerrar: () => void; hecha: () => void }) {
+function PedirCita({ cerrar, hecha, muestra }: { cerrar: () => void; hecha: () => void; muestra?: (cuando: string) => void }) {
   const [libres, setLibres] = useState<string[] | null>(null);
   const [minutos, setMinutos] = useState(60);
   const [dia, setDia] = useState<string | null>(null);
@@ -276,6 +284,10 @@ function PedirCita({ cerrar, hecha }: { cerrar: () => void; hecha: () => void })
 
   async function pedir() {
     if (!hora) return;
+    if (muestra) {
+      muestra(hora);
+      return hecha();
+    }
     setEnviando(true);
     setFallo(null);
     try {
