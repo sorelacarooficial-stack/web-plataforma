@@ -332,3 +332,15 @@ cada cambio importante** (una línea por decisión, con la fecha).
   (`alias`, `moduloOficial`) y el aula ordena por módulo, no por fecha de
   subida. Ojo: las páginas de «Brazos» siguen dentro del dosier del día 2
   (pág. 33-36); moverlas al módulo 4 pide volver a subir las imágenes.
+- 2026-11-11: **agenda**: arriba, «Tu agenda» con la explicación (reuniones
+  con Sorela, formaciones, clases en directo y lo que apunte cada una) y
+  debajo diapositivas de novedades (`NovedadesAgenda`): su formación
+  presencial (de la convocatoria de su acceso, una por convocatoria, con
+  cuenta atrás) y la próxima clase en directo de Comunidad. Las fechas de la
+  formación YA NO van en la lista día a día (`novedades` en /api/agenda,
+  aparte de `eventos`). Si una alumna tiene puesta una convocatoria que ya no
+  se hace (p. ej. Medellín 10-12 dic), se arregla en los datos (su acceso en
+  Cuentas / la convocatoria), no en el código.
+- 2026-11-11: pastilla «Agente IA · Pronto» más tecnológica: cristal oscuro,
+  borde de luz dorada que gira, chispa de IA que respira y brillo en «Pronto»
+  (quieta con «reducir movimiento»).
