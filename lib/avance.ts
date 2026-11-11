@@ -1,6 +1,6 @@
 import { CURSO_DIVINE, type Acceso } from './accesos';
 import { clave } from './aula';
-import { DOCUMENTOS, moduloOficial, type Lectura } from './material';
+import { DOCUMENTOS, moduloDeClase, moduloOficial, type Lectura } from './material';
 
 /**
  * El recorrido de la academia online: los módulos se abren en orden.
@@ -115,9 +115,9 @@ export function calcularRecorrido(x: {
 }
 
 /** Si el vídeo de una clase sigue cerrado por el recorrido (su módulo no está abierto o su dosier sin leer). */
-export function videoCerradoPorModulo(r: Recorrido, para: Acceso, modulo: string | undefined): boolean {
+export function videoCerradoPorModulo(r: Recorrido, para: Acceso, modulo: string | undefined, titulo?: string): boolean {
   if (para?.tipo !== 'curso' || clave(para.nombre) !== clave(CURSO_DIVINE)) return false;
   if (esTecnicaCompleta(modulo)) return false;
-  const m = r.modulos[moduloOficial(modulo).puesto];
+  const m = r.modulos[moduloDeClase(modulo, titulo).puesto];
   return m ? !m.videosAbiertos : false;
 }

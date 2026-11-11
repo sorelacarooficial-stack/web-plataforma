@@ -1,0 +1,123 @@
+.fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(20, 18, 16, 0.72);
+  backdrop-filter: blur(6px);
+}
+.caja {
+  width: min(1040px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 20px;
+  border-radius: 26px;
+  color: #f4efe7;
+  background:
+    radial-gradient(80% 120% at 100% 0%, rgba(243, 217, 174, 0.14), transparent 60%),
+    #17140f;
+  box-shadow: inset 0 0 0 1px rgba(243, 217, 174, 0.16), 0 40px 90px -30px rgba(0, 0, 0, 0.8);
+}
+.cabeza {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.rotulo {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #e6c491;
+}
+.titulo {
+  margin: 4px 0 0;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+}
+.titulo strong {
+  font-weight: 600;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.cerrar {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(243, 217, 174, 0.3);
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.pantalla {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+}
+.pantalla iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+}
+.texto {
+  flex: 1 1 320px;
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: rgba(244, 239, 231, 0.74);
+}
+.texto a {
+  color: #f3d9ae;
+}
+.lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13.5px;
+  color: #f4efe7;
+  background: rgba(244, 239, 231, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(243, 217, 174, 0.22);
+  cursor: pointer;
+}
+.opcion[data-activo] {
+  color: #141210;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  box-shadow: none;
+}
+.num {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.7;
+}

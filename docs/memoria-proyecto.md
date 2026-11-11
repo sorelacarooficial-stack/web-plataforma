@@ -389,3 +389,13 @@ cada cambio importante** (una línea por decisión, con la fecha).
   lib/citas.ts, España con su zona por el cambio de hora). Los días se
   cuentan en hora de Colombia. La nota de la cita en la agenda lleva también
   las tres horas.
+- 2026-11-11: **cada vídeo va a su módulo por su título** (`moduloDeClase`,
+  lib/material.ts): «abdomen» → 02, «piernas/glúteos» → 03, «facial» → 04,
+  aunque se subiera con otro apartado (el de piernas estaba en «Día 1 ·
+  Desbloqueo» y salía en el 02). Lo usan el aula, el panel y el servidor.
+- 2026-11-11: botón **«Ver toda la técnica completa»**: los vídeos largos de
+  Drive (`TECNICA_COMPLETA`, lib/tecnica-completa.ts: Andrea y Esther, ~7 GB
+  cada uno) en una ventana con el reproductor de Drive y el enlace de Drive
+  debajo. Tienen que estar compartidos «Cualquier persona con el enlace».
+  No caben en el almacén tal cual; el de Andrea no se pudo abrir desde la
+  sesión (comprobar el enlace).

@@ -157,7 +157,7 @@ export async function GET() {
      dosier. Hasta entonces salen con candado y sin vídeo (`motivo: 'modulo'`).
      Lo mismo comprueba /api/lecciones/video antes de dar el enlace. */
   const recorrido = await recorridoDe(sesion.uid, accesos).catch(() => null);
-  const porModulo = (l: Leccion) => recorrido !== null && videoCerradoPorModulo(recorrido, l.para, l.modulo);
+  const porModulo = (l: Leccion) => recorrido !== null && videoCerradoPorModulo(recorrido, l.para, l.modulo, l.titulo);
   const lecciones = (await conPortadas(suyas)).map((l) =>
     bloqueadas.has(l.id)
       ? { ...l, tamano: undefined, video: '', bloqueada: true }
