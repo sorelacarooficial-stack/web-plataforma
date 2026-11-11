@@ -25,6 +25,8 @@ type Props = {
   verClase: (idClase: string) => void;
   /** Tras pedir la reunión: que el aula vuelva a preguntar qué hay abierto. */
   recargar: () => void;
+  /** Al subir, abre la ventana de pedir la reunión (desde el final del dosier). */
+  pedirAhora?: number;
   /** Vista de prueba de Sorela («Ver como»): la reunión no se pide de verdad. */
   muestra?: { pedirCita: (cuando: string) => void };
 };
@@ -53,11 +55,18 @@ function Visto() {
   );
 }
 
-export default function RecorridoAula({ recorrido, leer, verClase, recargar, muestra }: Props) {
+export default function RecorridoAula({ recorrido, leer, verClase, recargar, muestra, pedirAhora = 0 }: Props) {
   const quieto = useReducedMotion();
   const { modulos, siguiente, cita } = recorrido;
   const [pidiendo, setPidiendo] = useState(false);
   const [fiesta, setFiesta] = useState<{ titulo: string; texto: string } | null>(null);
+  /* Si ya se le ha dicho dentro del lector, la celebración de después sobra. */
+  const callar = useRef(false);
+  useEffect(() => {
+    if (!pedirAhora) return;
+    callar.current = true;
+    setPidiendo(true);
+  }, [pedirAhora]);
 
   /* La celebración: sale cuando, estando en el aula, pasa a haber un módulo
      terminado más (o la reunión recién pedida). Al entrar no se celebra nada:
@@ -68,6 +77,10 @@ export default function RecorridoAula({ recorrido, leer, verClase, recargar, mue
     const a = antes.current;
     antes.current = { hechos, cita: Boolean(cita) };
     if (!a) return;
+    if (callar.current && hechos > a.hechos) {
+      callar.current = false;
+      return;
+    }
     if (hechos > a.hechos) {
       const m = modulos[hechos - 1];
       const sig = modulos[hechos];

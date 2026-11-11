@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import type { Documento } from '@/lib/material';
 import m from './material.module.css';
 
@@ -60,6 +60,8 @@ export function Lector({
   desde = 1,
   cerrar,
   alAvanzar,
+  yaLeida,
+  alTerminar,
 }: {
   doc: DocumentoVisible;
   correo?: string | null;
@@ -67,6 +69,10 @@ export function Lector({
   cerrar: () => void;
   /** Cada vez que llega más lejos (la vista de prueba de Sorela lo usa para su recorrido). */
   alAvanzar?: (pagina: number) => void;
+  /** Hasta qué página había llegado otras veces: el progreso arranca ahí. */
+  yaLeida?: number;
+  /** Lo que se le dice al llegar a la última página (la academia: pedir la reunión, ver el vídeo…). */
+  alTerminar?: { titulo: string; texto: string; boton: string; hacer: () => void };
 }) {
   const [paginas, setPaginas] = useState<string[] | null>(null);
   const [fallo, setFallo] = useState(false);
@@ -144,6 +150,8 @@ export function Lector({
      a la última página y al cerrar. Solo sube, y solo se manda si ha
      avanzado. Con eso el panel da por leído el precurso. */
   const maxima = useRef(desde);
+  /* Lo más lejos que ha llegado, para pintar: la barra, el índice y el final. */
+  const [llegada, setLlegada] = useState(() => Math.max(desde, yaLeida ?? 0));
   const enviada = useRef(0);
   const apuntar = useCallback(
     (pagina: number) => {
@@ -165,6 +173,7 @@ export function Lector({
   }, [paginas, apuntar]);
   useEffect(() => {
     maxima.current = Math.max(maxima.current, actual);
+    setLlegada((l) => Math.max(l, actual));
     if (actual >= doc.paginas) apuntar(actual);
   }, [actual, doc.paginas, apuntar]);
   useEffect(() => () => apuntar(maxima.current), [apuntar]);
@@ -201,22 +210,39 @@ export function Lector({
   const marca = useMemo(() => (correo ? fondoDeMarca(correo) : undefined), [correo]);
   const apartado = [...doc.indice].reverse().find((i) => i.p <= actual);
 
+  const terminado = llegada >= doc.paginas;
+  const pct = Math.round((Math.min(llegada, doc.paginas) / doc.paginas) * 100);
+  const [finCerrado, setFinCerrado] = useState(false);
+  /* Un apartado está leído cuando se ha llegado al que va detrás (o al final). */
+  const apartados = [{ p: 1, titulo: 'Portada' }, ...doc.indice];
+  const estadoDe = (k: number) => {
+    const fin = apartados[k + 1]?.p ?? doc.paginas + 1;
+    if (terminado || llegada >= fin) return 'leido';
+    if (llegada >= apartados[k].p) return 'leyendo';
+    return 'pendiente';
+  };
+
   const indice = (
     <ol className={m.indice}>
-      <li>
-        <button type="button" data-activo={!apartado ? '' : undefined} onClick={() => ir(1)}>
-          <span>Portada</span>
-          <span className={m.indiceP}>1</span>
-        </button>
-      </li>
-      {doc.indice.map((i) => (
-        <li key={i.p}>
-          <button type="button" data-activo={apartado?.p === i.p ? '' : undefined} onClick={() => ir(i.p)}>
-            <span>{i.titulo}</span>
-            <span className={m.indiceP}>{i.p}</span>
-          </button>
-        </li>
-      ))}
+      {apartados.map((i, k) => {
+        const e = estadoDe(k);
+        const activo = k === 0 ? !apartado : apartado?.p === i.p;
+        return (
+          <li key={`${i.p}-${k}`}>
+            <button type="button" data-activo={activo ? '' : undefined} data-estado={e} onClick={() => ir(i.p)}>
+              <span className={m.indiceMarca} aria-hidden="true">
+                {e === 'leido' ? (
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12.5l4.5 4.5L19 7.5" />
+                  </svg>
+                ) : null}
+              </span>
+              <span className={m.indiceTitulo}>{i.titulo}</span>
+              <span className={m.indiceP}>{i.p}</span>
+            </button>
+          </li>
+        );
+      })}
     </ol>
   );
 
@@ -255,8 +281,20 @@ export function Lector({
         </button>
       </header>
 
+      <span className={m.progresoBarra} aria-hidden="true">
+        <motion.span animate={{ width: `${pct}%` }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} />
+      </span>
+
       <div className={m.cuerpo}>
         <nav className={m.lateral} data-abierto={indiceAbierto ? '' : undefined} aria-label="Índice del dosier">
+          <div className={m.leidoCaja}>
+            <span className={m.leidoTexto}>
+              {terminado ? 'Dosier leído' : 'Llevas leído'} <strong>{pct} %</strong>
+            </span>
+            <span className={m.leidoBarra}>
+              <motion.span animate={{ width: `${pct}%` }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} />
+            </span>
+          </div>
           <p className={m.lateralRotulo}>Índice</p>
           {indice}
         </nav>
@@ -287,6 +325,38 @@ export function Lector({
             </p>
           )}
         </div>
+
+        {/* Al llegar a la última página: lo que toca ahora, sin tener que cerrar. */}
+        <AnimatePresence>
+          {paginas && terminado && !finCerrado && (
+            <motion.div
+              className={m.final}
+              role="status"
+              initial={{ opacity: 0, y: 40, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 30 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+            >
+              <span className={m.finalSello} aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                  <motion.path d="M5 12.5l4.5 4.5L19 7.5" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.2, duration: 0.45 }} />
+                </svg>
+              </span>
+              <span className={m.finalTexto}>
+                <strong>{alTerminar?.titulo ?? `Has terminado el ${doc.titulo}`}</strong>
+                <span>{alTerminar?.texto ?? 'Lo tienes marcado como leído. Puedes volver a él cuando quieras.'}</span>
+              </span>
+              <span className={m.finalBotones}>
+                <button type="button" className={m.finalBoton} onClick={() => (alTerminar ? alTerminar.hacer() : cerrar())}>
+                  {alTerminar?.boton ?? 'Cerrar el dosier'}
+                </button>
+                <button type="button" className={m.finalLuego} onClick={() => setFinCerrado(true)}>
+                  Seguir mirando
+                </button>
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>,
     document.body

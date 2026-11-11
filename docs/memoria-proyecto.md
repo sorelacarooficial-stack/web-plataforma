@@ -378,3 +378,9 @@ cada cambio importante** (una línea por decisión, con la fecha).
   recorrido (fuera la regla de «completo, sin fechas y desde el 11 nov»).
   En «Ver como · Miembro» el aula enseña el recorrido de prueba (lo leído y
   la reunión no se guardan): el servidor a Sorela se lo abre todo.
+- 2026-11-11: **lector interactivo**: barra de progreso arriba y «Llevas
+  leído N %» en el lateral, que se llenan al bajar; cada apartado del índice
+  se marca con ✓ al pasarlo. Al llegar a la última página sale dentro del
+  lector un aviso con el siguiente paso (`alTerminar`): en el Módulo 01 de la
+  academia online, «Pedir mi reunión con Sorela» (abre la ventana de la
+  reunión sin la celebración repetida); en los demás, «Ver el vídeo».
