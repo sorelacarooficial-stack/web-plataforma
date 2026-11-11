@@ -375,3 +375,148 @@
   cursor: not-allowed;
   filter: grayscale(0.6);
 }
+
+/* ---------- El progreso de lectura ---------- */
+.progresoBarra {
+  display: block;
+  height: 3px;
+  background: rgba(237, 227, 211, 0.1);
+}
+.progresoBarra span,
+.leidoBarra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f3d9ae, #c99a5c);
+  box-shadow: 0 0 12px rgba(243, 217, 174, 0.6);
+}
+.leidoCaja {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 18px 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(217, 180, 124, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(217, 180, 124, 0.22);
+}
+.leidoTexto {
+  font-size: 13px;
+  color: rgba(247, 242, 234, 0.85);
+}
+.leidoTexto strong {
+  font-weight: 600;
+  color: #f0d4a6;
+}
+.leidoBarra {
+  display: block;
+  height: 5px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: rgba(237, 227, 211, 0.14);
+}
+.indice button {
+  align-items: center;
+}
+.indiceTitulo {
+  flex: 1;
+}
+.indiceMarca {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px rgba(247, 242, 234, 0.28);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.indice button[data-estado='leyendo'] .indiceMarca {
+  box-shadow: inset 0 0 0 1.5px #d9b47c;
+}
+.indice button[data-estado='leido'] .indiceMarca {
+  color: #141210;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+  box-shadow: none;
+}
+.indice button[data-estado='leido'] .indiceTitulo {
+  color: rgba(247, 242, 234, 0.7);
+}
+
+/* ---------- El final del dosier ---------- */
+.final {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  width: min(680px, calc(100% - 28px));
+  padding: 18px 20px;
+  border-radius: 22px;
+  color: #141210;
+  background: #f4efe7;
+  box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(201, 154, 92, 0.5);
+  translate: -50% 0;
+}
+.finalSello {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+}
+.finalTexto {
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.finalTexto strong {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.finalTexto span {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #4b443b;
+}
+.finalBotones {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.finalBoton {
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f4efe7;
+  background: #141210;
+  cursor: pointer;
+}
+.finalLuego {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  color: #6b6257;
+  cursor: pointer;
+}
+@media (max-width: 560px) {
+  .finalBotones {
+    width: 100%;
+  }
+  .finalBoton {
+    width: 100%;
+  }
+}

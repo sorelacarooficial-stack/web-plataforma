@@ -113,6 +113,8 @@ export default function Aula({ correo, muestra = false }: { correo?: string | nu
      recorrido se calcula aquí con lo que lea en esta visita (no se guarda). */
   const [lecturaPrueba, setLecturaPrueba] = useState<Record<string, Lectura>>({});
   const [citaPrueba, setCitaPrueba] = useState<{ cuando: string } | null>(null);
+  /* Cada vez que sube, el camino abre la ventana de pedir la reunión. */
+  const [pedirCita, setPedirCita] = useState(0);
   const video = useRef<HTMLVideoElement>(null);
   const ultimoGuardado = useRef(0);
   /* Por dónde iba al renovar el enlace, para seguir en el mismo segundo. */
@@ -317,16 +319,55 @@ export default function Aula({ correo, muestra = false }: { correo?: string | nu
 
   const abrirMaterial = (id: string, desde = 1) => setLeyendo({ id, desde });
   const docLeyendo = documentos.find((d) => d.id === leyendo?.id);
+  /* Al terminar un dosier del recorrido, qué se le dice dentro del lector. */
+  const iModulo = recorrido && docLeyendo ? recorrido.modulos.findIndex((m) => m.id === docLeyendo.id) : -1;
+  const cerrarLector = () => {
+    setLeyendo(null);
+    // Leer un dosier hasta el final abre su vídeo o el paso siguiente.
+    if (recorrido && !muestra) cargar();
+  };
+  const alTerminarDosier = (() => {
+    if (!recorrido || iModulo < 0) return undefined;
+    const m = recorrido.modulos[iModulo];
+    const sig = recorrido.modulos[iModulo + 1];
+    if (iModulo === 0 && !recorrido.cita) {
+      return {
+        titulo: `Has terminado el ${m.nombre}`,
+        texto: `Ahora pide tu primera reunión con Sorela. Al pedirla se abre el ${sig?.nombre ?? 'siguiente módulo'}.`,
+        boton: 'Pedir mi reunión con Sorela',
+        hacer: () => {
+          cerrarLector();
+          setPedirCita((n) => n + 1);
+        },
+      };
+    }
+    const video = ordenadasBase.find((l) => moduloOficial(l.modulo).puesto === iModulo && !esTecnicaCompleta(l.modulo) && !progreso[l.id]?.completada);
+    if (video) {
+      return {
+        titulo: `Has leído el ${m.nombre}`,
+        texto: 'Se ha abierto su vídeo. Al terminarlo se abre el siguiente módulo.',
+        boton: 'Ver el vídeo',
+        hacer: () => {
+          cerrarLector();
+          abrir(video.id);
+        },
+      };
+    }
+    return {
+      titulo: `Has terminado el ${m.nombre}`,
+      texto: sig ? `Ya tienes abierto el ${sig.nombre}.` : 'Has terminado los cuatro módulos. Ahora tocan tus prácticas con Sorela.',
+      boton: sig ? 'Seguir' : 'Volver al aula',
+      hacer: cerrarLector,
+    };
+  })();
   const lector = docLeyendo && leyendo && (
     <Lector
       doc={docLeyendo}
       correo={correo}
       desde={leyendo.desde}
-      cerrar={() => {
-        setLeyendo(null);
-        // Leer un dosier hasta el final abre su vídeo o el paso siguiente.
-        if (recorrido && !muestra) cargar();
-      }}
+      yaLeida={iModulo >= 0 ? recorrido?.modulos[iModulo].pagina : undefined}
+      alTerminar={alTerminarDosier}
+      cerrar={cerrarLector}
       alAvanzar={
         muestra
           ? (pagina) =>
@@ -354,6 +395,7 @@ export default function Aula({ correo, muestra = false }: { correo?: string | nu
           leer={(id, pagina) => abrirMaterial(id, pagina)}
           verClase={(id) => abrir(id)}
           recargar={cargar}
+          pedirAhora={pedirCita}
           muestra={muestra ? { pedirCita: (cuando) => setCitaPrueba({ cuando }) } : undefined}
         />
       )}
