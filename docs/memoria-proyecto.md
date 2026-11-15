@@ -10,6 +10,8 @@ cada cambio importante** (una línea por decisión, con la fecha).
   dueña del proyecto. El push directo a main está bloqueado.
 - Al hablar con la usuaria: explicarlo todo muy fácil, como a un niño de 5
   años (frases cortas, sin palabras técnicas). (2026-11-05)
+- Respuestas cortas y paso a paso: no hacerla leer de más; Claude guía y
+  propone el siguiente paso. (2026-11-15)
 - Tokens y claves solo en Vercel (variables de entorno), nunca en el chat ni
   en el repositorio.
 - Grafo del código: codebase-memory-mcp. Se instala e indexa solo al arrancar
@@ -411,3 +413,20 @@ cada cambio importante** (una línea por decisión, con la fecha).
   la primera del curso) con `video: propio:clases/…`, que se sirve con
   enlace firmado. Nunca se usa el enlace público con token (Sorela lo pasó
   por el chat: hay que revocarlo en la consola de Firebase).
+
+## Project manager (desde 2026-11-15)
+
+- Una sesión hace de project manager y lleva la seguridad; el resto va en
+  chats por sección: web pública, CRM y correos, aula y comunidad, agenda,
+  pagos y facturas, dashboard y métricas, agente IA. No más de 2-3 a la vez.
+- Análisis del 15 nov: la web pública sigue montada para la masterclass
+  (/comunidad con cuenta atrás del 6 nov, beca de /reserva caducada el 9).
+  El Agente IA se vende en la Membresía y aún no existe.
+- Seguridad pendiente, por orden: sacar los medios de Meta de la rama
+  `medios-anuncios` (raw.githubusercontent deja de servir si el repo pasa a
+  privado) → repo privado (lo hace la dueña en GitHub) → revocar el enlace
+  con token del vídeo de abdomen → quitar las canciones con derechos
+  (`public/clase/musica/inicio.mp3`, `despedida.mp3`) → webhook de Stripe
+  (sin `STRIPE_SECRET_KEY`, /reserva/gracias marca «Pagado» sin comprobar)
+  → freno de spam que no viva en memoria → renovar `META_ADS_TOKEN` antes
+  de mediados de diciembre.
