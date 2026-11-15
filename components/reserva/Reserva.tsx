@@ -59,7 +59,7 @@ export default function Reserva({ whatsapp, transferencias }: { whatsapp: string
         <div className={css.heroDentro}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/clase/logo-oro.webp" alt="Sorela Caro · Técnica Divine" className={css.logo} />
-          <p className={css.ceja}>Solo para quien estuvo en la masterclass</p>
+          {!cerrado && <p className={css.ceja}>Solo para quien estuvo en la masterclass</p>}
           <h1 className={css.titulo}>
             Reserva tu plaza <strong>ahora</strong>
           </h1>
@@ -67,7 +67,13 @@ export default function Reserva({ whatsapp, transferencias }: { whatsapp: string
             {resta === null ? (
               <span>Precio especial durante 24 horas</span>
             ) : cerrado ? (
-              <span>El precio especial ha terminado. Escríbenos y te ayudamos.</span>
+              <span>
+                El precio especial ha terminado.{' '}
+                <a href={wa('Hola, vengo de la página de reservas y quiero información de las formaciones.')} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                  Escríbenos y te ayudamos
+                </a>
+                .
+              </span>
             ) : (
               <>
                 <span>El precio especial termina en</span>
@@ -83,6 +89,8 @@ export default function Reserva({ whatsapp, transferencias }: { whatsapp: string
         </div>
       </header>
 
+      {/* Con la oferta cerrada, la beca no se enseña ni se puede pagar (2026-11-15). */}
+      {!cerrado && (
       <section className={css.beca}>
         <p className={css.pasoOro}>Solo para Venezuela</p>
         <h2 className={css.becaTitulo}>
@@ -98,6 +106,7 @@ export default function Reserva({ whatsapp, transferencias }: { whatsapp: string
         <p className={css.becaPlazas}>Solo {BECA.plazas} plazas con beca</p>
         <Boton o={beca} wa={wa} elegir={elegir} />
       </section>
+      )}
 
       {/* Mientras dura la beca, las presenciales normales (ciudad + Completa/Intensiva/Específica) no salen. */}
       {!BECA.activa && (

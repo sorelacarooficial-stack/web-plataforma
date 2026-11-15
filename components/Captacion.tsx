@@ -282,7 +282,7 @@ export default function Captacion({
           Tengo 18 años o más y acepto que Sorela Caro use mis datos para{' '}
           {/^formacion-conv-/.test(origen)
             ? 'reservar mi plaza en esta formación y escribirme sobre ella.'
-            : 'guardar mi sitio en la lista de espera de la masterclass y escribirme hasta ese día.'}{' '}
+            : 'mandarme la información que pido sobre la Técnica Divine y sus formaciones.'}{' '}
           <Link href="/legal/privacidad" target="_blank">
             Cómo se tratan
           </Link>

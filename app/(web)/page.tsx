@@ -13,11 +13,9 @@ import l from '@/components/landing/landing.module.css';
 import { VIDEO } from '@/lib/presentacion';
 import { CINTA_ALUMNAS } from '@/lib/precurso';
 import Acordeon from '@/components/Acordeon';
-import Contador from '@/components/Contador';
 import Testimonios from '@/components/Testimonios';
 import LlamadaDivine from '@/components/LlamadaDivine';
 import BotonAsistente from '@/components/BotonAsistente';
-import BotonCaptacion from '@/components/BotonCaptacion';
 import DatosEstructurados from '@/components/DatosEstructurados';
 import BlogCarrusel from '@/components/BlogCarrusel';
 import { articulosPublicados } from '@/lib/blog';
@@ -343,37 +341,9 @@ export default async function Home() {
            secciones quedan pegadas como si esto no existiera. */}
       <Testimonios />
 
-      {/* ---------- Comunidad Divine ----------
-           Una sola idea y un solo botón. Antes esta sección contaba lo que hay
-           dentro, ponía precio y desplegaba cinco piezas: mucha lectura para
-           algo que todavía no se puede comprar. Lo único que se puede hacer
-           hoy es apuntarse, así que es lo único que se pide. */}
-      <section id="comunidad" className={css.lanzamiento}>
-        <div className="wrap">
-          <div className={css.lanzamientoCaja}>
-            <p className={css.lanzamientoSello}>Próximamente</p>
-
-            <h2 className={`${css.lanzamientoTitulo} degradado-claro`}>
-              Membresía
-              <em className={css.lanzamientoTituloEnfasis}>Divine</em>
-            </h2>
-
-            <p className={css.lanzamientoPie}>Lista de espera abierta</p>
-
-            <Contador sobre="oscuro" />
-
-            <BotonCaptacion
-              className={`btn btn-md ${css.lanzamientoBoton}`}
-              titulo="Entra en la lista de espera"
-              entradilla="Déjame tus datos y, al terminar, entra en el grupo de WhatsApp de la Técnica Divine. No pido tarjeta."
-              etiquetaVentana="Entrar en la lista de espera de la Membresía Divine"
-              origen="comunidad"
-            >
-              Entrar en la lista de espera
-            </BotonCaptacion>
-          </div>
-        </div>
-      </section>
+      {/* Aquí iba «Membresía Divine · Próximamente · Lista de espera». Se quita
+          (2026-11-15): la membresía es solo para terapeutas homologadas y no se
+          vende en la web pública, y su cuenta atrás ya había pasado. */}
 
       {/* ---------- Preguntas ---------- */}
       <section className={`seccion ${css.preguntas}`}>

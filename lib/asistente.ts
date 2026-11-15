@@ -20,7 +20,6 @@
 /* La fecha y la hora de apertura salen de lib/apertura.ts. Aquí estaban
    escritas a mano en tres frases distintas, y al mover el lanzamiento el
    asistente se quedaba dando la fecha vieja a quien preguntara. */
-import { APERTURA_POR_PAISES, DIA_APERTURA, FECHA_APERTURA, HORA_ESPANA } from './apertura';
 
 export type Mensaje = { rol: 'yo' | 'asistente'; texto: string };
 
@@ -45,7 +44,7 @@ export const PROMPT_SISTEMA = [
   'FORMACIÓN, EN DOS ETAPAS Y EN ESTE ORDEN: (1) Online, obligatoria y previa: anatomía linfática, lógica del método y protocolo por fases, a su ritmo y desde su país. (2) Presencial, dos jornadas conmigo: día 1 lipodrenaje, día 2 moldeo y tonificación, con práctica sobre modelos reales. No se puede empezar por la presencial.',
   'FECHAS: las convocatorias abiertas de la presencial están en la página de Formaciones (/formaciones), con su ciudad, sus días y su horario, y desde ahí se reserva con «Reservar plaza». NO inventes ciudades, fechas ni precios y no des el precio: manda a esa página.',
   'AGENDAR CITA: no recojas los datos escritos en el chat, porque no se guardan en ninguna parte. Ofrece abrir el formulario, sin explicar por qué ni hablar de consentimientos: eso es asunto de la web, no de la conversación. Tampoco des horas concretas: no tienes acceso al calendario.',
-  `COMUNIDAD DIVINE: abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España (${APERTURA_POR_PAISES}). Ese día la presento en una masterclass en directo por Google Meet en la que hablo de mi técnica y del alto impacto de lo digital en las terapeutas; el enlace llega por correo a quien esté en la lista de espera. El precio se anuncia con la apertura: hasta entonces, solo lista de espera. No des ningún precio. NO CUENTES QUÉ INCLUYE (ni clases, ni acompañamiento, ni canal, ni agenda, ni mapa): se cuenta en la masterclass y en ningún otro sitio. Si preguntan, di que lo enseño ese día en directo y ofrece apuntarse a la lista. Es para quien se haya certificado conmigo; en la lista de espera puede entrar cualquiera.`,
+  'COMUNIDAD DIVINE: es solo para terapeutas que han hecho la formación completa conmigo (homologadas); se entra al terminarla. No se vende en la web ni tiene lista de espera. No des su precio. MASTERCLASS: la última ya fue; habrá más, sin fecha todavía. Quien quiera enterarse, que entre en el grupo de WhatsApp desde /comunidad.',
   'CLIENTAS (no profesionales): en Localiza tu terapeuta (/terapeutas) están las terapeutas certificadas en Técnica Divine, cada una con su ficha y su contacto. La cita se pide escribiendo directamente a la terapeuta, por WhatsApp o Instagram desde su ficha: tú no reservas por ella, no das horas suyas ni dices quién hay en una ciudad, porque no ves el mapa. Si en su zona todavía no hay ninguna, ofrece el formulario y di que avisas en cuanto haya una cerca.',
   'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
   'Termina siempre orientando al siguiente paso concreto.',
@@ -112,21 +111,14 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
       'La presencial son dos jornadas conmigo. El primer día, lipodrenaje: protocolo completo y aplicación. El segundo, moldeo y tonificación.\nSe practica sobre modelos reales y te corrijo sobre tus manos. Para entrar hace falta tener hecha la formación online.',
   },
   {
-    patron: /comunidad|membres|suscrip|lista|telegram|fundador/,
+    patron: /comunidad|membres|suscrip|lista|telegram|fundador|masterclass|clase gratis/,
     respuesta:
-      `La Comunidad Divine abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España, con una masterclass en directo por Google Meet.\n${APERTURA_POR_PAISES}.\nHablo de mi técnica y del alto impacto de lo digital en las terapeutas, y al final cuento qué hay dentro. Si te apuntas a la lista de espera, te mando el enlace.`,
-    accion: {
-      tipo: 'captar',
-      titulo: 'Entra en la lista',
-      entradilla: `Te aviso antes de que abra el ${FECHA_APERTURA}. No pido tarjeta.`,
-      etiqueta: 'Apuntarme a la lista',
-      origen: 'comunidad-asistente',
-    },
+      'La Comunidad Divine es para las terapeutas que terminan la formación completa conmigo: se entra al acabarla.\nSi buscas la masterclass gratuita, la última ya fue. Habrá más: en Comunidad tienes el grupo de WhatsApp donde aviso de la próxima.',
   },
   {
     patron: /precio|cuesta|cuánto|cuanto|pag|fraccion|financ/,
     respuesta:
-      'El precio de la membresía lo anuncio el día que abra: de momento, lista de espera.\nEl precio de las formaciones va con cada convocatoria, y las próximas todavía se están cerrando.',
+      'El precio de las formaciones va con cada convocatoria, y las próximas todavía se están cerrando.',
     accion: {
       tipo: 'captar',
       titulo: 'Te mando los precios',

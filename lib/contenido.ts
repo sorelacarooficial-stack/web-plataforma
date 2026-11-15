@@ -242,11 +242,11 @@ export const FAQS: Pregunta[] = [
   },
   {
     q: '¿Qué diferencia hay entre la formación y la comunidad?',
-    a: `La formación es el recorrido donde te certificas: primero online y después presencial. La comunidad es lo que viene después: la presento el ${FECHA_APERTURA} en una masterclass en directo. De momento, lista de espera.`,
+    a: `La formación es el recorrido donde te certificas: primero online y después presencial. La Comunidad Divine es lo que viene después: es solo para terapeutas que han hecho la formación completa conmigo.`,
   },
   {
     q: '¿Puedo entrar en la comunidad sin haberme formado?',
-    a: 'No. Será solo para terapeutas certificadas conmigo. Es lo que hace que el mapa signifique algo para las clientas.',
+    a: 'No. Es solo para terapeutas certificadas conmigo. Es lo que hace que el mapa signifique algo para las clientas.',
   },
   {
     q: 'Soy clienta, no profesional. ¿Puedo reservar una sesión?',
