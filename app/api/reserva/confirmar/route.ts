@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { CONVOCATORIA_BECA } from '@/lib/puesta-a-punto';
-import { FieldValue, Timestamp } from 'firebase-admin/firestore';
-import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
+import { Timestamp } from 'firebase-admin/firestore';
+import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
 import { COLECCION_RESERVAS, HORAS_PARA_CONFIRMAR } from '@/lib/reserva';
-import { inscribirReservaPagada } from '@/lib/reserva-convocatoria';
+import { aplicarPago, SESION_STRIPE as SESION } from '@/lib/reserva-pago';
 
 /**
  * Paso 3: al volver de Stripe, /reserva/gracias confirma la reserva.
@@ -19,14 +18,15 @@ import { inscribirReservaPagada } from '@/lib/reserva-convocatoria';
  * Stripe lleva `&s={CHECKOUT_SESSION_ID}`), se pregunta a Stripe si de verdad
  * está pagado y es de esta reserva: `verificado: true`. Sin eso, la
  * confirmación es «llegó a la página de gracias»: casi siempre es que pagó,
- * pero antes de dar el acceso conviene mirarlo en Stripe.
+ * pero antes de dar el acceso conviene mirarlo en Stripe. En el CRM sale
+ * como «Pago por comprobar» hasta que Stripe lo confirma (aquí o por el
+ * webhook, /api/stripe/webhook).
  */
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const ID = /^[A-Za-z0-9]{20}$/;
-const SESION = /^cs_[A-Za-z0-9_]{10,200}$/;
 
 /** ¿Stripe dice que esa sesión está pagada y es de esta reserva? null = no se puede saber. */
 async function verificarConStripe(sesion: string, reserva: string): Promise<boolean | null> {
@@ -59,7 +59,7 @@ export async function POST(peticion: Request) {
   const d = await ref.get();
   if (!d.exists) return NextResponse.json({ ok: false, motivo: 'no-existe' }, { status: 404 });
   const v = d.data()!;
-  if (v.pagoConfirmado === true) return NextResponse.json({ ok: true, confirmado: true, verificado: v.pagoVerificado === true });
+  if (v.pagoVerificado === true || (v.pagoConfirmado === true && !SESION.test(sesion))) return NextResponse.json({ ok: true, confirmado: true, verificado: v.pagoVerificado === true });
 
   const creada = v.creada instanceof Timestamp ? v.creada.toMillis() : 0;
   if (!creada || Date.now() - creada > HORAS_PARA_CONFIRMAR * 3600e3) return NextResponse.json({ ok: false, motivo: 'caducada' }, { status: 410 });
@@ -68,46 +68,6 @@ export async function POST(peticion: Request) {
   // Stripe dice claramente que NO: no se confirma.
   if (verificado === false) return NextResponse.json({ ok: false, motivo: 'sin-pago' }, { status: 402 });
 
-  const confirmacion = {
-    pagoConfirmado: true,
-    pagoVerificado: verificado === true,
-    confirmadoPor: verificado ? 'stripe' : 'pagina-gracias',
-    pagoConfirmadoEn: FieldValue.serverTimestamp(),
-    ...(SESION.test(sesion) ? { pago: sesion } : {}),
-  };
-  await ref.update(confirmacion);
-  if (typeof v.contacto === 'string' && v.contacto) {
-    await db
-      .collection(COLECCIONES.contactos)
-      .doc(v.contacto)
-      .set(
-        {
-          reserva: { id, pagoConfirmado: true, pagoVerificado: verificado === true, ...(SESION.test(sesion) ? { pago: sesion } : {}), confirmadaEn: FieldValue.serverTimestamp() },
-          actualizado: FieldValue.serverTimestamp(),
-        },
-        { merge: true }
-      );
-  }
-
-  // Presencial: entra en las fechas de su ciudad, para darle el acceso desde «Dar acceso».
-  // Diciembre se canceló (11 nov): la única presencial es la beca de enero.
-  const conv = v.formacion === 'beca' ? CONVOCATORIA_BECA.id : null;
-  if (conv) {
-    try {
-      await inscribirReservaPagada(conv, {
-        nombre: String(v.nombre ?? ''),
-        correo: String(v.correo ?? ''),
-        telefono: String(v.whatsapp ?? ''),
-        contacto: String(v.contacto ?? ''),
-        estado: verificado ? 'senal' : 'pendiente',
-        pagado: verificado ? Number(v.reservaUSD) || 0 : 0,
-        nota: verificado
-          ? `Reserva pagada por Stripe (comprobado): ${v.titulo}${SESION.test(sesion) ? ` · ${sesion}` : ''}.`
-          : `Volvió de Stripe a la página de gracias: ${v.titulo}. Mira el pago en Stripe antes de dar el acceso.`,
-      });
-    } catch (e) {
-      console.error('[reserva/confirmar] convocatoria', conv, e);
-    }
-  }
+  await aplicarPago(id, { verificado: verificado === true, sesion, por: verificado ? 'stripe' : 'pagina-gracias' });
   return NextResponse.json({ ok: true, confirmado: true, verificado: verificado === true });
 }

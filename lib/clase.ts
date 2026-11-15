@@ -95,12 +95,15 @@ export const VIDEOS = {
  * en bucle y se apaga sola, en fundido, cuando la cuenta llega a cero.
  * Vacío = no sale el botón.
  */
-/** Canción del «Gracias»: «Proceso con Dios» (Cristian Robles), cortada para que suba desde abajo y llegue entera a la voz. */
-export const DESPEDIDA = '/clase/musica/despedida.mp3';
+/**
+ * Canción del «Gracias». Vacío = sin música. (Antes «Proceso con Dios»: fuera
+ * el 2026-11-15 por derechos de autor; solo música propia o con licencia.)
+ */
+export const DESPEDIDA = '';
 
 export const ESPERA = {
-  /** Primero «Poder en la oración» (Natali Apacible); luego el lounge, en bucle. */
-  musica: ['/clase/musica/inicio.mp3', '/clase/musica/espera.mp3'] as string[],
+  /** El lounge propio (generado en ElevenLabs), en bucle. Solo música propia o con licencia. */
+  musica: ['/clase/musica/espera.mp3'] as string[],
   /** Frases que van rotando bajo la cuenta atrás. */
   frases: [
     'Escribe en el chat desde dónde nos ves',

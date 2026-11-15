@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { demasiadosEstaHora } from '@/lib/ritmo';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
 import { normalizarTelefono } from '@/lib/captacion';
@@ -39,7 +40,7 @@ function vaDemasiadoRapido(ip: string) {
 export async function POST(peticion: Request) {
   if (!hayFirebase()) return NextResponse.json({ ok: false, motivo: 'sin-configurar' }, { status: 503 });
   const ip = peticion.headers.get('x-forwarded-for')?.split(',')[0].trim() || peticion.headers.get('x-real-ip') || 'desconocida';
-  if (vaDemasiadoRapido(ip)) return NextResponse.json({ ok: false, motivo: 'ritmo' }, { status: 429 });
+  if (vaDemasiadoRapido(ip) || (await demasiadosEstaHora('reserva', ip))) return NextResponse.json({ ok: false, motivo: 'ritmo' }, { status: 429 });
 
   let c: Record<string, unknown>;
   try {

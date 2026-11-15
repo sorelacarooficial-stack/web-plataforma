@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { LETRAS } from '@/lib/letras';
 import { BECA, DESPEDIDA, ESPERA, FORMACIONES, MEMBRESIA, ONLINE, PLAZAS, SEDES, VIDEOS } from '@/lib/clase';
 import { AntesDespues, Cuenta, CuentaAtras, CuentaPreguntas, Cuerpo, Icono, Mapa, Movil, Musica, Polvo, Quedan, Rotador, Titulo, useGoteo, VideoModal } from './piezas';
 import { useClase } from './estado';
@@ -97,7 +96,7 @@ function Portada({ activa, estatica, muda = false, saliendo = false, v, on }: Pr
           <Rotador frases={ESPERA.frases} activa={activa && !cantando} />
         </div>
       )}
-      {!estatica && <Musica pistas={ESPERA.musica} activa={activa} saliendo={saliendo} apagar={empieza} muda={muda} letra={LETRAS.inicio} cancion="Poder en la oración · Natali Apacible" alCantar={setCantando} />}
+      {!estatica && <Musica pistas={ESPERA.musica} activa={activa} saliendo={saliendo} apagar={empieza} muda={muda} alCantar={setCantando} />}
     </div>
   );
 }
@@ -1411,7 +1410,7 @@ function Gracias({ activa, estatica, muda = false, saliendo = false, cerca = fal
           @sorelacaro_
         </Chip>
       </div>
-      {!estatica && <Musica pistas={[DESPEDIDA]} activa={activa} saliendo={saliendo} muda={muda} bucle={false} volumen={0.9} precarga={cerca || activa} letra={LETRAS.despedida} cancion="Proceso con Dios · Cristian Robles" />}
+      {!estatica && DESPEDIDA && <Musica pistas={[DESPEDIDA]} activa={activa} saliendo={saliendo} muda={muda} bucle={false} volumen={0.9} precarga={cerca || activa} />}
     </div>
   );
 }
