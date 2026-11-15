@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { demasiadosEstaHora } from '@/lib/ritmo';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revisar, type Contacto, type Fallo } from '@/lib/captacion';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
@@ -102,7 +103,7 @@ export async function POST(peticion: Request) {
     peticion.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
     peticion.headers.get('x-real-ip') ||
     'desconocida';
-  if (vaDemasiadoRapido(ip)) return falla('ritmo', 429);
+  if (vaDemasiadoRapido(ip) || (await demasiadosEstaHora('captar', ip))) return falla('ritmo', 429);
 
   /* ---------- 1. Guardar en Firestore ---------- */
   let enFirestore = false;

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { demasiadosEstaHora } from '@/lib/ritmo';
 import { getAuth } from 'firebase-admin/auth';
 import { FieldValue } from 'firebase-admin/firestore';
 import { aplicacion, baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
@@ -179,7 +180,7 @@ export async function POST(peticion: Request) {
     peticion.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
     peticion.headers.get('x-real-ip') ||
     'sin-ip';
-  if (vaDemasiadoRapido(ip)) {
+  if (vaDemasiadoRapido(ip) || (await demasiadosEstaHora('registro', ip))) {
     return NextResponse.json({ ok: false, motivo: 'ritmo' }, { status: 429 });
   }
 

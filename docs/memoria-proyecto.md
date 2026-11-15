@@ -430,3 +430,20 @@ cada cambio importante** (una línea por decisión, con la fecha).
   (sin `STRIPE_SECRET_KEY`, /reserva/gracias marca «Pagado» sin comprobar)
   → freno de spam que no viva en memoria → renovar `META_ADS_TOKEN` antes
   de mediados de diciembre.
+- 2026-11-15, seguridad (1): fuera las canciones «Poder en la oración» y
+  «Proceso con Dios» y su letra (`lib/letras.ts` solo deja el tipo): en la
+  portada de /clase suena solo el lounge propio y «Gracias» va sin música
+  (`DESPEDIDA` vacío). Solo música propia o con licencia.
+- 2026-11-15, seguridad (2): **webhook de Stripe** `/api/stripe/webhook`
+  (firma con `STRIPE_WEBHOOK_SECRET`; eventos checkout.session.completed y
+  async_payment_succeeded; usa `client_reference_id`). La lógica de marcar
+  pagado está en `lib/reserva-pago.ts` (la comparten «gracias» y el webhook).
+  En la lista de Contactos: «Pagado ✓» solo si Stripe lo comprobó; si solo
+  volvió a «gracias», «Pago por comprobar».
+- 2026-11-15, seguridad (3): freno de spam compartido en Firestore
+  (`lib/ritmo.ts`, colección `ritmo`, IP con sal): 20 envíos por hora y IP en
+  captar, reserva y registro; 12 en acuerdos. Se suma al freno en memoria.
+- El dueño del repo es una cuenta de usuario (no organización): Vercel
+  Hobby sigue desplegando aunque pase a privado. Los anuncios de Meta ya
+  tienen sus medios copiados en Meta; las campañas de la masterclass ya
+  terminaron.

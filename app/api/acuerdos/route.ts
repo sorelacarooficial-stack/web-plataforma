@@ -1,4 +1,5 @@
 import { NextResponse, after } from 'next/server';
+import { demasiadosEstaHora } from '@/lib/ritmo';
 import { FieldValue } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase } from '@/lib/firebase-servidor';
 import { sesionActual } from '@/lib/sesion-servidor';
@@ -128,7 +129,7 @@ export async function POST(peticion: Request) {
 
   /* El freno va DESPUÉS de validar, a propósito: así quien se equivoca al
      escribir su documento y lo reintenta tres veces no se queda fuera por rápido. */
-  if (vaDemasiadoRapido(ip)) {
+  if (vaDemasiadoRapido(ip) || (await demasiadosEstaHora('acuerdos', ip, 12))) {
     return NextResponse.json({ ok: false, motivo: 'demasiado-rapido' }, { status: 429 });
   }
 
