@@ -95,10 +95,10 @@ export default async function PaginaArticulo({ params }: Props) {
 
       <section className={css.llamada}>
         <p className="antetitulo">Técnica Divine</p>
-        <h2 className={css.llamadaTitulo}>¿Quieres aprenderlo con tus manos?</h2>
-        <p>Te enseño el método en dos etapas: primero online y después presencial, corrigiéndote las manos.</p>
-        <Link href="/formaciones" className="btn btn-md">
-          Ver la formación
+        <h2 className={css.llamadaTitulo}>¿Quieres saber cómo se trabaja?</h2>
+        <p>Un método manual con un orden: primero estimular, después drenar, después moldear.</p>
+        <Link href="/metodo" className="btn btn-md">
+          Conoce la técnica
         </Link>
       </section>
 

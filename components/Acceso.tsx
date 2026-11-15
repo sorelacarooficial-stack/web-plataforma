@@ -227,11 +227,7 @@ function Formulario() {
 
       <p className={css.letraPequena}>
         Este espacio es para alumnas y terapeutas certificadas. Crear la cuenta es gratis y no da
-        acceso por sí solo: lo abro yo cuando confirmo tu plaza.{' '}
-        <Link href="/formaciones" className={css.enlaceFino}>
-          Ver las formaciones
-        </Link>
-        .
+        acceso por sí solo: lo abro yo cuando confirmo tu plaza.
       </p>
     </Marco>
   );

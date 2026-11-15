@@ -145,8 +145,8 @@ export default function Captacion({
           </li>
         </ol>
         <BotonGrupo enlace={grupo} />
-        <Link href="/formaciones" className={css.reintentar}>
-          Ver las formaciones
+        <Link href="/metodo" className={css.reintentar}>
+          Conoce la técnica
         </Link>
       </div>
     );

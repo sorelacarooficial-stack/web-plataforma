@@ -424,9 +424,9 @@ export const PIEZAS_COMUNIDAD: PiezaComunidad[] = [
 export const MARQUESINA = [
   'Un método nacido en cabina',
   'Drenaje linfático manual llevado más lejos',
-  'Primero online, después presencial',
-  'Grupos reducidos y práctica sobre cuerpo real',
-  'Certificado y sitio en el mapa público',
+  'Primero estimular, después drenar, después moldear',
+  'Casi treinta años de cabina',
+  'Manos, aceite y criterio',
 ];
 
 /** Días y horas de ejemplo del calendario de reserva de una terapeuta. */

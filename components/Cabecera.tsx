@@ -6,8 +6,6 @@ import css from './Cabecera.module.css';
 
 const NAV = [
   { href: '/metodo', texto: 'Método' },
-  { href: '/formaciones', texto: 'Formaciones' },
-  { href: '/comunidad', texto: 'Comunidad' },
   { href: '/terapeutas', texto: 'Terapeutas' },
   { href: '/sobre', texto: 'Sobre' },
   { href: '/blog', texto: 'Blog' },
