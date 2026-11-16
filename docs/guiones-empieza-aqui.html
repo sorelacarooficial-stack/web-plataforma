@@ -1,0 +1,170 @@
+<title>Guiones Empieza aquí</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap">
+<style>
+/* Layout: una columna de lectura tipo teleprompter; cada video es una ficha con su tarea al pie. */
+:root {
+  --crema: #f4efe7;
+  --papel: #fbf8f3;
+  --tinta: #141210;
+  --suave: #5f574c;
+  --oro: #8a6a32;
+  --linea: #e2d9ca;
+  --marca: #f3e3c4;
+  --banda: #17140f;
+  --banda-texto: #f4efe7;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --crema: #12100d; --papel: #1b1814; --tinta: #f1ebe1; --suave: #b3a998; --oro: #d6ae6c;
+    --linea: #2f2a22; --marca: #3a2f1c; --banda: #0b0a08; --banda-texto: #f4efe7; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --crema: #12100d; --papel: #1b1814; --tinta: #f1ebe1; --suave: #b3a998; --oro: #d6ae6c;
+  --linea: #2f2a22; --marca: #3a2f1c; --banda: #0b0a08; --banda-texto: #f4efe7; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--crema); color: var(--tinta); font-family: var(--sans); font-size: 16px; line-height: 1.6; }
+.envoltura { max-width: 760px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 48px 80px; }
+.eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--oro); font-weight: 500; margin: 0; }
+h1 { font-weight: 300; font-size: clamp(34px, 7vw, 52px); letter-spacing: -0.04em; line-height: 1.05; margin: 12px 0 16px; text-wrap: balance; }
+h1 strong, h2 strong { font-weight: 600; }
+.intro { color: var(--suave); max-width: 60ch; margin: 0; }
+.leyenda { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 20px; font-size: 14px; color: var(--suave); }
+.dato { background: var(--marca); color: var(--tinta); border-radius: 4px; padding: 0 4px; font-weight: 500; }
+.filtros { display: flex; flex-wrap: wrap; gap: 8px; margin: 36px 0 28px; position: sticky; top: env(safe-area-inset-top, 0px); background: var(--crema); padding-block: 12px; z-index: 5; }
+.filtros button { font: inherit; font-size: 14px; border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.filtros button[aria-pressed="true"] { background: var(--tinta); color: var(--crema); border-color: var(--tinta); }
+.filtros button:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+.lista { display: grid; gap: 28px; }
+article { background: var(--papel); border: 1px solid var(--linea); border-radius: 14px; overflow: hidden; }
+.cabeza { padding: 22px 24px 0; display: grid; gap: 6px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; color: var(--suave); }
+.chip { border: 1px solid var(--linea); border-radius: 999px; padding: 1px 10px; }
+.chip.academia { border-color: var(--oro); color: var(--oro); }
+.chip.homo { background: var(--tinta); color: var(--crema); border-color: var(--tinta); }
+h2 { font-weight: 300; font-size: 28px; letter-spacing: -0.035em; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 .num { font-variant-numeric: tabular-nums; color: var(--oro); font-weight: 400; margin-right: 8px; }
+.pantalla { margin: 14px 24px 0; font-size: 14px; color: var(--suave); border-left: 2px solid var(--oro); padding-left: 12px; }
+.pantalla b { color: var(--tinta); font-weight: 500; }
+.guion { padding: 18px 24px 6px; display: grid; gap: 12px; }
+.guion p { margin: 0; font-size: 19px; line-height: 1.55; font-weight: 400; max-width: 62ch; }
+.guion .plano { font-size: 14px; color: var(--suave); font-style: italic; }
+.extra { margin: 8px 24px 0; font-size: 14px; color: var(--suave); }
+.extra pre { font-family: var(--sans); background: var(--crema); border: 1px solid var(--linea); border-radius: 8px; padding: 12px 14px; white-space: pre-wrap; margin: 6px 0 0; color: var(--tinta); }
+.tarea { margin-top: 18px; background: var(--banda); color: var(--banda-texto); padding: 16px 24px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.tarea span { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #d9b678; }
+.tarea strong { font-weight: 500; font-size: 17px; }
+.fuera { margin-top: 28px; font-size: 14px; color: var(--suave); border: 1px dashed var(--linea); border-radius: 12px; padding: 14px 18px; }
+section.bloque { margin-top: 56px; }
+section.bloque h2 { margin-bottom: 14px; }
+ol, ul { padding-left: 20px; margin: 0; display: grid; gap: 8px; }
+li { max-width: 62ch; }
+@media (max-width: 480px) { .guion p { font-size: 17px; } h2 { font-size: 24px; } .cabeza, .guion { padding-left: 18px; padding-right: 18px; } .pantalla, .extra { margin-left: 18px; margin-right: 18px; } .tarea { padding-left: 18px; padding-right: 18px; } }
+</style>
+
+<div class="envoltura">
+  <p class="eyebrow">Técnica Divine · Plataforma</p>
+  <h1>Los videos de <strong>Empieza aquí</strong></h1>
+  <p class="intro">Once guiones cortos para Sorela. Cada video enseña una sola cosa y termina con una sola tarea. Los de «las dos» los ven todas; los demás, solo las alumnas de la academia o solo las homologadas.</p>
+  <div class="leyenda"><span><span class="dato">[así]</span> dato que confirma Sorela</span><span><i>cursiva</i>: lo que se ve en pantalla</span></div>
+
+  <div class="filtros" role="group" aria-label="Para quién">
+    <button type="button" id="f-todos" data-f="todos" aria-pressed="true">Todos</button>
+    <button type="button" id="f-dos" data-f="dos" aria-pressed="false">Las dos</button>
+    <button type="button" id="f-academia" data-f="academia" aria-pressed="false">Academia</button>
+    <button type="button" id="f-homo" data-f="homo" aria-pressed="false">Homologadas</button>
+  </div>
+
+  <div class="lista" id="lista"></div>
+
+  <p class="fuera"><b>Fuera por ahora:</b> el video del Agente IA Divine. Se graba cuando el agente exista, para no enseñar nada que todavía no hace.</p>
+
+  <section class="bloque">
+    <h2>Cómo <strong>grabarlos</strong></h2>
+    <ol>
+      <li>Una sesión de unos 45 minutos con teleprompter: los videos 00, 01 y 07 enteros a cámara. Del resto, tu voz leyendo y tu cara a la vez.</li>
+      <li>Las grabaciones de pantalla se hacen después, con la plataforma terminada, siguiendo tu audio.</li>
+      <li>Horizontal 16:9. Tú siempre visible; la pantalla a un lado, nunca encima de ti. Subtítulos palabra a palabra y cierre oscuro con la tarea y el logo.</li>
+      <li>Del video 00 sale también un recorte vertical para Instagram.</li>
+    </ol>
+  </section>
+
+  <section class="bloque">
+    <h2>Lo que tienes que <strong>confirmar</strong></h2>
+    <ul>
+      <li>Video 01: ¿«30 años» es la cifra que quieres decir?</li>
+      <li>Video 03B: ¿hay una clase por la que deban empezar las homologadas?</li>
+      <li>Video 04B: cada cuánto es la clase en vivo, qué día, a qué hora, en la hora de qué país, y si queda grabada.</li>
+      <li>Video 05A: ¿todas las alumnas de la academia entran al grupo de WhatsApp?</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+const V = [
+  { n: '00', t: 'Bienvenida', p: 'dos', d: '45 s', pant: '«Bienvenida a Divine» sobre fondo oscuro.',
+    g: ['Hola, soy Sorela Caro. Qué alegría que estés aquí.', 'Este es tu espacio. Aquí vas a entrenar tus manos y tu mirada, paso a paso.', '~Planos rápidos: Inicio, Clases, Agenda, Perfil.', 'Tienes tus clases, tu agenda, tu perfil y personas que caminan contigo.', 'Para empezar, abre el primer video. Son cortitos, te lo prometo.'],
+    tarea: 'Empieza por el video 01' },
+  { n: '01', t: 'Te doy la bienvenida', p: 'dos', d: '60 s', pant: '«01 · Bienvenida» + «No se trata solo de poner las manos».',
+    g: ['Hola, soy Sorela Caro, creadora de la Técnica Divine.', 'Llevo [30] años trabajando con las manos. Y siempre digo lo mismo: no se trata solo de poner las manos. Se trata de saber qué observar, qué interpretar y cómo decidir antes de tocar.', 'Eso es lo que vamos a entrenar aquí, juntas.', 'En los próximos videos te enseño cómo funciona todo. Son pocos y cortos.', 'Antes de seguir, haz una sola cosa: completa tu perfil. Tu foto y tu ciudad. Te toma un minuto.'],
+    tarea: 'Completa tu perfil' },
+  { n: '02', t: 'Tu plataforma en un minuto', p: 'dos', d: '60 s', pant: '«02 · Tu plataforma» + «Siempre sabrás dónde está todo».',
+    g: ['Te muestro rápido dónde está cada cosa.', '~Inicio', 'En Inicio está tu camino: lo que ya hiciste y lo que te toca ahora.', '~Clases', 'En Clases están tus videos y tus dosieres.', '~Agenda', 'En Agenda ves tus fechas y tus reuniones conmigo.', '~Perfil', 'Y en Perfil, tu foto y tus datos.', 'Si quieres verlo con calma, toca «Ver el recorrido». Te lo enseña paso a paso.', 'Un consejo: guarda la plataforma en tu celular. Así entras con un toque, como una app. Debajo de este video te digo cómo.'],
+    extra: { titulo: 'Debajo del video', texto: 'iPhone: abre la plataforma en Safari › compartir › «Agregar a inicio».\nAndroid: abre la plataforma en Chrome › los tres puntos › «Agregar a la pantalla principal».' },
+    tarea: 'Guárdala en tu celular' },
+  { n: '03A', t: 'Cómo avanzas en tu formación', p: 'academia', d: '75 s', pant: '«03 · Tu formación» + «Un paso cada vez».',
+    g: ['Tu formación va por módulos, en orden. Son cuatro: Precurso, Desbloqueo, Tonificación y moldeo, y Facial y brazos.', 'Cada módulo tiene un dosier para leer y sus videos.', 'Al principio verás candados. Es a propósito: cada paso se abre cuando terminas el anterior. Así no te saltas la base.', 'Primero lees el dosier. Al terminarlo, se abren sus videos. Y al ver los videos, se abre el módulo siguiente.', 'Lo que más frena no es la falta de información. Es querer verlo todo y no aplicar nada.', 'Tu tarea de hoy: abre el Módulo 01 y empieza a leer.'],
+    tarea: 'Abre el Módulo 01' },
+  { n: '03B', t: 'Por dónde empezar', p: 'homo', d: '60 s', pant: '«03 · Por dónde empezar» + «No tienes que verlo todo».',
+    g: ['Ya hiciste la formación completa. Aquí tienes todas tus clases abiertas para repasar.', 'No tienes que verlas todas de golpe.', 'Mi consejo: elige la zona que más trabajas en tu cabina y empieza por ahí. [Si quieres fijar una clase de inicio: «Empieza por…»]', 'Cada vez que repasas, tus manos se afinan.', 'Tu tarea: abre hoy tu primera clase y mírala hasta el final.'],
+    tarea: 'Abre tu primera clase' },
+  { n: '04A', t: 'Tus reuniones conmigo', p: 'academia', d: '60 s', pant: '«04 · Tus reuniones» + «No vas a caminar sola».',
+    g: ['En tu formación nos vamos a ver cara a cara.', 'La primera vez, al terminar el Módulo 01. Ahí te sale un botón para pedir tu reunión conmigo.', 'Eliges el día y la hora. La ves en la hora de Colombia, de Venezuela y de España, para que no haya confusiones.', 'La reunión queda en tu Agenda, con el enlace. Toca «Añadir a mi calendario» y te llega el aviso.', 'Llega con tus preguntas listas. Ese rato es tuyo.', 'Y al final de todo, hacemos juntas las prácticas.', 'Tu tarea: entra en tu Agenda y mira cómo es.'],
+    tarea: 'Abre tu Agenda' },
+  { n: '04B', t: 'La clase en vivo', p: 'homo', d: '60 s', pant: '«04 · La clase en vivo» + «Tus casos reales, no teoría».',
+    g: ['[Una vez al mes] nos vemos en vivo. Es mi momento favorito: resolvemos tus casos reales.', 'Normalmente es [día y hora], hora de [Colombia]. La fecha siempre sale en tu Inicio y en Comunidad.', 'Toca «Añadir a mi calendario». Así te llega el aviso con el enlace.', 'Llega con tu pregunta lista: una clienta difícil, un resultado que no te convence, una duda de tu negocio.', '[Si queda grabada: «Si un día no puedes, queda grabada aquí».]', 'Tu tarea: añade la próxima clase a tu calendario.'],
+    tarea: 'Añádela a tu calendario' },
+  { n: '05A', t: 'Tu grupo y cómo pedir ayuda', p: 'academia', d: '60 s', pant: '«05 · Tu grupo» + «Aquí nadie camina sola».',
+    g: ['Aquí nadie camina sola.', 'Tenemos un grupo de WhatsApp de la Comunidad Divine. Ahí van los avisos y ahí conoces a otras terapeutas.', 'Cuando te trabes con algo, sigue este orden.', 'Uno: vuelve a mirar el dosier o el video. Muchas dudas están ahí.', 'Dos: si sigue, pregúntalo en el grupo.', 'Tres: si es un caso para ver con calma, tráelo a tu reunión conmigo.', 'Un consejo: cuando preguntes, cuenta qué hiciste, qué esperabas y qué pasó. Así te ayudamos de verdad.', 'Tu tarea: entra al grupo y preséntate. Debajo te dejo cómo.'],
+    extra: { titulo: 'Plantilla debajo del video', texto: 'Soy [nombre], de [ciudad].\nTrabajo con [lo que haces].\nEste mes quiero [una meta].' },
+    tarea: 'Preséntate en el grupo' },
+  { n: '05B', t: 'Tu comunidad y cómo pedir ayuda', p: 'homo', d: '60 s', pant: '«05 · Tu comunidad» + «Aquí nadie camina sola».',
+    g: ['Aquí nadie camina sola.', 'En Comunidad tienes el muro: casos, dudas, resultados y recursos de otras terapeutas homologadas. Todo queda guardado, no se pierde entre mensajes.', 'Cuando te trabes con algo, sigue este orden.', 'Uno: busca en el muro. Puede que alguien ya lo preguntó.', 'Dos: si no, publícalo como «Duda».', 'Tres: si es un caso para ver con calma, tráelo a la clase en vivo.', 'Cuenta qué hiciste, qué esperabas y qué pasó. Si puedes, con una foto.', 'Tu tarea: preséntate en el muro. Debajo te dejo cómo.'],
+    extra: { titulo: 'Plantilla debajo del video', texto: 'Soy [nombre], de [ciudad].\nTrabajo con [lo que haces].\nEste mes quiero [una meta].' },
+    tarea: 'Preséntate en el muro' },
+  { n: '06', t: 'Que las clientas te encuentren', p: 'homo', d: '60 s', pant: '«06 · Localiza tu terapeuta» + «Que te encuentren a ti».',
+    g: ['Esta parte me emociona. En la web de Divine hay un buscador: Localiza tu terapeuta.', 'Ahí salen solo las terapeutas homologadas por mí. Las personas de tu zona te buscan para atenderse con alguien de confianza.', 'Para salir, activa tu ficha: tu foto, tu ciudad, lo que haces y cómo te contactan.', 'Dos consejos. Usa una foto tuya, real, con buena luz. Nada de logos.', 'Y cuenta lo que haces pensando en la persona que te lee, no en la técnica.', 'Si tu ficha no está activa, nadie te puede encontrar.', 'Tu tarea: activa tu ficha hoy.'],
+    tarea: 'Activa tu ficha' },
+  { n: '07', t: 'Tus próximos pasos', p: 'dos', d: '45 s', pant: '«07 · Tus próximos pasos» + «Ahora toca hacer».',
+    g: ['Ya sabes cómo funciona todo. Ahora viene lo que de verdad cambia las cosas: hacer.', 'Tus pasos de esta semana están en tu Inicio, y se marcan solos cuando los haces.', 'No tienes que hacerlo perfecto. Tienes que empezar.', 'A las terapeutas que mejor les va no son las que más saben. Son las que aplican una cosa cada semana.', 'Aquí estoy. Nos vemos pronto.'],
+    extra: { titulo: 'Cierre en pantalla, con check', texto: 'Academia: perfil · celular · Módulo 01 · grupo.\nHomologadas: perfil · ficha · muro · clase en vivo.' },
+    tarea: 'Los pasos de esta semana' },
+];
+const PARA = { dos: ['Las dos', ''], academia: ['Academia', 'academia'], homo: ['Homologadas', 'homo'] };
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const marcar = (s) => esc(s).replace(/\[([^\]]+)\]/g, '<span class="dato">[$1]</span>');
+const lista = document.getElementById('lista');
+lista.innerHTML = V.map((v) => `
+  <article data-p="${v.p}" id="v${v.n}">
+    <div class="cabeza">
+      <div class="meta"><span class="chip ${PARA[v.p][1]}">${PARA[v.p][0]}</span><span>${v.d}</span></div>
+      <h2><span class="num">${v.n}</span>${esc(v.t)}</h2>
+    </div>
+    <p class="pantalla"><b>En pantalla, 0-3 s:</b> ${esc(v.pant)}</p>
+    <div class="guion">${v.g.map((l) => l.startsWith('~') ? `<p class="plano">${esc(l.slice(1))}</p>` : `<p>${marcar(l)}</p>`).join('')}</div>
+    ${v.extra ? `<div class="extra">${esc(v.extra.titulo)}<pre>${marcar(v.extra.texto)}</pre></div>` : ''}
+    <div class="tarea"><span>Tu tarea</span><strong>${esc(v.tarea)} →</strong></div>
+  </article>`).join('');
+const botones = document.querySelectorAll('.filtros button');
+botones.forEach((b) => b.addEventListener('click', () => {
+  const f = b.dataset.f;
+  botones.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  lista.querySelectorAll('article').forEach((a) => {
+    const p = a.dataset.p;
+    a.hidden = !(f === 'todos' || p === f || (p === 'dos' && f !== 'dos'));
+  });
+}));
+</script>

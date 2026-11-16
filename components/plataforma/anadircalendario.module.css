@@ -1,0 +1,57 @@
+.caja {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.boton,
+.opciones a,
+.opciones button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.2;
+}
+
+.boton {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.opciones a,
+.opciones button {
+  border: 1px solid var(--oro-line);
+  background: transparent;
+  color: var(--ink);
+}
+
+.caja[data-oscuro] .boton {
+  background: var(--accent-inverse);
+  border-color: var(--accent-inverse);
+  color: #17140f;
+}
+
+.caja[data-oscuro] .opciones a,
+.caja[data-oscuro] .opciones button {
+  color: var(--inverse-ink);
+  border-color: var(--line-inverse);
+}
+
+.boton:focus-visible,
+.opciones a:focus-visible,
+.opciones button:focus-visible {
+  outline: 2px solid var(--oro);
+  outline-offset: 2px;
+}
