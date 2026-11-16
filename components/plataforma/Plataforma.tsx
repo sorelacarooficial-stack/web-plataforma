@@ -54,6 +54,7 @@ import Proximamente from './Proximamente';
 import ComunidadHomologadas from './ComunidadHomologadas';
 import AgenteProximamente from './AgenteProximamente';
 import Aula from './Aula';
+import EmpiezaAqui from './EmpiezaAqui';
 import SubirClases from './SubirClases';
 import Agenda from './Agenda';
 import Cuentas from './Cuentas';
@@ -499,6 +500,9 @@ export default function Plataforma({
             ) : (
               <Proximamente accesos={accesosVistos} nombre={usuario} />
             ))}
+          {/* «Empieza aquí»: de momento solo lo ve Sorela con «Ver como», hasta que
+              estén grabados los videos. Para abrirlo a las alumnas, quitar `puedeVerComo`. */}
+          {!esAdmin && actual === 'aula' && puedeVerComo && <EmpiezaAqui publico="academia" ir={ir} muestra elegir />}
           {!esAdmin && actual === 'aula' && <Aula correo={sesion.correo} muestra={puedeVerComo} />}
           {/* La misma pantalla que la de Sorela, y a propósito: la agenda de
               una terapeuta y la de Sorela son la misma cosa. Cada una ve solo

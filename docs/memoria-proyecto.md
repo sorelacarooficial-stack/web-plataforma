@@ -411,3 +411,14 @@ cada cambio importante** (una línea por decisión, con la fecha).
   la primera del curso) con `video: propio:clases/…`, que se sirve con
   enlace firmado. Nunca se usa el enlace público con token (Sorela lo pasó
   por el chat: hay que revocarlo en la consola de Firebase).
+- 2026-11-16: **«Empieza aquí»** (guiones en `docs/guiones-empieza-aqui.md`). Una
+  versión con partes: 00, 01, 02 y 07 para todas; el resto, academia o
+  homologadas (`LECCIONES_INICIO`, lib/empieza-aqui.ts). Sin Telegram: academia
+  = grupo de WhatsApp, homologadas = muro. Sin video del agente. El video 03
+  explica el camino real (no hay «3 rutas»). Clase en vivo sin fecha fija.
+  Curso arriba en Clases con plantilla de lección (video o hueco «llega
+  pronto», 3 líneas, una tarea, «Marcar como vista», progreso) y «Añadir a mi
+  calendario» (Google, Apple, Outlook; lib/calendario-evento.ts). Lo visto se
+  guarda en `usuarios/{uid}.empiezaAqui` (/api/empieza-aqui). **De momento solo
+  lo ve Sorela en «Ver como»** (no hay nada grabado): para abrirlo, quitar
+  `puedeVerComo` en Plataforma.tsx y poner cada `video` al grabarlo.
