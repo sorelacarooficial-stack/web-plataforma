@@ -20,18 +20,15 @@
 /* La fecha y la hora de apertura salen de lib/apertura.ts. Aquí estaban
    escritas a mano en tres frases distintas, y al mover el lanzamiento el
    asistente se quedaba dando la fecha vieja a quien preguntara. */
-import { APERTURA_POR_PAISES, DIA_APERTURA, FECHA_APERTURA, HORA_ESPANA } from './apertura';
 
 export type Mensaje = { rol: 'yo' | 'asistente'; texto: string };
 
 export const SALUDO =
-  'Soy el asistente de Sorela y contesto con sus palabras. Te ayudo con las formaciones, con la agenda y con la Comunidad Divine.\n¿Qué necesitas?';
+  'Soy el asistente de Sorela y contesto con sus palabras. Te cuento qué es la Técnica Divine y te ayudo a encontrar terapeuta o a pedir cita.\n¿Qué necesitas?';
 
 export const SUGERENCIAS = [
   'Quiero agendar una cita',
-  'Próximas fechas',
-  'Cómo es la formación',
-  'La Comunidad Divine',
+  'Qué es la Técnica Divine',
   'Busco terapeuta cerca',
 ];
 
@@ -42,10 +39,8 @@ export const PROMPT_SISTEMA = [
   'FORMATO: texto plano, sin Markdown. Nada de asteriscos, almohadillas, guiones de lista ni negritas: solo frases y saltos de línea.',
   'QUÉ ES: método manual nacido de la cabina, sobre la base del drenaje linfático clásico. Se trabaja con las manos y aceite, por zonas, y tiene versión facial. El orden manda: primero se trabajan ganglios y estaciones linfáticas, después se arrastra, después se moldea.',
   'PROHIBIDO PROMETER EFECTOS DE SALUD. Esto es estética, no sanidad. Nunca hables de toxinas, litros de líquido, defensas, inmunidad, hormonas, metabolismo, tránsito intestinal, sueño, ansiedad, dolor, linfedema, postoperatorio, diástasis, cicatrices, estrías, acné, pérdida de peso ni reducción de grasa o celulitis. Nunca digas "la única", "la número uno" ni cifras de casos de éxito. Si te preguntan por resultados: cambios perceptibles, sensación de ligereza y contorno más definido, y siempre que la respuesta varía según cada persona.',
-  'FORMACIÓN, EN DOS ETAPAS Y EN ESTE ORDEN: (1) Online, obligatoria y previa: anatomía linfática, lógica del método y protocolo por fases, a su ritmo y desde su país. (2) Presencial, dos jornadas conmigo: día 1 lipodrenaje, día 2 moldeo y tonificación, con práctica sobre modelos reales. No se puede empezar por la presencial.',
-  'FECHAS: las convocatorias abiertas de la presencial están en la página de Formaciones (/formaciones), con su ciudad, sus días y su horario, y desde ahí se reserva con «Reservar plaza». NO inventes ciudades, fechas ni precios y no des el precio: manda a esa página.',
+  'FORMACIONES, MASTERCLASS Y COMUNIDAD: ahora mismo no se ofrecen en la web. No des fechas, precios ni detalles. Si preguntan, di que de momento no hay nada abierto y que pueden escribirme por Instagram @sorelacaro_ o desde Contacto.',
   'AGENDAR CITA: no recojas los datos escritos en el chat, porque no se guardan en ninguna parte. Ofrece abrir el formulario, sin explicar por qué ni hablar de consentimientos: eso es asunto de la web, no de la conversación. Tampoco des horas concretas: no tienes acceso al calendario.',
-  `COMUNIDAD DIVINE: abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España (${APERTURA_POR_PAISES}). Ese día la presento en una masterclass en directo por Google Meet en la que hablo de mi técnica y del alto impacto de lo digital en las terapeutas; el enlace llega por correo a quien esté en la lista de espera. El precio se anuncia con la apertura: hasta entonces, solo lista de espera. No des ningún precio. NO CUENTES QUÉ INCLUYE (ni clases, ni acompañamiento, ni canal, ni agenda, ni mapa): se cuenta en la masterclass y en ningún otro sitio. Si preguntan, di que lo enseño ese día en directo y ofrece apuntarse a la lista. Es para quien se haya certificado conmigo; en la lista de espera puede entrar cualquiera.`,
   'CLIENTAS (no profesionales): en Localiza tu terapeuta (/terapeutas) están las terapeutas certificadas en Técnica Divine, cada una con su ficha y su contacto. La cita se pide escribiendo directamente a la terapeuta, por WhatsApp o Instagram desde su ficha: tú no reservas por ella, no das horas suyas ni dices quién hay en una ciudad, porque no ves el mapa. Si en su zona todavía no hay ninguna, ofrece el formulario y di que avisas en cuanto haya una cerca.',
   'CONTACTO: formulario de la web o Instagram @sorelacaro_. Sorela contesta en menos de 48 h.',
   'Termina siempre orientando al siguiente paso concreto.',
@@ -89,52 +84,11 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
     },
   },
   {
-    patron: /fecha|cuándo|cuando|próxim|proxim|plaza|queda|ciudad|sudamérica|sudamerica|suramérica|suramerica/,
+    /* Formaciones, masterclass y comunidad no se ofrecen en la web pública
+       por ahora (2026-11-15): se contesta sin vender y sin pedir datos. */
+    patron: /formaci|curso|aprend|fecha|próxim|proxim|plaza|online|presencial|comunidad|membres|masterclass|clase|precio|cuesta|cuánto|cuanto|pag|certific|diploma/,
     respuesta:
-      'Las fechas abiertas de la presencial están en Formaciones, con la ciudad, los días y el horario. Desde ahí reservas tu plaza con «Reservar plaza».\nSi ninguna te encaja, déjame tus datos y te escribo cuando abra otra.',
-    accion: {
-      tipo: 'captar',
-      titulo: 'Te aviso el primero',
-      entradilla: 'Déjame tus datos y te escribo cuando abra una fecha que te encaje.',
-      etiqueta: 'Guardarme el sitio',
-      // Pregunta por fechas y plazas de formación: quiere aprender.
-      origen: 'formacion-asistente',
-    },
-  },
-  {
-    patron: /online|distancia|a distancia|virtual|desde casa|orden|requisit|empez|antes/,
-    respuesta:
-      'El orden no cambia: primero la formación online y después la presencial.\nEn la online trabajas la anatomía linfática, la lógica del método y el protocolo por fases. Así los dos días conmigo se dedican enteros a tus manos, que es para lo que sirven.',
-  },
-  {
-    patron: /presencial|dos días|dos dias|práctica|practica|modelo/,
-    respuesta:
-      'La presencial son dos jornadas conmigo. El primer día, lipodrenaje: protocolo completo y aplicación. El segundo, moldeo y tonificación.\nSe practica sobre modelos reales y te corrijo sobre tus manos. Para entrar hace falta tener hecha la formación online.',
-  },
-  {
-    patron: /comunidad|membres|suscrip|lista|telegram|fundador/,
-    respuesta:
-      `La Comunidad Divine abre el ${DIA_APERTURA} a las ${HORA_ESPANA} hora de España, con una masterclass en directo por Google Meet.\n${APERTURA_POR_PAISES}.\nHablo de mi técnica y del alto impacto de lo digital en las terapeutas, y al final cuento qué hay dentro. Si te apuntas a la lista de espera, te mando el enlace.`,
-    accion: {
-      tipo: 'captar',
-      titulo: 'Entra en la lista',
-      entradilla: `Te aviso antes de que abra el ${FECHA_APERTURA}. No pido tarjeta.`,
-      etiqueta: 'Apuntarme a la lista',
-      origen: 'comunidad-asistente',
-    },
-  },
-  {
-    patron: /precio|cuesta|cuánto|cuanto|pag|fraccion|financ/,
-    respuesta:
-      'El precio de la membresía lo anuncio el día que abra: de momento, lista de espera.\nEl precio de las formaciones va con cada convocatoria, y las próximas todavía se están cerrando.',
-    accion: {
-      tipo: 'captar',
-      titulo: 'Te mando los precios',
-      entradilla: 'En cuanto se cierre la próxima convocatoria te escribo con el precio, las fechas y cómo reservar.',
-      etiqueta: 'Que me avises',
-      // El precio que se pide aquí es el de las formaciones.
-      origen: 'formacion-precio',
-    },
+      'Ahora mismo no tengo nada abierto en la web.\nSi quieres saber más, escríbeme por Instagram (@sorelacaro_) o desde la página de Contacto, y te contesto yo.',
   },
   {
     patron: /qué es|que es|técnica|tecnica|método|metodo|drenaje|linf/,
@@ -159,11 +113,6 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
     },
   },
   {
-    patron: /certific|diploma|título|titulo/,
-    respuesta:
-      'Al completar las dos etapas recibes el certificado de terapeuta Divine y entras en el mapa público de terapeutas certificadas.',
-  },
-  {
     patron: /resultado|funciona|nota|sesion|ver/,
     respuesta:
       'Lo habitual es terminar la sesión con sensación de ligereza y un contorno más definido. La respuesta varía según cada persona y cada momento: no te voy a prometer un número.\nSi quieres verlo por ti misma, lo mejor es una sesión con una terapeuta certificada.',
@@ -171,7 +120,7 @@ const REGLAS: { patron: RegExp; respuesta: string; accion?: Accion }[] = [
 ];
 
 const POR_DEFECTO =
-  'Puedo ayudarte con la formación, con la agenda o con la Comunidad Divine.\nSi es algo más concreto, déjame tu contacto en el formulario y te contesto yo, o escríbeme por Instagram: @sorelacaro_.';
+  'Puedo contarte qué es la Técnica Divine, ayudarte a encontrar terapeuta o a pedir cita.\nSi es algo más concreto, déjame tu contacto en el formulario y te contesto yo, o escríbeme por Instagram: @sorelacaro_.';
 
 /*
  * Nota para quien conecte un modelo aquí: las respuestas abren el formulario

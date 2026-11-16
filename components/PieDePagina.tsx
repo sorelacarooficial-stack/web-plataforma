@@ -4,12 +4,8 @@ import css from './PieDePagina.module.css';
 
 const COLUMNAS = [
   {
-    titulo: 'Formación',
-    enlaces: [
-      { href: '/metodo', texto: 'Método' },
-      { href: '/formaciones', texto: 'Formaciones' },
-      { href: '/comunidad', texto: 'Comunidad Divine' },
-    ],
+    titulo: 'La técnica',
+    enlaces: [{ href: '/metodo', texto: 'Método' }],
   },
   {
     titulo: 'Clientas',

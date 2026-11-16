@@ -10,8 +10,7 @@ import { CAPA_CONTACTO } from '@/lib/privacidad';
 import { conLlegada } from '@/lib/llegada';
 
 const MOTIVOS = [
-  'Quiero formarme',
-  'Quiero ir a la masterclass gratuita',
+  'Dudas sobre la técnica',
   'Soy clienta y busco terapeuta',
   'Colaboración',
 ];
@@ -178,7 +177,7 @@ export default function FormularioContacto() {
               aria-invalid={errores.consentimiento ? true : undefined}
             />
             <span>
-              Tengo 18 años o más y acepto que Sorela Caro use mis datos para contestarme y guardar mi sitio en la lista de espera de la masterclass.{' '}
+              Tengo 18 años o más y acepto que Sorela Caro use mis datos para contestarme.{' '}
               <Link href="/legal/privacidad" target="_blank">
                 Cómo se tratan
               </Link>
@@ -192,7 +191,7 @@ export default function FormularioContacto() {
               y lib/campanas.ts la respeta. */}
           <label className={css.consentimiento}>
             <input type="checkbox" checked={novedades} onChange={(e) => setNovedades(e.target.checked)} />
-            <span>Opcional: quiero enterarme por correo de las próximas formaciones de la Técnica Divine.</span>
+            <span>Opcional: quiero enterarme por correo de las novedades de la Técnica Divine.</span>
           </label>
           <InfoPrivacidad capa={CAPA_CONTACTO} />
 

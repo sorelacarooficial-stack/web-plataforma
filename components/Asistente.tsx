@@ -222,7 +222,7 @@ export default function Asistente() {
             <span className={css.avatar}>D</span>
             <span className={css.identidad}>
               <span className={css.nombre}>Asistente Divine</span>
-              <span className={css.subtitulo}>Formación, agenda y comunidad</span>
+              <span className={css.subtitulo}>La técnica, terapeutas y citas</span>
             </span>
             <button
               type="button"
@@ -358,7 +358,7 @@ export default function Asistente() {
           </span>
           <span className={css.reclamo}>
             <span className={css.reclamoFuerte}>Te ayudo a decidir</span>
-            <span className={css.reclamoFino}>Formación, agenda y comunidad</span>
+            <span className={css.reclamoFino}>La técnica, terapeutas y citas</span>
           </span>
         </button>
       )}
