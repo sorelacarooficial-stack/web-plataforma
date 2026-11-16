@@ -7,6 +7,7 @@ import { tieneMembresia, type Acceso } from '@/lib/accesos';
 import type { Vista } from '@/lib/plataforma';
 import type { ProximaClase, Publicacion } from '@/lib/comunidad-tipos';
 import Noticias from './Noticias';
+import PrimerosPasos from './PrimerosPasos';
 import { PUNTOS, calcularPuntos, formatoPuntos, nivelDe, type ResumenPuntos } from '@/lib/puntos-tipos';
 import { LOGROS, OROS_PARA_DIVINE, type EstadoLogro } from '@/lib/logros-tipos';
 import { moduloDeClase, type Lectura } from '@/lib/material';
@@ -1262,6 +1263,18 @@ export default function PanelAlumna({
       </motion.section>
 
       {/* ---------- Tu camino: dónde está y qué le toca ---------- */}
+      {/* ---------- Tus primeros pasos: de momento solo en la vista previa de Sorela ---------- */}
+      {muestra && (
+        <PrimerosPasos
+          publico={miembro ? 'homologadas' : 'academia'}
+          perfilHecho={Boolean(trofeos?.find((t) => t.id === 'perfil-completo')?.conseguido) || (puntos?.desglose.perfil ?? 0) > 0}
+          presentadaEnMuro={Boolean(trofeos?.find((t) => t.id === 'primera-publicacion')?.conseguido) || (puntos?.desglose.publicaciones ?? 0) > 0}
+          modulo01Empezado={(lectura.precurso?.pagina ?? 0) > 0}
+          muestra
+          elegir
+        />
+      )}
+
       <TuCamino rutas={rutas} soloVer={muestra} />
 
       {/* ---------- Tu nivel: la barra grande, sus trofeos y de dónde vienen ---------- */}

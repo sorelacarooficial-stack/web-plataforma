@@ -441,3 +441,11 @@ cada cambio importante** (una línea por decisión, con la fecha).
   guarda en `usuarios/{uid}.empiezaAqui` (/api/empieza-aqui). **De momento solo
   lo ve Sorela en «Ver como»** (no hay nada grabado): para abrirlo, quitar
   `puedeVerComo` en Plataforma.tsx y poner cada `video` al grabarlo.
+- 2026-11-16: **«Tus primeros pasos»** en Inicio (`PrimerosPasos.tsx`, encima de
+  «Tu camino»): 5 pasos que se marcan solos. Academia: video 00, perfil,
+  celular, Módulo 01 empezado, grupo de WhatsApp. Homologadas: video 00,
+  perfil, ficha publicada, presentación en el muro, clase en vivo al
+  calendario. Con los 5, desaparece. Celular, grupo y calendario se apuntan al
+  tocar su botón (`marcas` en /api/empieza-aqui). Solo en «Ver como» (con
+  selector) hasta que estén los videos: para abrirlo, quitar `muestra &&` en
+  PanelAlumna.tsx.

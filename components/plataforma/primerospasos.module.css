@@ -1,0 +1,187 @@
+/* «Tus primeros pasos» en Inicio. Inter; título en 300 con la palabra clave en 600. */
+
+.tarjeta {
+  background: var(--surface);
+  border: 1px solid var(--oro-line);
+  border-radius: 22px;
+  padding: clamp(18px, 3vw, 26px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cabeza {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rotulo {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--arcilla-ink);
+  font-weight: 500;
+}
+
+.titulo {
+  margin: 6px 0 0;
+  font-weight: 300;
+  font-size: clamp(26px, 3.6vw, 34px);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.titulo strong {
+  font-weight: 600;
+}
+
+.cuenta {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cuenta b {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.barra {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--oro-tint);
+  overflow: hidden;
+}
+
+.barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f3d9ae, #c99a5c);
+  transition: width 0.4s ease;
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.paso {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--bg);
+  border: 1px solid transparent;
+}
+
+.paso[data-siguiente] {
+  border-color: var(--oro-line);
+}
+
+.marca {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid var(--salvia-line);
+  color: var(--muted);
+}
+
+.paso[data-hecho] .marca {
+  background: var(--oro);
+  border-color: var(--oro);
+  color: #fff;
+}
+
+.texto {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.texto strong {
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.paso[data-hecho] .texto strong {
+  color: var(--muted);
+}
+
+.texto em {
+  font-style: normal;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.accion {
+  margin-left: auto;
+}
+
+.boton {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  background: var(--ink);
+  color: var(--bg);
+  border: 1px solid var(--ink);
+}
+
+.boton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.boton:focus-visible {
+  outline: 2px solid var(--oro);
+  outline-offset: 2px;
+}
+
+.elegir {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.elegir button {
+  font: inherit;
+  font-size: 13px;
+  border-radius: 999px;
+  padding: 5px 12px;
+  border: 1px solid var(--salvia-line);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.elegir button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra span {
+    transition: none;
+  }
+}
