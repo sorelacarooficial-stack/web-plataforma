@@ -41,6 +41,17 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  /* Web pública sin masterclass, comunidad ni formaciones (2026-11-15).
+     /reserva/gracias sigue abierta: es la vuelta de Stripe tras pagar. */
+  async redirects() {
+    return [
+      { source: '/comunidad', destination: '/', permanent: false },
+      { source: '/formaciones', destination: '/', permanent: false },
+      { source: '/formaciones/:ruta*', destination: '/', permanent: false },
+      { source: '/reserva', destination: '/', permanent: false },
+      { source: '/directo', destination: '/', permanent: false },
+    ];
+  },
   images: {
     // Las fotos ya se pre-optimizan a WebP con scripts/optimizar-imagenes.mjs.
     // Next vuelve a redimensionar por breakpoint desde esas fuentes.

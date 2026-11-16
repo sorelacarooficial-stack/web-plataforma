@@ -1,4 +1,3 @@
-import { FECHA_APERTURA } from './apertura';
 
 /**
  * El contenido de la presentación profesional.
@@ -311,8 +310,8 @@ export const SERVICIOS: { nombre: string; texto: string }[] = [
   {
     nombre: 'Comunidad Divine',
     texto:
-      // Sin lo que incluye: se presenta en la masterclass de la apertura.
-      `Lista de espera abierta. Abre el ${FECHA_APERTURA} con una masterclass en directo.`,
+      // Solo para homologadas: no se vende en la web pública (2026-11-15).
+      'Para las terapeutas que terminan la formación completa conmigo.',
   },
 ];
 

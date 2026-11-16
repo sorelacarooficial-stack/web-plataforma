@@ -120,15 +120,15 @@ export default function Sobre() {
             </div>
             <div className={css.cifra}>
               <p className={css.cifraMedia}>
-                Primero online,
+                Primero estimular,
                 <br />
-                después presencial
+                después drenar
               </p>
-              <p className={css.cifraPie}>Cómo se aprende</p>
+              <p className={css.cifraPie}>El orden del método</p>
             </div>
             <div className={css.cifra}>
-              <p className={css.cifraMedia}>Grupos reducidos, ninguna clase delegada</p>
-              <p className={css.cifraPie}>Cómo enseño</p>
+              <p className={css.cifraMedia}>Ninguna sesión delegada</p>
+              <p className={css.cifraPie}>Cómo trabajo</p>
             </div>
           </div>
         </div>
@@ -136,9 +136,9 @@ export default function Sobre() {
 
       <section className={`${css.cierre} panel-oscuro`}>
         <div className="wrap wrap-800">
-          <h2 className="titulo-cierre">Si quieres formarte conmigo:</h2>
-          <Link href="/formaciones" className="btn">
-            Ver formaciones
+          <h2 className="titulo-cierre">Lee lo que escribo sobre la técnica:</h2>
+          <Link href="/blog" className="btn">
+            Ir al blog
           </Link>
         </div>
       </section>

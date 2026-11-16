@@ -411,3 +411,22 @@ cada cambio importante** (una línea por decisión, con la fecha).
   la primera del curso) con `video: propio:clases/…`, que se sirve con
   enlace firmado. Nunca se usa el enlace público con token (Sorela lo pasó
   por el chat: hay que revocarlo en la consola de Firebase).
+- 2026-11-15 (web pública, arreglo urgente): fuera de la portada el bloque
+  «Membresía Divine · Próximamente · Lista de espera» (la membresía no se vende
+  en la web). La cuenta atrás pasada ya no pinta nada (decía «La comunidad ya
+  está abierta»). `/comunidad` provisional: sin fecha ni formulario (el correo
+  de bienvenida aún dice «6 de noviembre»), solo «próxima fecha, pronto» + grupo
+  de WhatsApp + formaciones. Asistente, preguntas y /presentacion: la comunidad
+  es solo para homologadas. Casilla del formulario general: «mandarme la
+  información que pido». `/reserva`: con `RESERVA_HASTA` pasado, la beca no sale
+  ni se puede pagar y «Escríbenos» abre WhatsApp. Pendiente: correos de
+  bienvenida (lib/plantillas-bienvenida.ts) siguen con la fecha vieja.
+- 2026-11-15 (lo pidió la dueña): **la web pública ya no habla de
+  masterclass, membresía ni formaciones.** Queda: inicio (qué es la técnica,
+  Sorela, testimonios, preguntas de la técnica y de clientas, blog), Método,
+  Terapeutas, Sobre, Blog, Contacto y Legal. `/comunidad`, `/formaciones`,
+  `/reserva` y `/directo` redirigen a `/` (redirects en next.config.ts; las
+  páginas siguen en el código para cuando vuelvan). `/reserva/gracias` sigue
+  abierta (vuelta de Stripe). Menú y pie sin Formaciones ni Comunidad; el
+  asistente contesta «ahora no hay nada abierto, escríbeme por Instagram». No
+  se ha tocado `/alumnas` ni `/presentacion` (no salen en el menú).

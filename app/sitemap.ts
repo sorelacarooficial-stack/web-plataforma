@@ -42,22 +42,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const fijas: MetadataRoute.Sitemap = [
     { url: SITIO, lastModified: FECHAS.portada, changeFrequency: 'monthly', priority: 1 },
     {
-      url: `${SITIO}/formaciones`,
-      lastModified: FECHAS.formaciones,
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
       url: `${SITIO}/metodo`,
       lastModified: FECHAS.metodo,
       changeFrequency: 'yearly',
       priority: 0.8,
-    },
-    {
-      url: `${SITIO}/comunidad`,
-      lastModified: FECHAS.comunidad,
-      changeFrequency: 'monthly',
-      priority: 0.7,
     },
     {
       url: `${SITIO}/terapeutas`,

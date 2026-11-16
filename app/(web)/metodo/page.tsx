@@ -141,34 +141,11 @@ export default function Metodo() {
         </div>
       </section>
 
-      <section className={css.seccion}>
-        <div className="wrap" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(290px,1fr))', gap: 'clamp(24px,3vw,40px)' }}>
-          <div className={`tarjeta ${css.filtro}`}>
-            <p className="antetitulo">
-              Ven si
-            </p>
-            <p className={css.filtroTexto}>
-              Ya tienes clientas en camilla y te incomoda repetir el mismo protocolo con cuerpos
-              que no se parecen en nada.
-            </p>
-          </div>
-          <div className={`tarjeta ${css.filtro}`}>
-            <p className="antetitulo" style={{ color: 'var(--muted)' }}>
-              No vengas si
-            </p>
-            <p className={css.filtroTexto} style={{ color: 'var(--ink-3)' }}>
-              Es tu primer contacto con la estética. Divine parte de que ya sabes trabajar con las
-              manos; si no, vas a perder el dinero.
-            </p>
-          </div>
-        </div>
-      </section>
-
       <section className={css.cierre}>
         <div className="wrap wrap-800">
-          <h2 className={`${css.cierreTitulo} degradado`}>El método se aprende haciéndolo.</h2>
-          <Link href="/formaciones" className="btn">
-            Ver formaciones y fechas
+          <h2 className={`${css.cierreTitulo} degradado`}>Conoce a quien lo creó.</h2>
+          <Link href="/sobre" className="btn">
+            Sobre Sorela
           </Link>
         </div>
       </section>

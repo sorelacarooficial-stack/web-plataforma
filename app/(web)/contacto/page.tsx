@@ -14,7 +14,7 @@ import { INSTAGRAM, INSTAGRAM_USUARIO } from '@/lib/contenido';
 export const metadata: Metadata = {
   title: { absolute: 'Contacto con Sorela Caro: te contesto yo en 48 horas' },
   description:
-    'Dudas de una formación, de la lista de espera o algo que quieras proponerme: escríbeme por aquí. Contesto yo, y tardo menos de 48 horas. En Instagram, antes.',
+    'Dudas sobre la técnica, una sesión o algo que quieras proponerme: escríbeme por aquí. Contesto yo, y tardo menos de 48 horas. En Instagram, antes.',
 };
 
 export default function Contacto() {
@@ -27,7 +27,7 @@ export default function Contacto() {
               Escríbeme.
             </h1>
             <p className="lede max-440" style={{ lineHeight: 1.62 }}>
-              Dudas de una formación, de la lista de espera o algo que quieras proponerme.
+              Dudas sobre la técnica, una sesión o algo que quieras proponerme.
               Contesto yo, y tardo menos de 48 horas.
             </p>
             <p style={{ margin: 0, fontSize: 14, fontWeight: 300, color: 'var(--muted-2)' }}>

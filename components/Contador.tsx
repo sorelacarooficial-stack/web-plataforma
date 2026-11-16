@@ -69,19 +69,9 @@ export default function Contador({
     return () => clearInterval(t);
   }, []);
 
-  if (montado && !restante) {
-    /* La variante también aquí: sobre la banda oscura, --arcilla es un marrón
-       que no se lee. Sin esto, el día que la comunidad abra el aviso saldría
-       apagado justo cuando más hay que verlo. */
-    return (
-      <p
-        className={`${css.abierta} ${sobre === 'oscuro' ? css.oscuro : css.claro}`}
-        role="status"
-      >
-        La comunidad ya está abierta.
-      </p>
-    );
-  }
+  /* Con la fecha pasada no se pinta nada. Antes decía «La comunidad ya está
+     abierta», que después de la masterclass era falso. */
+  if (montado && !restante) return null;
 
   return (
     <div

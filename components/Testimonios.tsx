@@ -173,9 +173,10 @@ function Tarjeta({
   onCerrar: () => void;
 }) {
   const quien = nombre.trim();
-  const pie = [de, lugar].filter(Boolean).join(' · ');
+  /* Sin «Formación» ni «Comunidad» en la web pública (2026-11-15). */
+  const pie = [/formaci|comunidad/i.test(de ?? '') ? '' : de, lugar].filter(Boolean).join(' · ');
   /* Sin nombre, lo que hizo pasa a ser el titular de la tarjeta. */
-  const titular = quien || pie || 'Alumna Divine';
+  const titular = quien || pie || 'Testimonio';
   const subtitulo = quien ? pie : '';
 
   const [roto, setRoto] = useState(false);

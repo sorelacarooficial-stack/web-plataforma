@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import Marquesina from '@/components/Marquesina';
-import Apiladas from '@/components/landing/Apiladas';
 import Cinta from '@/components/landing/Cinta';
 import FadeIn from '@/components/landing/FadeIn';
 import Magnet from '@/components/landing/Magnet';
@@ -13,16 +12,10 @@ import l from '@/components/landing/landing.module.css';
 import { VIDEO } from '@/lib/presentacion';
 import { CINTA_ALUMNAS } from '@/lib/precurso';
 import Acordeon from '@/components/Acordeon';
-import Contador from '@/components/Contador';
 import Testimonios from '@/components/Testimonios';
-import LlamadaDivine from '@/components/LlamadaDivine';
-import BotonAsistente from '@/components/BotonAsistente';
-import BotonCaptacion from '@/components/BotonCaptacion';
 import DatosEstructurados from '@/components/DatosEstructurados';
 import BlogCarrusel from '@/components/BlogCarrusel';
 import { articulosPublicados } from '@/lib/blog';
-import { proximasPublicas } from '@/lib/convocatorias';
-import ProximasFechas from './formaciones/ProximasFechas';
 import {
   FAQS,
   INSTAGRAM,
@@ -44,17 +37,21 @@ import css from './home.module.css';
  * layout: con ella el título se iría a 70 caracteres y Google lo cortaría.
  */
 export const metadata: Metadata = {
-  title: { absolute: 'Formación en drenaje linfático manual con Sorela Caro' },
+  title: { absolute: 'Técnica Divine · Drenaje linfático manual avanzado de Sorela Caro' },
   description:
-    'Te enseño la Técnica Divine, mi método de drenaje linfático manual avanzado: primero la formación online y después dos días presenciales conmigo.',
+    'Qué es la Técnica Divine, el método de drenaje linfático manual avanzado de Sorela Caro: cómo se trabaja, quién está detrás y dónde encontrar terapeuta.',
 };
 
 /* La portada lleva los últimos artículos del blog: se rehace cada cinco
    minutos y al instante cuando Sorela publica (ver app/api/blog). */
 export const revalidate = 300;
 
+/* Sin formaciones ni comunidad en la web pública (2026-11-15): de las
+   preguntas frecuentes solo quedan las de la técnica y las de clientas. */
+const FUERA = /formaci|comunidad|online|certificado|pago|trabajado estética|formación previa/i;
+const PREGUNTAS = FAQS.filter((f) => !FUERA.test(f.q + ' ' + f.a));
+
 export default async function Home() {
-  const fechas = await proximasPublicas().catch(() => []);
   const articulos = (await articulosPublicados(8)).map((a) => ({
     slug: a.slug,
     titulo: a.titulo,
@@ -102,7 +99,7 @@ export default async function Home() {
           <FadeIn delay={0.35} y={20} className={css.portadaLema}>
             <span className={css.sello}>
               <span className={css.selloPunto} />
-              Formación en estética avanzada
+              Estética avanzada · Técnica Divine
             </span>
             <p className={css.heroFirma}>
               <span className={css.heroRaya} />
@@ -117,11 +114,14 @@ export default async function Home() {
               y entre los dos y el asistente parecían cuatro botones. Así es un
               botón y, debajo, un enlace. */}
           <FadeIn delay={0.5} y={20} className={css.portadaAcciones}>
-            <LlamadaDivine
-              textoPrincipal="Quiero la información"
-              textoCita="Agendar una cita"
-              preguntaCita="Quiero agendar una cita. ¿Cómo lo hacemos?"
-            />
+            <div className={css.acciones}>
+              <Link href="/metodo" className="btn btn-md">
+                Conoce la técnica
+              </Link>
+              <Link href="/terapeutas" className="enlace-fino">
+                Localiza tu terapeuta
+              </Link>
+            </div>
           </FadeIn>
         </div>
       </section>
@@ -223,86 +223,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---------- Formaciones: el recorrido ----------
-           El orden importa y es la regla del método: primero online, después
-           presencial. Por eso se cuenta como un camino de dos etapas y no como
-           dos productos que compiten entre sí. */}
-      <section id="formaciones" className="seccion">
-        <div className="wrap">
-          <FadeIn y={40} className={css.formacionIntro}>
-            <p className="antetitulo">Formarte conmigo</p>
-            <h2 className="titulo-lg max-640">Para ser terapeuta Divine hay un orden.</h2>
-            <p className="texto max-560">
-              Para formarte como terapeuta Divine el orden no cambia: primero la formación online,
-              después la presencial. Así llegas con la teoría resuelta y los dos días conmigo se
-              dedican enteros a tus manos.
-            </p>
-          </FadeIn>
-
-          <div>
-            {/* Una clara y otra oscura: con las dos en relieve crema sobre el
-                papel no se distinguía dónde acababa una y empezaba la otra. La
-                presencial va en la banda negra de la marca porque es el destino
-                (la que tiene fechas); la online, en papel con filo, es el paso
-                previo. Al apilarse, la oscura tapa a la clara y se nota el
-                cambio de etapa. */}
-            <Apiladas
-              clasesTarjetas={[css.etapaCajaClara, css.etapaCajaOscura]}
-              tarjetas={[
-                <article key="online" className={css.etapa}>
-                  <span className={css.etapaOrden}>Primera etapa</span>
-                  <h3 className={css.etapaTitulo}>Formación online</h3>
-                  <p className="texto-fijo">
-                    Aquí empieza todo. Trabajas la anatomía linfática, la lógica del método y el
-                    protocolo por fases antes de ponerte a tocar. Desde tu país y a tu ritmo, para
-                    llegar preparada a los dos días presenciales.
-                  </p>
-                  <ul className={css.etapaLista}>
-                    <li>Anatomía linfática y lógica del método</li>
-                    <li>Dossier precurso con el protocolo por fases</li>
-                    <li>Acceso flexible, desde tu país y a tu ritmo</li>
-                    <li>Requisito previo para la formación presencial</li>
-                  </ul>
-                </article>,
-                <article key="presencial" className={`${css.etapa} ${css.etapaDestacada}`}>
-                  <span className={css.etapaOrden}>Segunda etapa</span>
-                  <h3 className={css.etapaTitulo}>Formación presencial</h3>
-                  <p className="texto-fijo">
-                    Dos jornadas conmigo. El primer día, lipodrenaje: protocolo completo y
-                    aplicación. El segundo, moldeo y tonificación. Se practica sobre modelos reales,
-                    con corrección directa sobre tus manos.
-                  </p>
-                  <ul className={css.etapaLista}>
-                    <li>Día 1 · Lipodrenaje, protocolo completo y aplicación</li>
-                    <li>Día 2 · Moldeo y tonificación de silueta</li>
-                    <li>Práctica sobre modelos reales, no solo demostración</li>
-                    <li>Te corrijo sobre tus manos</li>
-                  </ul>
-                </article>,
-              ]}
-            />
-          </div>
-
-          {/* Fechas: las convocatorias que Sorela ha publicado (las mismas de
-              /formaciones, con su «Reservar plaza»). Sin ninguna, se dice sin
-              prometer ciudades. */}
-          {fechas.length > 0 ? (
-            <ProximasFechas fechas={fechas} />
-          ) : (
-            <div className={css.fechas}>
-              <div>
-                <p className="antetitulo" style={{ color: 'var(--oro)' }}>
-                  Próximas fechas
-                </p>
-                <h3 className={css.fechasTitulo}>Nuevas fechas, pronto.</h3>
-                <p className="texto max-520">Ahora mismo no hay ninguna fecha abierta para la presencial.</p>
-              </div>
-              <BotonAsistente pregunta="Quiero saber cuándo es la próxima formación presencial.">Preguntar</BotonAsistente>
-            </div>
-          )}
-        </div>
-      </section>
-
       </div>
 
       {/* ---------- Quién está detrás ---------- */}
@@ -343,43 +263,15 @@ export default async function Home() {
            secciones quedan pegadas como si esto no existiera. */}
       <Testimonios />
 
-      {/* ---------- Comunidad Divine ----------
-           Una sola idea y un solo botón. Antes esta sección contaba lo que hay
-           dentro, ponía precio y desplegaba cinco piezas: mucha lectura para
-           algo que todavía no se puede comprar. Lo único que se puede hacer
-           hoy es apuntarse, así que es lo único que se pide. */}
-      <section id="comunidad" className={css.lanzamiento}>
-        <div className="wrap">
-          <div className={css.lanzamientoCaja}>
-            <p className={css.lanzamientoSello}>Próximamente</p>
-
-            <h2 className={`${css.lanzamientoTitulo} degradado-claro`}>
-              Membresía
-              <em className={css.lanzamientoTituloEnfasis}>Divine</em>
-            </h2>
-
-            <p className={css.lanzamientoPie}>Lista de espera abierta</p>
-
-            <Contador sobre="oscuro" />
-
-            <BotonCaptacion
-              className={`btn btn-md ${css.lanzamientoBoton}`}
-              titulo="Entra en la lista de espera"
-              entradilla="Déjame tus datos y, al terminar, entra en el grupo de WhatsApp de la Técnica Divine. No pido tarjeta."
-              etiquetaVentana="Entrar en la lista de espera de la Membresía Divine"
-              origen="comunidad"
-            >
-              Entrar en la lista de espera
-            </BotonCaptacion>
-          </div>
-        </div>
-      </section>
+      {/* Aquí iba «Membresía Divine · Próximamente · Lista de espera». Se quita
+          (2026-11-15): la membresía es solo para terapeutas homologadas y no se
+          vende en la web pública, y su cuenta atrás ya había pasado. */}
 
       {/* ---------- Preguntas ---------- */}
       <section className={`seccion ${css.preguntas}`}>
         <div className="wrap wrap-1040">
           <h2 className={`titulo-lg max-640 ${css.tituloBloque}`}>Lo que más me preguntan.</h2>
-          <Acordeon preguntas={FAQS} />
+          <Acordeon preguntas={PREGUNTAS} />
           {/*
             Las mismas preguntas, dichas en el formato que lee un buscador. Se
             le pasa la MISMA lista que al acordeón, no una copia: si mañana
@@ -387,7 +279,7 @@ export default async function Home() {
             y no en otra página porque este bloque solo se puede declarar donde
             las preguntas de verdad se ven.
           */}
-          <DatosEstructurados preguntas={FAQS} />
+          <DatosEstructurados preguntas={PREGUNTAS} />
         </div>
       </section>
 
@@ -407,15 +299,16 @@ export default async function Home() {
             Si has llegado hasta aquí, ya sabes que no es otro protocolo.
           </h2>
           <p className={css.cierreTexto}>
-            Déjame tu contacto y entra en el grupo de WhatsApp de la Técnica Divine.
+            Sigue mi trabajo en Instagram o lee el blog.
           </p>
-          <LlamadaDivine
-            textoPrincipal="Quiero la información"
-            textoCita="Agendar una cita"
-            preguntaCita="Quiero agendar una cita. ¿Cómo lo hacemos?"
-            alineacion="centro"
-            sobre="oscuro"
-          />
+          <div className={css.acciones} style={{ justifyContent: 'center' }}>
+            <a href={INSTAGRAM} className="btn btn-md btn-claro" target="_blank" rel="noopener">
+              {INSTAGRAM_USUARIO}
+            </a>
+            <Link href="/blog" className="enlace-fino">
+              Ir al blog
+            </Link>
+          </div>
         </div>
       </section>
     </main>
