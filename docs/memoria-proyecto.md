@@ -449,3 +449,14 @@ cada cambio importante** (una línea por decisión, con la fecha).
   tocar su botón (`marcas` en /api/empieza-aqui). Solo en «Ver como» (con
   selector) hasta que estén los videos: para abrirlo, quitar `muestra &&` en
   PanelAlumna.tsx.
+- 2026-11-17: **la única presencial es Medellín, 19, 20 y 21 de marzo de 2027**
+  (convocatoria creada a mano por Sorela, 10 plazas, en la plataforma). Fuera
+  diciembre y la beca de enero: `PRESENCIAL` / `SEDES` / `BECA` en lib/clase.ts
+  apuntan a marzo, y al confirmar un pago presencial se busca la convocatoria
+  por su primer día (`PRESENCIAL.dia`, /api/reserva/confirmar). Las campañas de
+  la masterclass del 6 nov quedan pausadas: ahora no puede haber nada en Meta.
+  Tres vídeos para Medellín, hechos con material ya existente (entrevista de
+  TV, planos de Seedance de la membresía), en 9:16 y 4:5: M1 «Quién es Sorela»,
+  M2 «Lo que pasa en la cabina» y M3 «Diez plazas». Botón a WhatsApp, sin
+  precio. No lanzar antes del 7 de enero. Ojo: «Mostrar en la web» de la
+  convocatoria no se ve, porque /formaciones redirige a la portada.
