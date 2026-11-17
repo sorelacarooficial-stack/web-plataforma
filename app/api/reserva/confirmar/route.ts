@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import { CONVOCATORIA_BECA } from '@/lib/puesta-a-punto';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { baseDeDatos, hayFirebase, COLECCIONES } from '@/lib/firebase-servidor';
-import { COLECCION_RESERVAS, HORAS_PARA_CONFIRMAR } from '@/lib/reserva';
+import { COLECCION_RESERVAS, FORMACIONES_PAGO, HORAS_PARA_CONFIRMAR } from '@/lib/reserva';
+import { PRESENCIAL } from '@/lib/clase';
+import { coleccion as convocatorias } from '@/lib/convocatorias';
 import { inscribirReservaPagada } from '@/lib/reserva-convocatoria';
 
 /**
@@ -89,9 +91,12 @@ export async function POST(peticion: Request) {
       );
   }
 
-  // Presencial: entra en las fechas de su ciudad, para darle el acceso desde «Dar acceso».
-  // Diciembre se canceló (11 nov): la única presencial es la beca de enero.
-  const conv = v.formacion === 'beca' ? CONVOCATORIA_BECA.id : null;
+  // Presencial: entra en la convocatoria de Medellín (19-21 marzo 2027), para
+  // darle el acceso desde «Dar acceso». Esa convocatoria se creó a mano en la
+  // plataforma (id al azar): se busca por su primer día. Si no aparece, la
+  // de la beca de enero, como antes.
+  const presencial = FORMACIONES_PAGO.some((f) => f.id === v.formacion && f.presencial);
+  const conv = presencial ? await convocatoriaPresencial() : null;
   if (conv) {
     try {
       await inscribirReservaPagada(conv, {
@@ -110,4 +115,15 @@ export async function POST(peticion: Request) {
     }
   }
   return NextResponse.json({ ok: true, confirmado: true, verificado: verificado === true });
+}
+
+/** La convocatoria de la presencial que se vende ahora (PRESENCIAL en lib/clase.ts). */
+async function convocatoriaPresencial(): Promise<string> {
+  try {
+    const l = await convocatorias().where('inicio', '==', PRESENCIAL.dia).limit(1).get();
+    if (!l.empty) return l.docs[0].id;
+  } catch (e) {
+    console.error('[reserva/confirmar] buscar convocatoria', e);
+  }
+  return CONVOCATORIA_BECA.id;
 }

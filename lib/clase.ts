@@ -19,10 +19,15 @@ export const EMPIEZA = '2026-11-08T21:00:00Z';
  * Medellín y Caracas, por dónde están las registradas: 68 de Venezuela y 15
  * de Colombia). `inicio` es el primer día a las 8:00 hora local.
  */
-export const SEDES = [
-  { ciudad: 'Caracas', fechas: '18, 19 y 20 de diciembre', inicio: '2026-12-18T12:00:00Z' },
-  { ciudad: 'Medellín', fechas: '10, 11 y 12 de diciembre', inicio: '2026-12-10T13:00:00Z' },
-];
+/**
+ * 17 nov 2026: la única presencial que se vende es Medellín, 19-21 de marzo
+ * de 2027 (convocatoria creada a mano en la plataforma, 10 plazas). Diciembre
+ * (Caracas y Medellín) y enero (beca) ya no se hacen. `dia` es el `inicio` de
+ * esa convocatoria: con él la encuentra /api/reserva/confirmar.
+ */
+export const PRESENCIAL = { ciudad: 'Medellín', fechas: '19, 20 y 21 de marzo', inicio: '2027-03-19T13:00:00Z', dia: '2027-03-19' };
+
+export const SEDES = [{ ciudad: PRESENCIAL.ciudad, fechas: PRESENCIAL.fechas, inicio: PRESENCIAL.inicio }];
 
 /**
  * Beca especial Venezuela (masterclass repetida el 8 nov 2026, tras no haber
@@ -32,10 +37,10 @@ export const SEDES = [
 export const BECA = {
   /** Mientras está activa, la diapositiva de la beca sustituye a la de precios presenciales. */
   activa: true,
-  ciudad: 'Medellín',
-  /** Fechas propias de la beca (no son las de la sede de diciembre). */
-  fechas: '28, 29 y 30 de enero',
-  inicio: '2027-01-28T12:00:00Z',
+  ciudad: PRESENCIAL.ciudad,
+  /** Las de la presencial de Medellín (antes 28-30 de enero). */
+  fechas: PRESENCIAL.fechas,
+  inicio: PRESENCIAL.inicio,
   /** Precio total con beca (USD). 0 = todavía no se enseña. */
   precio: 1950,
   /** Precio normal de la formación completa, que sale tachado al lado. */
