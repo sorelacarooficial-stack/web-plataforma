@@ -449,3 +449,10 @@ cada cambio importante** (una línea por decisión, con la fecha).
   tocar su botón (`marcas` en /api/empieza-aqui). Solo en «Ver como» (con
   selector) hasta que estén los videos: para abrirlo, quitar `muestra &&` en
   PanelAlumna.tsx.
+- 2026-11-18: **técnica completa en el reproductor propio, no en Drive** (el de
+  Andrea daba «El archivo que solicitaste no existe»). En cuanto hay un vídeo
+  subido con el apartado «Técnica completa» (Subir clases lo ofrece siempre en
+  la lista), el botón «Ver toda la técnica completa» usa esos y deja de enseñar
+  los de Drive (`TECNICA_COMPLETA`). Tope de subida 4 GB: los de ~7 GB hay que
+  comprimirlos antes (1080p, ~1,5-2 GB). Al estar subidos, vaciar
+  `TECNICA_COMPLETA`.

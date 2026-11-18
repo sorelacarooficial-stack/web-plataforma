@@ -7,8 +7,9 @@
  * almacén de la plataforma tal cual). Se ven dentro del aula con el
  * reproductor de Drive. OJO: el archivo tiene que estar compartido como
  * «Cualquier persona con el enlace»; quien tenga el enlace puede verlo fuera
- * de la plataforma. Cuando se suban al almacén propio (Contenido › Clases,
- * módulo «Técnica completa»), se quitan de aquí.
+ * de la plataforma. En cuanto haya alguno subido al almacén propio
+ * (Contenido › Subir clases, apartado «Técnica completa»), el aula usa esos
+ * y deja de enseñar estos (components/plataforma/Aula.tsx).
  */
 export type VideoCompleto = { id: string; titulo: string; texto: string };
 

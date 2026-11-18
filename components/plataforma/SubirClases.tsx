@@ -22,6 +22,7 @@ import { NUEVO, type Borrador, type Estado } from '@/lib/subida-clase';
 import { useAviso, useConfirmar } from './Confirmar';
 import css from './plataforma.module.css';
 import s from './subirclases.module.css';
+import { MODULO_COMPLETA, esTecnicaCompleta } from '@/lib/avance';
 
 /**
  * Donde Sorela monta el aula: sube el vídeo de cada clase, le pone título y
@@ -242,6 +243,8 @@ function NuevaClase({ est, datos }: { est: Estado; datos: Respuesta }) {
     const k = clave(para.nombre);
     const vistos = new Set<string>();
     for (const l of datos.lecciones) if (l.para.tipo === 'curso' && clave(l.para.nombre) === k && l.modulo) vistos.add(l.modulo);
+    // Siempre a mano: los vídeos largos van en este apartado (botón «Ver toda la técnica completa»).
+    if (![...vistos].some((m) => esTecnicaCompleta(m))) vistos.add(MODULO_COMPLETA);
     return [...vistos];
   }, [b, datos.lecciones]);
 
