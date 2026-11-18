@@ -456,3 +456,6 @@ cada cambio importante** (una línea por decisión, con la fecha).
   los de Drive (`TECNICA_COMPLETA`). Tope de subida 4 GB: los de ~7 GB hay que
   comprimirlos antes (1080p, ~1,5-2 GB). Al estar subidos, vaciar
   `TECNICA_COMPLETA`.
+  El de Andrea no existía por una letra mal copiada en el id (`…WQqY…` en vez
+  de `…WQgY…`): corregido; los dos vídeos de Drive funcionan (Andrea 7,0 GB,
+  Esther 7,6 GB, cuenta sorelabeautyboutique).

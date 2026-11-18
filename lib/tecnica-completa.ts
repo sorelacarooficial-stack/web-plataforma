@@ -15,7 +15,7 @@ export type VideoCompleto = { id: string; titulo: string; texto: string };
 
 export const TECNICA_COMPLETA: VideoCompleto[] = [
   {
-    id: '1Vv4mdWQqYnCaaXsI2AERtSyLuq8HRD29',
+    id: '1Vv4mdWQgYnCaaXsI2AERtSyLuq8HRD29',
     titulo: 'Tratamiento completo · Andrea',
     texto: 'La sesión entera, de principio a fin, sin cortes.',
   },
