@@ -385,8 +385,11 @@ export default function Aula({ correo, muestra = false }: { correo?: string | nu
   );
   /* Los vídeos largos, para estudiar sola: van aparte, detrás de un botón. */
   const completas = ordenadas.filter((l) => esTecnicaCompleta(l.modulo) && !l.bloqueada);
-  /* Los de Drive (lib/tecnica-completa.ts) en su ventana; si no hay, los subidos al almacén. */
-  const hayTecnica = TECNICA_COMPLETA.length > 0 && (documentos.length > 0 || ordenadas.some((l) => l.para?.tipo === 'curso'));
+  /* Los subidos al almacén mandan: se ven en el reproductor del aula, como
+     cualquier clase. Los de Drive (lib/tecnica-completa.ts) solo salen
+     mientras no haya ninguno subido. */
+  const hayTecnica =
+    completas.length === 0 && TECNICA_COMPLETA.length > 0 && (documentos.length > 0 || ordenadas.some((l) => l.para?.tipo === 'curso'));
   const totalTecnica = hayTecnica ? TECNICA_COMPLETA.length : completas.length;
   const verCompleta = () => {
     if (hayTecnica) return setVerTecnica(true);
