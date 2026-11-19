@@ -494,7 +494,10 @@ cada cambio importante** (una línea por decisión, con la fecha).
   nuevos en `docs/guiones-medellin.md`, cada toma transcrita de nuevo (coincide
   palabra a palabra) y sus tiempos en `videos-medellin/src/voz/*.json` para
   los subtítulos. Los 3 primeros segundos de cada pieza llevan en pantalla
-  qué es, para quién y quién lo enseña (`Encabezado`, src/voz.tsx). Música
+  qué es, para quién y quién lo enseña, y cada anuncio abre distinto
+  (`src/aperturas.tsx`: «+25.000» sobre Sorela, manos a sangre, «28·29·30»
+  sobre oro, 10 asientos, diploma en 3D); la landing usa `Encabezado`
+  (src/voz.tsx). Música
   propia por pieza (6 pistas ElevenLabs a −16 LUFS, `musica-<pieza>.mp3`) que
   baja con la voz, y efectos distintos (barrido, destello, golpe de piano).
   Prohibido usar canciones comerciales (inicio.mp3, despedida.mp3).
