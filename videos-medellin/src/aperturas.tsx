@@ -45,12 +45,12 @@ const Pastilla: React.FC<{ desde?: number; oscura?: boolean; children: React.Rea
   );
 };
 
-const Linea: React.FC<{ texto: string; desde?: number; color?: string; tam?: number; izquierda?: boolean }> = ({ texto, desde = 14, color = C.crema, tam = 32, izquierda }) => {
+const Linea: React.FC<{ texto: string; desde?: number; color?: string; tam?: number; izquierda?: boolean; banda?: boolean }> = ({ texto, desde = 14, color = C.crema, tam = 32, izquierda, banda }) => {
   const f = useCurrentFrame();
   const u = useU();
   const t = tramo(f, desde, 16);
   return (
-    <div style={{ fontFamily: 'Inter', fontWeight: 400, fontSize: tam * u, lineHeight: 1.35, color, opacity: t, transform: `translateY(${(1 - t) * 14}px)`, textAlign: izquierda ? 'left' : 'center', maxWidth: 900 * u }}>
+    <div style={{ fontFamily: 'Inter', fontWeight: 400, fontSize: tam * u, lineHeight: 1.35, color, opacity: t, transform: `translateY(${(1 - t) * 14}px)`, textAlign: izquierda ? 'left' : 'center', maxWidth: 900 * u, fontWeight: banda ? 500 : 400, ...(banda ? { background: 'rgba(20,18,16,0.72)', padding: `${12 * u}px ${22 * u}px`, borderRadius: 18 * u, backdropFilter: 'blur(10px)' } : {}) }}>
       {texto}
     </div>
   );
@@ -69,7 +69,7 @@ export const AperturaAutoridad: React.FC<{ dura: number }> = ({ dura }) => {
       <AbsoluteFill style={{ alignItems: 'center', paddingTop: (historia ? 230 : 90) * u, gap: 14 * u }}>
         <Antetitulo texto="Técnica Divine® · formación presencial" color={C.oroClaro} tam={24} />
         <div style={{ height: (historia ? 140 : 40) * u }} />
-        <Contador hasta={25000} prefijo="+" desde={0} dura={34} tam={historia ? 230 : 200} />
+        <Contador hasta={25000} prefijo="+" desde={0} dura={22} tam={historia ? 230 : 200} />
         <Titular texto="casos en **30 años**" desde={10} tam={64} color={C.crema} alinear="center" />
         <div style={{ height: 24 * u }} />
         <Titular texto={'Sorela Caro, la creadora,\nenseña a **terapeutas y esteticistas**.'} desde={20} paso={2} tam={historia ? 48 : 42} color={C.crema} alinear="center" />
@@ -93,7 +93,7 @@ export const AperturaManos: React.FC<{ dura: number }> = ({ dura }) => {
       <AbsoluteFill style={{ alignItems: 'flex-start', padding: `${(historia ? 220 : 80) * u}px ${70 * u}px 0`, gap: 16 * u }}>
         <Pastilla desde={4}>Técnica Divine® · drenaje y moldeo, solo con las manos</Pastilla>
         <Titular texto={'Para terapeutas,\nesteticistas y\n**masajistas**.'} desde={8} paso={2} tam={historia ? 104 : 88} color={C.crema} />
-        <Linea texto="Formación presencial con Sorela Caro, creadora del método." desde={26} tam={34} izquierda />
+        <Linea texto="Formación presencial con Sorela Caro, creadora del método." desde={22} tam={36} izquierda banda />
       </AbsoluteFill>
       <Grano fuerza={0.06} />
     </AbsoluteFill>
@@ -150,7 +150,7 @@ export const AperturaMedellin: React.FC<{ dura: number }> = ({ dura }) => {
         style={{
           position: 'absolute',
           right: 60 * u,
-          bottom: (historia ? 520 : 330) * u,
+          bottom: (historia ? 780 : 480) * u,
           width: (historia ? 210 : 170) * u,
           height: (historia ? 280 : 225) * u,
           borderRadius: 26 * u,
@@ -181,7 +181,7 @@ export const AperturaPlazas: React.FC = () => {
         <div style={{ height: (historia ? 40 : 20) * u }} />
         <Plazas desde={6} oscuro tam={historia ? 150 : 118} />
         <div style={{ height: 20 * u }} />
-        <Linea texto="Con Sorela Caro, creadora del método · 30 años · +25.000 casos" desde={24} tam={30} color={C.oroClaro} />
+        <Linea texto="Con Sorela Caro, creadora del método · 30 años · +25.000 casos" desde={20} tam={38} color={C.crema} banda />
       </AbsoluteFill>
     </AbsoluteFill>
   );
