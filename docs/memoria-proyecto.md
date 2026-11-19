@@ -459,3 +459,13 @@ cada cambio importante** (una línea por decisión, con la fecha).
   El de Andrea no existía por una letra mal copiada en el id (`…WQqY…` en vez
   de `…WQgY…`): corregido; los dos vídeos de Drive funcionan (Andrea 7,0 GB,
   Esther 7,6 GB, cuenta sorelabeautyboutique).
+- 2026-11-19: **publicidad de Medellín (28-30 ene 2027), sin publicar.** 5
+  anuncios (autoridad, manos, Medellín, 10 plazas, certificación; 9:16 y 4:5),
+  vídeo de la landing (16:9 y 9:16) y 2 posts (feed e historia), todo sin
+  precios (no están confirmados). Motion graphics en Remotion en
+  `videos-medellin/` (proyecto aparte, fuera del tsconfig; `node render.mjs`;
+  posts con `node posts/capturar.mjs`); música y efectos de ElevenLabs. Landing
+  **oculta** `/medellin`: noindex, fuera de menú, pie y sitemap; con
+  `MEDELLIN_CLAVE` (o `CLASE_CLAVE`) solo abre con `?k=`; «Reservar mi plaza»
+  abre WhatsApp con el mensaje escrito. El reparto por días de la landing está
+  sin confirmar con Sorela.
