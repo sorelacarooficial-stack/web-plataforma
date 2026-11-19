@@ -1,0 +1,22 @@
+{
+  "id": "ea-07",
+  "numero": "07",
+  "titulo": "Tus próximos pasos",
+  "partes": [{ "crudo": "$CRUDOS/10-proximos-pasos.mov", "transcripcion": "transcripciones/10-proximos-pasos.json" }],
+  "claves": ["hacer", "práctica.", "perfecto.", "conciencia."],
+  "tarjetas": [
+    {
+      "en": "esta",
+      "hasta": "perfecto.",
+      "zona": "Inicio · Tus primeros pasos",
+      "titulo": "Esta semana",
+      "lado": "derecha",
+      "filas": [
+        { "texto": "Mira la bienvenida", "estado": "hecho" },
+        { "texto": "Completa tu perfil", "estado": "hecho" },
+        { "texto": "Tu siguiente paso", "detalle": "Se marca solo cuando lo haces", "estado": "abierto" }
+      ]
+    }
+  ],
+  "cierre": "Haz tus primeros pasos de esta semana."
+}

@@ -1,0 +1,23 @@
+{
+  "id": "ea-03b",
+  "numero": "03",
+  "titulo": "Por dónde empezar",
+  "partes": [{ "crudo": "$CRUDOS/06-formacion-dudas.mov", "transcripcion": "transcripciones/06-formacion-dudas.json", "quitar": [[1.2, 2.7]] }],
+  "claves": ["completa.", "repasar"],
+  "tarjetas": [
+    {
+      "en": "tienes",
+      "hasta": "ellas",
+      "zona": "Clases",
+      "titulo": "Todo abierto para repasar",
+      "lado": "derecha",
+      "filas": [
+        { "texto": "02 · Desbloqueo", "estado": "abierto" },
+        { "texto": "03 · Tonificación y moldeo", "estado": "abierto" },
+        { "texto": "04 · Facial & Brazos", "estado": "abierto" },
+        { "texto": "Técnica completa", "estado": "abierto" }
+      ]
+    }
+  ],
+  "cierre": "Abre hoy tu primera clase y mírala hasta el final."
+}

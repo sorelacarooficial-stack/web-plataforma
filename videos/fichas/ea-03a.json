@@ -1,0 +1,51 @@
+{
+  "id": "ea-03a",
+  "numero": "03",
+  "titulo": "Cómo avanzas en tu formación",
+  "partes": [{ "crudo": "$CRUDOS/05-como-avanzar.mov", "transcripcion": "transcripciones/05-como-avanzar.json" }],
+  "corregir": {
+    "precursor,": "Precurso,",
+    "desbloqueo,": "Desbloqueo,",
+    "tonificación": "Tonificación",
+    "moldeo": "moldeo,",
+    "facial": "Facial",
+    "uno": "01"
+  },
+  "claves": ["módulos.", "candados.", "siguiente.", "aplicar"],
+  "tarjetas": [
+    {
+      "en": "tenemos",
+      "hasta": "propósito.",
+      "zona": "Clases · Academia",
+      "titulo": "Tu camino, módulo a módulo",
+      "lado": "derecha",
+      "filas": [
+        { "texto": "01 · Precurso", "detalle": "Fundamentos anatómicos y fisiológicos", "estado": "abierto" },
+        { "texto": "02 · Desbloqueo", "estado": "candado" },
+        { "texto": "03 · Tonificación y moldeo", "estado": "candado" },
+        { "texto": "04 · Facial & Brazos", "estado": "candado" }
+      ]
+    },
+    {
+      "en": "primero",
+      "hasta": "siguiente.",
+      "zona": "Cómo se abre cada paso",
+      "titulo": "Un paso cada vez",
+      "lado": "izquierda",
+      "filas": [
+        { "texto": "Lees el dosier", "estado": "hecho" },
+        { "texto": "Se abren sus videos", "estado": "abierto" },
+        { "texto": "Se abre el módulo siguiente", "estado": "candado" }
+      ]
+    },
+    {
+      "en": "tarea",
+      "dura": 4,
+      "zona": "Clases · Academia",
+      "titulo": "Módulo 01 · Precurso",
+      "lado": "derecha",
+      "boton": "Abrir el Módulo 01"
+    }
+  ],
+  "cierre": "Abre el Módulo 01 y empieza a leer."
+}

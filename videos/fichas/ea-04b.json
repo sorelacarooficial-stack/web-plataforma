@@ -1,0 +1,22 @@
+{
+  "id": "ea-04b",
+  "numero": "04",
+  "titulo": "La clase en vivo",
+  "partes": [{ "crudo": "$CRUDOS/11-clase-en-vivo.mov", "transcripcion": "transcripciones/11-clase-en-vivo.json" }],
+  "claves": ["favoritos", "reales.", "grabada"],
+  "tarjetas": [
+    {
+      "en": "allí",
+      "hasta": "reales.",
+      "zona": "Comunidad · Clase en vivo",
+      "titulo": "Una vez al mes, en directo",
+      "lado": "derecha",
+      "filas": [
+        { "texto": "Tus dudas", "estado": "abierto" },
+        { "texto": "Tus casos reales", "estado": "abierto" }
+      ],
+      "boton": "Añadir a mi calendario"
+    }
+  ],
+  "cierre": "Añade la próxima clase a tu calendario."
+}
