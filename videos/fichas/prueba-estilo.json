@@ -1,0 +1,31 @@
+{
+  "id": "prueba-estilo",
+  "numero": "03",
+  "titulo": "Cómo avanzas en tu formación",
+  "crudo": "/tmp/claude-0/-home-user-web-plataforma/a920082b-a744-5a41-8e7b-4f47fc5b85b3/scratchpad/crudos/05-como-avanzar.mov",
+  "tarjetas": [
+    {
+      "desde": 6,
+      "hasta": 13,
+      "zona": "Clases · Academia",
+      "titulo": "Tu camino, módulo a módulo",
+      "lado": "derecha",
+      "filas": [
+        { "texto": "01 · Precurso", "detalle": "Fundamentos anatómicos", "estado": "hecho" },
+        { "texto": "02 · Desbloqueo", "detalle": "Abdomen", "estado": "abierto" },
+        { "texto": "03 · Tonificación y moldeo", "estado": "candado" },
+        { "texto": "04 · Facial & Brazos", "estado": "candado" }
+      ]
+    },
+    {
+      "desde": 15,
+      "hasta": 21,
+      "zona": "Clases",
+      "titulo": "Protocolo de abdomen",
+      "lado": "izquierda",
+      "boton": "Marcar como vista"
+    }
+  ],
+  "acercamientos": [3.0],
+  "cierre": "Abre el Módulo 01 y empieza a leer."
+}

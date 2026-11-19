@@ -459,3 +459,11 @@ cada cambio importante** (una línea por decisión, con la fecha).
   El de Andrea no existía por una letra mal copiada en el id (`…WQqY…` en vez
   de `…WQgY…`): corregido; los dos vídeos de Drive funcionan (Andrea 7,0 GB,
   Esther 7,6 GB, cuenta sorelabeautyboutique).
+- 2026-11-19: **motor de vídeo de Sorela en `videos/`** (Remotion propio, no toca
+  la web) + skill `.claude/skills/videos-sorela`: crudo + transcripción de
+  ElevenLabs + ficha → `preparar.mjs` (quita silencios, color cálido, voz a
+  −16 LUFS, 1080p) → `render.mjs` (rótulo de autoridad, subtítulos palabra a
+  palabra, tarjetas de cristal oscuro de la plataforma, acercamientos 106 %,
+  cierre oscuro por capas con medallón 3D, cama de piano). Los 10 crudos de
+  «Empieza aquí» están bajados pero sin montar: falta transcribirlos
+  (ElevenLabs no acepta los enlaces de Drive). La sección sigue cerrada.
