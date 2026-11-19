@@ -1,6 +1,7 @@
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
-import { BloqueTexto, Certificado, Contador, Etiquetas, Fechas, Lista, Plazas, useFoto } from './graficos';
+import { BloqueTexto, Certificado, Contador, Etiquetas, Fechas, Plazas, useFoto } from './graficos';
+import { duraVoz, EscenarioSorela } from './sorela';
 import { Montaje, Plano } from './montaje';
 import { Antetitulo, Cierre, media, Pildora, Tarjeta3D, Titular, useFormato, useU } from './piezas';
 import { C } from './tema';
@@ -153,146 +154,119 @@ export const planosManos: Plano[] = [
   { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Aprende la técnica\n**con su creadora**'} /> },
 ];
 
-/* ─────────────── A3 · Medellín ─────────────── */
+/* ─────────────── A3 · Medellín como destino (con Sorela hablando) ─────────────── */
 
 export const planosMedellin: Plano[] = [
   {
-    dura: 80,
+    dura: duraVoz('el-cambio', 10),
+    voz: { id: 'el-cambio', desde: 10 },
+    el: (d) => <EscenarioSorela id="el-cambio" dura={d} voz={10} fondo="Medellín" chips={[{ t: 'Medellín · 28, 29 y 30 de enero', x: 0, y: -600, desde: 4 }]} />,
+  },
+  {
+    dura: 105,
     oscuro: true,
     el: () => (
       <BloqueTexto centro>
-        <Titular texto="Enero." tam={170} color={C.crema} alinear="center" />
-        <Titular texto="**Medellín.**" tam={190} color={C.crema} oro alinear="center" desde={18} />
+        <Antetitulo texto="Formación presencial" color={C.oroClaro} />
+        <Fechas desde={4} oscuro />
+        <div style={{ height: 24 }} />
+        <Titular texto={'Tres días con\n**Sorela Caro**.'} desde={22} tam={92} color={C.crema} oro alinear="center" />
       </BloqueTexto>
     ),
   },
   {
-    dura: 120,
-    el: () => {
-      return (
-        <BloqueTexto centro>
-          <Antetitulo texto="Formación presencial" />
-          <Fechas desde={6} />
-          <div style={{ height: 20 }} />
-          <Titular texto={'Tres días con\n**Sorela Caro**.'} desde={30} tam={88} alinear="center" />
-        </BloqueTexto>
-      );
-    },
-  },
-  {
-    dura: 115,
+    dura: duraVoz('leer-cuerpo', 8),
+    voz: { id: 'leer-cuerpo', desde: 8 },
     el: (d) => (
-      <>
-        <DosFotos a={media('sorela-retrato.webp')} b={media('credenciales.webp')} dura={d} ea="50% 15%" eb="50% 30%" />
-        <BloqueTexto>
-          <Titular texto={'La técnica,\nde la mano de\n**quien la creó**.'} tam={88} />
-        </BloqueTexto>
-      </>
-    ),
-  },
-  {
-    dura: 95,
-    el: () => (
-      <BloqueTexto centro>
-        <Titular texto={'Una ciudad.\nUn método.\n**10 plazas.**'} tam={110} alinear="center" oro />
-      </BloqueTexto>
+      <EscenarioSorela
+        id="leer-cuerpo"
+        dura={d}
+        voz={8}
+        fondo="enero"
+        giro={-1}
+        chips={[
+          { t: 'observa', x: -220, y: -600, desde: 30 },
+          { t: 'estimulación ganglionar', x: 120, y: -500, desde: 60 },
+        ]}
+      />
     ),
   },
   { dura: 130, cierre: true, el: (d) => <Cierre dura={d} /> },
 ];
 
-/* ─────────────── A4 · 10 plazas ─────────────── */
+/* ─────────────── A4 · Solo 10 plazas (con Sorela hablando) ─────────────── */
+
+const PlazasOscuro: React.FC = () => {
+  const { horizontal } = useFormato();
+  return (
+    <BloqueTexto centro>
+      <Titular texto={'Por eso, en Medellín,\n**solo 10 plazas**.'} tam={horizontal ? 96 : 104} color={C.crema} oro alinear="center" />
+      <div style={{ height: 34 }} />
+      <Plazas desde={16} oscuro tam={horizontal ? 120 : 150} />
+    </BloqueTexto>
+  );
+};
 
 export const planosPlazas: Plano[] = [
   {
-    dura: 100,
-    oscuro: true,
-    el: () => {
-      const { horizontal } = useFormato();
-      return (
-        <BloqueTexto centro>
-          <Titular texto={'Solo **10** plazas.'} tam={horizontal ? 110 : 120} color={C.crema} oro alinear="center" />
-          <div style={{ height: 30 }} />
-          <Plazas desde={14} oscuro tam={horizontal ? 120 : 150} />
-        </BloqueTexto>
-      );
-    },
+    dura: duraVoz('lo-que-frena', 3),
+    voz: { id: 'lo-que-frena', desde: 3 },
+    el: (d) => <EscenarioSorela id="lo-que-frena" dura={d} voz={3} fondo="práctica" chips={[{ t: 'Sorela Caro · 30 años', x: 0, y: -600, desde: 6 }]} />,
   },
+  { dura: 120, oscuro: true, el: () => <PlazasOscuro /> },
   {
     dura: 110,
     el: (d) => (
       <>
         <FotoPrincipal src={media('sorela-corrigiendo.webp')} dura={d} enfoque="50% 25%" />
         <BloqueTexto>
-          <Titular texto={'Porque aquí\n**no eres una más**.'} tam={96} />
+          <Titular texto={'Para corregir\n**tus manos**,\nuna a una.'} tam={96} />
         </BloqueTexto>
       </>
-    ),
-  },
-  {
-    dura: 115,
-    el: (d) => (
-      <>
-        <FotoPrincipal src={media('sorela-alumna.webp')} dura={d} enfoque="62% 30%" lado={-1} />
-        <BloqueTexto>
-          <Titular texto={'Sorela te mira,\n**te corrige**\ny te acompaña.'} tam={90} />
-        </BloqueTexto>
-      </>
-    ),
-  },
-  {
-    dura: 95,
-    el: () => (
-      <BloqueTexto centro>
-        <Antetitulo texto="Medellín · 28, 29 y 30 de enero" />
-        <Titular texto={'Diez alumnas.\n**Una maestra.**'} tam={120} alinear="center" desde={6} />
-      </BloqueTexto>
     ),
   },
   { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Reserva una de las\n**10 plazas**'} /> },
 ];
 
-/* ─────────────── A5 · Certifícate con la creadora ─────────────── */
+/* ─────────────── A5 · Fórmate y certifícate con la creadora (con Sorela hablando) ─────────────── */
 
-const ListaFormacion: React.FC = () => {
-  const { horizontal } = useFormato();
+const Diploma: React.FC = () => {
+  const { horizontal, historia } = useFormato();
   return (
-    <BloqueTexto centro={!horizontal}>
-      <Titular texto={'Todo lo que\n**te llevas**.'} tam={96} alinear={horizontal ? 'left' : 'center'} />
-      <div style={{ height: 20 }} />
-      <Lista desde={14} items={['Formación online completa', '3 días presenciales con Sorela', 'Certificación Técnica Divine®']} />
-    </BloqueTexto>
+    <>
+      <Certificado desde={4} x={horizontal ? 420 : 0} y={horizontal ? 0 : historia ? 180 : 140} />
+      <BloqueTexto>
+        <Titular texto={'Fórmate con ella.\nY **certifícate**.'} tam={100} desde={10} />
+      </BloqueTexto>
+    </>
   );
 };
 
 export const planosCertificado: Plano[] = [
   {
-    dura: 120,
-    el: (d) => (
-      <>
-        <FotoPrincipal src={media('sorela-habla-1.mp4')} video dura={d} enfoque="50% 30%" />
-        <BloqueTexto>
-          <Titular texto={'Fórmate con\n**quien creó**\n**el método**.'} tam={96} />
-        </BloqueTexto>
-      </>
-    ),
+    dura: duraVoz('soy-sorela', 3, 8),
+    voz: { id: 'soy-sorela', desde: 3 },
+    el: (d) => <EscenarioSorela id="soy-sorela" dura={d} voz={3} fondo="Divine®" chips={[{ t: 'Creadora de la Técnica Divine®', x: 0, y: -600, desde: 4 }]} />,
   },
   {
-    dura: 115,
-    el: () => {
-      const { horizontal, historia } = useFormato();
-      return (
-        <>
-          <Certificado desde={4} x={horizontal ? 420 : 0} y={horizontal ? 0 : historia ? 180 : 140} />
-          <BloqueTexto>
-            <Titular texto={'Y **certifícate**\ncon ella.'} tam={100} desde={10} />
-          </BloqueTexto>
-        </>
-      );
-    },
+    dura: duraVoz('treinta-anos', 4),
+    voz: { id: 'treinta-anos', desde: 4 },
+    el: (d) => (
+      <EscenarioSorela
+        id="treinta-anos"
+        dura={d}
+        voz={4}
+        fondo="30 años"
+        giro={-1}
+        chips={[
+          { t: '30 años de práctica', x: -170, y: -600, desde: 20 },
+          { t: '+25.000 casos', x: 190, y: -500, desde: 50 },
+        ]}
+      />
+    ),
   },
-  { dura: 130, el: () => <ListaFormacion /> },
-  { dura: 130, cierre: true, el: (d) => <Cierre dura={d}  /> },
+  { dura: 120, el: () => <Diploma /> },
+  { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Medellín\n**28, 29 y 30 de enero**'} /> },
 ];
 
 /* ─────────────── Landing (30-45 s) ─────────────── */
@@ -373,14 +347,14 @@ export const planosLanding: Plano[] = [
 ];
 
 /** Más aire para leer: cada plano (menos el cierre) dura un 20 % más. */
-const aire = (ps: Plano[]): Plano[] => ps.map((p) => (p.cierre ? p : { ...p, dura: Math.round(p.dura * 1.2) }));
+const aire = (ps: Plano[]): Plano[] => ps.map((p) => (p.cierre || p.voz ? p : { ...p, dura: Math.round(p.dura * 1.2) }));
 
 export const ANUNCIOS = {
   autoridad: aire(planosAutoridad),
   manos: aire(planosManos),
-  medellin: aire(planosMedellin),
-  plazas: aire(planosPlazas),
-  certificado: aire(planosCertificado),
+  medellin: planosMedellin,
+  plazas: planosPlazas,
+  certificado: planosCertificado,
   landing: aire(planosLanding).map((p) => (p.cierre ? p : { ...p, dura: Math.round(p.dura * 1.1) })),
 };
 

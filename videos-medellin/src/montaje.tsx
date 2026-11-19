@@ -4,7 +4,15 @@ import { CameraMotionBlur } from '@remotion/motion-blur';
 import { Escena, media } from './piezas';
 import { FPS } from './tema';
 
-export type Plano = { dura: number; oscuro?: boolean; cierre?: boolean; empuje?: number; el: (dura: number) => React.ReactNode };
+export type Plano = {
+  dura: number;
+  oscuro?: boolean;
+  cierre?: boolean;
+  empuje?: number;
+  /** Si Sorela habla en este plano: qué voz y en qué fotograma empieza (la música baja mientras habla). */
+  voz?: { id: string; desde: number };
+  el: (dura: number) => React.ReactNode;
+};
 
 /** Cada plano es su propio componente (así sus hooks viven dentro de su Sequence). */
 const Pinta: React.FC<{ el: Plano['el']; dura: number }> = ({ el, dura }) => <>{el(dura)}</>;
@@ -28,6 +36,10 @@ export const Montaje: React.FC<{ planos: Plano[] }> = ({ planos }) => {
   const golpe = iCierre >= 0 ? inicios[iCierre] : durationInFrames - 90;
   // La música arranca de forma que su subida caiga justo cuando entra el cierre.
   const arranque = Math.max(0, Math.round((SUBIDA - golpe / FPS) * FPS));
+  // Tramos con la voz de Sorela: la música se aparta para que se la entienda.
+  const voces = planos.flatMap((p, i) => (p.voz ? [[inicios[i] + p.voz.desde - 6, inicios[i] + p.dura - 8]] : []));
+  const bajo = (f: number) =>
+    Math.max(0, ...voces.map(([a, b]) => interpolate(f, [a, a + 8, b, b + 12], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })));
   return (
     <AbsoluteFill style={{ background: '#f4efe7' }}>
       {/* Desenfoque de movimiento real: cada fotograma mezcla 5 instantes (obturador de 180°). */}
@@ -48,7 +60,7 @@ export const Montaje: React.FC<{ planos: Plano[] }> = ({ planos }) => {
         src={media('musica.mp3')}
         startFrom={arranque}
         volume={(f) =>
-          interpolate(f, [0, 8, durationInFrames - 30, durationInFrames - 1], [0, 0.85, 0.85, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+          interpolate(f, [0, 8, durationInFrames - 30, durationInFrames - 1], [0, 0.85, 0.85, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) * (1 - bajo(f) * 0.78)
         }
       />
       {inicios.slice(1).map((i, k) => (
