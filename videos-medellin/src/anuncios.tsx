@@ -155,8 +155,7 @@ export const planosPlazas = conVoz(
   [
     { desde: 0, el: foto({ foto: 'sorela-corrigiendo.webp', enfoque: '50% 25%', fondo: 'terapeutas', portada: true }) },
     { desde: 15, oscuro: true, el: () => <PlazasOscuro /> },
-    { desde: 19, el: foto({ foto: 'sorela-alumna.webp', enfoque: '62% 30%', fondo: 'una a una', giro: -1, chips: [{ t: 'corrección una a una', x: 0, y: -0.86, desde: 6 }] }) },
-    { desde: 28, oscuro: true, el: () => <FechasOscuro titular={'Medellín.\n**Solo 10 plazas.**'} /> },
+    { desde: 28, el: foto({ foto: 'sorela-alumna.webp', enfoque: '62% 30%', fondo: 'enero', giro: -1, chips: [{ t: 'Medellín · 28, 29 y 30 de enero', x: 0, y: -0.86, desde: 6 }] }) },
   ],
   { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Reserva una de las\n**10 plazas**'} /> },
 );

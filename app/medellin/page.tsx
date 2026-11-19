@@ -88,12 +88,12 @@ export default async function Medellin({ searchParams }: { searchParams: Promise
       {/* ── Portada ── */}
       <section className={css.portada}>
         <div className={css.portadaTexto}>
-          <p className={css.ante}>Formación presencial · Medellín</p>
+          <p className={css.ante}>Formación presencial para terapeutas, esteticistas y masajistas · Medellín</p>
           <h1 className={css.titular}>
             Aprende la Técnica Divine® <strong className={css.oro}>con su creadora</strong>.
           </h1>
           <p className={css.entrada}>
-            Tres días con Sorela Caro, corrigiendo tus manos una a una. {BECA.fechas[0].toUpperCase() + BECA.fechas.slice(1)} de 2027.
+            El método de drenaje y moldeo corporal y facial, solo con las manos. Tres días con Sorela Caro (30 años, +25.000 casos), corrigiendo tus manos una a una. {BECA.fechas[0].toUpperCase() + BECA.fechas.slice(1)} de 2027.
           </p>
           <Fechas />
           <div className={css.accion}>

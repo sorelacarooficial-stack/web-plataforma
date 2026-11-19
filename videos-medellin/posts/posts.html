@@ -31,8 +31,8 @@
   .p1 .foto img { width:100%; height:100%; object-fit:cover; object-position: 50% 15%; border-radius: 0 0 0 48px;
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%); }
   .p1 .luz { position:absolute; inset:0; background: radial-gradient(60% 40% at 25% 30%, rgba(255,255,255,.95), transparent 70%); }
-  .p1 .texto { position:absolute; left:80px; top: var(--top); width: 560px; display:flex; flex-direction:column; gap:26px; }
-  .p1 h1 { font-size: 92px; }
+  .p1 .texto { position:absolute; left:80px; top: var(--top); width: 500px; display:flex; flex-direction:column; gap:26px; }
+  .p1 h1 { font-size: 84px; }
   .p1 .datos { display:flex; flex-direction:column; gap:14px; margin-top: 10px; }
   .p1 .dato { font-size:28px; font-weight:400; color:#4a4238; display:flex; gap:16px; align-items:baseline; }
   .p1 .dato b { font-weight:200; font-size:64px; letter-spacing:-.05em; color: var(--oro); min-width: 0; }
@@ -54,13 +54,15 @@
   .p2 .marco img { width:100%; height:100%; object-fit:cover; object-position: 50% 25%; }
   .p2 .marco::after { content:''; position:absolute; inset:0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.22) 45%, transparent 60%); mix-blend-mode: soft-light; }
   .p2 .arriba { position:absolute; top: var(--top2); left: 0; right: 0; text-align:center; display:flex; flex-direction:column; align-items:center; gap: 22px; }
-  .p2 .arriba .ante { color:#f3d9ae; }
-  .p2 h1 { font-size: 86px; color: var(--crema); }
+  .p2 .arriba .ante { color:#f3d9ae; font-size: 19px; letter-spacing: .18em; }
+  .p2 h1 { font-size: 72px; color: var(--crema); }
   .p2 .abajo { position:absolute; bottom: var(--bot2); left:0; right:0; display:flex; flex-direction:column; align-items:center; gap: 30px; }
   .p2 .p-a { position:absolute; left: 70px; top: calc(var(--fotoTop) + 120px); }
   .p2 .p-b { position:absolute; right: 60px; top: calc(var(--fotoTop) + var(--fotoH) - 160px); }
   .p2 .pildora { background: rgba(255,255,255,.1); border-color: rgba(243,217,174,.4); color: var(--crema); box-shadow: 0 18px 50px rgba(0,0,0,.45); }
   .logo { width: 220px; }
+  .que { font-size: 28px; line-height: 1.4; color: #4a4238; font-weight: 400; max-width: 30em; }
+  .p2 .que { color: #d9cfbf; font-size: 26px; }
   .asientos { display:flex; gap: 12px; }
   .asientos span { width: 62px; height: 62px; border-radius: 18px; display:flex; align-items:center; justify-content:center; font-size: 20px; font-weight: 300; color:#f3d9ae;
     background: rgba(255,255,255,.06); border: 1px solid rgba(243,217,174,.35); box-shadow: inset 0 0 22px rgba(201,154,92,.28), 0 10px 24px rgba(0,0,0,.4); }
@@ -77,8 +79,8 @@
   document.documentElement.style.setProperty('--top', h ? '300px' : '110px');
   document.documentElement.style.setProperty('--top2', h ? '210px' : '80px');
   document.documentElement.style.setProperty('--bot2', h ? '200px' : '56px');
-  document.documentElement.style.setProperty('--fotoTop', h ? '540px' : '320px');
-  document.documentElement.style.setProperty('--fotoH', h ? '780px' : '570px');
+  document.documentElement.style.setProperty('--fotoTop', h ? '560px' : '370px');
+  document.documentElement.style.setProperty('--fotoH', h ? '760px' : '520px');
   document.documentElement.style.setProperty('--fotoW', h ? '600px' : '640px');
   document.documentElement.style.setProperty('--diezTop', h ? '520px' : '300px');
   const html = post === '1' ? `
@@ -86,8 +88,9 @@
     <div class="luz"></div>
     <div class="foto"><img src="${M}sorela-retrato.webp"></div>
     <div class="texto">
-      <div class="ante">Formación presencial</div>
-      <h1>Aprende la técnica <strong>con su creadora</strong>.</h1>
+      <div class="ante">Formación presencial para terapeutas y esteticistas</div>
+      <h1>Aprende la Técnica Divine® <strong>con su creadora</strong>.</h1>
+      <p class="que">El método de drenaje y moldeo corporal y facial, solo con las manos.</p>
       <div class="datos">
         <div class="dato"><b>30</b> años de práctica</div>
         <div class="dato"><b>+25.000</b> casos</div>
@@ -95,7 +98,7 @@
     </div>
     <div class="pildora pildora-foto"><i></i>Sorela Caro · creadora de la Técnica Divine®</div>
     <div class="banda">
-      <div class="ciudad"><div class="ante">Solo 10 plazas</div><h1><strong class="oro">Medellín</strong></h1></div>
+      <div class="ciudad"><div class="ante">Presencial · solo 10 plazas</div><h1><strong class="oro">Medellín</strong></h1></div>
       <div class="dias">
         <div class="dia"><b>ENE</b><span>28</span><small>DÍA 1</small></div>
         <div class="dia"><b>ENE</b><span>29</span><small>DÍA 2</small></div>
@@ -106,14 +109,16 @@
   <div class="lienzo p2 grano">
     <div class="halo"></div>
     <div class="arriba">
-      <div class="ante">Medellín · 28, 29 y 30 de enero</div>
-      <h1>Solo <strong class="oro">10 plazas</strong>.<br>Ni una más.</h1>
+      <div class="ante">Técnica Divine® · formación presencial para terapeutas</div>
+      <h1><strong class="oro">10 plazas</strong> con Sorela Caro,<br>creadora del método.</h1>
+      <p class="que">Drenaje y moldeo corporal y facial, solo con las manos · Medellín, 28-30 de enero</p>
     </div>
     <div class="marco"><img src="${M}sorela-corrigiendo.webp"></div>
-    <div class="pildora p-a"><i></i>Te mira trabajar</div>
+    <div class="pildora p-a"><i></i>30 años · +25.000 casos</div>
     <div class="pildora p-b"><i></i>Corrige tus manos, una a una</div>
     <div class="abajo">
-      <div class="asientos">${Array.from({length:10},(_,i)=>`<span>${String(i+1).padStart(2,'0')}</span>`).join('')}</div>
+      <div class="asientos">${Array.from({length:10},()=>`<span><svg viewBox="0 0 48 48" width="34" height="34"><path d="M14 6h20a3 3 0 0 1 3 3v17H11V9a3 3 0 0 1 3-3zM8 26h32a3 3 0 0 1 3 3v4H5v-4a3 3 0 0 1 3-3zM10 33v10M38 33v10" fill="rgba(243,217,174,0.85)" stroke="#f3d9ae" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg></span>`).join('')}</div>
+      <div class="ante" style="color:#f3d9ae">10 plazas · corrección una a una</div>
       <span class="boton">Reserva tu plaza</span>
       <img class="logo" src="${M}logo-oro.webp">
     </div>
