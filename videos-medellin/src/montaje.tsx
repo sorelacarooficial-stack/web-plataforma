@@ -20,7 +20,7 @@ export const SOLAPE = 10;
 export const duracionDe = (planos: Plano[]) => planos.reduce((a, p) => a + p.dura, 0) - SOLAPE * (planos.length - 1);
 
 /** Pone los planos en fila, solapados, con un «whoosh» en cada cambio, su música propia y un golpe al entrar el cierre. */
-export const Montaje: React.FC<{ planos: Plano[]; musica: string; paso: string; golpe: string; voz: string; encabezado?: string }> = ({
+export const Montaje: React.FC<{ planos: Plano[]; musica: string; paso: string; golpe: string; voz: string; encabezado?: string | false }> = ({
   planos,
   musica,
   paso,
@@ -57,9 +57,11 @@ export const Montaje: React.FC<{ planos: Plano[]; musica: string; paso: string; 
         </Sequence>
       ))}
       </CameraMotionBlur>
-      <Sequence durationInFrames={inicios[1] + SOLAPE}>
-        <Encabezado hasta={inicios[1] + SOLAPE} titular={encabezado} />
-      </Sequence>
+      {encabezado !== false && (
+        <Sequence durationInFrames={inicios[1] + SOLAPE}>
+          <Encabezado hasta={inicios[1] + SOLAPE} titular={encabezado} />
+        </Sequence>
+      )}
       <SubtitulosVoz id={voz} />
       <Locucion id={voz} />
       <Audio

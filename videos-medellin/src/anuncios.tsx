@@ -1,5 +1,6 @@
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
+import { AperturaAutoridad, AperturaCertificado, AperturaManos, AperturaMedellin, AperturaPlazas } from './aperturas';
 import { Escena3D } from './escena3d';
 import { BloqueTexto, Certificado, Contador, Fechas, Lista, Plazas } from './graficos';
 import { Montaje, Plano, SOLAPE } from './montaje';
@@ -100,8 +101,8 @@ const LoQueTeLlevas: React.FC = () => {
 export const planosAutoridad = conVoz(
   'autoridad',
   [
-    { desde: 0, el: foto({ foto: 'sorela-retrato.webp', enfoque: '50% 16%', fondo: 'Sorela', portada: true }) },
-    { desde: 8, oscuro: true, el: () => <Cifras /> },
+    { desde: 0, oscuro: true, el: (d) => <AperturaAutoridad dura={d} /> },
+    { desde: 8, el: foto({ foto: 'sorela-retrato.webp', segunda: 'historia.webp', enfoque: '50% 16%', fondo: 'Sorela', chips: [{ t: 'Sorela Caro · creadora del método', x: 0, y: -0.86, desde: 6 }] }) },
     { desde: 19, el: foto({ foto: 'sorela-corrigiendo.webp', enfoque: '50% 25%', fondo: 'en persona', giro: -1, chips: [{ t: 'Para terapeutas y esteticistas', x: 0, y: -0.86, desde: 8 }] }) },
     { desde: 30, oscuro: true, el: () => <FechasOscuro titular={'Tres días en\n**Medellín**.'} /> },
   ],
@@ -113,7 +114,7 @@ export const planosAutoridad = conVoz(
 export const planosManos = conVoz(
   'manos',
   [
-    { desde: 0, el: foto({ foto: 'valoracion-abdomen.webp', enfoque: '50% 40%', fondo: 'manos', portada: true }) },
+    { desde: 0, oscuro: true, el: (d) => <AperturaManos dura={d} /> },
     { desde: 8, el: foto({ foto: 'sorela-corrigiendo.webp', enfoque: '50% 25%', fondo: 'leer', giro: -1, chips: [{ t: 'Formación presencial', x: 0, y: -0.86, desde: 6 }] }) },
     {
       desde: 17,
@@ -140,9 +141,9 @@ export const planosManos = conVoz(
 export const planosMedellin = conVoz(
   'medellin',
   [
-    { desde: 0, el: foto({ foto: 'sorela-retrato.webp', enfoque: '50% 16%', fondo: 'Medellín', portada: true }) },
+    { desde: 0, el: (d) => <AperturaMedellin dura={d} /> },
     { desde: 10, el: foto({ foto: 'valoracion-abdomen.webp', segunda: 'trabajo-lumbar.webp', enfoque: '50% 40%', fondo: 'drenaje', giro: -1, chips: [{ t: 'drenaje y moldeo · solo con las manos', x: 0, y: -0.86, desde: 6 }] }) },
-    { desde: 20, oscuro: true, el: () => <FechasOscuro ante="Medellín · enero de 2027" titular={'28, 29 y 30\nde **enero**.'} /> },
+    { desde: 20, el: foto({ foto: 'sorela-corrigiendo.webp', enfoque: '50% 25%', fondo: 'enero', chips: [{ t: 'Medellín · 28, 29 y 30 de enero', x: 0, y: -0.86, desde: 6 }] }) },
     { desde: 26, el: foto({ foto: 'sorela-alumna.webp', segunda: 'sorela-corrigiendo.webp', enfoque: '62% 30%', fondo: 'a mi lado', chips: [{ t: 'con certificación', x: 0, y: -0.86, desde: 40 }] }) },
   ],
   { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Te espero en\n**Medellín**'} /> },
@@ -153,8 +154,8 @@ export const planosMedellin = conVoz(
 export const planosPlazas = conVoz(
   'plazas',
   [
-    { desde: 0, el: foto({ foto: 'sorela-corrigiendo.webp', enfoque: '50% 25%', fondo: 'terapeutas', portada: true }) },
-    { desde: 15, oscuro: true, el: () => <PlazasOscuro /> },
+    { desde: 0, oscuro: true, el: () => <AperturaPlazas /> },
+    { desde: 15, el: foto({ foto: 'sorela-corrigiendo.webp', enfoque: '50% 25%', fondo: 'una a una', chips: [{ t: 'corrección una a una', x: 0, y: -0.86, desde: 6 }] }) },
     { desde: 28, el: foto({ foto: 'sorela-alumna.webp', enfoque: '62% 30%', fondo: 'enero', giro: -1, chips: [{ t: 'Medellín · 28, 29 y 30 de enero', x: 0, y: -0.86, desde: 6 }] }) },
   ],
   { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Reserva una de las\n**10 plazas**'} /> },
@@ -165,10 +166,10 @@ export const planosPlazas = conVoz(
 export const planosCertificado = conVoz(
   'certificado',
   [
-    { desde: 0, el: foto({ foto: 'valoracion-abdomen.webp', enfoque: '50% 40%', fondo: 'moldeo', portada: true }) },
+    { desde: 0, el: () => <AperturaCertificado /> },
     { desde: 10, el: foto({ foto: 'sorela-retrato.webp', segunda: 'historia.webp', enfoque: '50% 16%', fondo: 'creadora', giro: -1, chips: [{ t: 'Sorela Caro · creadora del método', x: 0, y: -0.86, desde: 6 }] }) },
     { desde: 16, el: foto({ foto: 'sorela-corrigiendo.webp', enfoque: '50% 25%', fondo: '3 días', chips: [{ t: '3 días presenciales · Medellín', x: 0, y: -0.86, desde: 6 }] }) },
-    { desde: 22, el: () => <Diploma /> },
+    { desde: 22, el: () => <LoQueTeLlevas /> },
   ],
   { dura: 140, cierre: true, el: (d) => <Cierre dura={d} titular={'Fórmate con\n**su creadora**'} /> },
 );
@@ -204,11 +205,11 @@ export const planosLanding = conVoz(
 
 /** Cada pieza con su voz, su música y sus efectos (ninguna repite pista). */
 export const ANUNCIOS = {
-  autoridad: { planos: planosAutoridad, voz: 'autoridad', musica: 'musica-autoridad.mp3', paso: 'barrido.mp3', golpe: 'piano-golpe.mp3' },
-  manos: { planos: planosManos, voz: 'manos', musica: 'musica-manos.mp3', paso: 'destello.mp3', golpe: 'golpe.mp3', encabezado: 'Para terapeutas, esteticistas\ny **masajistas**' },
-  medellin: { planos: planosMedellin, voz: 'medellin', musica: 'musica-medellin.mp3', paso: 'whoosh.mp3', golpe: 'piano-golpe.mp3' },
-  plazas: { planos: planosPlazas, voz: 'plazas', musica: 'musica-plazas.mp3', paso: 'barrido.mp3', golpe: 'golpe.mp3' },
-  certificado: { planos: planosCertificado, voz: 'certificado', musica: 'musica-certificado.mp3', paso: 'destello.mp3', golpe: 'piano-golpe.mp3', encabezado: 'Para terapeutas: fórmate\n**con la creadora del método**' },
+  autoridad: { planos: planosAutoridad, voz: 'autoridad', encabezado: false as const, musica: 'musica-autoridad.mp3', paso: 'barrido.mp3', golpe: 'piano-golpe.mp3' },
+  manos: { planos: planosManos, voz: 'manos', musica: 'musica-manos.mp3', paso: 'destello.mp3', golpe: 'golpe.mp3', encabezado: false as const },
+  medellin: { planos: planosMedellin, voz: 'medellin', encabezado: false as const, musica: 'musica-medellin.mp3', paso: 'whoosh.mp3', golpe: 'piano-golpe.mp3' },
+  plazas: { planos: planosPlazas, voz: 'plazas', encabezado: false as const, musica: 'musica-plazas.mp3', paso: 'barrido.mp3', golpe: 'golpe.mp3' },
+  certificado: { planos: planosCertificado, voz: 'certificado', musica: 'musica-certificado.mp3', paso: 'destello.mp3', golpe: 'piano-golpe.mp3', encabezado: false as const },
   landing: { planos: planosLanding, voz: 'landing', musica: 'musica-landing.mp3', paso: 'whoosh.mp3', golpe: 'golpe.mp3' },
 };
 
