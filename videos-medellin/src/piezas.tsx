@@ -349,7 +349,7 @@ export const Cierre: React.FC<{ dura: number; titular?: string; boton?: string }
         <Img
           src={media('logo-oro.webp')}
           style={{
-            width: (horizontal ? 300 : 380) * u,
+            width: (horizontal ? 360 : 460) * u,
             opacity: logo,
             filter: `blur(${(1 - logo) * 14}px) drop-shadow(0 0 ${30 * logo}px rgba(201,154,92,0.45))`,
             transform: `scale(${mezcla(1.25, 1, logo)})`,
@@ -357,7 +357,7 @@ export const Cierre: React.FC<{ dura: number; titular?: string; boton?: string }
         />
         <Titular texto={titular} desde={30} tam={horizontal ? 64 : 84} color={C.crema} oro alinear="center" />
         <div style={{ width: 120 * u * tramo(f, 44, 26), height: 1, background: C.degradado }} />
-        <Antetitulo texto="Formación presencial · solo 10 plazas" desde={50} color={C.oroClaro} tam={24} />
+        <Antetitulo texto="Formación presencial para terapeutas · 10 plazas" desde={50} color={C.oroClaro} tam={26} />
         <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 999, opacity: tramo(f, 60, 20), transform: `translateY(${(1 - tramo(f, 60, 20)) * 30}px)` }}>
           <div
             style={{

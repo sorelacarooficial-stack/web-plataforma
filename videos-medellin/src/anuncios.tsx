@@ -1,367 +1,220 @@
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
-import { BloqueTexto, Certificado, Contador, Etiquetas, Fechas, Plazas, useFoto } from './graficos';
-import { duraVoz, EscenarioSorela } from './sorela';
-import { Montaje, Plano } from './montaje';
-import { Antetitulo, Cierre, media, Pildora, Tarjeta3D, Titular, useFormato, useU } from './piezas';
+import { Escena3D } from './escena3d';
+import { BloqueTexto, Certificado, Contador, Fechas, Lista, Plazas } from './graficos';
+import { Montaje, Plano, SOLAPE } from './montaje';
+import { Antetitulo, Cierre, Titular, useFormato } from './piezas';
 import { C } from './tema';
+import { finVoz, fotogramaPalabra } from './voz';
 
-/* Piezas que se repiten entre anuncios */
+/*
+ * Medellín v2. Solo las fotos de Sorela (fotos/): ningún plano ni frase de los
+ * vídeos de la plataforma. Cada pieza:
+ *  · 0-3 s: encabezado con qué es, para quién y quién lo enseña (se entiende sin sonido);
+ *  · la voz clonada de Sorela (aprobada) con su guion, subtitulada palabra a palabra;
+ *  · cada plano entra con la frase que le toca (cortes por frase de la locución);
+ *  · su propia música y efectos, y el cierre oscuro por capas.
+ */
 
-const FotoPrincipal: React.FC<{ src: string; dura: number; enfoque?: string; video?: boolean; lado?: 1 | -1 }> = ({ src, dura, enfoque, video, lado = 1 }) => {
-  const p = useFoto();
-  return <Tarjeta3D src={src} video={video} desde={4} dura={dura} {...p} enfoque={enfoque} desdeLado={lado} giro={-12 * lado} />;
+type Escena = { desde: number; oscuro?: boolean; el: (dura: number) => React.ReactNode };
+
+/** Convierte escenas que empiezan en una palabra de la locución en planos con su duración. */
+const conVoz = (voz: string, escenas: Escena[], cierre: Plano): Plano[] => {
+  const inicio = (i: number) => (i === 0 ? 0 : Math.max(105, fotogramaPalabra(voz, escenas[i].desde) - 6));
+  const fin = finVoz(voz) + 14;
+  const planos: Plano[] = escenas.map((e, i) => {
+    const a = inicio(i);
+    const b = i + 1 < escenas.length ? inicio(i + 1) : fin;
+    return { dura: b - a + SOLAPE, oscuro: e.oscuro, el: e.el };
+  });
+  return [...planos, cierre];
 };
 
-/** Dos fotos en profundidad: una delante y otra detrás. */
-const DosFotos: React.FC<{ a: string; b: string; dura: number; ea?: string; eb?: string }> = ({ a, b, dura, ea, eb }) => {
-  const { horizontal, historia } = useFormato();
-  const p = useFoto();
-  const k = horizontal ? 0.8 : historia ? 0.72 : 0.7;
-  return (
-    <>
-      <Tarjeta3D src={b} desde={2} dura={dura} x={p.x - 230} y={p.y - 90} w={p.w * k} h={p.h * k} giro={16} z={-260} enfoque={eb} desdeLado={-1} />
-      <Tarjeta3D src={a} desde={10} dura={dura} x={p.x + 90} y={p.y + 80} w={p.w * k} h={p.h * k} giro={-12} z={60} enfoque={ea} />
-    </>
-  );
-};
+const foto = (o: Omit<React.ComponentProps<typeof Escena3D>, 'dura'>) => (d: number) => <Escena3D {...o} dura={d} />;
 
-const Cifra: React.FC<{ n: number; prefijo?: string; abajo: string; dura: number }> = ({ n, prefijo, abajo }) => {
-  const largo = String(n).length + (prefijo?.length ?? 0) > 3;
-  const { horizontal } = useFormato();
-  return (
-    <BloqueTexto centro={horizontal}>
-      <div style={{ flex: horizontal ? undefined : 0.55 }} />
-      <Contador hasta={n} prefijo={prefijo} desde={2} tam={largo ? 250 : horizontal ? 330 : 420} />
-      <Titular texto={abajo} desde={14} tam={84} ancho={900} alinear={horizontal ? 'center' : 'left'} />
-    </BloqueTexto>
-  );
-};
-
-/* ─────────────── A1 · Autoridad ─────────────── */
-
-export const planosAutoridad: Plano[] = [
-  { dura: 70, el: (d) => <Cifra n={30} abajo={'años con las manos\nen el **cuerpo**.'} dura={d} /> },
-  { dura: 70, el: (d) => <Cifra n={25000} prefijo="+" abajo={'casos que la\n**avalan**.'} dura={d} /> },
-  {
-    dura: 110,
-    el: (d) => (
-      <>
-        <FotoPrincipal src={media('sorela-retrato.webp')} dura={d} enfoque="50% 18%" />
-        <BloqueTexto>
-          <Antetitulo texto="Sorela Caro" />
-          <Titular texto={'Creó un **método**.\nAhora lo enseña.'} desde={6} tam={92} />
-        </BloqueTexto>
-        <Etiquetas items={[{ t: 'Creadora de la Técnica Divine®', x: 40, y: 760 }]} desde={30} />
-      </>
-    ),
-  },
-  {
-    dura: 110,
-    el: (d) => (
-      <>
-        <DosFotos a={media('sorela-corrigiendo.webp')} b={media('historia.webp')} dura={d} ea="50% 25%" eb="50% 30%" />
-        <BloqueTexto>
-          <Titular texto={'En persona.\nCon tus manos,\n**corregidas por ella**.'} tam={88} />
-        </BloqueTexto>
-      </>
-    ),
-  },
-  {
-    dura: 95,
-    oscuro: true,
-    el: () => (
-      <BloqueTexto centro>
-        <Antetitulo texto="Formación presencial" color={C.oroClaro} />
-        <Titular texto="**Medellín**" tam={190} color={C.crema} oro alinear="center" desde={4} />
-        <div style={{ height: 30 }} />
-        <Fechas desde={14} oscuro />
-      </BloqueTexto>
-    ),
-  },
-  { dura: 130, cierre: true, el: (d) => <Cierre dura={d} /> },
-];
-
-/* ─────────────── A2 · Las manos ─────────────── */
-
-const EtiquetasMetodo: React.FC = () => {
-  const { horizontal, historia } = useFormato();
-  const p = useFoto();
-  const dy = historia ? 1 : 0.75;
-  const items = horizontal
-    ? [
-        { t: 'observa', x: p.x - 330, y: -250 },
-        { t: 'estimulación ganglionar', x: p.x + 160, y: -60 },
-        { t: 'ritmo y velocidad', x: p.x - 280, y: 140 },
-        { t: 'arrastre', x: p.x + 200, y: 300 },
-      ]
-    : [
-        { t: 'observa', x: -230, y: p.y - 380 * dy },
-        { t: 'estimulación ganglionar', x: 150, y: p.y - 120 * dy },
-        { t: 'ritmo y velocidad', x: -170, y: p.y + 140 * dy },
-        { t: 'arrastre', x: 230, y: p.y + 380 * dy },
-      ];
-  return <Etiquetas items={items} desde={26} cada={12} />;
-};
-
-export const planosManos: Plano[] = [
-  {
-    dura: 85,
-    el: (d) => (
-      <>
-        <FotoPrincipal src={media('valoracion-abdomen.webp')} dura={d} enfoque="50% 40%" />
-        <BloqueTexto>
-          <Titular texto={'Tus manos ya\nsaben **tocar**.'} tam={104} />
-        </BloqueTexto>
-      </>
-    ),
-  },
-  {
-    dura: 130,
-    el: (d) => (
-      <>
-        <FotoPrincipal src={media('sesion-consulta.webp')} dura={d} enfoque="50% 30%" lado={-1} />
-        <EtiquetasMetodo />
-        <BloqueTexto>
-          <Titular texto={'Ahora aprende\na **leer el cuerpo**.'} tam={96} />
-        </BloqueTexto>
-      </>
-    ),
-  },
-  {
-    dura: 110,
-    el: (d) => (
-      <>
-        <FotoPrincipal src={media('sorela-corrigiendo.webp')} dura={d} enfoque="50% 25%" />
-        <BloqueTexto>
-          <Antetitulo texto="Con Sorela Caro" />
-          <Titular texto={'Te mira trabajar.\n**Te corrige.**\nUna a una.'} desde={6} tam={90} />
-        </BloqueTexto>
-      </>
-    ),
-  },
-  {
-    dura: 100,
-    oscuro: true,
-    el: () => (
-      <BloqueTexto centro>
-        <Titular texto={'3 días.\n**Medellín.**'} tam={150} color={C.crema} oro alinear="center" />
-        <div style={{ height: 40 }} />
-        <Fechas desde={18} oscuro />
-      </BloqueTexto>
-    ),
-  },
-  { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Aprende la técnica\n**con su creadora**'} /> },
-];
-
-/* ─────────────── A3 · Medellín como destino (con Sorela hablando) ─────────────── */
-
-export const planosMedellin: Plano[] = [
-  {
-    dura: duraVoz('el-cambio', 10),
-    voz: { id: 'el-cambio', desde: 10 },
-    el: (d) => <EscenarioSorela id="el-cambio" dura={d} voz={10} fondo="Medellín" chips={[{ t: 'Medellín · 28, 29 y 30 de enero', x: 0, y: -600, desde: 4 }]} />,
-  },
-  {
-    dura: 105,
-    oscuro: true,
-    el: () => (
-      <BloqueTexto centro>
-        <Antetitulo texto="Formación presencial" color={C.oroClaro} />
-        <Fechas desde={4} oscuro />
-        <div style={{ height: 24 }} />
-        <Titular texto={'Tres días con\n**Sorela Caro**.'} desde={22} tam={92} color={C.crema} oro alinear="center" />
-      </BloqueTexto>
-    ),
-  },
-  {
-    dura: duraVoz('leer-cuerpo', 8),
-    voz: { id: 'leer-cuerpo', desde: 8 },
-    el: (d) => (
-      <EscenarioSorela
-        id="leer-cuerpo"
-        dura={d}
-        voz={8}
-        fondo="enero"
-        giro={-1}
-        chips={[
-          { t: 'observa', x: -220, y: -600, desde: 30 },
-          { t: 'estimulación ganglionar', x: 120, y: -500, desde: 60 },
-        ]}
-      />
-    ),
-  },
-  { dura: 130, cierre: true, el: (d) => <Cierre dura={d} /> },
-];
-
-/* ─────────────── A4 · Solo 10 plazas (con Sorela hablando) ─────────────── */
+const FechasOscuro: React.FC<{ titular: string; ante?: string }> = ({ titular, ante = 'Formación presencial para terapeutas' }) => (
+  <BloqueTexto centro>
+    <Antetitulo texto={ante} color={C.oroClaro} />
+    <Fechas desde={4} oscuro />
+    <div style={{ height: 24 }} />
+    <Titular texto={titular} desde={16} tam={84} color={C.crema} oro alinear="center" />
+  </BloqueTexto>
+);
 
 const PlazasOscuro: React.FC = () => {
   const { horizontal } = useFormato();
   return (
     <BloqueTexto centro>
-      <Titular texto={'Por eso, en Medellín,\n**solo 10 plazas**.'} tam={horizontal ? 96 : 104} color={C.crema} oro alinear="center" />
-      <div style={{ height: 34 }} />
-      <Plazas desde={16} oscuro tam={horizontal ? 120 : 150} />
+      <Antetitulo texto="Formación presencial · Medellín" color={C.oroClaro} />
+      <Titular texto={'**10 plazas**.\nNi una más.'} tam={horizontal ? 96 : 104} color={C.crema} oro alinear="center" />
+      <div style={{ height: 30 }} />
+      <Plazas desde={10} oscuro tam={horizontal ? 112 : 136} />
     </BloqueTexto>
   );
 };
 
-export const planosPlazas: Plano[] = [
-  {
-    dura: duraVoz('lo-que-frena', 3),
-    voz: { id: 'lo-que-frena', desde: 3 },
-    el: (d) => <EscenarioSorela id="lo-que-frena" dura={d} voz={3} fondo="práctica" chips={[{ t: 'Sorela Caro · 30 años', x: 0, y: -600, desde: 6 }]} />,
-  },
-  { dura: 120, oscuro: true, el: () => <PlazasOscuro /> },
-  {
-    dura: 110,
-    el: (d) => (
-      <>
-        <FotoPrincipal src={media('sorela-corrigiendo.webp')} dura={d} enfoque="50% 25%" />
-        <BloqueTexto>
-          <Titular texto={'Para corregir\n**tus manos**,\nuna a una.'} tam={96} />
-        </BloqueTexto>
-      </>
-    ),
-  },
-  { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Reserva una de las\n**10 plazas**'} /> },
-];
-
-/* ─────────────── A5 · Fórmate y certifícate con la creadora (con Sorela hablando) ─────────────── */
+const Cifras: React.FC = () => {
+  const { horizontal } = useFormato();
+  return (
+    <BloqueTexto centro>
+      <Antetitulo texto="Sorela Caro · creadora de la Técnica Divine®" color={C.oroClaro} />
+      <div style={{ display: 'flex', flexDirection: horizontal ? 'row' : 'column', gap: horizontal ? 140 : 30, alignItems: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <Contador hasta={30} desde={2} tam={horizontal ? 250 : 280} />
+          <Titular texto="años de **práctica**" desde={10} tam={56} color={C.crema} alinear="center" />
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <Contador hasta={25000} prefijo="+" desde={10} dura={40} tam={horizontal ? 210 : 220} />
+          <Titular texto="**casos**" desde={20} tam={56} color={C.crema} alinear="center" />
+        </div>
+      </div>
+    </BloqueTexto>
+  );
+};
 
 const Diploma: React.FC = () => {
   const { horizontal, historia } = useFormato();
   return (
     <>
-      <Certificado desde={4} x={horizontal ? 420 : 0} y={horizontal ? 0 : historia ? 180 : 140} />
+      <Certificado desde={4} x={horizontal ? 420 : 0} y={horizontal ? 0 : historia ? 60 : 20} />
       <BloqueTexto>
-        <Titular texto={'Fórmate con ella.\nY **certifícate**.'} tam={100} desde={10} />
+        <Titular texto={'Práctica real\ny tu **certificación**.'} tam={92} desde={8} />
       </BloqueTexto>
     </>
   );
 };
 
-export const planosCertificado: Plano[] = [
-  {
-    dura: duraVoz('soy-sorela', 3, 8),
-    voz: { id: 'soy-sorela', desde: 3 },
-    el: (d) => <EscenarioSorela id="soy-sorela" dura={d} voz={3} fondo="Divine®" chips={[{ t: 'Creadora de la Técnica Divine®', x: 0, y: -600, desde: 4 }]} />,
-  },
-  {
-    dura: duraVoz('treinta-anos', 4),
-    voz: { id: 'treinta-anos', desde: 4 },
-    el: (d) => (
-      <EscenarioSorela
-        id="treinta-anos"
-        dura={d}
-        voz={4}
-        fondo="30 años"
-        giro={-1}
-        chips={[
-          { t: '30 años de práctica', x: -170, y: -600, desde: 20 },
-          { t: '+25.000 casos', x: 190, y: -500, desde: 50 },
-        ]}
-      />
-    ),
-  },
-  { dura: 120, el: () => <Diploma /> },
-  { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Medellín\n**28, 29 y 30 de enero**'} /> },
-];
+const LoQueTeLlevas: React.FC = () => {
+  const { horizontal } = useFormato();
+  return (
+    <BloqueTexto centro={!horizontal}>
+      <Titular texto={'Todo lo que\n**te llevas**.'} tam={92} alinear={horizontal ? 'left' : 'center'} />
+      <div style={{ height: 16 }} />
+      <Lista desde={10} items={['Formación online completa', '3 días presenciales con Sorela', 'Certificación Técnica Divine®']} />
+    </BloqueTexto>
+  );
+};
 
-/* ─────────────── Landing (30-45 s) ─────────────── */
+/* ─────────────── A1 · Autoridad: quién es Sorela ─────────────── */
 
-export const planosLanding: Plano[] = [
-  {
-    dura: 120,
-    el: (d) => (
-      <>
-        <FotoPrincipal src={media('sorela-habla-2.mp4')} video dura={d} enfoque="50% 30%" />
-        <BloqueTexto>
-          <Antetitulo texto="Sorela Caro" />
-          <Titular texto={'30 años.\n**+25.000 casos.**'} desde={6} tam={100} />
-        </BloqueTexto>
-      </>
-    ),
-  },
-  {
-    dura: 110,
-    el: (d) => (
-      <>
-        <FotoPrincipal src={media('sorela-retrato.webp')} dura={d} enfoque="50% 18%" lado={-1} />
-        <BloqueTexto>
-          <Titular texto={'La **Técnica Divine®**,\nenseñada por\nsu creadora.'} tam={86} />
-        </BloqueTexto>
-      </>
-    ),
-  },
-  {
-    dura: 130,
-    el: (d) => (
-      <>
-        <FotoPrincipal src={media('sesion-consulta.webp')} dura={d} enfoque="50% 30%" />
-        <EtiquetasMetodo />
-        <BloqueTexto>
-          <Titular texto={'Aprende a\n**leer el cuerpo**.'} tam={96} />
-        </BloqueTexto>
-      </>
-    ),
-  },
-  {
-    dura: 110,
-    el: (d) => (
-      <>
-        <DosFotos a={media('sorela-corrigiendo.webp')} b={media('sorela-alumna.webp')} dura={d} ea="50% 25%" eb="62% 30%" />
-        <BloqueTexto>
-          <Titular texto={'Con tus manos,\n**corregidas por ella**.'} tam={88} />
-        </BloqueTexto>
-      </>
-    ),
-  },
-  {
-    dura: 120,
-    oscuro: true,
-    el: () => (
-      <BloqueTexto centro>
-        <Titular texto="**Medellín**" tam={170} color={C.crema} oro alinear="center" />
-        <div style={{ height: 30 }} />
-        <Fechas desde={12} oscuro />
-      </BloqueTexto>
-    ),
-  },
-  {
-    dura: 110,
-    oscuro: true,
-    el: () => {
-      const { horizontal } = useFormato();
-      return (
-        <BloqueTexto centro>
-          <Titular texto={'Solo **10** plazas.'} tam={110} color={C.crema} oro alinear="center" />
-          <div style={{ height: 30 }} />
-          <Plazas desde={12} oscuro tam={horizontal ? 110 : 140} />
-        </BloqueTexto>
-      );
+export const planosAutoridad = conVoz(
+  'autoridad',
+  [
+    { desde: 0, el: foto({ foto: 'sorela-retrato.webp', enfoque: '50% 16%', fondo: 'Sorela', portada: true }) },
+    { desde: 8, oscuro: true, el: () => <Cifras /> },
+    { desde: 19, el: foto({ foto: 'sorela-corrigiendo.webp', enfoque: '50% 25%', fondo: 'en persona', giro: -1, chips: [{ t: 'Para terapeutas y esteticistas', x: 0, y: -0.86, desde: 8 }] }) },
+    { desde: 30, oscuro: true, el: () => <FechasOscuro titular={'Tres días en\n**Medellín**.'} /> },
+  ],
+  { dura: 130, cierre: true, el: (d) => <Cierre dura={d} /> },
+);
+
+/* ─────────────── A2 · Las manos: qué aprendes ─────────────── */
+
+export const planosManos = conVoz(
+  'manos',
+  [
+    { desde: 0, el: foto({ foto: 'valoracion-abdomen.webp', enfoque: '50% 40%', fondo: 'manos', portada: true }) },
+    { desde: 8, el: foto({ foto: 'sorela-corrigiendo.webp', enfoque: '50% 25%', fondo: 'leer', giro: -1, chips: [{ t: 'Formación presencial', x: 0, y: -0.86, desde: 6 }] }) },
+    {
+      desde: 17,
+      el: foto({
+        foto: 'sesion-consulta.webp',
+        segunda: 'trabajo-lumbar.webp',
+        enfoque: '50% 35%',
+        fondo: 'cuerpo',
+        chips: [
+          { t: 'observa', x: -0.42, y: -0.84, desde: 4 },
+          { t: 'estimulación ganglionar', x: 0.12, y: -0.62, desde: 56 },
+          { t: 'ritmo', x: -0.4, y: -0.38, desde: 116 },
+          { t: 'arrastre', x: 0.4, y: -0.16, desde: 140 },
+        ],
+      }),
     },
-  },
+    { desde: 30, oscuro: true, el: () => <FechasOscuro titular={'3 días conmigo.\n**Medellín.**'} /> },
+  ],
+  { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Aprende la técnica\n**con su creadora**'} /> },
+);
+
+/* ─────────────── A3 · Medellín como destino ─────────────── */
+
+export const planosMedellin = conVoz(
+  'medellin',
+  [
+    { desde: 0, el: foto({ foto: 'sorela-retrato.webp', enfoque: '50% 16%', fondo: 'Medellín', portada: true }) },
+    { desde: 10, el: foto({ foto: 'valoracion-abdomen.webp', segunda: 'trabajo-lumbar.webp', enfoque: '50% 40%', fondo: 'drenaje', giro: -1, chips: [{ t: 'drenaje y moldeo · solo con las manos', x: 0, y: -0.86, desde: 6 }] }) },
+    { desde: 20, oscuro: true, el: () => <FechasOscuro ante="Medellín · enero de 2027" titular={'28, 29 y 30\nde **enero**.'} /> },
+    { desde: 26, el: foto({ foto: 'sorela-alumna.webp', segunda: 'sorela-corrigiendo.webp', enfoque: '62% 30%', fondo: 'a mi lado', chips: [{ t: 'con certificación', x: 0, y: -0.86, desde: 40 }] }) },
+  ],
+  { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Te espero en\n**Medellín**'} /> },
+);
+
+/* ─────────────── A4 · Solo 10 plazas: por qué tan pocas ─────────────── */
+
+export const planosPlazas = conVoz(
+  'plazas',
+  [
+    { desde: 0, el: foto({ foto: 'sorela-corrigiendo.webp', enfoque: '50% 25%', fondo: 'terapeutas', portada: true }) },
+    { desde: 15, oscuro: true, el: () => <PlazasOscuro /> },
+    { desde: 19, el: foto({ foto: 'sorela-alumna.webp', enfoque: '62% 30%', fondo: 'una a una', giro: -1, chips: [{ t: 'corrección una a una', x: 0, y: -0.86, desde: 6 }] }) },
+    { desde: 28, oscuro: true, el: () => <FechasOscuro titular={'Medellín.\n**Solo 10 plazas.**'} /> },
+  ],
+  { dura: 130, cierre: true, el: (d) => <Cierre dura={d} titular={'Reserva una de las\n**10 plazas**'} /> },
+);
+
+/* ─────────────── A5 · Fórmate y certifícate con la creadora ─────────────── */
+
+export const planosCertificado = conVoz(
+  'certificado',
+  [
+    { desde: 0, el: foto({ foto: 'valoracion-abdomen.webp', enfoque: '50% 40%', fondo: 'moldeo', portada: true }) },
+    { desde: 10, el: foto({ foto: 'sorela-retrato.webp', segunda: 'historia.webp', enfoque: '50% 16%', fondo: 'creadora', giro: -1, chips: [{ t: 'Sorela Caro · creadora del método', x: 0, y: -0.86, desde: 6 }] }) },
+    { desde: 16, el: foto({ foto: 'sorela-corrigiendo.webp', enfoque: '50% 25%', fondo: '3 días', chips: [{ t: '3 días presenciales · Medellín', x: 0, y: -0.86, desde: 6 }] }) },
+    { desde: 22, el: () => <Diploma /> },
+  ],
+  { dura: 140, cierre: true, el: (d) => <Cierre dura={d} titular={'Fórmate con\n**su creadora**'} /> },
+);
+
+/* ─────────────── Landing (≈ 36 s) ─────────────── */
+
+export const planosLanding = conVoz(
+  'landing',
+  [
+    { desde: 0, el: foto({ foto: 'sorela-retrato.webp', enfoque: '50% 16%', fondo: 'Sorela', portada: true }) },
+    { desde: 8, oscuro: true, el: () => <Cifras /> },
+    { desde: 21, el: foto({ foto: 'historia.webp', segunda: 'credenciales.webp', enfoque: '40% 30%', fondo: 'en persona', giro: -1 }) },
+    { desde: 27, el: foto({ foto: 'sorela-alumna.webp', segunda: 'sorela-corrigiendo.webp', enfoque: '62% 30%', fondo: 'terapeutas', chips: [{ t: 'terapeutas · esteticistas · masajistas', x: 0, y: -0.86, desde: 8 }] }) },
+    {
+      desde: 42,
+      el: foto({
+        foto: 'sesion-consulta.webp',
+        segunda: 'trabajo-lumbar.webp',
+        enfoque: '50% 35%',
+        fondo: 'cuerpo',
+        giro: -1,
+        chips: [
+          { t: 'leer el cuerpo', x: -0.3, y: -0.84, desde: 6 },
+          { t: 'corrección una a una', x: 0.2, y: -0.62, desde: 70 },
+        ],
+      }),
+    },
+    { desde: 56, oscuro: true, el: () => <FechasOscuro ante="Medellín · enero de 2027" titular={'Tres días\n**conmigo**.'} /> },
+    { desde: 63, oscuro: true, el: () => <PlazasOscuro /> },
+  ],
   { dura: 150, cierre: true, el: (d) => <Cierre dura={d} /> },
-];
+);
 
-/** Más aire para leer: cada plano (menos el cierre) dura un 20 % más. */
-const aire = (ps: Plano[]): Plano[] => ps.map((p) => (p.cierre || p.voz ? p : { ...p, dura: Math.round(p.dura * 1.2) }));
-
+/** Cada pieza con su voz, su música y sus efectos (ninguna repite pista). */
 export const ANUNCIOS = {
-  autoridad: aire(planosAutoridad),
-  manos: aire(planosManos),
-  medellin: planosMedellin,
-  plazas: planosPlazas,
-  certificado: planosCertificado,
-  landing: aire(planosLanding).map((p) => (p.cierre ? p : { ...p, dura: Math.round(p.dura * 1.1) })),
+  autoridad: { planos: planosAutoridad, voz: 'autoridad', musica: 'musica-autoridad.mp3', paso: 'barrido.mp3', golpe: 'piano-golpe.mp3' },
+  manos: { planos: planosManos, voz: 'manos', musica: 'musica-manos.mp3', paso: 'destello.mp3', golpe: 'golpe.mp3', encabezado: 'Para terapeutas, esteticistas\ny **masajistas**' },
+  medellin: { planos: planosMedellin, voz: 'medellin', musica: 'musica-medellin.mp3', paso: 'whoosh.mp3', golpe: 'piano-golpe.mp3' },
+  plazas: { planos: planosPlazas, voz: 'plazas', musica: 'musica-plazas.mp3', paso: 'barrido.mp3', golpe: 'golpe.mp3' },
+  certificado: { planos: planosCertificado, voz: 'certificado', musica: 'musica-certificado.mp3', paso: 'destello.mp3', golpe: 'piano-golpe.mp3', encabezado: 'Para terapeutas: fórmate\n**con la creadora del método**' },
+  landing: { planos: planosLanding, voz: 'landing', musica: 'musica-landing.mp3', paso: 'whoosh.mp3', golpe: 'golpe.mp3' },
 };
 
 export const Anuncio: React.FC<{ id: keyof typeof ANUNCIOS }> = ({ id }) => (
   <AbsoluteFill>
-    <Montaje planos={ANUNCIOS[id]} />
+    <Montaje {...ANUNCIOS[id]} />
   </AbsoluteFill>
 );
-
-export { Pildora, useU };

@@ -103,7 +103,17 @@ export const Plazas: React.FC<{ desde?: number; oscuro?: boolean; tam?: number }
               color: oscuro ? C.oroClaro : C.oro,
             }}
           >
-            {String(i + 1).padStart(2, '0')}
+            {/* Un asiento por plaza: se lee como «plaza», no como paginación. */}
+            <svg width={tam * 0.56 * u} height={tam * 0.56 * u} viewBox="0 0 48 48">
+              <path
+                d="M14 6h20a3 3 0 0 1 3 3v17H11V9a3 3 0 0 1 3-3zM8 26h32a3 3 0 0 1 3 3v4H5v-4a3 3 0 0 1 3-3zM10 33v10M38 33v10"
+                fill={brilla > 0.5 ? 'rgba(243,217,174,0.85)' : 'none'}
+                stroke={oscuro ? C.oroClaro : C.oro}
+                strokeWidth={2.4}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+            </svg>
           </div>
         );
       })}

@@ -481,3 +481,14 @@ cada cambio importante** (una línea por decisión, con la fecha).
   `MEDELLIN_CLAVE` (o `CLASE_CLAVE`) solo abre con `?k=`; «Reservar mi plaza»
   abre WhatsApp con el mensaje escrito. El reparto por días de la landing está
   sin confirmar con Sorela.
+  **v2 (mismo día):** cero material de la plataforma (ni planos ni frases de
+  «Empieza aquí» ni de sus crudos): solo las fotos en 3D (cámara entre capas,
+  cristal con reflejo). **Voz clonada de Sorela (aprobada)**: voz «SORELA»
+  de ElevenLabs (`bImUfxOCw35t3t6KTzxQ`, eleven_multilingual_v2), guiones
+  nuevos en `docs/guiones-medellin.md`, cada toma transcrita de nuevo (coincide
+  palabra a palabra) y sus tiempos en `videos-medellin/src/voz/*.json` para
+  los subtítulos. Los 3 primeros segundos de cada pieza llevan en pantalla
+  qué es, para quién y quién lo enseña (`Encabezado`, src/voz.tsx). Música
+  propia por pieza (6 pistas ElevenLabs a −16 LUFS, `musica-<pieza>.mp3`) que
+  baja con la voz, y efectos distintos (barrido, destello, golpe de piano).
+  Prohibido usar canciones comerciales (inicio.mp3, despedida.mp3).

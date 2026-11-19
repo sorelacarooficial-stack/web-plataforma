@@ -33,7 +33,7 @@ export const Root: React.FC = () => (
             component={Anuncio}
             defaultProps={{ id }}
             fps={FPS}
-            durationInFrames={duracionDe(ANUNCIOS[id])}
+            durationInFrames={duracionDe(ANUNCIOS[id].planos)}
             {...FORMATOS[fmt]}
           />
         )),
