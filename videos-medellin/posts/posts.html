@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Posts Medellín</title>
+<style>
+  @font-face { font-family: Inter; src: url(../public/media/inter.woff2) format('woff2'); font-weight: 100 900; }
+  :root { --crema:#f4efe7; --tinta:#141210; --oro:#8a6a32; --banda:#17140f; --deg:linear-gradient(135deg,#f3d9ae,#c99a5c); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, sans-serif; background: #ddd; }
+  .lienzo { width: 1080px; height: var(--h); position: relative; overflow: hidden; }
+  .grano::after { content:''; position:absolute; inset:0; pointer-events:none; opacity:.07; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  .ante { font-size: 24px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: var(--oro); }
+  h1 { font-weight: 300; letter-spacing: -.045em; line-height: 1.02; }
+  h1 strong { font-weight: 600; }
+  .oro { background: linear-gradient(120deg,#b8894a,#e9c690 45%,#a87b3f); -webkit-background-clip: text; color: transparent; }
+  .pildora { display:inline-flex; align-items:center; gap:14px; padding:16px 28px; border-radius:999px; font-size:26px; font-weight:400; white-space:nowrap;
+    background: rgba(255,255,255,.6); border:1px solid #fff; box-shadow:0 18px 50px rgba(80,60,30,.16); backdrop-filter: blur(18px); color: var(--tinta); }
+  .pildora i { width:12px; height:12px; border-radius:99px; background: var(--deg); box-shadow:0 0 14px rgba(201,154,92,.9); }
+  .boton { display:inline-block; padding:24px 52px; border-radius:999px; background:var(--deg); color:var(--tinta); font-weight:600; font-size:32px; letter-spacing:-.02em; box-shadow:0 20px 60px rgba(201,154,92,.35); }
+  .dias { display:flex; gap:16px; }
+  .dia { width:120px; border-radius:24px; overflow:hidden; text-align:center; background:rgba(255,255,255,.07); border:1px solid rgba(243,217,174,.35); }
+  .dia b { display:block; background:var(--deg); color:var(--tinta); font-size:16px; letter-spacing:.24em; padding:8px 0; font-weight:600; }
+  .dia span { display:block; font-size:66px; font-weight:200; letter-spacing:-.05em; color:var(--crema); padding:8px 0 4px; }
+  .dia small { display:block; font-size:13px; letter-spacing:.14em; color:#f3d9ae; padding-bottom:12px; }
+
+  /* ───── Post 1 · autoridad ───── */
+  .p1 { background: var(--crema); }
+  .p1 .foto { position:absolute; right:-40px; top:0; width:700px; height: calc(var(--h) - 300px); transform: perspective(2200px) rotateY(-8deg); transform-origin: right center; }
+  .p1 .foto img { width:100%; height:100%; object-fit:cover; object-position: 50% 15%; border-radius: 0 0 0 48px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%); }
+  .p1 .luz { position:absolute; inset:0; background: radial-gradient(60% 40% at 25% 30%, rgba(255,255,255,.95), transparent 70%); }
+  .p1 .texto { position:absolute; left:80px; top: var(--top); width: 560px; display:flex; flex-direction:column; gap:26px; }
+  .p1 h1 { font-size: 92px; }
+  .p1 .datos { display:flex; flex-direction:column; gap:14px; margin-top: 10px; }
+  .p1 .dato { font-size:28px; font-weight:400; color:#4a4238; display:flex; gap:16px; align-items:baseline; }
+  .p1 .dato b { font-weight:200; font-size:64px; letter-spacing:-.05em; color: var(--oro); min-width: 0; }
+  .p1 .banda { position:absolute; left:0; right:0; bottom:0; height:300px; background: var(--banda); display:flex; align-items:center; justify-content:space-between; padding: 0 80px; }
+  .p1 .banda::before { content:''; position:absolute; inset:0; background: radial-gradient(50% 120% at 80% 0%, rgba(201,154,92,.25), transparent 70%); }
+  .p1 .banda > * { position: relative; }
+  .p1 .banda .ciudad { color: var(--crema); }
+  .p1 .banda .ciudad h1 { font-size: 64px; }
+  .p1 .banda .ciudad .ante { color:#f3d9ae; margin-bottom: 10px; font-size: 20px; }
+  .p1 .pildora-foto { position:absolute; right: 60px; top: calc(var(--h) - 400px); }
+
+  /* ───── Post 2 · 10 plazas ───── */
+  .p2 { background: var(--banda); color: var(--crema); }
+  .p2 .halo { position:absolute; inset:0; background: radial-gradient(60% 40% at 50% 35%, rgba(201,154,92,.28), transparent 70%), radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(0,0,0,.6)); }
+  .p2 .diez { position:absolute; left: 50%; top: var(--diezTop); transform: translateX(-50%); font-size: 640px; font-weight: 100; letter-spacing: -.08em; line-height: .8;
+    background: linear-gradient(170deg, rgba(243,217,174,.55), rgba(201,154,92,.08) 75%); -webkit-background-clip:text; color: transparent; }
+  .p2 .marco { position:absolute; left:50%; top: var(--fotoTop); width: var(--fotoW); height: var(--fotoH); transform: translateX(-50%) perspective(1800px) rotateY(-10deg) rotateX(3deg);
+    border-radius: 40px; overflow:hidden; box-shadow: 0 60px 140px rgba(0,0,0,.6), 0 0 0 1px rgba(243,217,174,.3); }
+  .p2 .marco img { width:100%; height:100%; object-fit:cover; object-position: 50% 25%; }
+  .p2 .marco::after { content:''; position:absolute; inset:0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.22) 45%, transparent 60%); mix-blend-mode: soft-light; }
+  .p2 .arriba { position:absolute; top: var(--top2); left: 0; right: 0; text-align:center; display:flex; flex-direction:column; align-items:center; gap: 22px; }
+  .p2 .arriba .ante { color:#f3d9ae; }
+  .p2 h1 { font-size: 86px; color: var(--crema); }
+  .p2 .abajo { position:absolute; bottom: var(--bot2); left:0; right:0; display:flex; flex-direction:column; align-items:center; gap: 30px; }
+  .p2 .p-a { position:absolute; left: 70px; top: calc(var(--fotoTop) + 120px); }
+  .p2 .p-b { position:absolute; right: 60px; top: calc(var(--fotoTop) + var(--fotoH) - 160px); }
+  .p2 .pildora { background: rgba(255,255,255,.1); border-color: rgba(243,217,174,.4); color: var(--crema); box-shadow: 0 18px 50px rgba(0,0,0,.45); }
+  .logo { width: 220px; }
+  .asientos { display:flex; gap: 12px; }
+  .asientos span { width: 62px; height: 62px; border-radius: 18px; display:flex; align-items:center; justify-content:center; font-size: 20px; font-weight: 300; color:#f3d9ae;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(243,217,174,.35); box-shadow: inset 0 0 22px rgba(201,154,92,.28), 0 10px 24px rgba(0,0,0,.4); }
+</style>
+</head>
+<body>
+<script>
+  const q = new URLSearchParams(location.search);
+  const post = q.get('post') || '1';
+  const alto = q.get('formato') === 'historia' ? 1920 : 1350;
+  const h = alto === 1920;
+  const M = '../public/media/';
+  document.documentElement.style.setProperty('--h', alto + 'px');
+  document.documentElement.style.setProperty('--top', h ? '300px' : '110px');
+  document.documentElement.style.setProperty('--top2', h ? '210px' : '80px');
+  document.documentElement.style.setProperty('--bot2', h ? '200px' : '56px');
+  document.documentElement.style.setProperty('--fotoTop', h ? '540px' : '320px');
+  document.documentElement.style.setProperty('--fotoH', h ? '780px' : '570px');
+  document.documentElement.style.setProperty('--fotoW', h ? '600px' : '640px');
+  document.documentElement.style.setProperty('--diezTop', h ? '520px' : '300px');
+  const html = post === '1' ? `
+  <div class="lienzo p1 grano">
+    <div class="luz"></div>
+    <div class="foto"><img src="${M}sorela-retrato.webp"></div>
+    <div class="texto">
+      <div class="ante">Formación presencial</div>
+      <h1>Aprende la técnica <strong>con su creadora</strong>.</h1>
+      <div class="datos">
+        <div class="dato"><b>30</b> años de práctica</div>
+        <div class="dato"><b>+25.000</b> casos</div>
+      </div>
+    </div>
+    <div class="pildora pildora-foto"><i></i>Sorela Caro · creadora de la Técnica Divine®</div>
+    <div class="banda">
+      <div class="ciudad"><div class="ante">Solo 10 plazas</div><h1><strong class="oro">Medellín</strong></h1></div>
+      <div class="dias">
+        <div class="dia"><b>ENE</b><span>28</span><small>DÍA 1</small></div>
+        <div class="dia"><b>ENE</b><span>29</span><small>DÍA 2</small></div>
+        <div class="dia"><b>ENE</b><span>30</span><small>DÍA 3</small></div>
+      </div>
+    </div>
+  </div>` : `
+  <div class="lienzo p2 grano">
+    <div class="halo"></div>
+    <div class="arriba">
+      <div class="ante">Medellín · 28, 29 y 30 de enero</div>
+      <h1>Solo <strong class="oro">10 plazas</strong>.<br>Ni una más.</h1>
+    </div>
+    <div class="marco"><img src="${M}sorela-corrigiendo.webp"></div>
+    <div class="pildora p-a"><i></i>Te mira trabajar</div>
+    <div class="pildora p-b"><i></i>Corrige tus manos, una a una</div>
+    <div class="abajo">
+      <div class="asientos">${Array.from({length:10},(_,i)=>`<span>${String(i+1).padStart(2,'0')}</span>`).join('')}</div>
+      <span class="boton">Reserva tu plaza</span>
+      <img class="logo" src="${M}logo-oro.webp">
+    </div>
+  </div>`;
+  document.body.innerHTML = html;
+</script>
+</body>
+</html>
