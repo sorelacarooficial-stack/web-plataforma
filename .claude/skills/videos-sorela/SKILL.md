@@ -9,6 +9,15 @@ Un crudo de Sorela hablando a cámara → un vídeo de plataforma con acabado de
 autoridad: limpio, cálido, caro. Todo vive en `videos/` (proyecto Remotion
 propio, no toca la web).
 
+## Antes que el estilo: que se entienda
+Prueba de cada pieza: alguien que no conoce a Sorela la ve 3 s sin sonido. ¿Sabe
+**qué es**, **para quién** y **por qué fiarse**? Si no, no vale. En texto en
+pantalla al principio: qué (Técnica Divine®, formación/método manual), para
+quién (terapeutas, esteticistas…), quién (Sorela Caro, creadora, 30 años,
++25.000 casos). Ningún titular suelto sin contexto ni elementos que no se
+expliquen solos (p. ej. casillas 01-10 sin decir «plazas»). Nada cortado en
+ningún formato.
+
 ## El estilo (lo que manda)
 Viene de la skill «super-videos» (técnica del estilo ESTUDIO: pocas piezas muy
 bien elegidas, palabra clave grande, acercamientos, curvas suaves), **pero en

@@ -23,6 +23,12 @@ cada cambio importante** (una línea por decisión, con la fecha).
   (2026-10-20, PR #7)
 - Paleta: crema `#f4efe7`, tinta `#141210`, oro `#8a6a32` / degradado
   `#f3d9ae → #c99a5c`. Bandas oscuras `#17140f`.
+- **Regla de comunicación para todo (anuncios, posts, landings, vídeos,
+  correos)**: ¿alguien que no conoce a Sorela lo entiende en 3 segundos y sin
+  sonido? En texto, arriba: qué es (formación / Técnica Divine®, método manual),
+  para quién (terapeutas, esteticistas…) y quién lo enseña (Sorela Caro,
+  creadora, 30 años, +25.000 casos). Después la urgencia y el botón. Nada de
+  frases sueltas sin contexto. (2026-11-19, lo pidió Gerson)
 - Vídeos de anuncios: siempre motion graphics al estilo de los artefactos
   (Inter, crema, captions palabra a palabra con desenfoque, cierre oscuro por
   capas). Nunca foto con zoom.
