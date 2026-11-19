@@ -40,26 +40,33 @@ la marca de Sorela**. Nada de letra pixel ni fondos rojo/azul: eso es de basis.
 - Sin promesas de salud ni de resultados. Nada tapa la cara.
 
 ## El flujo
-1. **Transcribir** el crudo con ElevenLabs Scribe (`creative_transcribe_audio`,
-   eleven_scribe_v1, tiempos por palabra). Guarda el JSON de palabras.
-   Ojo: `creative_attach_reference_file` no acepta los enlaces de descarga de
-   Drive (no mandan tipo de archivo); el audio tiene que estar en una URL que
-   diga `audio/mpeg` o subirse a la biblioteca de ElevenLabs.
-2. **Ficha** en `videos/fichas/<id>.json`: id, número, título, ruta del crudo,
-   ruta de la transcripción, `claves` (palabras en oro + acercamiento),
-   `quitar` (tropiezos y repeticiones, en segundos del crudo), `tarjetas` (en
-   segundos del crudo) y `cierre` (la tarea). Ver `fichas/prueba-estilo.json`.
+1. **Transcribir** cada crudo con ElevenLabs Scribe (`creative_transcribe_audio`,
+   eleven_scribe_v1, tiempos por palabra). `creative_attach_reference_file`
+   necesita una URL que diga `audio/mpeg` (los enlaces de Drive NO valen: no
+   mandan tipo). Guarda `{text, words}` en `videos/transcripciones/<crudo>.json`.
+2. **Ficha** en `videos/fichas/<id>.json` (mira las que hay):
+   - `partes`: uno o varios crudos en orden (`$CRUDOS/x.mov` + su transcripción;
+     `quitar` = tropiezos en segundos de ese crudo). Así se unen dos tomas.
+   - `corregir`: arregla el subtítulo («IVAL» → «Divine»; `null` lo quita).
+   - `claves`: palabras en oro 600 + acercamiento 106 %.
+   - `tarjetas`: ancladas a palabras (`en`, `hasta` o `dura`; «una#2» = la
+     segunda vez que sale). Lado contrario a lo que haya: el rótulo ocupa la
+     izquierda los primeros 5 s.
+   - `cierre`: la tarea de la lección.
 3. `cd videos && npm install` (la primera vez).
-4. `node scripts/preparar.mjs fichas/<id>.json` → quita silencios > 0,5 s,
-   corta lo de `quitar`, corrige color y audio, pasa a 1920×1080 y escribe
-   `guiones/<id>.json` con todo recolocado al tiempo nuevo.
+4. `CRUDOS=/ruta/crudos node scripts/preparar.mjs fichas/<id>.json` → quita
+   silencios > 0,5 s y lo de `quitar`, corrige color y audio, 1920×1080, y
+   escribe `guiones/<id>.json`. Con `--solo-guion` solo rehace el guion
+   (tarjetas, claves) sin volver a cortar el vídeo.
 5. **Fotogramas antes de renderizar**:
-   `node scripts/render.mjs <id> --fotogramas 2,6,12` → PNG en `videos/salida/`.
-   Míralos: rótulo legible, tarjeta sin tapar la cara, subtítulo en dos líneas
-   como mucho.
+   `node scripts/render.mjs <id> --fotogramas 2,8,15` → PNG en `videos/salida/`.
+   Revisa: rótulo legible, tarjeta sin tapar la cara, subtítulo en una línea.
 6. **Render**: `node scripts/render.mjs <id> --salida ../public/empieza-aqui/NN.mp4`
-   → MP4 H.264 con faststart y póster `.jpg` al lado.
-7. En `lib/empieza-aqui.ts`, `video: '/empieza-aqui/NN.mp4'` en su lección.
+   → MP4 H.264 con faststart (~1 MB cada 4 s) y póster `.jpg` al lado. Unos
+   8-10 min por cada 40 s. Todo de golpe, de dos en dos:
+   `CRUDOS=… bash scripts/todos.sh --render`.
+7. En `lib/empieza-aqui.ts`, `video: '/empieza-aqui/NN.mp4'` en su lección (el
+   reproductor coge solo el póster `.jpg`).
 
-Los crudos y los `base.mp4` no se suben al repositorio (solo el MP4 final).
+Los crudos y los `base.mp4` no se suben al repositorio (solo el MP4 final y su póster).
 Chromium: `/opt/pw-browsers/chromium` (o la variable `CHROMIUM`).

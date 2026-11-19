@@ -1,0 +1,73 @@
+{
+  "id": "ea-00",
+  "numero": "00",
+  "titulo": "Bienvenida",
+  "partes": [
+    {
+      "crudo": "$CRUDOS/01-bienvenida.mov",
+      "transcripcion": "transcripciones/01-bienvenida.json"
+    },
+    {
+      "crudo": "$CRUDOS/02-academia.mov",
+      "transcripcion": "transcripciones/02-academia.json"
+    }
+  ],
+  "corregir": {
+    "caminamos": "caminan"
+  },
+  "claves": [
+    "espacio.",
+    "manos",
+    "video"
+  ],
+  "tarjetas": [
+    {
+      "en": "tienes",
+      "hasta": "contigo.",
+      "zona": "Tu plataforma",
+      "titulo": "Todo en un solo sitio",
+      "lado": "derecha",
+      "filas": [
+        {
+          "texto": "Inicio",
+          "detalle": "Tu camino, paso a paso",
+          "estado": "nada"
+        },
+        {
+          "texto": "Clases",
+          "detalle": "Tus videos y dosieres",
+          "estado": "nada"
+        },
+        {
+          "texto": "Agenda",
+          "detalle": "Tus fechas y reuniones",
+          "estado": "nada"
+        },
+        {
+          "texto": "Perfil",
+          "detalle": "Tu foto y tus datos",
+          "estado": "nada"
+        }
+      ]
+    },
+    {
+      "en": "para",
+      "dura": 4,
+      "zona": "Clases · Empieza aquí",
+      "titulo": "Tu primer paso",
+      "lado": "izquierda",
+      "filas": [
+        {
+          "texto": "00 · Bienvenida",
+          "estado": "hecho"
+        },
+        {
+          "texto": "01 · Te doy la bienvenida",
+          "estado": "abierto"
+        }
+      ],
+      "boton": "Ir al video 01"
+    }
+  ],
+  "cierre": "Empieza por el video 01."
+}

@@ -1,0 +1,37 @@
+{
+  "id": "ea-05b",
+  "numero": "05",
+  "titulo": "Tu comunidad y cómo pedir ayuda",
+  "partes": [{ "crudo": "$CRUDOS/08-comunidad.mov", "transcripcion": "transcripciones/08-comunidad.json" }],
+  "corregir": { "IVAL": "Divine" },
+  "claves": ["dudas.", "respuesta.", "presentas"],
+  "tarjetas": [
+    {
+      "en": "tenemos",
+      "hasta": "respuestas.",
+      "zona": "Comunidad · Muro",
+      "titulo": "Solo terapeutas homologadas",
+      "lado": "derecha",
+      "filas": [
+        { "texto": "Caso", "detalle": "Lo que ves en tu cabina", "estado": "nada" },
+        { "texto": "Duda", "detalle": "Pregunta y te responden", "estado": "nada" },
+        { "texto": "Resultado", "detalle": "Lo que te funcionó", "estado": "nada" },
+        { "texto": "Recurso", "detalle": "Lo que compartimos", "estado": "nada" }
+      ]
+    },
+    {
+      "en": "una#2",
+      "dura": 5,
+      "zona": "Para presentarte",
+      "titulo": "Tu primera publicación",
+      "lado": "izquierda",
+      "filas": [
+        { "texto": "Soy [tu nombre], de [tu ciudad]", "estado": "nada" },
+        { "texto": "Trabajo con [lo que haces]", "estado": "nada" },
+        { "texto": "Este mes quiero [una meta]", "estado": "nada" }
+      ],
+      "boton": "Ir al muro"
+    }
+  ],
+  "cierre": "Preséntate en el muro."
+}

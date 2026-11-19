@@ -459,11 +459,15 @@ cada cambio importante** (una línea por decisión, con la fecha).
   El de Andrea no existía por una letra mal copiada en el id (`…WQqY…` en vez
   de `…WQgY…`): corregido; los dos vídeos de Drive funcionan (Andrea 7,0 GB,
   Esther 7,6 GB, cuenta sorelabeautyboutique).
-- 2026-11-19: **motor de vídeo de Sorela en `videos/`** (Remotion propio, no toca
-  la web) + skill `.claude/skills/videos-sorela`: crudo + transcripción de
-  ElevenLabs + ficha → `preparar.mjs` (quita silencios, color cálido, voz a
-  −16 LUFS, 1080p) → `render.mjs` (rótulo de autoridad, subtítulos palabra a
-  palabra, tarjetas de cristal oscuro de la plataforma, acercamientos 106 %,
-  cierre oscuro por capas con medallón 3D, cama de piano). Los 10 crudos de
-  «Empieza aquí» están bajados pero sin montar: falta transcribirlos
-  (ElevenLabs no acepta los enlaces de Drive). La sección sigue cerrada.
+- 2026-11-19: **vídeos de «Empieza aquí» editados** con el motor nuevo de
+  `videos/` (Remotion propio, no toca la web; skill `.claude/skills/videos-sorela`):
+  rótulo de autoridad, subtítulos palabra a palabra, tarjetas de cristal oscuro
+  de la plataforma, acercamientos 106 %, cierre oscuro por capas con medallón 3D
+  y cama de piano (ElevenLabs). En `public/empieza-aqui/`: 00 (Bienvenida +
+  «2 video academia», que es su final), 01 (toma «Soy Sorela Caro»; la otra,
+  «Bienvenida 2», queda sin usar), 03a, 03b, 04b, 05b, 06 y 07. **Sin grabar:
+  02 (tu plataforma), 04a (reuniones), 05a (grupo de WhatsApp).** La sección
+  sigue cerrada (solo «Ver como»). Transcripciones en `videos/transcripciones/`;
+  los crudos no van al repo (`CRUDOS=` al preparar). Ojo: en el 04b Sorela dice
+  que la clase en vivo «quedará grabada en la plataforma», y aún no hay sitio
+  para las grabaciones.

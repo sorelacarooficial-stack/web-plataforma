@@ -222,7 +222,14 @@ function Leccion({
           {yt ? (
             <iframe src={urlDeVideo(yt)} title={l.titulo} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
           ) : l.video ? (
-            <video src={l.video} controls playsInline preload="metadata" onEnded={() => ea.marcarVista(l.id)} />
+            <video
+              src={l.video}
+              poster={l.video.endsWith('.mp4') ? l.video.replace(/\.mp4$/, '.jpg') : undefined}
+              controls
+              playsInline
+              preload="metadata"
+              onEnded={() => ea.marcarVista(l.id)}
+            />
           ) : (
             <div className={css.hueco}>
               <strong>Tu video llega pronto</strong>
