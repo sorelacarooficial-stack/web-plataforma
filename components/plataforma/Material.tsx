@@ -76,6 +76,10 @@ export function Lector({
 }) {
   const [paginas, setPaginas] = useState<string[] | null>(null);
   const [fallo, setFallo] = useState(false);
+  /* Cómo va cada página: 'lista' cuando se ha visto, 'error' cuando no ha
+     cargado ni con direcciones nuevas, 'falta' cuando el servidor dice que no
+     está en el almacén. Sin entrada: cargando. */
+  const [estado, setEstado] = useState<Record<number, 'lista' | 'error' | 'falta'>>({});
   const [actual, setActual] = useState(desde);
   const [indiceAbierto, setIndiceAbierto] = useState(false);
   /* Qué páginas se piden. No se usa `loading="lazy"` del navegador porque al
@@ -86,33 +90,68 @@ export function Lector({
     setCerca((c) => (ps.every((p) => c.has(p)) ? c : new Set([...c, ...ps])));
   }, []);
   const hoja = useRef<HTMLDivElement>(null);
-  const ultimaRecarga = useRef(0);
+  /* Cuándo llegaron las direcciones que se están usando, y si ya se ha
+     revisado con ellas qué falta. */
+  const cargadasEn = useRef(0);
+  const cargando = useRef(false);
   const yaSalto = useRef(false);
 
-  const cargar = useCallback(async () => {
-    try {
-      const r = await fetch(`/api/material?id=${encodeURIComponent(doc.id)}`);
-      const j = await r.json();
-      if (j.ok) {
-        setPaginas(j.paginas);
-        setFallo(false);
-      } else setFallo(true);
-    } catch {
-      setFallo(true);
-    }
-  }, [doc.id]);
+  const cargar = useCallback(
+    async (revisar = false) => {
+      if (cargando.current) return;
+      cargando.current = true;
+      try {
+        const r = await fetch(`/api/material?id=${encodeURIComponent(doc.id)}${revisar ? '&revisar=1' : ''}`, { cache: 'no-store' });
+        const j = await r.json();
+        if (j.ok) {
+          cargadasEn.current = Date.now();
+          setPaginas(j.paginas);
+          setFallo(false);
+          const faltan: number[] = Array.isArray(j.faltan) ? j.faltan : [];
+          /* Con direcciones nuevas se vuelve a intentar todo lo que falló,
+             salvo lo que de verdad no está. */
+          setEstado((e) => {
+            const n: Record<number, 'lista' | 'error' | 'falta'> = {};
+            for (const [k, v] of Object.entries(e)) if (v === 'lista') n[Number(k)] = v;
+            for (const p of faltan) n[p] = 'falta';
+            return n;
+          });
+        } else setFallo(true);
+      } catch {
+        setFallo(true);
+      } finally {
+        cargando.current = false;
+      }
+    },
+    [doc.id]
+  );
 
   useEffect(() => {
     cargar();
   }, [cargar]);
 
-  /* Las direcciones caducan: si una página no carga, se piden otras. Como
-     mucho una vez cada medio minuto, para no entrar en bucle si falla de
-     verdad. */
-  const alFallarPagina = () => {
-    if (Date.now() - ultimaRecarga.current < 30_000) return;
-    ultimaRecarga.current = Date.now();
-    cargar();
+  /* Las direcciones caducan a los 15 minutos: con el lector abierto se piden
+     otras a los 12, antes de que ninguna página se quede en blanco. */
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (Date.now() - cargadasEn.current > 12 * 60_000) cargar();
+    }, 60_000);
+    return () => clearInterval(t);
+  }, [cargar]);
+
+  /* Una página que no carga: si sus direcciones tienen más de unos segundos,
+     se piden otras y se revisa qué falta; si son recién pedidas, se queda
+     marcada con su botón de reintentar. */
+  const alFallarPagina = (n: number) => {
+    if (Date.now() - cargadasEn.current > 5_000) {
+      cargar(true);
+      return;
+    }
+    setEstado((e) => (e[n] ? e : { ...e, [n]: 'error' }));
+  };
+  const reintentar = () => {
+    cargadasEn.current = 0;
+    cargar(true);
   };
 
   /* Mientras está abierto: sin desplazar la página de detrás, Esc cierra, y
@@ -300,10 +339,18 @@ export function Lector({
         </nav>
 
         <div className={m.hoja} ref={hoja}>
+          {fallo && paginas && (
+            <p className={m.aviso}>
+              Se ha cortado la conexión con el dosier.{' '}
+              <button type="button" onClick={reintentar}>
+                Reintentar
+              </button>
+            </p>
+          )}
           {fallo && !paginas && (
             <p className={m.aviso}>
               No he podido abrir el dosier.{' '}
-              <button type="button" onClick={cargar}>
+              <button type="button" onClick={() => cargar()}>
                 Reintentar
               </button>
             </p>
@@ -311,9 +358,31 @@ export function Lector({
           {!paginas && !fallo && <p className={m.aviso}>Abriendo el dosier…</p>}
           {paginas?.map((url, i) => (
             <div key={i} className={m.pagina} data-pagina={i + 1}>
-              {cerca.has(i + 1) && (
+              {cerca.has(i + 1) && estado[i + 1] !== 'error' && estado[i + 1] !== 'falta' && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={url} alt={`Página ${i + 1}`} draggable={false} onError={alFallarPagina} />
+                <img
+                  src={url}
+                  alt={`Página ${i + 1}`}
+                  draggable={false}
+                  onLoad={() => setEstado((e) => (e[i + 1] === 'lista' ? e : { ...e, [i + 1]: 'lista' }))}
+                  onError={() => alFallarPagina(i + 1)}
+                />
+              )}
+              {estado[i + 1] !== 'lista' && (
+                <span className={m.paginaEstado}>
+                  {estado[i + 1] === 'falta' ? (
+                    <>Esta página no está subida. Ya lo hemos apuntado para arreglarlo.</>
+                  ) : estado[i + 1] === 'error' ? (
+                    <>
+                      La página {i + 1} no ha cargado.
+                      <button type="button" onClick={reintentar}>
+                        Reintentar
+                      </button>
+                    </>
+                  ) : (
+                    <>Cargando página {i + 1}…</>
+                  )}
+                </span>
               )}
               {marca && <span className={m.marca} style={{ backgroundImage: marca }} aria-hidden="true" />}
               <span className={m.numero}>{i + 1}</span>
