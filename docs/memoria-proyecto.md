@@ -501,3 +501,12 @@ cada cambio importante** (una línea por decisión, con la fecha).
   propia por pieza (6 pistas ElevenLabs a −16 LUFS, `musica-<pieza>.mp3`) que
   baja con la voz, y efectos distintos (barrido, destello, golpe de piano).
   Prohibido usar canciones comerciales (inicio.mp3, despedida.mp3).
+- 2026-11-20: **página de revisión para Sorela** en `revision.sorelacarodivine.com`
+  (ruta `/revision`, oculta, sin clave). Todo lo que hay que enseñarle antes de
+  publicar va en `GRUPOS` (lib/revision.ts): anuncios y posts de Medellín
+  (copias ligeras en `public/revision/medellin/`), página y vídeo de la landing
+  y los vídeos de «Empieza aquí». En cada pieza: «Me gusta así» o «Enviar
+  cambio»; se guardan en Firestore `revision_comentarios` (/api/revision) y se
+  ven en la propia página, con «Marcar como hecho». El subdominio sirve la rama
+  `claude/nice-thompson-96sg3o` (dominio asignado a la rama en Vercel) hasta que
+  se fusione; necesita el CNAME `revision` en el DNS del dominio.
