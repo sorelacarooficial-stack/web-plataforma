@@ -495,7 +495,9 @@ cada cambio importante** (una línea por decisión, con la fecha).
   **v2 (mismo día):** cero material de la plataforma (ni planos ni frases de
   «Empieza aquí» ni de sus crudos): solo las fotos en 3D (cámara entre capas,
   cristal con reflejo). **Voz clonada de Sorela (aprobada)**: voz «SORELA»
-  de ElevenLabs (`bImUfxOCw35t3t6KTzxQ`, eleven_multilingual_v2), guiones
+  de ElevenLabs (`bImUfxOCw35t3t6KTzxQ`; desde el 2026-11-20 con **`eleven_v4`**,
+  estabilidad 0,35, similitud 0,85, `[warmly]` y pausas con «…» / `[short pause]`;
+  antes eleven_multilingual_v2), guiones
   nuevos en `docs/guiones-medellin.md`, cada toma transcrita de nuevo (coincide
   palabra a palabra) y sus tiempos en `videos-medellin/src/voz/*.json` para
   los subtítulos. Los 3 primeros segundos de cada pieza llevan en pantalla
