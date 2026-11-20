@@ -22,6 +22,8 @@ export type Pieza = {
   /** Lo que dice Sorela (la voz), para que pueda corregir el texto. */
   guion?: string;
   formatos: Formato[];
+  /** Si está, la pieza aún se está editando: sale una barra con este porcentaje en vez del vídeo. */
+  progreso?: number;
 };
 
 export type Grupo = { id: string; titulo: string; explicacion: string; piezas: Pieza[] };
@@ -132,7 +134,7 @@ export const GRUPOS: Grupo[] = [
     id: 'empieza-aqui',
     titulo: 'Plataforma · «Empieza aquí»',
     explicacion:
-      'Tus vídeos de bienvenida para las alumnas, ya editados. Todavía no los ven ellas. Faltan por grabar: «Tu plataforma en un minuto», «Tus reuniones conmigo» y «Tu grupo y cómo pedir ayuda».',
+      'Tus vídeos de bienvenida para las alumnas. Los estamos terminando: color y sonido. Cuando estén, aparecerán aquí para que los veas. Faltan por grabar: «Tu plataforma en un minuto», «Tus reuniones conmigo» y «Tu grupo y cómo pedir ayuda».',
     piezas: [
       ['00', 'Bienvenida'],
       ['01', 'Te doy la bienvenida'],
@@ -146,6 +148,7 @@ export const GRUPOS: Grupo[] = [
       id: `ea-${n}`,
       titulo: `${n} · ${titulo}`,
       nota,
+      progreso: 63,
       formatos: [{ etiqueta: 'Vídeo', src: `/empieza-aqui/${n}.mp4`, poster: `/empieza-aqui/${n}.jpg`, tipo: 'video' as const }],
     })),
   },

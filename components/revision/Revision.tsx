@@ -144,6 +144,16 @@ function TarjetaPieza({
     }
   };
 
+  if (pieza.progreso != null) {
+    return (
+      <article className={css.tarjeta}>
+        <h3 className={css.h3}>{pieza.titulo}</h3>
+        <EnEdicion porcentaje={pieza.progreso} />
+        {pieza.nota && <p className={css.nota}>{pieza.nota}</p>}
+      </article>
+    );
+  }
+
   return (
     <article className={css.tarjeta}>
       <div className={css.tarjetaCabeza}>
@@ -213,5 +223,30 @@ function TarjetaPieza({
         {estado === 'error' && <p className={css.error}>No se ha guardado. Prueba otra vez.</p>}
       </div>
     </article>
+  );
+}
+
+/** Tarjeta de «en edición»: la barra se llena hasta el porcentaje al entrar y un brillo la recorre. */
+function EnEdicion({ porcentaje }: { porcentaje: number }) {
+  const [valor, setValor] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setValor(porcentaje), 120);
+    return () => clearTimeout(t);
+  }, [porcentaje]);
+  return (
+    <div className={css.edicion} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={porcentaje} aria-label="Edición del vídeo">
+      <div className={css.edicionCabeza}>
+        <span className={css.edicionPunto} aria-hidden />
+        <span>En edición · color y sonido</span>
+      </div>
+      <div className={css.edicionCifra}>
+        {porcentaje}
+        <small>%</small>
+      </div>
+      <div className={css.edicionPista}>
+        <div className={css.edicionRelleno} style={{ width: `${valor}%` }} />
+      </div>
+      <p className={css.edicionPie}>Falta un {100 - porcentaje} % para terminarlo</p>
+    </div>
   );
 }
