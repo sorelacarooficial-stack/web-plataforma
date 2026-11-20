@@ -503,6 +503,11 @@ cada cambio importante** (una línea por decisión, con la fecha).
   propia por pieza (6 pistas ElevenLabs a −16 LUFS, `musica-<pieza>.mp3`) que
   baja con la voz, y efectos distintos (barrido, destello, golpe de piano).
   Prohibido usar canciones comerciales (inicio.mp3, despedida.mp3).
+  **Renders:** las copias de revisión se renderizan ya a 720 de ancho
+  (`ESCALA=0.6667 node render.mjs …`, JPEG intermedio 70) y se entregan con
+  `bash entregar.sh <pieza-formato>`. **Las versiones a 1080 para subir a Meta
+  se renderizan al final, cuando Sorela dé el visto bueno** (`node render.mjs`
+  sin ESCALA). (2026-11-20)
 - 2026-11-20: **página de revisión para Sorela** en `revision.sorelacarodivine.com`
   (ruta `/revision`, oculta, sin clave). Todo lo que hay que enseñarle antes de
   publicar va en `GRUPOS` (lib/revision.ts): anuncios y posts de Medellín
