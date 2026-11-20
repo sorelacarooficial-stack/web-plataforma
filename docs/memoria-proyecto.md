@@ -10,6 +10,11 @@ cada cambio importante** (una línea por decisión, con la fecha).
   dueña del proyecto. El push directo a main está bloqueado.
 - Al hablar con la usuaria: explicarlo todo muy fácil, como a un niño de 5
   años (frases cortas, sin palabras técnicas). (2026-11-05)
+- **Todo lo que Sorela tenga que ver o corregir se sube a la página de
+  revisión** (`/revision`, `revision.sorelacarodivine.com`; piezas en
+  `GRUPOS` de lib/revision.ts). Lo que aún se edita va con `progreso` (barra
+  «En edición») en vez del vídeo. Antes de cerrar un cambio, leer sus
+  comentarios en `GET /api/revision`. (2026-11-20, lo pidió Gerson)
 - Tokens y claves solo en Vercel (variables de entorno), nunca en el chat ni
   en el repositorio.
 - Grafo del código: codebase-memory-mcp. Se instala e indexa solo al arrancar

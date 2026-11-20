@@ -37,23 +37,50 @@ export default function Revision({ grupos }: { grupos: Grupo[] }) {
     } catch {}
   };
 
-  const total = grupos.reduce((n, g) => n + g.piezas.length, 0);
-  const vistas = new Set(comentarios.map((c) => c.pieza)).size;
+  /* Solo cuentan las piezas que ya se pueden revisar (no las que siguen en edición). */
+  const revisables = new Set(grupos.flatMap((g) => g.piezas.filter((p) => p.progreso == null).map((p) => p.id)));
+  const total = revisables.size;
+  const vistas = new Set(comentarios.map((c) => c.pieza).filter((id) => revisables.has(id))).size;
 
   return (
     <main className={css.pagina}>
       <header className={css.cabecera}>
-        <p className={css.ante}>Revisión · antes de publicar</p>
+        <p className={css.ante}>Tu espacio de revisión</p>
         <h1 className={css.titular}>
-          Hola, Sorela. <strong>Esto es lo que tenemos preparado.</strong>
+          Hola, Sorela. Aquí revisas <strong>todo antes de que se publique.</strong>
         </h1>
         <p className={css.entrada}>
-          Mira cada pieza. Si te gusta, pulsa «Me gusta así». Si quieres cambiar algo, escríbelo debajo con tus palabras: una frase, una foto, un dato,
-          lo que sea. Nadie de fuera ve esta página.
+          Esta página es solo para ti y para el equipo. Aquí subimos <b>todo lo que preparamos</b> (anuncios, vídeos, publicaciones y páginas) para que lo
+          veas y nos digas qué cambiar. <b>Nada de lo que ves aquí está publicado</b> y nadie de fuera puede verlo.
         </p>
+        <ol className={css.pasos}>
+          <li>
+            <span>1</span>
+            <p>
+              <b>Mira o escucha</b> cada pieza. Los vídeos tienen sonido.
+            </p>
+          </li>
+          <li>
+            <span>2</span>
+            <p>
+              Si te gusta tal cual, pulsa <b>«Me gusta así»</b>.
+            </p>
+          </li>
+          <li>
+            <span>3</span>
+            <p>
+              Si quieres cambiar algo, <b>escríbelo debajo</b> con tus palabras y pulsa <b>«Enviar cambio»</b>. Lo arreglamos y te lo marcamos como «Hecho».
+            </p>
+          </li>
+        </ol>
         <div className={css.barra}>
-          <span>
-            Has opinado sobre <b>{vistas}</b> de <b>{total}</b>
+          <span className={css.cuenta}>
+            <span>
+              Llevas <b>{vistas}</b> de <b>{total}</b> piezas revisadas
+            </span>
+            <span className={css.cuentaPista}>
+              <span style={{ width: `${total ? (vistas / total) * 100 : 0}%` }} />
+            </span>
           </span>
           <label className={css.quien}>
             Escribes como
