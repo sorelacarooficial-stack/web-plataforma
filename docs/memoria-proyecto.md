@@ -23,6 +23,12 @@ cada cambio importante** (una línea por decisión, con la fecha).
   (2026-10-20, PR #7)
 - Paleta: crema `#f4efe7`, tinta `#141210`, oro `#8a6a32` / degradado
   `#f3d9ae → #c99a5c`. Bandas oscuras `#17140f`.
+- **Regla de comunicación para todo (anuncios, posts, landings, vídeos,
+  correos)**: ¿alguien que no conoce a Sorela lo entiende en 3 segundos y sin
+  sonido? En texto, arriba: qué es (formación / Técnica Divine®, método manual),
+  para quién (terapeutas, esteticistas…) y quién lo enseña (Sorela Caro,
+  creadora, 30 años, +25.000 casos). Después la urgencia y el botón. Nada de
+  frases sueltas sin contexto. (2026-11-19, lo pidió Gerson)
 - Vídeos de anuncios: siempre motion graphics al estilo de los artefactos
   (Inter, crema, captions palabra a palabra con desenfoque, cierre oscuro por
   capas). Nunca foto con zoom.
@@ -459,3 +465,48 @@ cada cambio importante** (una línea por decisión, con la fecha).
   El de Andrea no existía por una letra mal copiada en el id (`…WQqY…` en vez
   de `…WQgY…`): corregido; los dos vídeos de Drive funcionan (Andrea 7,0 GB,
   Esther 7,6 GB, cuenta sorelabeautyboutique).
+- 2026-11-19: **vídeos de «Empieza aquí» editados** con el motor nuevo de
+  `videos/` (Remotion propio, no toca la web; skill `.claude/skills/videos-sorela`):
+  rótulo de autoridad, subtítulos palabra a palabra, tarjetas de cristal oscuro
+  de la plataforma, acercamientos 106 %, cierre oscuro por capas con medallón 3D
+  y cama de piano (ElevenLabs). En `public/empieza-aqui/`: 00 (Bienvenida +
+  «2 video academia», que es su final), 01 (toma «Soy Sorela Caro»; la otra,
+  «Bienvenida 2», queda sin usar), 03a, 03b, 04b, 05b, 06 y 07. **Sin grabar:
+  02 (tu plataforma), 04a (reuniones), 05a (grupo de WhatsApp).** La sección
+  sigue cerrada (solo «Ver como»). Transcripciones en `videos/transcripciones/`;
+  los crudos no van al repo (`CRUDOS=` al preparar). Ojo: en el 04b Sorela dice
+  que la clase en vivo «quedará grabada en la plataforma», y aún no hay sitio
+  para las grabaciones.
+- 2026-11-19: **publicidad de Medellín (28-30 ene 2027), sin publicar.** 5
+  anuncios (autoridad, manos, Medellín, 10 plazas, certificación; 9:16 y 4:5),
+  vídeo de la landing (16:9 y 9:16) y 2 posts (feed e historia), todo sin
+  precios (no están confirmados). Motion graphics en Remotion en
+  `videos-medellin/` (proyecto aparte, fuera del tsconfig; `node render.mjs`;
+  posts con `node posts/capturar.mjs`); música y efectos de ElevenLabs. Landing
+  **oculta** `/medellin`: noindex, fuera de menú, pie y sitemap; con
+  `MEDELLIN_CLAVE` (o `CLASE_CLAVE`) solo abre con `?k=`; «Reservar mi plaza»
+  abre WhatsApp con el mensaje escrito. El reparto por días de la landing está
+  sin confirmar con Sorela.
+  **v2 (mismo día):** cero material de la plataforma (ni planos ni frases de
+  «Empieza aquí» ni de sus crudos): solo las fotos en 3D (cámara entre capas,
+  cristal con reflejo). **Voz clonada de Sorela (aprobada)**: voz «SORELA»
+  de ElevenLabs (`bImUfxOCw35t3t6KTzxQ`, eleven_multilingual_v2), guiones
+  nuevos en `docs/guiones-medellin.md`, cada toma transcrita de nuevo (coincide
+  palabra a palabra) y sus tiempos en `videos-medellin/src/voz/*.json` para
+  los subtítulos. Los 3 primeros segundos de cada pieza llevan en pantalla
+  qué es, para quién y quién lo enseña, y cada anuncio abre distinto
+  (`src/aperturas.tsx`: «+25.000» sobre Sorela, manos a sangre, «28·29·30»
+  sobre oro, 10 asientos, diploma en 3D); la landing usa `Encabezado`
+  (src/voz.tsx). Música
+  propia por pieza (6 pistas ElevenLabs a −16 LUFS, `musica-<pieza>.mp3`) que
+  baja con la voz, y efectos distintos (barrido, destello, golpe de piano).
+  Prohibido usar canciones comerciales (inicio.mp3, despedida.mp3).
+- 2026-11-20: **página de revisión para Sorela** en `revision.sorelacarodivine.com`
+  (ruta `/revision`, oculta, sin clave). Todo lo que hay que enseñarle antes de
+  publicar va en `GRUPOS` (lib/revision.ts): anuncios y posts de Medellín
+  (copias ligeras en `public/revision/medellin/`), página y vídeo de la landing
+  y los vídeos de «Empieza aquí». En cada pieza: «Me gusta así» o «Enviar
+  cambio»; se guardan en Firestore `revision_comentarios` (/api/revision) y se
+  ven en la propia página, con «Marcar como hecho». El subdominio sirve la rama
+  `claude/nice-thompson-96sg3o` (dominio asignado a la rama en Vercel) hasta que
+  se fusione; necesita el CNAME `revision` en el DNS del dominio.

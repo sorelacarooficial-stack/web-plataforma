@@ -76,7 +76,18 @@ export async function GET(peticion: Request) {
       const paginas = await Promise.all(
         Array.from({ length: doc.paginas }, (_, i) => firmar(rutaDePagina(doc.id, i + 1), caduca))
       );
-      return NextResponse.json({ ok: true, paginas, caduca }, { headers: SIN_CACHE });
+      /* Cuando una página no ha cargado, el lector pide otra vez con
+         `revisar=1`: se mira qué páginas faltan de verdad en el almacén, para
+         decírselo a quien lee y dejarlo en el registro. */
+      let faltan: number[] = [];
+      if (new URL(peticion.url).searchParams.get('revisar')) {
+        const hay = await Promise.all(
+          Array.from({ length: doc.paginas }, (_, i) => almacen().file(rutaDePagina(doc.id, i + 1)).exists().then(([e]) => e).catch(() => true))
+        );
+        faltan = hay.flatMap((e, i) => (e ? [] : [i + 1]));
+        if (faltan.length) console.error(`[material] faltan páginas de ${doc.id} en el almacén:`, faltan.join(', '));
+      }
+      return NextResponse.json({ ok: true, paginas, caduca, faltan }, { headers: SIN_CACHE });
     }
 
     const documentos = await Promise.all(

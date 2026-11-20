@@ -1,0 +1,313 @@
+/* Página de revisión para Sorela. Paleta fija de la marca. */
+.pagina {
+  --crema: #f4efe7;
+  --tinta: #141210;
+  --gris: #6b645a;
+  --oro: #8a6a32;
+  --linea: #e2d9ca;
+  min-height: 100vh;
+  background: var(--crema);
+  color: var(--tinta);
+  font-family: var(--fuente-inter), -apple-system, sans-serif;
+  padding: 48px 16px 80px;
+}
+
+.cabecera,
+.grupo,
+.pie {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.ante {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--oro);
+  margin: 0 0 14px;
+}
+
+.titular {
+  font-size: clamp(30px, 5vw, 52px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin: 0 0 18px;
+}
+.titular strong {
+  font-weight: 600;
+}
+
+.entrada {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--gris);
+  max-width: 680px;
+  margin: 0 0 24px;
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: center;
+  font-size: 14px;
+  color: var(--gris);
+  margin-bottom: 18px;
+}
+.quien {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.quien input {
+  font: inherit;
+  color: var(--tinta);
+  border: 1px solid var(--linea);
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  width: 140px;
+}
+
+.indice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.indice a {
+  font-size: 14px;
+  color: var(--tinta);
+  text-decoration: none;
+  border: 1px solid var(--linea);
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+
+.grupo {
+  margin-top: 64px;
+  scroll-margin-top: 16px;
+}
+.h2 {
+  font-size: clamp(24px, 3.4vw, 34px);
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  margin: 0 0 8px;
+}
+.explicacion {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--gris);
+  max-width: 720px;
+  margin: 0 0 24px;
+}
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+@media (max-width: 400px) {
+  .rejilla {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tarjeta {
+  background: #fbf8f3;
+  border: 1px solid var(--linea);
+  border-radius: 22px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.tarjetaCabeza {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.h3 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.sello {
+  font-size: 12px;
+  font-weight: 500;
+  color: #2f6b3a;
+  background: #e3efe2;
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.formatos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.formato,
+.formatoActivo {
+  font: inherit;
+  font-size: 13px;
+  border-radius: 999px;
+  padding: 7px 12px;
+  cursor: pointer;
+  border: 1px solid var(--linea);
+  background: #fff;
+  color: var(--tinta);
+}
+.formatoActivo {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: var(--crema);
+}
+
+.medio {
+  background: #17140f;
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+}
+.medio video,
+.medio img {
+  display: block;
+  width: 100%;
+  max-height: 72vh;
+  object-fit: contain;
+  background: #17140f;
+}
+.abrir {
+  color: #f3d9ae;
+  font-size: 16px;
+  padding: 40px 16px;
+  text-decoration: none;
+}
+
+.nota {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--gris);
+  margin: 0;
+}
+
+.guion {
+  font-size: 14px;
+  line-height: 1.55;
+  border-top: 1px solid var(--linea);
+  padding-top: 10px;
+}
+.guion summary {
+  cursor: pointer;
+  color: var(--oro);
+  font-weight: 500;
+}
+.guion p {
+  margin: 8px 0 0;
+  font-style: italic;
+}
+
+.comentarios {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.comentarios li {
+  background: #fff;
+  border-left: 3px solid var(--oro);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.comentarios li.hecho {
+  opacity: 0.55;
+  border-left-color: #2f6b3a;
+}
+.comentarios p {
+  margin: 0 0 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.comentarios small {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--gris);
+}
+.comentarios small button {
+  font: inherit;
+  font-size: 12px;
+  border: 0;
+  background: none;
+  color: var(--oro);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.opinar textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 15px;
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--tinta);
+  resize: vertical;
+}
+.botones {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.botonOk,
+.botonCambio {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 999px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.botonOk {
+  border: 1px solid #2f6b3a;
+  background: #fff;
+  color: #2f6b3a;
+}
+.botonCambio {
+  border: 0;
+  background: var(--tinta);
+  color: var(--crema);
+}
+.botonCambio:disabled,
+.botonOk:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.error {
+  color: #a3322a;
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+.pie {
+  margin-top: 72px;
+  font-size: 13px;
+  color: var(--gris);
+}

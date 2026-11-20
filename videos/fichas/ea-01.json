@@ -1,0 +1,35 @@
+{
+  "id": "ea-01",
+  "numero": "01",
+  "titulo": "Te doy la bienvenida",
+  "partes": [{ "crudo": "$CRUDOS/03-sin-nombre.mov", "transcripcion": "transcripciones/03-sin-nombre.json" }],
+  "corregir": { "T": null, "técnica": "Técnica", "Divine.": "Divine®." },
+  "claves": ["observar,", "tocar.", "juntas.", "perfil"],
+  "tarjetas": [
+    {
+      "en": "saber",
+      "hasta": "tocar.",
+      "zona": "Antes de tocar",
+      "titulo": "Lo que vamos a entrenar",
+      "lado": "derecha",
+      "filas": [
+        { "texto": "Qué observar", "estado": "abierto" },
+        { "texto": "Qué interpretar", "estado": "abierto" },
+        { "texto": "Cómo decidir", "estado": "abierto" }
+      ]
+    },
+    {
+      "en": "seguir,",
+      "dura": 4,
+      "zona": "Perfil",
+      "titulo": "Completa tu perfil",
+      "lado": "izquierda",
+      "filas": [
+        { "texto": "Tu foto", "estado": "abierto" },
+        { "texto": "Tu ciudad", "estado": "abierto" }
+      ],
+      "boton": "Completar mi perfil"
+    }
+  ],
+  "cierre": "Completa tu perfil: tu foto y tu ciudad."
+}

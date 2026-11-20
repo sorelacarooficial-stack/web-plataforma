@@ -1,0 +1,54 @@
+{
+  "id": "ea-06",
+  "numero": "06",
+  "titulo": "Que las clientas te encuentren",
+  "partes": [{ "crudo": "$CRUDOS/09-localiza.mov", "transcripcion": "transcripciones/09-localiza.json" }],
+  "corregir": { "localiza": "Localiza" },
+  "claves": ["emociona.", "homologadas", "real,", "encontrar."],
+  "tarjetas": [
+    {
+      "en": "ahí",
+      "hasta": "encontrarán.",
+      "zona": "Web · Localiza tu terapeuta",
+      "titulo": "Solo homologadas por Sorela",
+      "lado": "derecha",
+      "filas": [
+        { "texto": "Te buscan en tu zona", "estado": "hecho" },
+        { "texto": "Con alguien de confianza", "estado": "hecho" }
+      ]
+    },
+    {
+      "en": "activa",
+      "hasta": "contactan.",
+      "zona": "Perfil · Tu ficha",
+      "titulo": "Lo que tiene que tener",
+      "lado": "izquierda",
+      "filas": [
+        { "texto": "Tu foto", "estado": "abierto" },
+        { "texto": "Tu ciudad", "estado": "abierto" },
+        { "texto": "Lo que haces", "estado": "abierto" },
+        { "texto": "Cómo te contactan", "estado": "abierto" }
+      ]
+    },
+    {
+      "en": "dos",
+      "hasta": "técnica.",
+      "zona": "Dos consejos",
+      "titulo": "Que te elijan a ti",
+      "lado": "derecha",
+      "filas": [
+        { "texto": "Una foto tuya, real", "detalle": "Con buena luz. Nada de logos.", "estado": "hecho" },
+        { "texto": "Escribe para quien te lee", "detalle": "No para explicar la técnica", "estado": "hecho" }
+      ]
+    },
+    {
+      "en": "tarea:",
+      "dura": 3,
+      "zona": "Perfil",
+      "titulo": "Tu ficha en el mapa",
+      "lado": "izquierda",
+      "boton": "Activar mi ficha"
+    }
+  ],
+  "cierre": "Activa tu ficha hoy."
+}
