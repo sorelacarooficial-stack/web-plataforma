@@ -40,11 +40,11 @@
 }
 
 .entrada {
-  font-size: 17px;
-  line-height: 1.55;
-  color: var(--gris);
-  max-width: 680px;
-  margin: 0 0 24px;
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--tinta);
+  max-width: 720px;
+  margin: 0 0 28px;
 }
 
 .barra {
@@ -52,8 +52,8 @@
   flex-wrap: wrap;
   gap: 12px 24px;
   align-items: center;
-  font-size: 14px;
-  color: var(--gris);
+  font-size: 15px;
+  color: var(--tinta);
   margin-bottom: 18px;
 }
 .quien {
@@ -97,9 +97,9 @@
   margin: 0 0 8px;
 }
 .explicacion {
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--gris);
+  font-size: 16px;
+  line-height: 1.6;
+  color: #3a342c;
   max-width: 720px;
   margin: 0 0 24px;
 }
@@ -195,7 +195,7 @@
 .nota {
   font-size: 14px;
   line-height: 1.5;
-  color: var(--gris);
+  color: #3a342c;
   margin: 0;
 }
 
@@ -310,4 +310,152 @@
   margin-top: 72px;
   font-size: 13px;
   color: var(--gris);
+}
+
+/* Vídeo en edición: tarjeta oscura con barra de progreso. */
+.edicion {
+  background: radial-gradient(120% 140% at 0% 0%, #2a2318 0%, #17140f 60%);
+  border-radius: 14px;
+  padding: 22px 20px 20px;
+  color: #f4efe7;
+  aspect-ratio: 16 / 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: inset 0 0 0 1px rgba(243, 217, 174, 0.12);
+}
+.edicionCabeza {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(244, 239, 231, 0.75);
+}
+.edicionPunto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e9c690;
+  box-shadow: 0 0 0 0 rgba(233, 198, 144, 0.6);
+  animation: latido 1.8s ease-out infinite;
+}
+.edicionCifra {
+  font-size: 64px;
+  font-weight: 300;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  background: linear-gradient(120deg, #f3d9ae, #c99a5c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.edicionCifra small {
+  font-size: 28px;
+  margin-left: 2px;
+}
+.edicionPista {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(244, 239, 231, 0.1);
+  overflow: hidden;
+}
+.edicionRelleno {
+  position: relative;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #c99a5c, #f3d9ae);
+  transition: width 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+.edicionRelleno::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: translateX(-100%);
+  animation: brillo 2.4s ease-in-out infinite;
+}
+.edicionPie {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(244, 239, 231, 0.6);
+}
+@keyframes latido {
+  0% { box-shadow: 0 0 0 0 rgba(233, 198, 144, 0.6); }
+  100% { box-shadow: 0 0 0 10px rgba(233, 198, 144, 0); }
+}
+@keyframes brillo {
+  to { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .edicionPunto,
+  .edicionRelleno::after {
+    animation: none;
+  }
+  .edicionRelleno {
+    transition: none;
+  }
+}
+
+/* Cómo funciona: banda oscura con tres pasos, para que se lea de un vistazo. */
+.pasos {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 22px;
+  background: #17140f;
+  color: #f4efe7;
+  border-radius: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px 24px;
+  max-width: 980px;
+}
+.pasos li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.pasos li > span {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  font-size: 15px;
+  color: #17140f;
+  background: linear-gradient(135deg, #f3d9ae, #c99a5c);
+}
+.pasos p {
+  margin: 3px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.pasos b {
+  color: #f3d9ae;
+  font-weight: 600;
+}
+.entrada b {
+  font-weight: 600;
+}
+.cuenta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cuentaPista {
+  width: 120px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--linea);
+  overflow: hidden;
+}
+.cuentaPista span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #c99a5c, #8a6a32);
+  border-radius: inherit;
+  transition: width 0.6s ease;
 }

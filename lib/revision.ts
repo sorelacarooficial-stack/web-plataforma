@@ -22,6 +22,8 @@ export type Pieza = {
   /** Lo que dice Sorela (la voz), para que pueda corregir el texto. */
   guion?: string;
   formatos: Formato[];
+  /** Si está, la pieza aún se está editando: sale una barra con este porcentaje en vez del vídeo. */
+  progreso?: number;
 };
 
 export type Grupo = { id: string; titulo: string; explicacion: string; piezas: Pieza[] };
@@ -99,8 +101,8 @@ export const GRUPOS: Grupo[] = [
         guion:
           'Soy Sorela Caro, creadora de la Técnica Divine. Llevo treinta años y más de veinticinco mil casos trabajando con mis manos. Ahora te lo enseño en persona: una formación presencial para terapeutas, esteticistas y masajistas, y para quien quiera dedicarse a esto. Vas a aprender a leer el cuerpo, y yo voy a corregir tus manos, una a una. Medellín, veintiocho, veintinueve y treinta de enero. Solo diez plazas.',
         formatos: [
-          { etiqueta: 'Ordenador (16:9)', src: '/medellin/landing-16x9.mp4', poster: '/medellin/landing-16x9.jpg', tipo: 'video' },
-          { etiqueta: 'Móvil (9:16)', src: '/medellin/landing-9x16.mp4', poster: '/medellin/landing-9x16.jpg', tipo: 'video' },
+          { etiqueta: 'Ordenador (16:9)', src: `${M}/landing-16x9.mp4`, poster: `${M}/landing-16x9.jpg`, tipo: 'video' },
+          { etiqueta: 'Móvil (9:16)', src: `${M}/landing-9x16.mp4`, poster: `${M}/landing-9x16.jpg`, tipo: 'video' },
         ],
       },
     ],
@@ -132,7 +134,7 @@ export const GRUPOS: Grupo[] = [
     id: 'empieza-aqui',
     titulo: 'Plataforma · «Empieza aquí»',
     explicacion:
-      'Tus vídeos de bienvenida para las alumnas, ya editados. Todavía no los ven ellas. Faltan por grabar: «Tu plataforma en un minuto», «Tus reuniones conmigo» y «Tu grupo y cómo pedir ayuda».',
+      'Tus vídeos de bienvenida para las alumnas. Los estamos terminando: color y sonido. Cuando estén, aparecerán aquí para que los veas. Faltan por grabar: «Tu plataforma en un minuto», «Tus reuniones conmigo» y «Tu grupo y cómo pedir ayuda».',
     piezas: [
       ['00', 'Bienvenida'],
       ['01', 'Te doy la bienvenida'],
@@ -146,6 +148,7 @@ export const GRUPOS: Grupo[] = [
       id: `ea-${n}`,
       titulo: `${n} · ${titulo}`,
       nota,
+      progreso: 63,
       formatos: [{ etiqueta: 'Vídeo', src: `/empieza-aqui/${n}.mp4`, poster: `/empieza-aqui/${n}.jpg`, tipo: 'video' as const }],
     })),
   },

@@ -10,6 +10,11 @@ cada cambio importante** (una línea por decisión, con la fecha).
   dueña del proyecto. El push directo a main está bloqueado.
 - Al hablar con la usuaria: explicarlo todo muy fácil, como a un niño de 5
   años (frases cortas, sin palabras técnicas). (2026-11-05)
+- **Todo lo que Sorela tenga que ver o corregir se sube a la página de
+  revisión** (`/revision`, `revision.sorelacarodivine.com`; piezas en
+  `GRUPOS` de lib/revision.ts). Lo que aún se edita va con `progreso` (barra
+  «En edición») en vez del vídeo. Antes de cerrar un cambio, leer sus
+  comentarios en `GET /api/revision`. (2026-11-20, lo pidió Gerson)
 - Tokens y claves solo en Vercel (variables de entorno), nunca en el chat ni
   en el repositorio.
 - Grafo del código: codebase-memory-mcp. Se instala e indexa solo al arrancar
@@ -490,7 +495,9 @@ cada cambio importante** (una línea por decisión, con la fecha).
   **v2 (mismo día):** cero material de la plataforma (ni planos ni frases de
   «Empieza aquí» ni de sus crudos): solo las fotos en 3D (cámara entre capas,
   cristal con reflejo). **Voz clonada de Sorela (aprobada)**: voz «SORELA»
-  de ElevenLabs (`bImUfxOCw35t3t6KTzxQ`, eleven_multilingual_v2), guiones
+  de ElevenLabs (`bImUfxOCw35t3t6KTzxQ`; desde el 2026-11-20 con **`eleven_v4`**,
+  estabilidad 0,35, similitud 0,85, `[warmly]` y pausas con «…» / `[short pause]`;
+  antes eleven_multilingual_v2), guiones
   nuevos en `docs/guiones-medellin.md`, cada toma transcrita de nuevo (coincide
   palabra a palabra) y sus tiempos en `videos-medellin/src/voz/*.json` para
   los subtítulos. Los 3 primeros segundos de cada pieza llevan en pantalla
@@ -501,6 +508,11 @@ cada cambio importante** (una línea por decisión, con la fecha).
   propia por pieza (6 pistas ElevenLabs a −16 LUFS, `musica-<pieza>.mp3`) que
   baja con la voz, y efectos distintos (barrido, destello, golpe de piano).
   Prohibido usar canciones comerciales (inicio.mp3, despedida.mp3).
+  **Renders:** las copias de revisión se renderizan ya a 720 de ancho
+  (`ESCALA=0.6667 node render.mjs …`, JPEG intermedio 70) y se entregan con
+  `bash entregar.sh <pieza-formato>`. **Las versiones a 1080 para subir a Meta
+  se renderizan al final, cuando Sorela dé el visto bueno** (`node render.mjs`
+  sin ESCALA). (2026-11-20)
 - 2026-11-20: **página de revisión para Sorela** en `revision.sorelacarodivine.com`
   (ruta `/revision`, oculta, sin clave). Todo lo que hay que enseñarle antes de
   publicar va en `GRUPOS` (lib/revision.ts): anuncios y posts de Medellín
