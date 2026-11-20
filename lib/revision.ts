@@ -101,8 +101,8 @@ export const GRUPOS: Grupo[] = [
         guion:
           'Soy Sorela Caro, creadora de la Técnica Divine. Llevo treinta años y más de veinticinco mil casos trabajando con mis manos. Ahora te lo enseño en persona: una formación presencial para terapeutas, esteticistas y masajistas, y para quien quiera dedicarse a esto. Vas a aprender a leer el cuerpo, y yo voy a corregir tus manos, una a una. Medellín, veintiocho, veintinueve y treinta de enero. Solo diez plazas.',
         formatos: [
-          { etiqueta: 'Ordenador (16:9)', src: '/medellin/landing-16x9.mp4', poster: '/medellin/landing-16x9.jpg', tipo: 'video' },
-          { etiqueta: 'Móvil (9:16)', src: '/medellin/landing-9x16.mp4', poster: '/medellin/landing-9x16.jpg', tipo: 'video' },
+          { etiqueta: 'Ordenador (16:9)', src: `${M}/landing-16x9.mp4`, poster: `${M}/landing-16x9.jpg`, tipo: 'video' },
+          { etiqueta: 'Móvil (9:16)', src: `${M}/landing-9x16.mp4`, poster: `${M}/landing-9x16.jpg`, tipo: 'video' },
         ],
       },
     ],
