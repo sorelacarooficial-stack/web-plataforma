@@ -1,6 +1,8 @@
 # Guiones · formación presencial en Medellín (28-30 ene 2027)
 
-Lo que dice Sorela en cada pieza (voz clonada «SORELA» en ElevenLabs,
+Lo que dice Sorela en cada pieza (voz clonada «SORELA» en ElevenLabs, modelo
+`eleven_v4` con estabilidad 0,35 y similitud 0,85; el texto lleva `[warmly]` al
+principio y alguna pausa con «…» o `[short pause]`, que no se leen en voz alta;
 aprobada). Las locuciones están en `videos-medellin/public/media/voz/` (fuera
 de git) y los tiempos de cada palabra, sacados de transcribir otra vez cada
 toma, en `videos-medellin/src/voz/*.json`. Las 6 tomas coinciden palabra a

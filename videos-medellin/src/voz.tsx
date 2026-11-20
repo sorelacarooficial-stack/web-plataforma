@@ -30,7 +30,7 @@ const grupos = (ws: Palabra[]) => {
   ws.forEach((w, i) => {
     g.push(w);
     const sig = ws[i + 1];
-    if (/[.,:;?!]$/.test(w.t) || g.length >= 4 || !sig || sig.a - w.b > 0.3) {
+    if (/[.,:;?!…]$/.test(w.t) || g.length >= 4 || !sig || sig.a - w.b > 0.3) {
       out.push(g);
       g = [];
     }
