@@ -5,7 +5,7 @@ import { renderMedia, renderStill, selectComposition, getCompositions } from '@r
 import path from 'node:path';
 import fs from 'node:fs';
 
-// ESCALA=0.6667 → copias de revisión a 720 de ancho directamente (las de Meta, a 1080, al final).
+// ESCALA=0.6666666666666666 (2/3 exacto; 0.6667 da alturas no enteras) → copias de revisión a 720 de ancho directamente (las de Meta, a 1080, al final).
 const ESCALA = Number(process.env.ESCALA || 1);
 const BROWSER = '/opt/pw-browsers/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell';
 const args = process.argv.slice(2);
